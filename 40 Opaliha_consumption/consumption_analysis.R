@@ -5,6 +5,10 @@ library(dplyr)
 library(scales)
 library(forecast)
 
+# UTF-8 issue
+# http://stackoverflow.com/questions/19900668/r-wrong-encoding-in-rstudio-console-but-ok-in-r-gui-and-ggplot2
+# Sys.setlocale("LC_ALL", "Russian")
+# Sys.setlocale("LC_CTYPE", "en_RU.UTF-8")
 
 
 # http://stackoverflow.com/questions/5796924/how-can-i-determine-the-current-directory-name-in-r
@@ -17,12 +21,9 @@ mydata <- read.table(filename, header=TRUE, stringsAsFactors = FALSE, sep=";")
 
 #str(mydata)
 mydata$date <- dmy_hm(mydata$date, truncated=2, tz="Europe/Moscow") #truncated -- могут быть опущены 2 параметра (часы, минуты)
-dplyr::rename(mydata, timestamp=date)
-#str(mydata)
-
-
 
 # =================== окно наблюдения ======================
+
 s_date <- dmy_hms("01.01.2015 0:0:0", tz="Europe/Moscow")
 e_date <- s_date + month(2) - days(1) # months(0.5)
 e_date = Sys.time()
@@ -86,5 +87,6 @@ gp2 <- ggplot(rbind(subdata, df), aes(x=timestamp, y=balance_rub)) +
   ylab("Баланс, руб")
 
 gp2
+
 
 

@@ -11,3 +11,5 @@ Encoding: CP1251
 
 RnwWeave: Sweave
 LaTeX: pdfLaTeX
+
+AutoAppendNewline: Yes
