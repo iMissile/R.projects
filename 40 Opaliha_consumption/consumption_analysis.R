@@ -4,6 +4,13 @@ library(magrittr)
 library(dplyr)
 library(scales)
 library(forecast)
+library(ggthemr)
+
+# https://github.com/cttobin/ggthemr
+ggthemr('lilac')
+
+# ggthemr_reset()
+
 
 # UTF-8 issue
 # http://stackoverflow.com/questions/19900668/r-wrong-encoding-in-rstudio-console-but-ok-in-r-gui-and-ggplot2
@@ -72,15 +79,21 @@ zerotime <- as.POSIXct(as.numeric(-fit$coefficients[1]/fit$coefficients[2]),
 dput(zerotime)
 
 # а теперь нарисуем график до даты выхода на ноль
+# я хочу нарисовать прямую по которой была проведена регрессия, а не сплайны.
+# 1. [ggplot2 Quick Reference: geom_abline](http://sape.inf.usi.ch/quick-reference/ggplot2/geom_abline), примеры есть [здесь](http://docs.ggplot2.org/current/geom_abline.html)
+# - slope - (required) slope of the line (the "a" in "y=ax+b")
+# - intercept - (required) intercept with the y axis of the line (the "b" in "y=ax+b").
+# 2. Использовать функцию [stat_function()](https://kohske.wordpress.com/2010/12/25/draw-function-without-data-in-ggplot2/)
 
 df <- data.frame(timestamp = zerotime, balance_rub=0, balance_kwth = NA)
 # http://stackoverflow.com/questions/7476022/geom-point-and-geom-line-for-multiple-datasets-on-same-graph-in-ggplot2
 # http://www.cookbook-r.com/Graphs/Shapes_and_line_types/
 gp2 <- ggplot(rbind(subdata, df), aes(x=timestamp, y=balance_rub)) +
   geom_point(size=4, shape=21) + # produce scatterplot # fill="green",
-  geom_line(color = "blue", linetype="dashed") + 
+  # geom_line(color = "blue", linetype="dashed") + 
+  geom_abline(intercept = fit$coefficients[1], slope = fit$coefficients[2], color = "green", linetype="dashed") +
   geom_point(data=df, size=4, shape=21, color="red", fill="yellow") +  # predicted
-  #  stat_smooth(aes(outfit=fit<<-..y..)) + #fitting http://stackoverflow.com/questions/9789871/method-to-extract-stat-smooth-line-fit
+  # stat_smooth(aes(outfit=fit<<-..y..)) + #fitting http://stackoverflow.com/questions/9789871/method-to-extract-stat-smooth-line-fit
   theme_bw() +
   scale_x_datetime(labels = date_format("%d.%m (%a)"), minor_breaks = date_breaks("1 days")) +
   xlab("Дата") +
