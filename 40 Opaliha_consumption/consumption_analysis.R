@@ -31,7 +31,7 @@ mydata$date <- dmy_hm(mydata$date, truncated=2, tz="Europe/Moscow") #truncated -
 
 # =================== окно наблюдения ======================
 
-s_date <- dmy_hms("01.01.2015 0:0:0", tz="Europe/Moscow")
+s_date <- dmy_hms("01.06.2015 0:0:0", tz="Europe/Moscow")
 e_date <- s_date + month(2) - days(1) # months(0.5)
 e_date = Sys.time()
 
