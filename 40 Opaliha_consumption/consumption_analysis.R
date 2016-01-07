@@ -5,12 +5,14 @@ library(dplyr)
 library(scales)
 library(forecast)
 library(ggthemr)
+library(broom)
+library(readr) #Hadley Wickham, http://blog.rstudio.org/2015/04/09/readr-0-1-0/
+
 
 # https://github.com/cttobin/ggthemr
-ggthemr('lilac')
+# ggthemr('lilac') # ошибки при работе с ggplot v2
 
 # ggthemr_reset()
-
 
 # UTF-8 issue
 # http://stackoverflow.com/questions/19900668/r-wrong-encoding-in-rstudio-console-but-ok-in-r-gui-and-ggplot2
@@ -24,14 +26,21 @@ ggthemr('lilac')
 filename <- "gas_consumption.csv"
 filename <- "electricity_consumption.csv"
 
-mydata <- read.table(filename, header=TRUE, stringsAsFactors = FALSE, sep=";")
+# mydata <- read.table(filename, header=TRUE, stringsAsFactors = FALSE, sep=";")
+mydata <- read_delim(filename, delim = ";", quote = "\"",
+    col_names = TRUE,
+    locale = locale("ru", encoding = "windows-1251", tz = "Europe/Moscow"), # таймзону, в принципе, можно установить здесь
+    # col_types = list(date = col_datetime(format = "%d.%m.%Y %H:%M")), 
+    progress = interactive()
+  ) # http://barryrowlingson.github.io/hadleyverse/#5
 
 #str(mydata)
+# не очень удобно через readr::col_datetime, поскольку у отдельных записей есть дата и время, а у отдельных только дата
 mydata$date <- dmy_hm(mydata$date, truncated=2, tz="Europe/Moscow") #truncated -- могут быть опущены 2 параметра (часы, минуты)
 
 # =================== окно наблюдения ======================
 
-s_date <- dmy_hms("01.06.2015 0:0:0", tz="Europe/Moscow")
+s_date <- dmy_hms("01.09.2015 0:0:0", tz="Europe/Moscow")
 e_date <- s_date + month(2) - days(1) # months(0.5)
 e_date = Sys.time()
 
@@ -66,8 +75,10 @@ gp
 
 # используем линейную регрессию для определения выхода баланса денег на ноль
 # http://www.tatvic.com/blog/linear-regression-using-r/
-fit <-lm(balance_rub ~ timestamp, data=subdata)
+fit <-lm(balance_rub ~ timestamp, data = subdata)
 summary(fit)
+# tidy(fit)
+
 # дата, когда все выйдет в ноль
 str(fit$coefficients)
 # http://stackoverflow.com/questions/7257263/converting-date-times-in-posixct-gives-screwy-result
@@ -85,9 +96,10 @@ dput(zerotime)
 # - intercept - (required) intercept with the y axis of the line (the "b" in "y=ax+b").
 # 2. Использовать функцию [stat_function()](https://kohske.wordpress.com/2010/12/25/draw-function-without-data-in-ggplot2/)
 
-df <- data.frame(timestamp = zerotime, balance_rub=0, balance_kwth = NA)
+df <- data.frame(timestamp = zerotime, balance_rub=0, balance_kwth = NA, comment = NA)
 # http://stackoverflow.com/questions/7476022/geom-point-and-geom-line-for-multiple-datasets-on-same-graph-in-ggplot2
 # http://www.cookbook-r.com/Graphs/Shapes_and_line_types/
+# чтобы rbind заработал, необходимо, чтобы типы и количество колонок совпадало. а я добавил колонку 'Comment'
 gp2 <- ggplot(rbind(subdata, df), aes(x=timestamp, y=balance_rub)) +
   geom_point(size=4, shape=21) + # produce scatterplot # fill="green",
   # geom_line(color = "blue", linetype="dashed") + 
