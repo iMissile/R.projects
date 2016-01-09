@@ -59,7 +59,17 @@ subdata <- rename(mydata, timestamp=date) %>%
 # http://sape.inf.usi.ch/quick-reference/ggplot2/geom_point
 
 #gp <- ggplot(subdata, aes(x=timestamp, y=balance_m3))
-#gp <- ggplot(subdata, aes(x=timestamp, y=balance_kwth))
+gp0 <- ggplot(subdata, aes(x=timestamp, y=balance_kwth))
+gp0 <- gp0 +
+  geom_point(size=4, shape=21) + # produce scatterplot # fill="green",
+  geom_line() + 
+  #  stat_smooth(aes(outfit=fit<<-..y..)) + #fitting http://stackoverflow.com/questions/9789871/method-to-extract-stat-smooth-line-fit
+  theme_bw() +
+  scale_x_datetime(labels = date_format("%d.%m (%a)"), minor_breaks = date_breaks("1 days")) +
+  xlab("Дата") +
+  ylab("Баланс, руб")
+
+
 gp <- ggplot(subdata, aes(x=timestamp, y=balance_rub))
 gp <- gp +
   geom_point(size=4, shape=21) + # produce scatterplot # fill="green",
