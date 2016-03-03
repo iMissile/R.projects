@@ -1,12 +1,20 @@
 library(shiny)
 
+source("IoT_funcs.R")
+
 shinyUI(fluidPage(
-  titlePanel("title panel"),
+  titlePanel("Данные по использованию интернет-канала"),
   
   sidebarLayout(
-    sidebarPanel( "sidebar panel"),
+    sidebarPanel(
+      actionButton("lastDay", label = "За последние сутки"),
+      helpText(""),
+      actionButton("lastWeek", label = "За последнюю неделю")
+      
+    ),
     
     # Show a plot of the traffic load
-    mainPanel("main panel")
+    mainPanel(
+      plotOutput("loadPlot")
   )
-))
+)))
