@@ -30,12 +30,6 @@ resp <- GET(url, add_headers("Eiot-Instance" = instanceID))
 tokenID <- content(resp)[[1]]$Token  # Advanced R, 3.2 Subsetting operators
 
 # Get parameter value
-do.call(
-  function(id){paste0("http://cloud.iot-playground.com:40404/RestApi/v1.0/Parameter/", id, "/Value") %>%
-      GET(add_headers("EIOT-AuthToken" = tokenID)) %>%
-      content()}, list("RkBJ8qQhRzgxv763", "tAoFkzPlZWiUNzro")
-)
-
 point <-
   lapply(list("RkBJ8qQhRzgxv763", "tAoFkzPlZWiUNzro"),
        function(id) {
@@ -48,14 +42,18 @@ point <-
            as.numeric()
        })
 
+# Visualising your hiking trails and photos with My Tracks, R and Leaflet
+# http://mhermans.net/hiking-gpx-r-leaflet.html
 
-cont <- paste0("http://cloud.iot-playground.com:40404/RestApi/v1.0/Parameter/", "RkBJ8qQhRzgxv763", "/Value") %>%
-GET(add_headers("EIOT-AuthToken" = tokenID)) %>%
-  content() %>%
-  .[['Value']]
-cont <- content(resp)
+m <- leaflet() %>%
+  addTiles() %>%  # Add default OpenStreetMap map tiles
+  addMarkers(lng = point[[2]], lat = point[[1]], popup="Борт")
+  # addMarkers(lng = 28.5645, lat = 56.3409, popup="Борт")
+m  # Print the map
 
+# 56.3409/28.5645
 
+stop()
 # ================================================================
 m_df <- getTSdata("1d") # get Time-Series data as data frame
 

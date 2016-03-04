@@ -12,12 +12,20 @@ shinyUI(fluidPage(
       actionButton("lastDay", label = "За последние сутки"),
       # helpText(""),
       p(""),
-      actionButton("lastWeek", label = "За последнюю неделю")
+      actionButton("lastWeek", label = "За последнюю неделю"),
+      p(""),
+      textOutput("text1")
     ),
     
     # Show a plot of the traffic load
     mainPanel(
-      plotOutput("loadPlot"),
-      textOutput("text1")
+      fluidRow(
+      column(11, plotOutput("loadPlot")),
+      #
+      column(1, plotOutput("loadPlot2"))
+      )
+    )  
+      # https://rstudio.github.io/leaflet/shiny.html
+      
   )
-)))
+))
