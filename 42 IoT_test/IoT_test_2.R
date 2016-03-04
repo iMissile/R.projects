@@ -6,6 +6,7 @@ library(magrittr)
 library(httr)
 library(ggplot2)
 library(scales)
+library(leaflet)
 
 source("IoT_funcs.R")
 # Fetching JSON data from REST APIs  (https://cran.r-project.org/web/packages/jsonlite/vignettes/json-apis.html)
@@ -15,9 +16,48 @@ source("IoT_funcs.R")
 # pass Qwerty123
 # instanceId = 56d57092c943a05b64ba2682
 
-# get Time-Series data as data frame
 
-m_df <- getTSdata("1d")
+# ================================================================
+# получаем координаты самолета
+# Sensor.Latitude, ID RkBJ8qQhRzgxv763
+# Sensor.Longitude ID tAoFkzPlZWiUNzro
+# карта: https://maps.yandex.ru/?text=51.27798,6.75819
+
+# Get Token
+url <- "http://cloud.iot-playground.com:40404/RestApi/v1.0/Token/List"
+instanceID <- "56d57092c943a05b64ba2682"
+resp <- GET(url, add_headers("Eiot-Instance" = instanceID))
+tokenID <- content(resp)[[1]]$Token  # Advanced R, 3.2 Subsetting operators
+
+# Get parameter value
+do.call(
+  function(id){paste0("http://cloud.iot-playground.com:40404/RestApi/v1.0/Parameter/", id, "/Value") %>%
+      GET(add_headers("EIOT-AuthToken" = tokenID)) %>%
+      content()}, list("RkBJ8qQhRzgxv763", "tAoFkzPlZWiUNzro")
+)
+
+point <-
+  lapply(list("RkBJ8qQhRzgxv763", "tAoFkzPlZWiUNzro"),
+       function(id) {
+         paste0("http://cloud.iot-playground.com:40404/RestApi/v1.0/Parameter/",
+                id,
+                "/Value") %>%
+           GET(add_headers("EIOT-AuthToken" = tokenID)) %>%
+           content() %>%
+           .[['Value']] %>%
+           as.numeric()
+       })
+
+
+cont <- paste0("http://cloud.iot-playground.com:40404/RestApi/v1.0/Parameter/", "RkBJ8qQhRzgxv763", "/Value") %>%
+GET(add_headers("EIOT-AuthToken" = tokenID)) %>%
+  content() %>%
+  .[['Value']]
+cont <- content(resp)
+
+
+# ================================================================
+m_df <- getTSdata("1d") # get Time-Series data as data frame
 
 gp <- ggplot(data = m_df, aes(x=timestamp, y=value)) +
   theme_bw() +
