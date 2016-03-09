@@ -12,7 +12,7 @@ tokenID <- getTokenID()
 
 
 # Define server logic required to draw a histogram
-shinyServer(function(input, output) {
+shinyServer(function(input, output, session) {
   
   v <- reactiveValues(depth = "1d") # глубина временного ряда
   
@@ -27,6 +27,8 @@ shinyServer(function(input, output) {
   output$text1 <- renderText({ 
     paste0("Глубина данных ", v$depth)
   })
+
+  autoInvalidate <- reactiveTimer(5000, session)
   
   # Expression that generates a histogram. The expression is
   # wrapped in a call to renderPlot to indicate that:
@@ -45,7 +47,14 @@ shinyServer(function(input, output) {
            y = "Загрузка интерфейса, %")
   })
   
-  output$mymap <- renderLeaflet({
+  # observeEvent(input$updateCraft, {
+  observe({
+    # Re-execute this reactive expression after 1000 milliseconds
+    # invalidateLater(1000, session)
+    autoInvalidate()
+    
+    # отрисовали карту
+    output$mymap <- renderLeaflet({
     point <- getCurrentCraftPos(tokenID) # глобальный tokenID
     
     leaflet() %>%
@@ -53,6 +62,11 @@ shinyServer(function(input, output) {
       addMarkers(lng = point[[2]],
                  lat = point[[1]],
                  popup = "Борт")
+  })
+    # отобразили координаты
+    output$craftPos <- renderText({ 
+      paste0("Координаты: (", point[[2]], ", ", point[[1]], ") ", Sys.time())
+    })
   })
   
 })

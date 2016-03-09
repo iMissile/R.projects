@@ -15,17 +15,21 @@ shinyUI(fluidPage(
       p(""),
       actionButton("lastWeek", label = "За последнюю неделю"),
       p(""),
-      textOutput("text1")
+      actionButton("updateCraft", label = "Обновить координаты"),
+      p(""),
+      textOutput("text1"),
+      p(""),
+      textOutput("craftPos"),
+      width = 2
     ),
     
     # Show a plot of the traffic load
     mainPanel(
       fluidRow(
-      column(11, plotOutput("loadPlot")),
+      column(6, plotOutput("loadPlot")),
       #
-      column(1, plotOutput("loadPlot2"))
-      ),
-      leafletOutput("mymap")
+      column(6, leafletOutput("mymap"))
+      )
     )  
       # https://rstudio.github.io/leaflet/shiny.html
       
