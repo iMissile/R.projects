@@ -1,4 +1,5 @@
 library(shiny)
+library(leaflet)
 
 # две кнопки описаны в [Pattern 3 - Dueling buttons](http://shiny.rstudio.com/articles/action-buttons.html)
 
@@ -23,7 +24,8 @@ shinyUI(fluidPage(
       column(11, plotOutput("loadPlot")),
       #
       column(1, plotOutput("loadPlot2"))
-      )
+      ),
+      leafletOutput("mymap")
     )  
       # https://rstudio.github.io/leaflet/shiny.html
       

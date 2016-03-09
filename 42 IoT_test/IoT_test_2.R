@@ -23,24 +23,11 @@ source("IoT_funcs.R")
 # Sensor.Longitude ID tAoFkzPlZWiUNzro
 # карта: https://maps.yandex.ru/?text=51.27798,6.75819
 
-# Get Token
-url <- "http://cloud.iot-playground.com:40404/RestApi/v1.0/Token/List"
-instanceID <- "56d57092c943a05b64ba2682"
-resp <- GET(url, add_headers("Eiot-Instance" = instanceID))
-tokenID <- content(resp)[[1]]$Token  # Advanced R, 3.2 Subsetting operators
+#Get TokenID
+tokenID <- getTokenID()
 
 # Get parameter value
-point <-
-  lapply(list("RkBJ8qQhRzgxv763", "tAoFkzPlZWiUNzro"),
-       function(id) {
-         paste0("http://cloud.iot-playground.com:40404/RestApi/v1.0/Parameter/",
-                id,
-                "/Value") %>%
-           GET(add_headers("EIOT-AuthToken" = tokenID)) %>%
-           content() %>%
-           .[['Value']] %>%
-           as.numeric()
-       })
+point <- getCurrentCraftPos(tokenID)
 
 # Visualising your hiking trails and photos with My Tracks, R and Leaflet
 # http://mhermans.net/hiking-gpx-r-leaflet.html

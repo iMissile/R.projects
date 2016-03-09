@@ -7,6 +7,10 @@ source("IoT_funcs.R")
 # чтобы работало в shiny необходимо файл сохранять в utf!!!
 # буква я
 
+#Get TokenID
+tokenID <- getTokenID()
+
+
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
   
@@ -39,6 +43,16 @@ shinyServer(function(input, output) {
       scale_x_datetime(labels = date_format_tz("%H", tz="Europe/Moscow"), breaks = date_breaks("1 hours"), minor_breaks = date_breaks("30 mins")) +
       labs(x = "Дата",  #x = iconv("Дата, время", "windows-1251", "UTF8", "byte"),
            y = "Загрузка интерфейса, %")
+  })
+  
+  output$mymap <- renderLeaflet({
+    point <- getCurrentCraftPos(tokenID) # глобальный tokenID
+    
+    leaflet() %>%
+      addTiles() %>%  # Add default OpenStreetMap map tiles
+      addMarkers(lng = point[[2]],
+                 lat = point[[1]],
+                 popup = "Борт")
   })
   
 })
