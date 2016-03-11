@@ -9,6 +9,13 @@ library(scales)
 library(leaflet)
 
 source("IoT_funcs.R")
+
+
+
+# пример отрисовки трассы поверх карты
+# [Visualising your hiking trails and photos with My Tracks, R and Leaflet](http://mhermans.net/hiking-gpx-r-leaflet.html)
+# [Tutorial: How to put dots on a Leaflet map with R](http://trendct.org/2015/06/26/tutorial-how-to-put-dots-on-a-leaflet-map-with-r/)
+
 # Fetching JSON data from REST APIs  (https://cran.r-project.org/web/packages/jsonlite/vignettes/json-apis.html)
 # URL: http://cloud.iot-playground.com:40404/RestApi/v1.0/Parameter/[id]/Value
 
