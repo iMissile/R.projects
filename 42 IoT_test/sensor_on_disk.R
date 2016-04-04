@@ -24,8 +24,20 @@ for (i in 1:nrow(df)){
   df.step <- df %>%
     mutate(dx = x - x0, dy = y - y0) %>%
     mutate(r2 = dx^2+dy^2) %>%
-    mutate(force = c(2, 4))
-
+    # исключаем строки с нулевым расстоянием, не забываем при этом про наличие машинного нуля
+    filter(r2 > 1e-20) %>%
+    mutate(force.x0 = -dx/sqrt(r2)*(1/r2)) %>%
+    mutate(force.y0 = -dy/sqrt(r2)*(1/r2))
+    # необходимо убрать NaN в столбцах force, можно делать это напрямую
+    # http://stackoverflow.com/questions/34057579/removing-nan-using-dplyr
+    # а можно это делать и раньше, исключая строки с нулевым расстоянием
+  
+  
+  df1 <- df.step %>%
+    summarise(force.x = sum(force.x0), force.y = sum(force.y0))
+  
+  # сумма векторов даст результирующее воздействие на частицу, которое и необходимо выдать наружу
+  
   print(paste0("step #", i))
   print(paste0("(", x0, ", ", y0, ") <-> "))
 }
