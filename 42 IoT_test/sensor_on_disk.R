@@ -6,6 +6,8 @@ library(ggplot2) #load first! (Wickham)
 library(lubridate) #load second!
 library(scales)
 
+options(warn=1) # http://stackoverflow.com/questions/11239428/how-to-change-warn-setting-in-r
+
 source("disk_funcs.R")
 
 # tidyr 0.4.0 Nested data frames
@@ -14,21 +16,23 @@ source("disk_funcs.R")
 # Генерим точки внутри окружности единичного радиуса.
 # Считаем, что все частицы единичного заряда, поэтому его опускаем
 # df.particles <- data.frame(x = c(0.1, 0.2, 0.3), y = c(0.3, 0.4, 0.5), fixed = c(FALSE, FALSE, FALSE))
-df.particles <- data.frame(point = (1:13)) %>%
+df.particles <- data.frame(j = (1:17)) %>%
   mutate(angle = runif(n(), min=0, max=2*pi), r = runif(n(), min=0, max=1)) %>%
   mutate(x = r*cos(angle), y = r*sin(angle), fixed = FALSE) %>%
-  select(-angle, -point, -r)
+  select(-angle, -r, -j)
 
 # lapply(particles, function(x){print(paste0("-", x, "-"))})
 
 # для сходимости задачи генерируем также зафиксированные точки на окружности
-perimeter.particles <- data.frame(point = (0:20)) %>%
-  mutate(angle = point*(2*pi/n()), x = 1.3*cos(angle), y = 1.3*sin(angle), fixed = TRUE) %>%
-  select(-angle, -point)
+perimeter.particles <- data.frame(j = (1:40)) %>%
+  mutate(angle = (j-1)*(2*pi/n()), x = 1.3*cos(angle), y = 1.3*sin(angle), fixed = TRUE) %>%
+  select(-angle, -j)
 
 
 df.particles %<>% dplyr::bind_rows(perimeter.particles) %>%
-  mutate(force.x = 0, force.y = 0)
+  mutate(force.x = 0, force.y = 0, j = seq_len(n()))
+  
+
 
 
 # =======================================
@@ -37,28 +41,42 @@ dfs <- df.particles
 gp <- disk_plot(dfs)
 print(gp)
 
+start.time <- Sys.time()
 max.force <- 10
 step <- 0
 
-while (max.force > 0.05){
-  # проведем расчет сил и занулим все силы, действующие на точки на окружности
+while (max.force > 0.1) {
+  # проверяем, что точки не ушли из окружности единичного радиуса
+  if(nrow(filter(dfs, !fixed, x^2+y^2 > 1.2)) > 0) break
+  
+  # проведем расчет сил и принудительно занулим все силы, действующие на точки на окружности
   dfs <- calc_qstep(dfs) %>%
     mutate(force.x = force.x * !fixed, force.y = force.y * !fixed)
   
   # gp <- disk_plot(dfs)
   # print(gp)
-
+  
   # определим максимальную силу, действующую на частицу
-  max.force <- max(sqrt(dfs$force.x^2+dfs$force.y^2))
-    
+  max.force <- max(sqrt(dfs$force.x ^ 2 + dfs$force.y ^ 2))
+  
   # проводим смещение точек
   dfs %<>%
     mutate(x.old = x, y.old = y) %>%
-    mutate(x = x + force.x/1e3, y = y + force.y/1e3)
+    mutate(x = x + force.x / 1e4, y = y + force.y / 1e4)
   
   step <- step + 1
-  print(paste0("step #", step, " max force = ", max.force))
+  print(paste0(
+    "iteration #",
+    step,
+    " Расчет длится ",
+    round(as.numeric(difftime(Sys.time(), start.time, unit = "sec")), digits = 0),
+    # round(Sys.time() - start.time, digits = 0),
+    " сек, max force = ",
+    max.force
+  ))
 }
+
+filter(dfs, !fixed, x^2+y^2 > 1)
 
 gp <- disk_plot(dfs)
 print(gp)

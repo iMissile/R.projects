@@ -10,18 +10,20 @@ library(scales)
 # http://stackoverflow.com/questions/3337533/in-r-how-do-you-loop-over-the-rows-of-a-data-frame-really-fast
 
 calc_qstep <- function(df) {
-  
-  for (i in 1:nrow(df)){
+  for (i in 1:nrow(df)) {
+    # дл€ укорени€ расчетов исключаем расчет сил дл€ "прибитых" точек
+    if (df$fixed[i]) next # http://www.endmemo.com/program/R/forloop.php
+    
     x0 <- df$x[i]
     y0 <- df$y[i]
     # считаем проекцию и расто€ни€ относительно текущей точки
     df.step <- df %>%
       mutate(dx = x - x0, dy = y - y0) %>%
-      mutate(r2 = dx^2+dy^2) %>%
+      mutate(r2 = dx ^ 2 + dy ^ 2) %>%
       # исключаем строки с нулевым рассто€нием, не забываем при этом про наличие машинного нул€
       filter(r2 > 1e-20) %>%
-      mutate(force.x0 = -dx/sqrt(r2)*(1/r2)) %>%
-      mutate(force.y0 = -dy/sqrt(r2)*(1/r2))
+      mutate(force.x0 = -dx / sqrt(r2) * (1 / r2)) %>%
+      mutate(force.y0 = -dy / sqrt(r2) * (1 / r2))
     # необходимо убрать NaN в столбцах force, можно делать это напр€мую
     # http://stackoverflow.com/questions/34057579/removing-nan-using-dplyr
     # а можно это делать и раньше, исключа€ строки с нулевым рассто€нием
@@ -34,10 +36,10 @@ calc_qstep <- function(df) {
     df$force.x[i] <- sum(df.step$force.x0)
     df$force.y[i] <- sum(df.step$force.y0)
     
-    ## print(paste0("step #", i))
+    ## print(paste0("point #", i))
     ## print(paste0("(", x0, ", ", y0, ") <-> force (", df$force.x[i], ", ", df$force.y[i], ")"))
   }
-  return(df)    
+  return(df)
 }
 
 # рисование окружности на ggplot
