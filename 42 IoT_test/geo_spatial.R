@@ -24,7 +24,7 @@ sensors <- read.csv("sensors.csv", header=T, stringsAsFactors = FALSE)
 head(sensors)
 
 ## Plot the XY coordinates (do not close the plot window).
-plot(sensors$long, sensors$lat)
+plot(sensors$lon, sensors$lat)
 
 # Сначала надо преобразовать в Spatial Data
 
@@ -32,7 +32,7 @@ plot(sensors$long, sensors$lat)
 sensorsCRS <- CRS("+init=epsg:4326")
 
 # http://www.r-tutor.com/r-introduction/data-frame/data-frame-column-slice
-sensorsSp <- SpatialPointsDataFrame(sensors[c('long', 'lat')], sensors, proj4string = sensorsCRS)
+sensorsSp <- SpatialPointsDataFrame(sensors[c('lon', 'lat')], sensors, proj4string = sensorsCRS)
 
 # To assign a known CRS to spatial data: proj4string(x) <- CRS("+init=epsg:28992")
 # google
@@ -54,9 +54,8 @@ writeOGR(
   sensorsSp,
   dsn = "sensors_out.gpx",
   layer = "waypoints",
-  driver = "GPX",
-  overwrite_layer = TRUE,
-  dataset_options = "GPX_USE_EXTENSIONS=yes"
+  driver = "GPX", 
+  overwrite_layer = TRUE, dataset_options = "GPX_USE_EXTENSIONS=yes"
 )
 
 stop()

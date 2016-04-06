@@ -16,7 +16,7 @@ source("disk_funcs.R")
 # Генерим точки внутри окружности единичного радиуса.
 # Считаем, что все частицы единичного заряда, поэтому его опускаем
 # df.particles <- data.frame(x = c(0.1, 0.2, 0.3), y = c(0.3, 0.4, 0.5), fixed = c(FALSE, FALSE, FALSE))
-df.particles <- data.frame(j = (1:17)) %>%
+df.particles <- data.frame(j = (1:4)) %>%
   mutate(angle = runif(n(), min=0, max=2*pi), r = runif(n(), min=0, max=1)) %>%
   mutate(x = r*cos(angle), y = r*sin(angle), fixed = FALSE) %>%
   select(-angle, -r, -j)
@@ -45,7 +45,7 @@ start.time <- Sys.time()
 max.force <- 10
 step <- 0
 
-while (max.force > 0.1) {
+while (max.force > 0.5) {
   # проверяем, что точки не ушли из окружности единичного радиуса
   if(nrow(filter(dfs, !fixed, x^2+y^2 > 1.2)) > 0) break
   
@@ -82,9 +82,63 @@ gp <- disk_plot(dfs)
 print(gp)
 
 
+
 print("End...")
 stop()
 
+# =========================== мапируем координаты на  GIS ==========================================
+# попробуем оптимизировать маршрут обхода
+# 1. Убираем фиксированные точки
+df.calc <- filter(dfs, !fixed)
+# 2. Выбираем в качестве начальной точки датчик, максимально близко расположенный к краю поля
+n1 <- filter(df.calc, x == max(x))
+
+max(df.calc$x)
+stop()
+
+
+# =========================== мапируем координаты на  GIS ==========================================
+# связь эллипса с окружностью
+# http://stu.sernam.ru/book_ehm.php?id=38
+# http://www.mathprofi.ru/linii_vtorogo_poryadka_ellips_i_okruzhnost.html
+# http://math.stackexchange.com/questions/597090/computing-a-matrix-to-convert-an-x-y-point-on-an-ellipse-to-a-circle
+
+# write.csv(dfs, file="sensors_calc.csv")
+# https://yandex.ru/maps/?text=54.860510,38.655286&z=5
+# Полурядинки
+x0.geo <- 38.655286 # Longitude
+y0.geo <- 54.860510 # Latitude
+rx.geo <- sqrt((x0.geo - 38.662979)^2 + (y0.geo - 54.860416)^2) # правая горизонтальная точка
+ry.geo <- sqrt((x0.geo - 38.655267)^2 + (y0.geo - 54.865068)^2) # верхняя вертикальная точка
+
+# Зоологическая 2
+x0.geo <- 37.58022 # Longitude
+y0.geo <- 55.76559 # Latitude
+rx.geo <- sqrt((0.01)^2) # правая горизонтальная точка
+ry.geo <- sqrt((0.01)^2) # верхняя вертикальная точка
+
+
+# а еще не забываем, что надо преобразовывать координаты из метров в градусы
+# Вычисление расстояния и начального азимута между двумя точками на сфере
+# http://gis-lab.info/qa/great-circles.html
+
+
+
+df.geo <- dfs %>%
+  mutate(x = x * rx.geo + x0.geo, y = y * ry.geo + y0.geo)
+
+# http://www.gpsvisualizer.com/convert_input
+write.table(
+  df.geo %>% select(j, x, y) %>% rename(lon = x, lat = y, num = j),
+  file = "sensors_calc.csv",
+  sep = ",",
+  row.names = FALSE,
+  qmethod = "double"
+)
+
+
+stop()
+# ===============================================================================================
 # http://stackoverflow.com/questions/15059076/call-apply-like-function-on-each-row-of-dataframe-with-multiple-arguments-from-e
 myf <- function(x0, y0, plist){
   t <- plist %>%

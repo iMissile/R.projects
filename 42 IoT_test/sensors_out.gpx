@@ -1,25 +1,25 @@
 <?xml version="1.0"?>
 <gpx version="1.1" creator="GDAL 2.0.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ogr="http://osgeo.org/gdal" xmlns="http://www.topografix.com/GPX/1/1" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
-<metadata><bounds minlat="38.455286000000001" minlon="54.760509999999996" maxlat="38.655285999999997" maxlon="54.960509999999999"/></metadata>                  
-<wpt lat="38.655286" lon="54.86051">
-  <name>Sensor 1</name>
+<metadata><bounds minlat="54.760509999999996" minlon="38.455286000000001" maxlat="54.960509999999999" maxlon="38.655285999999997"/></metadata>                  
+<wpt lat="54.86051" lon="38.655286">
+  <type>Sensor 1</type>
   <extensions>
-    <ogr:long>54.86051</ogr:long>
-    <ogr:lat>38.655286</ogr:lat>
+    <ogr:lat>54.86051</ogr:lat>
+    <ogr:lon>38.655286</ogr:lon>
   </extensions>
 </wpt>
-<wpt lat="38.455286" lon="54.76051">
-  <name>Sensor 2</name>
+<wpt lat="54.76051" lon="38.455286">
+  <type>Sensor 2</type>
   <extensions>
-    <ogr:long>54.76051</ogr:long>
-    <ogr:lat>38.455286</ogr:lat>
+    <ogr:lat>54.76051</ogr:lat>
+    <ogr:lon>38.455286</ogr:lon>
   </extensions>
 </wpt>
-<wpt lat="38.555286" lon="54.96051">
-  <name>Sensor 3</name>
+<wpt lat="54.96051" lon="38.555286">
+  <type>Sensor 3</type>
   <extensions>
-    <ogr:long>54.96051</ogr:long>
-    <ogr:lat>38.555286</ogr:lat>
+    <ogr:lat>54.96051</ogr:lat>
+    <ogr:lon>38.555286</ogr:lon>
   </extensions>
 </wpt>
 </gpx>
