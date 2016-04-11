@@ -42,35 +42,39 @@ start.time <- Sys.time()
 max.force <- 10
 step <- 0
 
-while (max.force > 0.5) {
-# проверяем, что точки не ушли из окружности единичного радиуса
-if(nrow(filter(dfs, !fixed, x^2+y^2 > 1.2)) > 0) break
-
-# проведем расчет сил и принудительно занулим все силы, действующие на точки на окружности
-dfs <- calc_qstep(dfs) %>%
-mutate(force.x = force.x * !fixed, force.y = force.y * !fixed)
-
-# gp <- disk_plot(dfs)
-# print(gp)
-
-# определим максимальную силу, действующую на частицу
-max.force <- max(sqrt(dfs$force.x ^ 2 + dfs$force.y ^ 2))
-
-# проводим смещение точек
-dfs %<>%
-mutate(x.old = x, y.old = y) %>%
-mutate(x = x + force.x / 1e4, y = y + force.y / 1e4)
-
-step <- step + 1
-print(paste0(
-"iteration #",
-step,
-" Расчет длится ",
-round(as.numeric(difftime(Sys.time(), start.time, unit = "sec")), digits = 0),
-# round(Sys.time() - start.time, digits = 0),
-" сек, max force = ",
-max.force
-))
+## Определяем точность моделирования!
+while (max.force > 1) {
+  # проверяем, что точки не ушли из окружности единичного радиуса
+  if (nrow(filter(dfs,!fixed, x^2 + y^2 > 1.2)) > 0)
+    break
+  
+  # проведем расчет сил и принудительно занулим все силы, действующие на точки на окружности
+  dfs <- calc_qstep(dfs) %>%
+    mutate(force.x = force.x * !fixed, force.y = force.y * !fixed)
+  
+  # gp <- disk_plot(dfs)
+  # print(gp)
+  
+  # определим максимальную силу, действующую на частицу
+  max.force <- max(sqrt(dfs$force.x^2 + dfs$force.y^2))
+  
+  # проводим смещение точек
+  dfs %<>%
+    mutate(x.old = x, y.old = y) %>%
+    mutate(x = x + force.x / 1e4, y = y + force.y / 1e4)
+  
+  step <- step + 1
+  print(paste0(
+    "iteration #",
+    step,
+    " Расчет длится ",
+    round(as.numeric(
+      difftime(Sys.time(), start.time, unit = "sec")
+    ), digits = 0),
+    # round(Sys.time() - start.time, digits = 0),
+    " сек, max force = ",
+    max.force
+  ))
 }
 
 filter(dfs, !fixed, x^2+y^2 > 1)
@@ -104,7 +108,7 @@ calc_path_length <- function(path){
   df.points <- data.frame(l = head(path, -1), r = tail(path, -1)) %>%
     mutate(s = sqrt((dfs$x[l]-dfs$x[r])^2 + (dfs$y[l]- dfs$y[r])^2))
   
-  # for (i in 1:lenght(path)-1){
+  # for (i in 1:length(path)-1){
   #print(df.points)
   # invisible(readline(prompt="Press [enter] to continue"))
   sum(df.points$s)

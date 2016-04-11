@@ -19,11 +19,11 @@ calc_qstep <- function(df) {
     # считаем проекцию и растояния относительно текущей точки
     df.step <- df %>%
       mutate(dx = x - x0, dy = y - y0) %>%
-      mutate(r2 = dx ^ 2 + dy ^ 2) %>%
+      mutate(r2 = dx^2 + dy^2) %>%
       # исключаем строки с нулевым расстоянием, не забываем при этом про наличие машинного нуля
       filter(r2 > 1e-20) %>%
-      mutate(force.x0 = -dx / sqrt(r2) * (1 / r2)) %>%
-      mutate(force.y0 = -dy / sqrt(r2) * (1 / r2))
+      mutate(force.x0 = -dx / sqrt(r2) * (1/r2)) %>%
+      mutate(force.y0 = -dy / sqrt(r2) * (1/r2))
     # необходимо убрать NaN в столбцах force, можно делать это напрямую
     # http://stackoverflow.com/questions/34057579/removing-nan-using-dplyr
     # а можно это делать и раньше, исключая строки с нулевым расстоянием
@@ -57,7 +57,7 @@ disk_plot <- function(df) {
   # Cookbook по работе с графикой, общий заход: http://www.cookbook-r.com/Graphs/
   # радиус = 1, координаты [-1; 1] по обеим осям
   
-  circdat <- circleFun(c(0,0), 2, npoints = 100)
+  circdat <- circleFun(c(0, 0), 2, npoints = 100)
   
   gp <- ggplot(data = df, aes(x = x, y = y)) +
     theme_bw() +

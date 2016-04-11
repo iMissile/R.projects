@@ -6,7 +6,7 @@ calc_path_length <- function(path){
   df.points <- data.frame(l = head(path, -1), r = tail(path, -1)) %>%
     mutate(s = sqrt((dfs$x[l]-dfs$x[r])^2 + (dfs$y[l]- dfs$y[r])^2))
   
-  # for (i in 1:lenght(path)-1){
+  # for (i in 1:length(path)-1){
   #print(df.points)
   # invisible(readline(prompt="Press [enter] to continue"))
   sum(df.points$s)
