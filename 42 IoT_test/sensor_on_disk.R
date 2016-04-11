@@ -1,8 +1,4 @@
-<<<<<<< HEAD:42 IoT_test/sensor_on_disk.R
 # rm(list=ls()) # очистим все переменные
-=======
-rm(list=ls()) # Г®Г·ГЁГ±ГІГЁГ¬ ГўГ±ГҐ ГЇГҐГ°ГҐГ¬ГҐГ­Г­Г»ГҐ
->>>>>>> origin/master:43-IoT_field/sensor_on_disk.R
 
 library(dplyr)
 library(magrittr)
@@ -36,9 +32,6 @@ perimeter.particles <- data.frame(j = (1:40)) %>%
 df.particles %<>% dplyr::bind_rows(perimeter.particles) %>%
   mutate(force.x = 0, force.y = 0, j = seq_len(n()))
   
-
-
-
 # =======================================
 dfs <- df.particles
 
@@ -91,7 +84,6 @@ saveRDS(dfs, "sensors_calulated.rds") #, compress = FALSE, ascii = TRUE)
 print("End...")
 stop()
 
-<<<<<<< HEAD:42 IoT_test/sensor_on_disk.R
 # =========================== мапируем координаты на  GIS ==========================================
 # попробуем оптимизировать маршрут обхода
 # 1. Убираем фиксированные точки
@@ -120,7 +112,6 @@ calc_path_length <- function(path){
 
 t <- unlist(lapply(routes, calc_path_length))
 
-=======
 # =========================== мапируем координаты на GIS ==========================================
 # попробуем оптимизировать маршрут обхода
 # 1. Убираем фисированные точки
