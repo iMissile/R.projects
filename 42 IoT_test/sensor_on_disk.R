@@ -16,7 +16,7 @@ source("disk_funcs.R")
 # Генерим точки внутри окружности единичного радиуса.
 # Считаем, что все частицы единичного заряда, поэтому его опускаем
 # df.particles <- data.frame(x = c(0.1, 0.2, 0.3), y = c(0.3, 0.4, 0.5), fixed = c(FALSE, FALSE, FALSE))
-df.particles <- data.frame(j = (1:4)) %>%
+df.particles <- data.frame(j = (1:13)) %>%
   mutate(angle = runif(n(), min=0, max=2*pi), r = runif(n(), min=0, max=1)) %>%
   mutate(x = r*cos(angle), y = r*sin(angle), fixed = FALSE) %>%
   select(-angle, -r, -j)
@@ -45,7 +45,7 @@ step <- 0
 ## Определяем точность моделирования!
 while (max.force > 1) {
   # проверяем, что точки не ушли из окружности единичного радиуса
-  if (nrow(filter(dfs,!fixed, x^2 + y^2 > 1.2)) > 0)
+  if (nrow(filter(dfs, !fixed, x^2 + y^2 > 1.2)) > 0)
     break
   
   # проведем расчет сил и принудительно занулим все силы, действующие на точки на окружности
@@ -90,38 +90,28 @@ stop()
 
 # =========================== мапируем координаты на  GIS ==========================================
 # попробуем оптимизировать маршрут обхода
-# 1. Убираем фиксированные точки
-df.calc <- filter(dfs, !fixed) %>% mutate (r2 = sqrt(x^2+y^2))
-# 2. Выбираем в качестве начальной точки датчик, максимально близко расположенный к краю поля
-n1 <- filter(df.calc, r2 == max(r2))[['j']]
+df.best <- optimize_path(dfs) %>% mutate(j = j.path)
+disk_plot(df.best)
 
-# теперь проводим симуляцию различных вариантов расстановки сенсоров
-# получаем последовательность номеров и убираем n1, его будем принудительно ставить первым
-seqsensor <- df.calc$j %>% .[. != n1]
 
-# сгенерируем список произвольных последовательностей обхода сенсоров, начинающуюся с n1
-routes <- lapply(1:10, function(x){ c(n1, sample(seqsensor, length(seqsensor), replace = FALSE)) })
+# вычисляем расстояния между сенсорами
+# надо искать ближайших соседей к каждому сенсору 
+# и брать минимальное расстояние до соседа
 
-# расчет длины маршрута обхода по заданной последовательности
-calc_path_length <- function(path){
-  # path -- последовательность обхода, номера сенсоров
-  df.points <- data.frame(l = head(path, -1), r = tail(path, -1)) %>%
-    mutate(s = sqrt((dfs$x[l]-dfs$x[r])^2 + (dfs$y[l]- dfs$y[r])^2))
-  
-  # for (i in 1:length(path)-1){
-  #print(df.points)
-  # invisible(readline(prompt="Press [enter] to continue"))
-  sum(df.points$s)
-}
 
-t <- unlist(lapply(routes, calc_path_length))
+## df.points <- data.frame(l = head(path, -1), r = tail(path, -1)) %>%
+##   mutate(s = sqrt((df.best$x[l] - df.best$x[r])^2 + (df.best$y[l] - df.best$y[r])^2))
+## sum(df.points$s)
 
-# =========================== мапируем координаты на GIS ==========================================
-# попробуем оптимизировать маршрут обхода
-# 1. Убираем фисированные точки
-df.calc <- filter(dfs, !fixed)
-# 2. Выбираем в качестве начальной точки точки, максимально близко расположенный к краю поля
-n1 <- filter(df.calc, x == max(x))
+
+r.min <- sapply(df.best$j, function(j.sensor){
+  df.points <- df.best %>%
+    mutate(x0 = x[j.sensor], y0 = y[j.sensor]) %>%
+    mutate(r = sqrt((x - x0) ^ 2  + (y - y0) ^ 2)) %>%
+    filter(j != j.sensor) # чтобы избежать нулевого расстояния
+  min(df.points$r)
+})
+
 
 stop()
 

@@ -74,6 +74,7 @@ disk_plot <- function(df) {
     # scale_colour_brewer(palette = "Dark2", name  = paste(exp.env, "\nangle = ", val, "\n", sep = "")) +
     #geom_line(size = 1, color = RColorBrewer::brewer.pal(3, "Set2")[1]) +
     geom_point(size = 2, fill = "black", shape = 21) +    # White fill
+    geom_text(aes(label = j), hjust = 0.5, vjust = -1) +
     # рисуем векторное поле
     # http://stackoverflow.com/questions/14936504/vector-field-visualisation-r
     # http://blog.revolutionanalytics.com/2013/02/a-review-of-the-r-graphics-cookbook.html
@@ -96,4 +97,61 @@ disk_plot <- function(df) {
     labs(x = "Ось X", y = "Ось Y")
   
   gp
+}
+
+# расчет длины маршрута обхода по заданной последовательности
+calc_path_length <- function(df.sensor, path){
+  # path -- последовательность обхода, номера сенсоров
+  df.points <- data.frame(l = head(path, -1), r = tail(path, -1)) %>%
+    mutate(s = sqrt((df.sensor$x[l]-df.sensor$x[r])^2 + (df.sensor$y[l]- df.sensor$y[r])^2))
+  
+  # for (i in 1:length(path)-1){
+  #print(df.points)
+  # invisible(readline(prompt="Press [enter] to continue"))
+  sum(df.points$s)
+}
+
+optimize_path <- function(dfs) {
+  # попробуем оптимизировать маршрут обхода
+  # 1. Убираем фиксированные точки
+  df.calc <- filter(dfs, !fixed) %>% mutate (r = sqrt(x^2+y^2))
+  # 2. Выбираем в качестве начальной точки датчик, максимально близко расположенный к краю поля
+  n1 <- filter(df.calc, r == max(r))[['j']]
+  
+  # теперь проводим симуляцию различных вариантов расстановки сенсоров
+  # получаем последовательность номеров и убираем n1, его будем принудительно ставить первым
+  seqsensor <- df.calc$j %>% .[. != n1]
+  
+  # сгенерируем список произвольных последовательностей обхода сенсоров, начинающуюся с n1, 
+  # и оставим только уникальные
+  routes <- unique(lapply(1:5000, 
+                          function(x){ c(n1, sample(seqsensor, length(seqsensor), replace = FALSE)) }
+                          ))
+  
+  print(paste0("Уникальных путей обхода: ", length(routes)))
+  
+  min.length <- NA
+  for (cur.path in routes){
+    cur.length <- calc_path_length(df.sensor = dfs, path = cur.path) 
+    
+    if (is.na(min.length) || cur.length < min.length){
+      best.route <- list(s = cur.length, path = cur.path)
+      min.length <- cur.length
+      print(cur.length)
+    }
+  }
+  
+  # лучший маршрут -- best.route
+  # пересортируем сенсоры в исходной таблице в соотв. с этой последовательностью
+  # объединяем лучший путь и делаем arrange
+  
+  path.frame <- data.frame(j = best.route$path, j.path = 1:length(best.route$path))
+  
+  df.best <- df.calc %>%
+    left_join(path.frame, by = "j") %>%
+    arrange(j.path)
+  
+  print(paste0("Minimal route length: ", min.length))
+  
+  df.best
 }
