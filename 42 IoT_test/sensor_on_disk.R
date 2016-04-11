@@ -1,4 +1,4 @@
-rm(list=ls()) # очистим все переменные
+# rm(list=ls()) # очистим все переменные
 
 library(dplyr)
 library(magrittr)
@@ -81,7 +81,8 @@ filter(dfs, !fixed, x^2+y^2 > 1)
 gp <- disk_plot(dfs)
 print(gp)
 
-
+# сохраняем объект
+saveRDS(dfs, "sensors_calulated.rds") #, compress = FALSE, ascii = TRUE)
 
 print("End...")
 stop()
@@ -89,11 +90,31 @@ stop()
 # =========================== мапируем координаты на  GIS ==========================================
 # попробуем оптимизировать маршрут обхода
 # 1. Убираем фиксированные точки
-df.calc <- filter(dfs, !fixed)
+df.calc <- filter(dfs, !fixed) %>% mutate (r2 = sqrt(x^2+y^2))
 # 2. Выбираем в качестве начальной точки датчик, максимально близко расположенный к краю поля
-n1 <- filter(df.calc, x == max(x))
+n1 <- filter(df.calc, r2 == max(r2))[['j']]
 
-max(df.calc$x)
+# теперь проводим симуляцию различных вариантов расстановки сенсоров
+# получаем последовательность номеров и убираем n1, его будем принудительно ставить первым
+seqsensor <- df.calc$j %>% .[. != n1]
+
+# сгенерируем список произвольных последовательностей обхода сенсоров, начинающуюся с n1
+routes <- lapply(1:10, function(x){ c(n1, sample(seqsensor, length(seqsensor), replace = FALSE)) })
+
+# расчет длины маршрута обхода по заданной последовательности
+calc_path_length <- function(path){
+  # path -- последовательность обхода, номера сенсоров
+  df.points <- data.frame(l = head(path, -1), r = tail(path, -1)) %>%
+    mutate(s = sqrt((dfs$x[l]-dfs$x[r])^2 + (dfs$y[l]- dfs$y[r])^2))
+  
+  # for (i in 1:lenght(path)-1){
+  #print(df.points)
+  # invisible(readline(prompt="Press [enter] to continue"))
+  sum(df.points$s)
+}
+
+t <- unlist(lapply(routes, calc_path_length))
+
 stop()
 
 
