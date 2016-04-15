@@ -124,7 +124,7 @@ optimize_path <- function(dfs) {
   
   # сгенерируем список произвольных последовательностей обхода сенсоров, начинающуюся с n1, 
   # и оставим только уникальные
-  routes <- unique(lapply(1:5000, 
+  routes <- unique(lapply(1:5000000, 
                           function(x){ c(n1, sample(seqsensor, length(seqsensor), replace = FALSE)) }
                           ))
   
