@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<gpx version="1.1" creator="GDAL 2.0.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ogr="http://osgeo.org/gdal" xmlns="http://www.topografix.com/GPX/1/1" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
+<metadata><bounds minlat="55.764109449653162" minlon="37.576776831128157" maxlat="55.767008764295831" maxlon="37.581828581478760"/></metadata>                  
+<wpt lat="55.766160765720493" lon="37.578691607470724">
+  <extensions>
+    <ogr:elevation>0.0</ogr:elevation>
+    <ogr:url_name>????????? ? QGIS</ogr:url_name>
+  </extensions>
+</wpt>
+<wpt lat="55.766504551149772" lon="37.57990362015564">
+  <extensions>
+    <ogr:elevation>0.0</ogr:elevation>
+    <ogr:url_name>????????? ? QGIS</ogr:url_name>
+  </extensions>
+</wpt>
+<wpt lat="55.765874275547077" lon="37.580025839922193">
+  <extensions>
+    <ogr:elevation>0.0</ogr:elevation>
+    <ogr:url_name>????????? ? QGIS</ogr:url_name>
+  </extensions>
+</wpt>
+<wpt lat="55.764819973580607" lon="37.577632369493983">
+  <extensions>
+    <ogr:elevation>0.0</ogr:elevation>
+    <ogr:url_name>????????? ? QGIS</ogr:url_name>
+  </extensions>
+</wpt>
+<wpt lat="55.764384492709446" lon="37.581431367237478">
+  <extensions>
+    <ogr:elevation>0.0</ogr:elevation>
+    <ogr:url_name>????????? ? QGIS</ogr:url_name>
+  </extensions>
+</wpt>
+<wpt lat="55.765158040903287" lon="37.579109191673091">
+  <extensions>
+    <ogr:elevation>0.0</ogr:elevation>
+    <ogr:url_name>????????? ? QGIS</ogr:url_name>
+  </extensions>
+</wpt>
+<wpt lat="55.766160765720493" lon="37.58182858147876">
+  <extensions>
+    <ogr:elevation>0.0</ogr:elevation>
+    <ogr:url_name>????????? ? QGIS</ogr:url_name>
+  </extensions>
+</wpt>
+<wpt lat="55.767008764295831" lon="37.580586013852198">
+  <extensions>
+    <ogr:elevation>0.0</ogr:elevation>
+    <ogr:url_name>????????? ? QGIS</ogr:url_name>
+  </extensions>
+</wpt>
+<wpt lat="55.764109449653162" lon="37.579862880233463">
+  <extensions>
+    <ogr:elevation>0.0</ogr:elevation>
+    <ogr:url_name>????????? ? QGIS</ogr:url_name>
+  </extensions>
+</wpt>
+<wpt lat="55.766567578149633" lon="37.577856439065989">
+  <extensions>
+    <ogr:elevation>0.0</ogr:elevation>
+    <ogr:url_name>????????? ? QGIS</ogr:url_name>
+  </extensions>
+</wpt>
+<wpt lat="55.76609773806296" lon="37.576776831128157">
+  <extensions>
+    <ogr:elevation>0.0</ogr:elevation>
+    <ogr:url_name>????????? ? QGIS</ogr:url_name>
+  </extensions>
+</wpt>
+</gpx>
