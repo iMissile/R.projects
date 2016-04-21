@@ -128,8 +128,8 @@ tdata <- rbind(mydata, hdata, vdata)
 # берем идеи отсюда: http://stackoverflow.com/questions/24410292/how-to-improve-interp-with-akima
 # и отсюда: http://www.kevjohnson.org/making-maps-in-r-part-2/
 fld <- interp(tdata$lon, tdata$lat, tdata$val,
-              xo = seq(min(tdata$lon), max(tdata$lon), length = 100),
-              yo = seq(min(tdata$lat), max(tdata$lat), length = 100),
+              xo = seq(min(tdata$lon), max(tdata$lon), length = 200),
+              yo = seq(min(tdata$lat), max(tdata$lat), length = 200),
               duplicate = "mean", # дубликаты возникают по углам искуственного пр€моугольника
               #linear = TRUE, #FALSE (после того, как добавили внешний пр€моугольник, можно)
               linear = FALSE,
@@ -143,15 +143,19 @@ dInterp <- data.frame(expand.grid(x = fld$x, y = fld$y), z = c(fld$z))
 # в случае крайне разреженных данных могут быть кос€ки со слишком кривыми аппроксимаци€ми
 # dInterp$z[dInterp$z < min(mydata$val)] <- min(mydata$val)
 # dInterp$z[dInterp$z > max(mydata$val)] <- max(mydata$val)
+dInterp$z[is.nan(dInterp$z)] <- min(mydata$val)
 
 
 tt <- fld$z
+# http://stackoverflow.com/questions/32679844/r-isotherms-as-isolines-using-ggplot2
 
 #filter(dInterp, z<0)
 ggplot(data = mydata) +
-  geom_tile(data = dInterp, aes(x, y, fill = z), alpha = 0.5, color = NA) + 
+  geom_tile(data = dInterp, aes(x, y, fill = z), alpha = 0.5, colour = NA) +
+  # geom_raster(data = dInterp, aes(x, y, fill = z), alpha = 0.5) + 
   # theme(legend.position = "top") +
   scale_fill_distiller(palette = "Spectral") + #color -- цвет линий
+  stat_contour(data = dInterp, aes(x, y, z = z), bins = 4, color="black", size=0.5) +
   geom_point(size = 4, alpha = 1/2, aes(x = lon, y = lat), color = "red") +
   geom_text(aes(lon, lat, label = round(val, digits = 1)), hjust = 0.5, vjust = -1) +
   theme_bw()
@@ -159,12 +163,63 @@ ggplot(data = mydata) +
 
 
 mm <- ggmap(fmap, extent = "normal", legend = "topleft") +
-  # geom_tile(data = dInterp, aes(x, y, fill = z), alpha = 0.5, color = NA) +
-  # scale_fill_distiller(aes(palette = "Spectral"))# +
-  geom_point(data = mydata, size = 4, alpha = 1/2, aes(lon, lat), color = "red")
-mm
+  # geom_raster(data = dInterp, aes(x, y, fill = z), alpha = 0.5) + 
+  geom_tile(data = dInterp, aes(x, y, fill = z), alpha = 0.5, colour = NA) +
+  # theme(legend.position = "top") +
+  scale_fill_distiller(palette = "Spectral") + #color -- цвет линий
+  stat_contour(data = dInterp, aes(x, y, z = z), bins = 4, color="white", size=0.5) +
+  geom_point(data = mydata, size = 4, alpha = 1/2, aes(x = lon, y = lat), color = "red") +
+  geom_text(data = mydata, aes(lon, lat, label = round(val, digits = 1)), hjust = 0.5, vjust = -1) +
+  theme_bw()
+
+# mm
+
+# а теперь попробуем отобразить растром, понима€ все потенциальные проблемы
+# проблемы хорошо описаны здесь: https://groups.google.com/forum/embed/#!topic/ggplot2/nqzBX22MeAQ
+mm3 <- ggmap(fmap, extent = "normal", legend = "topleft") +
+  geom_raster(data = dInterp, aes(x, y, fill = z), alpha = 0.5) +
+  coord_cartesian() +
+  scale_fill_distiller(palette = "Spectral") + #color -- цвет линий
+  stat_contour(data = dInterp, aes(x, y, z = z), bins = 4, color="white", size=0.5) +
+  geom_point(data = mydata, size = 4, alpha = 1/2, aes(x = lon, y = lat), color = "red") +
+  geom_text(data = mydata, aes(lon, lat, label = round(val, digits = 1)), hjust = 0.5, vjust = -1) +
+  theme_bw()
 
 
+start.time <- Sys.time()
+ggsave("plot.png", mm, width = 200, height = 200, units = "mm", dpi = 300)
+print(paste0("¬ывод длилс€ ", 
+             round(as.numeric(difftime(Sys.time(), start.time, unit = "sec")), digits = 0), 
+             " сек"))
+
+
+
+# ======================
+# Google Maps Geocoding API Usage Limits(https://developers.google.com/maps/documentation/geocoding/usage-limits)
+# Users of the standard API: 2,500 free requests per day; 10 requests per second 
+
+tile_map <-
+  get_map(
+    enc2utf8("ћосква, «оологическа€ 2"),
+    language = "ru-RU",
+    maptype = "terrain",
+    zoom = 16
+  )
+
+ggmap(tile_map)
+
+mm2 <- ggmap(tile_map, extent = "normal", legend = "topleft") +
+  #geom_tile(data = dInterp, aes(x, y, fill = z), alpha = 0.5) +
+  geom_raster(data = dInterp, aes(x, y, fill = z), alpha = 0.5) + 
+  coord_cartesian() +
+  # scale_fill_distiller(palette = "Spectral") + #color -- цвет линий
+  geom_point(data = mydata, size = 4, alpha = 1/2, aes(x = lon, y = lat), color = "red") +
+  geom_text(data = mydata, aes(lon, lat, label = round(val, digits = 1)), hjust = 0.5, vjust = -1) +
+  theme_bw()
+
+
+mm2
+ggsave("plot2.png", mm2, width = 200, height = 200, units = "mm", dpi = 300)
 
 
 
