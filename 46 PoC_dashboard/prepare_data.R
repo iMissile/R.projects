@@ -1,8 +1,13 @@
 # генерируем тестовые файлы дл€ отладки интерфейса
 #library(tidyr)
-library(ggplot2)
+library(ggplot2) #load first! (Wickham)
+library(lubridate) #load second!
+library(dplyr)
+library(readr)
+library(wesanderson)
 
-generate_field_data <- function() {
+
+generate_field_data <- function(ofile = "tsensors.csv", back_days = 7) {
   # данные по расположению сенсоров
   sensor <- data.frame(
     c(1, 37.578691607470724, 55.766160765720493),
@@ -27,16 +32,26 @@ generate_field_data <- function() {
   # dimnames(sensor) <- NULL
   
   # генерируем данные по показани€м сенсоров (почасова€ раскладка)
-  tick.seq <- seq(as.POSIXct("2016-03-01 23:00:00"), as.POSIXct("2016-05-02 08:32:00"), by = "hour") # http://stackoverflow.com/questions/10887923/hourly-date-sequence-in-r
+  # смотрим за последнюю неделю
+  # tick.seq <- seq(as.POSIXct("2016-03-01 23:00:00"), as.POSIXct("2016-03-10 08:32:00"), by = "4 hours") # http://stackoverflow.com/questions/10887923/hourly-date-sequence-in-r
+  tick.seq <- seq(now() - days(back_days), now(), by = "4 hours") # http://stackoverflow.com/questions/10887923/hourly-date-sequence-in-r
   # собираем сразу data.frame: врем€, #сенсора, показание
-  mydata <- data.frame(name = rep(sensor$name, each = length(tick.seq)), timestamp = tick.seq, temp = rnorm(nrow(sensor)*length(tick.seq), 15, 5)) # используем методику дополнени€
+  mydata <- data.frame(name = rep(sensor$name, each = length(tick.seq)),
+                       type = "Temp",
+                       location = "Field 1",
+                       timestamp = tick.seq, 
+                       value = rnorm(nrow(sensor)*length(tick.seq), 15, 1)) # используем методику дополнени€
   # rnorm(1000, 3, .25) # Generates 1000 numbers from a normal with mean 3 and sd=.25
   
-  qplot(timestamp, temp, data = mydata)
+  # дл€ соотв реали€м сделаем разброс во времени измерени€
+  mydata$timestamp <- mydata$timestamp + runif(nrow(mydata), min = -5*60, max = 5*60)
+  mydata$value <- mydata$value + 0.2*sin(as.numeric(mydata$timestamp)/86400*(0.1*pi))
+
+  qplot(timestamp, value, data = mydata)
   
   write.table(
     mydata,
-    file = ".\\data\\tsensors.csv",
+    file = ofile,
     sep = ",",
     row.names = FALSE,
     qmethod = "double"
@@ -46,4 +61,59 @@ generate_field_data <- function() {
 
 # =================== main ==================
 
-generate_field_data()
+filename <- ".\\data\\tsensors.csv"
+generate_field_data(filename, back_days = 7)
+
+# отобразим за указанный диапазон график: среднее, стандартное отклонение в виде серой области, выбросы
+
+# подгружаем данные по сенсорам
+raw.df <- read_delim(filename, delim = ",", quote = "\"",
+                     col_names = TRUE,
+                     locale = locale("ru", encoding = "windows-1251", tz = "Europe/Moscow"), # таймзону, в принципе, можно установить здесь
+                     # col_types = list(date = col_datetime(format = "%d.%m.%Y %H:%M")), 
+                     progress = interactive()
+) # http://barryrowlingson.github.io/hadleyverse/#5
+
+# сформируем часовые группы и посчитаем среднее по ансамблю сенсоров за каждую часовую группу
+# row.df["time.group"] <- lapply(row.df$timestamp, function(x){round(x, units="hours")})
+# t <- row.df$timestamp
+# object.size(t)
+
+# m <- lapply(row.df$timestamp, function(x){round(x, units="hours")}) # так из 130 кб получаем 35 ћб, надо использовать round_date {lubridate}
+# m <- lapply(t, function(x){round_date(x, unit = "hour")}) # тут получаем 8ћб !!!
+# m <- round_date(t, unit = "hour") # самый быстрый и компактный вариант
+# object.size(m)
+# object.size(m[[2]])
+raw.df["timegroup"] <- round_date(raw.df$timestamp, unit = "hour")
+
+
+avg.df <- raw.df %>%
+  group_by(timegroup) %>%
+  summarise(value.mean = mean(value), value.sd = sd(value))
+
+object.size(raw.df)
+object.size(avg.df)  
+
+
+# ggplot(avg.df, aes(timegroup, value.mean)) +
+#   geom_point() +
+#   geom_smooth(method="loess", level = 0.99999)
+
+ggplot(avg.df, aes(timegroup, value.mean)) +
+  geom_point(shape = 1) +
+  geom_line() +
+  geom_boxplot() +
+  geom_smooth(method="loess", level = 0.99999)
+  
+
+# http://docs.ggplot2.org/current/geom_boxplot.html
+# You can also use boxplots with continuous x, as long as you supply a grouping variable.
+# http://stackoverflow.com/questions/23433776/change-thickness-of-the-whole-line-geom-boxplot
+ggplot(raw.df, aes(timestamp, value)) +
+  # geom_point(shape = 1) +
+  # geom_line() +
+  geom_jitter(width = 0.2) +
+  ylim(0, NA) +
+  geom_boxplot(aes(group = cut_width(timestamp, 86400/5))) + 
+  geom_smooth(method="loess", level = 0.99999)
+
