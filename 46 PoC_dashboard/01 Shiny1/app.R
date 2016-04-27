@@ -17,31 +17,34 @@ mydata <- read_delim(ifilename, delim = ",", quote = "\"",
 ) # http://barryrowlingson.github.io/hadleyverse/#5
 
 
-ui <- fluidPage(
-  titlePanel("Контроль полива полей"), 
-  sidebarLayout(
-    sidebarPanel(
-      radioButtons("objectInput", "Поле",
-                   choices = c("Картофель 1", "Капуста 1"),
-                   selected = "Картофель 1"),
-      selectInput("daysDepth", "Глубина истории (дни)", 
-                  choices = c(1, 3, 7)), 
-      width = 3),
-    
-    mainPanel(fluidRow(
-      column(6, plotOutput("map_plot")),
-      column(6, plotOutput("data_plot"))
-    ))
-  )
-)
+ui <- fluidPage(titlePanel("Контроль полива полей"),
+                sidebarLayout(
+                  sidebarPanel(
+                    radioButtons(
+                      "objectInput",
+                      "Поле",
+                      choices = c("Картофель 1", "Капуста 1"),
+                      selected = "Картофель 1"
+                    ),
+                    selectInput("daysDepth", "Глубина истории (дни)",
+                                choices = c(1, 3, 7)),
+                    width = 3
+                  ),
+                  
+                  mainPanel(fluidRow(
+                    column(6, plotOutput("map_plot")),
+                    column(6, plotOutput("data_plot"))
+                  ),
+                  fluidRow(plotOutput("test_plot")))
+                ))
 
 server <- function(input, output) {
   output$data_plot <- renderPlot({
     plot(rnorm(input$daysDepth))
   })
   
-  output$map_plot<-renderPlot({
-    i <- input$daysDepth
+  output$map_plot1 <- renderPlot({
+    # i <- input$daysDepth
     
     getMap <- get_map(
       enc2utf8("Москва, Зоологическая 2"),
@@ -55,6 +58,9 @@ server <- function(input, output) {
     ggmap(getMap, extent="panel")
   })
   
+  output$test_plot <- renderPlot({
+    plot(rnorm(input$daysDepth))
+  })
   
   
 }
