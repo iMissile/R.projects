@@ -40,7 +40,8 @@ ui <- fluidPage(titlePanel("Контроль полива полей"),
                       selected = "Картофель 1"
                     ),
                     selectInput("daysDepth", "Глубина истории (дни)",
-                                choices = c(1, 3, 7)),
+                                choices = c(1, 3, 7), 
+                                selected = 3),
                     width = 2 # обязательно ширины надо взаимно балансировать!!!!
                   ),
                   
@@ -60,14 +61,23 @@ ui <- fluidPage(titlePanel("Контроль полива полей"),
 
 
 server <- function(input, output) {
+  
+  # создаем инстанс текущих данных
+  
+  rvars <- reactiveValues(work.df = raw.df) # data.frame -- подмножество для анализа и отображения
+  
+  observeEvent(input$daysDepth, {
+    # делаем выборку данных на заданную глубину
+    rvars$work.df <- raw.df %>%
+      filter(timegroup < lubridate::now()) %>%
+      filter(timegroup > lubridate::now() - days(input$daysDepth))
+  })
+  
   output$data_plot <- renderPlot({
     # на выходе должен получиться ggplot!!!
     # делаем выборку данных
-    t.df <- raw.df %>%
-      filter(timegroup < lubridate::now()) %>%
-      filter(timegroup > lubridate::now() - days(input$daysDepth))
-    
-    plot_ts_data(t.df)
+
+    plot_ts_data(rvars$work.df)
   })
   
   output$map_plot1 <- renderPlot({
@@ -86,7 +96,7 @@ server <- function(input, output) {
   })
   
   output$data_tbl <- DT::renderDataTable(
-    t.df, options = list(lengthChange = FALSE))
+    rvars$work.df, options = list(lengthChange = FALSE))
   
   
 }
