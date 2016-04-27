@@ -4,7 +4,10 @@ library(ggplot2) #load first! (Wickham)
 library(lubridate) #load second!
 library(dplyr)
 library(readr)
-library(wesanderson)
+library(ggthemes)
+library(ggmap)
+# library(ggthemr) # устарело :(
+# library(wesanderson)
 
 
 generate_field_data <- function(ofile = "tsensors.csv", back_days = 7) {
@@ -38,7 +41,7 @@ generate_field_data <- function(ofile = "tsensors.csv", back_days = 7) {
   # собираем сразу data.frame: время, #сенсора, показание
   mydata <- data.frame(name = rep(sensor$name, each = length(tick.seq)),
                        type = "Temp",
-                       location = "Field 1",
+                       location = "Капуста 1",
                        timestamp = tick.seq, 
                        value = rnorm(nrow(sensor)*length(tick.seq), 15, 1)) # используем методику дополнения
   # rnorm(1000, 3, .25) # Generates 1000 numbers from a normal with mean 3 and sd=.25
@@ -100,11 +103,17 @@ object.size(avg.df)
 #   geom_smooth(method="loess", level = 0.99999)
 
 ggplot(avg.df, aes(timegroup, value.mean)) +
-  geom_point(shape = 1) +
+  # ggtitle("График температуры") +
+  geom_point() +
   geom_line() +
-  geom_boxplot() +
-  geom_smooth(method="loess", level = 0.99999)
-  
+  ylim(0, NA) +
+  theme_solarized() +
+  scale_colour_solarized("blue")
+  # theme_solarized(light = TRUE) +
+  # scale_colour_solarized("blue")
+  # theme_hc() +
+  # scale_colour_hc()
+
 
 # http://docs.ggplot2.org/current/geom_boxplot.html
 # You can also use boxplots with continuous x, as long as you supply a grouping variable.
@@ -116,4 +125,16 @@ ggplot(raw.df, aes(timestamp, value)) +
   ylim(0, NA) +
   geom_boxplot(aes(group = cut_width(timestamp, 86400/5))) + 
   geom_smooth(method="loess", level = 0.99999)
+
+# ======================
+getMap <- get_map(
+  enc2utf8("Москва, Зоологическая 2"),
+  language = "ru-RU",
+  # source = "stamen",
+  # maptype = "watercolor", 
+  maptype = "terrain",
+  zoom = 16
+)
+
+ggmap(getMap, extent="panel")
 
