@@ -18,8 +18,16 @@ mydata <- read_delim(ifilename, delim = ",", quote = "\"",
 
 ui <- fluidPage(
   titlePanel("Agricola Dashboard"), 
-  sidebarLayout(),
-  mainPanel()
+  sidebarLayout(
+    sidebarPanel(
+      radioButtons("objectInput", "Объект",
+                   choices = c("Поле 1", "Поле 2"),
+                   selected = "Поле 1"),
+      selectInput("daysDepth", "Глубина выборки", 
+                  choices = c("1 день", "3 дня", "7 дней")),
+      width = 2),
+    mainPanel("Input")
+  )
 )
 
 server <- function(input, output) { 
