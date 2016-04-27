@@ -48,7 +48,7 @@ generate_field_data <- function(ofile = "tsensors.csv", back_days = 7) {
   
   # для соотв реалиям сделаем разброс во времени измерения
   mydata$timestamp <- mydata$timestamp + runif(nrow(mydata), min = -5*60, max = 5*60)
-  mydata$value <- mydata$value + 0.2*sin(as.numeric(mydata$timestamp)/86400*(0.1*pi))
+  mydata$value <- round(mydata$value + 0.2*sin(as.numeric(mydata$timestamp)/86400*(0.1*pi)), 1)
 
   qplot(timestamp, value, data = mydata)
   
@@ -108,7 +108,8 @@ ggplot(avg.df, aes(timegroup, value.mean)) +
   geom_line() +
   ylim(0, NA) +
   theme_solarized() +
-  scale_colour_solarized("blue")
+  scale_colour_solarized("blue") +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size = 2))
   # theme_solarized(light = TRUE) +
   # scale_colour_solarized("blue")
   # theme_hc() +

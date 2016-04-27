@@ -2,23 +2,30 @@
 # Обязательно в кодировке UTF-8
 library(shiny)
 library(magrittr)
-library(leaflet)
+#library(leaflet)
 library(readr) #Hadley Wickham, http://blog.rstudio.org/2015/04/09/readr-0-1-0/
 library(ggmap)
 library(DT)
+library(ggplot2) #load first! (Wickham)
+library(lubridate) #load second!
+library(dplyr)
+library(ggthemes)
+library(ggmap)
 
+
+source("..\\common_funcs.R") # сюда выносим все вычислительные и рисовательные функции
 
 # ================ первичная загрузка данных =========================
 ifilename <- "..\\.\\data\\test_data.csv"
 # подгружаем данные по сенсорам
-mydata <- read_delim(ifilename, delim = ",", quote = "\"",
+raw.data <- read_delim(ifilename, delim = ",", quote = "\"",
                      col_names = TRUE,
                      locale = locale("ru", encoding = "windows-1251", tz = "Europe/Moscow"), # таймзону, в принципе, можно установить здесь
                      # col_types = list(date = col_datetime(format = "%d.%m.%Y %H:%M")), 
                      progress = interactive()
 ) # http://barryrowlingson.github.io/hadleyverse/#5
 
-mydata$value <- round(mydata$value, 1)
+raw.data$value <- round(raw.data$value, 1)
 
 # ================================================================
 
@@ -50,7 +57,7 @@ ui <- fluidPage(titlePanel("Контроль полива полей"),
 server <- function(input, output) {
   output$data_plot <- renderPlot({
     # на выходе должен получиться ggplot
-    plot(rnorm(input$daysDepth))
+    plot_ts_data(input$daysDepth)
   })
   
   output$map_plot1 <- renderPlot({
@@ -69,7 +76,7 @@ server <- function(input, output) {
   })
   
   output$data_tbl <- DT::renderDataTable(
-    mydata, options = list(lengthChange = FALSE))
+    raw.data, options = list(lengthChange = FALSE))
   
   
 }
