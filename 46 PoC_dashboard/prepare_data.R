@@ -10,7 +10,7 @@ library(ggmap)
 # library(wesanderson)
 
 
-generate_field_data <- function(ofile = "tsensors.csv", back_days = 7) {
+generate_field_data <- function(ofile = "tsensors.csv", back_days = 7, forward_days = 7) {
   # данные по расположению сенсоров
   sensor <- data.frame(
     c(1, 37.578691607470724, 55.766160765720493),
@@ -37,11 +37,12 @@ generate_field_data <- function(ofile = "tsensors.csv", back_days = 7) {
   # генерируем данные по показаниям сенсоров (почасовая раскладка)
   # смотрим за последнюю неделю
   # tick.seq <- seq(as.POSIXct("2016-03-01 23:00:00"), as.POSIXct("2016-03-10 08:32:00"), by = "4 hours") # http://stackoverflow.com/questions/10887923/hourly-date-sequence-in-r
-  tick.seq <- seq(now() - days(back_days), now(), by = "4 hours") # http://stackoverflow.com/questions/10887923/hourly-date-sequence-in-r
+  tick.seq <- seq(now() - days(back_days), now() + days(forward_days), by = "4 hours") # http://stackoverflow.com/questions/10887923/hourly-date-sequence-in-r
   # собираем сразу data.frame: время, #сенсора, показание
   mydata <- data.frame(name = rep(sensor$name, each = length(tick.seq)),
                        type = "Temp",
                        location = "Капуста 1",
+                       #location = "Картофель 1",
                        timestamp = tick.seq, 
                        value = rnorm(nrow(sensor)*length(tick.seq), 15, 1)) # используем методику дополнения
   # rnorm(1000, 3, .25) # Generates 1000 numbers from a normal with mean 3 and sd=.25
@@ -64,13 +65,15 @@ generate_field_data <- function(ofile = "tsensors.csv", back_days = 7) {
 
 # =================== main ==================
 
-filename <- ".\\data\\tsensors.csv"
-generate_field_data(filename, back_days = 7)
+ofile <- ".\\data\\tsensors.csv"
+generate_field_data(ofile, back_days = 7, forward_days = 0)
 
 # отобразим за указанный диапазон график: среднее, стандартное отклонение в виде серой области, выбросы
 
+ifile <- ofile
+ifile <- ".\\data\\test_data.csv"
 # подгружаем данные по сенсорам
-raw.df <- read_delim(filename, delim = ",", quote = "\"",
+raw.df <- read_delim(ifile, delim = ",", quote = "\"",
                      col_names = TRUE,
                      locale = locale("ru", encoding = "windows-1251", tz = "Europe/Moscow"), # таймзону, в принципе, можно установить здесь
                      # col_types = list(date = col_datetime(format = "%d.%m.%Y %H:%M")), 
@@ -78,20 +81,26 @@ raw.df <- read_delim(filename, delim = ",", quote = "\"",
 ) # http://barryrowlingson.github.io/hadleyverse/#5
 
 # сформируем часовые группы и посчитаем среднее по ансамблю сенсоров за каждую часовую группу
-# row.df["time.group"] <- lapply(row.df$timestamp, function(x){round(x, units="hours")})
-# t <- row.df$timestamp
+# raw.df["time.group"] <- lapply(raw.df$timestamp, function(x){round(x, units="hours")})
+# t <- raw.df$timestamp
 # object.size(t)
 
-# m <- lapply(row.df$timestamp, function(x){round(x, units="hours")}) # так из 130 кб получаем 35 Мб, надо использовать round_date {lubridate}
+# m <- lapply(raw.df$timestamp, function(x){round(x, units="hours")}) # так из 130 кб получаем 35 Мб, надо использовать round_date {lubridate}
 # m <- lapply(t, function(x){round_date(x, unit = "hour")}) # тут получаем 8Мб !!!
 # m <- round_date(t, unit = "hour") # самый быстрый и компактный вариант
 # object.size(m)
 # object.size(m[[2]])
 raw.df["timegroup"] <- round_date(raw.df$timestamp, unit = "hour")
 
+# t.df <- raw.df %>%
+#   filter(timegroup < lubridate::now()) %>%
+#   filter(timegroup > lubridate::now() - days(3))
+  
+  
+
 
 avg.df <- raw.df %>%
-  group_by(timegroup) %>%
+  group_by(location, timegroup) %>%
   summarise(value.mean = mean(value), value.sd = sd(value))
 
 object.size(raw.df)
@@ -102,7 +111,7 @@ object.size(avg.df)
 #   geom_point() +
 #   geom_smooth(method="loess", level = 0.99999)
 
-ggplot(avg.df, aes(timegroup, value.mean)) +
+ggplot(avg.df, aes(timegroup, value.mean, colour = factor(location))) +
   # ggtitle("График температуры") +
   geom_point() +
   geom_line() +

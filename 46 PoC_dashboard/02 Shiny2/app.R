@@ -18,14 +18,15 @@ source("..\\common_funcs.R") # сюда выносим все вычислите
 # ================ первичная загрузка данных =========================
 ifilename <- "..\\.\\data\\test_data.csv"
 # подгружаем данные по сенсорам
-raw.data <- read_delim(ifilename, delim = ",", quote = "\"",
+raw.df <- read_delim(ifilename, delim = ",", quote = "\"",
                      col_names = TRUE,
                      locale = locale("ru", encoding = "windows-1251", tz = "Europe/Moscow"), # таймзону, в принципе, можно установить здесь
                      # col_types = list(date = col_datetime(format = "%d.%m.%Y %H:%M")), 
                      progress = interactive()
 ) # http://barryrowlingson.github.io/hadleyverse/#5
 
-raw.data$value <- round(raw.data$value, 1)
+raw.df["timegroup"] <- round_date(raw.df$timestamp, unit = "hour")
+raw.df$value <- round(raw.df$value, 1)
 
 # ================================================================
 
@@ -40,15 +41,19 @@ ui <- fluidPage(titlePanel("Контроль полива полей"),
                     ),
                     selectInput("daysDepth", "Глубина истории (дни)",
                                 choices = c(1, 3, 7)),
-                    width = 3
+                    width = 2 # обязательно ширины надо взаимно балансировать!!!!
                   ),
                   
                   mainPanel(fluidRow(
                     column(6, plotOutput('map_plot')),
                     column(6, plotOutput('data_plot'))
                   ),
+
+                  p(),
                   
-                  fluidRow(DT::dataTableOutput('data_tbl')))
+                  fluidRow(DT::dataTableOutput('data_tbl')),
+                  width = 10 # обязательно ширины надо взаимно балансировать!!!!
+                  )
                 ))
 
 
@@ -56,8 +61,13 @@ ui <- fluidPage(titlePanel("Контроль полива полей"),
 
 server <- function(input, output) {
   output$data_plot <- renderPlot({
-    # на выходе должен получиться ggplot
-    plot_ts_data(input$daysDepth)
+    # на выходе должен получиться ggplot!!!
+    # делаем выборку данных
+    t.df <- raw.df %>%
+      filter(timegroup < lubridate::now()) %>%
+      filter(timegroup > lubridate::now() - days(input$daysDepth))
+    
+    plot_ts_data(t.df)
   })
   
   output$map_plot1 <- renderPlot({
@@ -76,7 +86,7 @@ server <- function(input, output) {
   })
   
   output$data_tbl <- DT::renderDataTable(
-    raw.data, options = list(lengthChange = FALSE))
+    t.df, options = list(lengthChange = FALSE))
   
   
 }
