@@ -77,7 +77,9 @@ server <- function(input, output) {
     # на выходе должен получиться ggplot!!!
     # делаем выборку данных
 
-    plot_ts_data(rvars$work.df)
+    p1 <- plot_ts_data(rvars$work.df)
+    
+    grid.arrange(p1, p1, ncol = 1)
   })
   
   output$map_plot1 <- renderPlot({
