@@ -71,12 +71,18 @@ generate_weather_data <- function(ofile = "tweather.csv", back_days = 7, forward
   # собираем сразу data.frame: врем€, #сенсора, показание
   n <- length(tick.seq)
   mydata <- data.frame(timestamp = tick.seq,
-                       temp.min = rnorm(n, 12, 5), # используем методику дополнени€
-                       temp.max = rnorm(n, 25, 5),
-                       temp = rnorm(n, 17, 5),
+                       temp.min = rnorm(n, 14, 3), # используем методику дополнени€
                        pressure = rnorm(n, 750, 30),
                        humidity = runif(n, 10, 100),
                        precipitation = runif(n, 0, 20))
+
+  # максимальна€ температура должна быть выше минимальной
+  # средн€€ должна быть между максимальной и минимальной
+  mydata %<>% mutate(temp.max = temp.min + runif(n, 5, 15)) %>%
+    mutate(temp = temp.min + 0.7 * runif(n, 0, temp.max - temp.min))
+    
+    
+
   write.table(
     mydata,
     file = ofile,
@@ -165,18 +171,30 @@ plot_weather_data <- function(ifile = ".\\data\\tweather.csv") {
   ) # http://barryrowlingson.github.io/hadleyverse/#5
   
   # сформируем часовые группы и посчитаем среднее по ансамблю сенсоров за каждую часовую группу
-  raw.df["timegroup"] <- round_date(raw.df$timestamp, unit = "hour")
+  raw.df['timegroup'] <- round_date(raw.df$timestamp, unit = "hour")
   
 
+  # разметим данные на прошлое и будущее. будем использовать дл€ цветовой группировки
+  
+  raw.df['time.pos'] <- ifelse(raw.df$timestamp < now(), "PAST", "FUTURE")
+  
   # https://www.datacamp.com/community/tutorials/make-histogram-ggplot2
   ggplot(raw.df, aes(timestamp, temp)) +
     # ggtitle("√рафик температуры") +
     geom_point() +
     geom_line() +
-    ylim(0, NA) +
-    theme_solarized() +
-    scale_colour_solarized("blue") +
-    theme(panel.border = element_rect(colour = "black", fill=NA, size = 2))
+    geom_ribbon(aes(ymin = temp.min, ymax = temp.max), fill = "green", alpha = 0.3)
+    # geom_area(fill="violet", alpha=.4) +
+    # geom_step() +
+    # ylim(0, NA)
+    # наложим гистограмму с влажностью
+    # geom_histogram(breaks = seq(20, 50, by = 2),
+    #                col="red",
+    #                fill="green",
+    #                alpha = .2)
+    # theme_solarized() +
+    # scale_colour_solarized("blue") +
+    # theme(panel.border = element_rect(colour = "black", fill=NA, size = 2))
   # theme_solarized(light = TRUE) +
   # scale_colour_solarized("blue")
   # theme_hc() +
@@ -190,8 +208,8 @@ plot_weather_data <- function(ifile = ".\\data\\tweather.csv") {
 # generate_field_data(ofile, back_days = 7, forward_days = 0)
 # plot_field_data(".\\data\\test_data.csv")
 # 
-# generate_weather_data(".\\data\\tweather.csv", back_days = 7, forward_days = 3)
-plot_weather_data(".\\data\\tweather.csv")
+#generate_weather_data(".\\data\\tweather.csv", back_days = 7, forward_days = 3)
+plot_weather_data(".\\data\\test_weather.csv")
 
 stop()
 
