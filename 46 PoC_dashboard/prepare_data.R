@@ -6,9 +6,108 @@ library(dplyr)
 library(readr)
 library(ggthemes)
 library(ggmap)
+library(RColorBrewer)
+library(gtable)
+library(grid) # дл€ grid.newpage()
+
 # library(ggthemr) # устарело :(
 # library(wesanderson)
 
+ggplot_dual_axis <- function(plot1, plot2, which.axis = "x") {
+  # исходник вз€т отсюда: https://gist.github.com/jslefche/e4c0e9f57f0af49fca87
+  
+  grid.newpage()
+  
+  # Increase right margin if which.axis == "y"
+  if (which.axis == "y")
+    plot1 <- plot1 + theme(plot.margin = unit(c(0.7, 1.5, 0.4, 0.4), "cm"))
+  
+  # Extract gtable
+  g1 <- ggplot_gtable(ggplot_build(plot1))
+  g2 <- ggplot_gtable(ggplot_build(plot2))
+  
+  # Overlap the panel of the second plot on that of the first
+  pp <- c(subset(g1$layout, name == "panel", se = t:r))
+  
+  g <- gtable_add_grob(g1, g2$grobs[[which(g2$layout$name == "panel")]], pp$t, pp$l, pp$b, pp$l)
+  
+  # Steal axis from second plot and modify
+  axis.lab <- ifelse(which.axis == "x", "axis-b", "axis-l")
+  ia <- which(g2$layout$name == axis.lab)
+  ga <- g2$grobs[[ia]]
+  ax <- ga$children[[2]]
+  
+  # Switch position of ticks and labels
+  if (which.axis == "x"){
+    ax$heights = rev(ax$heights)
+  } else {
+    ax$widths = rev(ax$widths)
+  }
+  
+  ax$grobs <- rev(ax$grobs)
+  
+  if (which.axis == "x") {
+    ax$grobs[[2]]$y <- ax$grobs[[2]]$y - unit(1, "npc") + unit(0.15, "cm")
+  } else {
+    ax$grobs[[1]]$x <- ax$grobs[[1]]$x - unit(1, "npc") + unit(0.15, "cm")
+  }
+  
+  # Modify existing row to be tall enough for axis
+  if (which.axis == "x"){
+    g$heights[[2]] = g$heights[g2$layout[ia, ]$t]
+  }
+  
+  # Add new row or column for axis label
+  if (which.axis == "x") {
+    g <- gtable_add_grob(g, ax, 2, 4, 2, 4)
+    g <- gtable_add_rows(g, g2$heights[1], 1)
+    g <- gtable_add_grob(g, g2$grob[[6]], 2, 4, 2, 4)
+  } else {
+    g <- gtable_add_cols(g, g2$widths[g2$layout[ia,]$l], length(g$widths) - 1)
+    g <- gtable_add_grob(g, ax, pp$t, length(g$widths) - 1, pp$b)
+    g <- gtable_add_grob(g, g2$grob[[7]], pp$t, length(g$widths), pp$b - 1)
+  }
+    
+  # Draw it
+  grid.draw(g)
+}
+
+dual_axis_demo <- function() {
+  # вз€то отсюда: https://gist.github.com/jslefche/e4c0e9f57f0af49fca87
+  # требуетс€
+  # library(gtable)
+  # library(grid) # дл€ grid.newpage()
+  
+  
+  # Example for x-axis
+  # Create fake data.frame
+  data.add.x = data.frame(
+    y1 = runif(100, 0, 100),
+    x1 = runif(100, 0, 100)
+  )
+  
+  # Add second x-axis that scales with first
+  data.add.x$x2 = (data.add.x$x1 + 50)^0.75
+  
+  # Create plots
+  plot1.x = qplot(y = y1, x = x1, data = data.add.x)
+  plot2.x = qplot(y = y1, x = x2, data = data.add.x)
+  
+  # Run function
+  ggplot_dual_axis(plot1.x, plot2.x, "x")
+  
+  # Example for y-axis
+  
+  # Add second y-axis that scales with first
+  data.add.x$y2 = (data.add.x$y^0.5) / 500
+  
+  # Create plots
+  plot1.y = qplot(y = y1, x = x1, data = data.add.x)
+  plot2.y = qplot(y = y2, x = x1, data = data.add.x)
+  
+  # Run function
+  ggplot_dual_axis(plot1.y, plot2.y, "y")
+}
 
 generate_field_data <- function(ofile = "tsensors.csv", back_days = 7, forward_days = 7) {
   # данные по расположению сенсоров
@@ -177,13 +276,31 @@ plot_weather_data <- function(ifile = ".\\data\\tweather.csv") {
   # разметим данные на прошлое и будущее. будем использовать дл€ цветовой группировки
   
   raw.df['time.pos'] <- ifelse(raw.df$timestamp < now(), "PAST", "FUTURE")
+  raw.df$temp[raw.df$time.pos == "FUTURE"] <- NA
+  
+  # http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/
+  jBrewColors <- brewer.pal(n = 8, name = "Dark2") 
   
   # https://www.datacamp.com/community/tutorials/make-histogram-ggplot2
   ggplot(raw.df, aes(timestamp, temp)) +
     # ggtitle("√рафик температуры") +
-    geom_point() +
-    geom_line() +
-    geom_ribbon(aes(ymin = temp.min, ymax = temp.max), fill = "green", alpha = 0.3)
+    # scale_fill_brewer(palette="Set1") +
+    scale_fill_brewer(palette="Paired") +
+    geom_ribbon(aes(ymin = temp.min, ymax = temp.max, fill = time.pos), alpha = 0.5) +
+    geom_point(shape = 1, size = 3) +
+    geom_line(lwd = 1, linetype = 'dashed', color = "red") +
+    
+    # а теперь добавим данные по осадкам
+    theme_igray() 
+  
+    # scale_colour_tableau() +
+    # theme_solarized(light = FALSE) +
+    # scale_colour_solarized("red")
+  
+  
+    
+  
+  
     # geom_area(fill="violet", alpha=.4) +
     # geom_step() +
     # ylim(0, NA)
@@ -209,10 +326,29 @@ plot_weather_data <- function(ifile = ".\\data\\tweather.csv") {
 # plot_field_data(".\\data\\test_data.csv")
 # 
 #generate_weather_data(".\\data\\tweather.csv", back_days = 7, forward_days = 3)
-plot_weather_data(".\\data\\test_weather.csv")
+p1 <- plot_weather_data(".\\data\\test_weather.csv")
+
+# dual_axis_demo()
+
+# Add boxplots to a scatterplot
+par(fig = c(0,0.8,0,0.8), new = FALSE) 
+p1
+
+grid.arrange(p1, p1, ncol = 1)
 
 stop()
 
+# Add boxplots to a scatterplot
+par(fig=c(0,0.8,0,0.8), new=FALSE)
+plot(mtcars$wt, mtcars$mpg, xlab="Car Weight",
+     ylab="Miles Per Gallon")
+par(fig=c(0,0.8,0.55,1), new=TRUE)
+boxplot(mtcars$wt, horizontal=TRUE, axes=FALSE)
+#par(fig=c(0.65,1,0,0.8),new=TRUE)
+#boxplot(mtcars$mpg, axes=FALSE)
+#mtext("Enhanced Scatterplot", side=3, outer=TRUE, line=-3) 
+
+stop()
 
 # ======================
 getMap <- get_map(
