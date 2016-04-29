@@ -20,8 +20,8 @@ library(gridExtra) # для grid.arrange()
 source("..\\common_funcs.R") # сюда выносим все вычислительные и рисовательные функции
 
 # ================ первичная загрузка данных =========================
-raw.df <- load_field_data()
-weather.df <- load_weather_data()
+raw_field.df <- load_field_data()
+raw_weather.df <- load_weather_data()
 
 # ================================================================
 ui <- fluidPage(titlePanel("Контроль полива полей"),
@@ -58,7 +58,9 @@ ui <- fluidPage(titlePanel("Контроль полива полей"),
 server <- function(input, output, session) {
   
   # создаем инстанс текущих данных
-  rvars <- reactiveValues(work.df = raw.df # data.frame -- подмножество для анализа и отображения
+  # data.frame -- подмножество для анализа и отображения
+  rvars <- reactiveValues(work_field.df = raw_field.df,
+                          work_weather.df = raw_weather.df
                           ) 
   # Anything that calls autoInvalidate will automatically invalidate every 5 seconds.
   # See:   http://shiny.rstudio.com/reference/shiny/latest/reactiveTimer.html
@@ -70,20 +72,22 @@ server <- function(input, output, session) {
     autoInvalidate()
     
     # подгрузим данные
-    raw.df <- load_field_data()
+    raw_field.df <- load_field_data()
+    raw_weather.df <- load_weather_data()
     
     # отобразили время последнего обновления
     output$time_updated <- renderText({ 
       paste0(Sys.time())
     })
-    
-    
   })
     
   observeEvent(input$daysDepth, {
     # делаем выборку данных на заданную глубину
-    rvars$work.df <- raw.df %>%
+    rvars$work_field.df <- raw_field.df %>%
       filter(timegroup < lubridate::now()) %>%
+      filter(timegroup > lubridate::now() - days(input$daysDepth))
+    
+    rvars$work_weather.df <- raw_weather.df %>%
       filter(timegroup > lubridate::now() - days(input$daysDepth))
   })
   
@@ -91,19 +95,20 @@ server <- function(input, output, session) {
     # на выходе должен получиться ggplot!!!
     # делаем выборку данных
 
-    p1 <- plot_ts_data(rvars$work.df)
+    p1 <- plot_ts_data(rvars$work_field.df)
     grid.arrange(p1, p1, ncol = 1)
   })
   
   output$weather_plot <- renderPlot({
     # на выходе должен получиться ggplot!!!
-    # делаем выборку данных
+    # делаем выборку данных по состоянию на текущий момент и по установленной глубине выборки
 
-    plot_weather_data(weather.df)
+    plot_weather_data(rvars$work_weather.df)
   })
   
   output$map_plot <- renderPlot({
-    p <- draw_field_ggmap()
+    p <- NULL
+    #p <- draw_field_ggmap()
     p
   })
   

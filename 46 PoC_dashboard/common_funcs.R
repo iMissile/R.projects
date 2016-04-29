@@ -1,6 +1,6 @@
 
 load_field_data <- function() {
-  ifile <- "..\\.\\data\\test_data.csv"
+  ifile <- "..\\.\\data\\appdata_field.csv"
   # подгружаем данные по сенсорам
   raw.df <- read_delim(ifile, delim = ",", quote = "\"",
                        col_names = TRUE,
@@ -16,7 +16,7 @@ load_field_data <- function() {
 }
 
 load_weather_data <- function() {
-  ifile <- "..\\.\\data\\tweather.csv"
+  ifile <- "..\\.\\data\\appdata_weather.csv"
   
   raw.df <- read_delim(
     ifile,
@@ -108,11 +108,11 @@ draw_field_ggmap <- function() {
       language = "ru-RU",
       # source = "stamen", maptype = "watercolor", 
       # source = "stamen", maptype = "toner-hybrid",
-      source = "stamen", maptype = "toner-2011",
       # source = "stamen", maptype = "toner-lite",
-      # source = "google", maptype = "terrain",
+      source = "google", maptype = "terrain",
       # source = "osm", maptype = "terrain-background",
       # source = "google", maptype = "hybrid",
+      # source = "stamen", maptype = "toner-2011",
       zoom = 16
     )
   p <- ggmap(fmap, extent = "panel")

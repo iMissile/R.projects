@@ -345,22 +345,34 @@ plot_weather_data <- function(ifile = ".\\data\\tweather.csv") {
 # 
 #generate_weather_data(".\\data\\tweather.csv", back_days = 7, forward_days = 3)
 # p1 <- plot_weather_data(".\\data\\test_weather.csv")
-p1 <- plot_weather_data(".\\data\\test_weather.csv")
+# p1
+# ================== повторяем GIS ===========
 
-p1
-stop()
+fmap <-
+  get_map(
+    enc2utf8("Москва, Зоологическая 2"),
+    language = "ru-RU",
+    # source = "stamen", maptype = "watercolor", 
+    # source = "stamen", maptype = "toner-hybrid",
+    # source = "stamen", maptype = "toner-2011",
+    # source = "stamen", maptype = "toner-lite",
+    source = "google", maptype = "terrain",
+    # source = "osm", maptype = "terrain-background",
+    # source = "google", maptype = "hybrid",
+    zoom = 16
+  )
+ggmap(fmap, extent = "normal", legend = "topleft")
 
+# ======== загружаем данные
+ifile <- "..\\.\\data\\appdata_field.csv"
+# подгружаем данные по сенсорам
+raw.df <- read_delim(ifile, delim = ",", quote = "\"",
+                     col_names = TRUE,
+                     locale = locale("ru", encoding = "windows-1251", tz = "Europe/Moscow"), # таймзону, в принципе, можно установить здесь
+                     # col_types = list(date = col_datetime(format = "%d.%m.%Y %H:%M")), 
+                     progress = interactive()
+) # http://barryrowlingson.github.io/hadleyverse/#5
 
-
-# ======================
-getMap <- get_map(
-  enc2utf8("Москва, Зоологическая 2"),
-  language = "ru-RU",
-  # source = "stamen",
-  # maptype = "watercolor", 
-  maptype = "terrain",
-  zoom = 16
-)
-
-ggmap(getMap, extent="panel")
+raw.df["timegroup"] <- round_date(raw.df$timestamp, unit = "hour")
+raw.df$value <- round(raw.df$value, 1)
 
