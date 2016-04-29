@@ -180,7 +180,19 @@ mm <- ggmap(fmap, extent = "normal", legend = "topleft") +
   stat_contour(data = dInterp, aes(x, y, z = z), bins = 4, color="white", size=0.5) +
   geom_point(data = mydata, size = 4, alpha = 1/2, aes(x = lon, y = lat), color = "red") +
   geom_text(data = mydata, aes(lon, lat, label = round(val, digits = 1)), hjust = 0.5, vjust = -1) +
-  theme_bw()
+  theme_bw() +
+  theme(axis.line=element_blank(),
+        axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        legend.position="none",
+        panel.background=element_blank(),
+        panel.border=element_blank(),
+        panel.grid.major=element_blank(),
+        panel.grid.minor=element_blank(),
+        plot.background=element_blank())
 
 # mm
 

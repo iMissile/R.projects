@@ -16,6 +16,9 @@ library(RColorBrewer)
 library(gtable)
 library(grid) # для grid.newpage()
 library(gridExtra) # для grid.arrange()
+# library(KernSmooth)
+library(akima)
+# library(rgl)
 
 
 source("..\\common_funcs.R") # сюда выносим все вычислительные и рисовательные функции
