@@ -1,6 +1,7 @@
 # Single-file Shiny apps (http://shiny.rstudio.com/articles/single-file.html)
 # Обязательно в кодировке UTF-8
 library(shiny)
+library(shinythemes) # https://rstudio.github.io/shinythemes/
 library(magrittr)
 #library(leaflet)
 library(readr) #Hadley Wickham, http://blog.rstudio.org/2015/04/09/readr-0-1-0/
@@ -24,7 +25,7 @@ raw_field.df <- load_field_data()
 raw_weather.df <- load_weather_data()
 
 # ================================================================
-ui <- fluidPage(titlePanel("Контроль полива полей"),
+ui <- fluidPage(theme = shinytheme("united"), titlePanel("Контроль полива полей"),
                 sidebarLayout(
                   sidebarPanel(
                     radioButtons(
@@ -44,14 +45,28 @@ ui <- fluidPage(titlePanel("Контроль полива полей"),
                     width = 2 # обязательно ширины надо взаимно балансировать!!!!
                   ),
                   
+                  # http://stackoverflow.com/questions/25340847/control-the-height-in-fluidrow-in-r-shiny
+                  # mainPanel(
+                  #   fluidRow(class = "myRow1", 
+                  #            column(6, div(style = "height:600px;background-color: yellow;", plotOutput('map_plot'))),
+                  #            column(6, div(style = "height:600px;background-color: blue;", plotOutput('data_plot')))),
+                  #   p(),
+                  #   fluidRow(class = "myRow2",
+                  #            column(6, div(style = "height:100px;background-color: green;", plotOutput('weather_plot'))),
+                  #            column(6, div(style = "height:150px;background-color: red;", plotOutput('temp_plot')))),
+                  #   width = 10, # обязательно ширины надо взаимно балансировать!!!!
+                  #   tags$head(tags$style(".myRow1{height:650px;}.myRow2{height:350px;background-color: pink;}"))
+                  #   )
+                  
                   mainPanel(
-                    fluidRow(column(6, plotOutput('map_plot')),
-                             column(6, plotOutput('data_plot'))),
-                    p(),
-                    fluidRow(column(6, plotOutput('weather_plot')),
+                    fluidRow(
+                             column(6, plotOutput('map_plot'), height = "300px"),
+                             column(6, plotOutput('weather_plot', height = "300px"))),
+                    fluidRow(
+                             column(6, plotOutput('data_plot')),
                              column(6, plotOutput('temp_plot'))),
                     width = 10 # обязательно ширины надо взаимно балансировать!!!!
-                  )
+                   )
                 ))
 
 
@@ -108,7 +123,7 @@ server <- function(input, output, session) {
   
   output$map_plot <- renderPlot({
     p <- NULL
-    #p <- draw_field_ggmap()
+    p <- draw_field_ggmap()
     p
   })
   

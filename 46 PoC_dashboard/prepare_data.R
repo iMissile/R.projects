@@ -135,10 +135,10 @@ generate_field_data <- function(ofile = "tsensors.csv", back_days = 7, forward_d
   # dimnames(sensor) <- NULL
   
   # генерируем данные по показаниям сенсоров (почасовая раскладка)
-  # смотрим за последнюю неделю
   # tick.seq <- seq(as.POSIXct("2016-03-01 23:00:00"), as.POSIXct("2016-03-10 08:32:00"), by = "4 hours") # http://stackoverflow.com/questions/10887923/hourly-date-sequence-in-r
   tick.seq <- seq(now() - days(back_days), now() + days(forward_days), by = "4 hours") # http://stackoverflow.com/questions/10887923/hourly-date-sequence-in-r
   # собираем сразу data.frame: время, #сенсора, показание
+  # генерируем показатели влажности, допустимый диапазон [0; 100]
   n <- length(tick.seq)
   mydata <- data.frame(name = rep(sensor$name, each = n),
                        lon = rep(sensor$lon, each = n),
@@ -147,7 +147,7 @@ generate_field_data <- function(ofile = "tsensors.csv", back_days = 7, forward_d
                        location = "Капуста 1",
                        #location = "Картофель 1",
                        timestamp = tick.seq, 
-                       value = rnorm(nrow(sensor) * n, 15, 1)) # используем методику дополнения
+                       value = runif(nrow(sensor) * n, 0, 100)) # используем методику дополнения
   # rnorm(1000, 3, .25) # Generates 1000 numbers from a normal with mean 3 and sd=.25
   
   # для соотв реалиям сделаем разброс во времени измерения
@@ -348,6 +348,43 @@ plot_weather_data <- function(ifile = ".\\data\\tweather.csv") {
 # p1
 # ================== повторяем GIS ===========
 
+# ======== загружаем данные
+ifile <- ".\\data\\appdata_field.csv"
+# подгружаем данные по сенсорам
+raw_field.df <- read_delim(ifile, delim = ",", quote = "\"",
+                     col_names = TRUE,
+                     locale = locale("ru", encoding = "windows-1251", tz = "Europe/Moscow"), # таймзону, в принципе, можно установить здесь
+                     # col_types = list(date = col_datetime(format = "%d.%m.%Y %H:%M")), 
+                     progress = interactive()
+) # http://barryrowlingson.github.io/hadleyverse/#5
+
+raw_field.df["timegroup"] <- round_date(raw_field.df$timestamp, unit = "hour")
+raw_field.df$value <- round(raw_field.df$value, 1)
+
+# для отображения показателей на карте необходимо выбрать для каждого номера сенсора максимально 
+# позднее по времени измерение, не превышающее настоящий момент
+slicetime <- now()
+slicetime <- dmy_hm("29.04.2016 5:00", tz = "Europe/Moscow")
+sensors.df <- raw_field.df %>%
+  filter(timestamp <= slicetime) %>%
+  group_by(name) %>%
+  filter(timestamp == max(timestamp)) %>%
+  mutate(delta = round(difftime(slicetime, timestamp, unit = "min"), 0)) %>%
+  arrange(name)
+
+# откатегоризируем
+sensors.df <- within(sensors.df, {
+  level <- NA
+  level[value >= 0 & value <= 33] <- "Low"
+  level[value > 33  & value <= 66] <- "Average"
+  level[value > 66  & value <= 100] <- "High"
+})
+# и надо сделать reorder
+# sensors.df$level <- reorder(sensors.df$level, new.order = c("Low", "Average", "High"))
+
+object.size(sensors.df)
+
+stop()
 fmap <-
   get_map(
     enc2utf8("Москва, Зоологическая 2"),
@@ -361,18 +398,23 @@ fmap <-
     # source = "google", maptype = "hybrid",
     zoom = 16
   )
-ggmap(fmap, extent = "normal", legend = "topleft")
+# ggmap(fmap, extent = "normal", legend = "topleft")
 
-# ======== загружаем данные
-ifile <- "..\\.\\data\\appdata_field.csv"
-# подгружаем данные по сенсорам
-raw.df <- read_delim(ifile, delim = ",", quote = "\"",
-                     col_names = TRUE,
-                     locale = locale("ru", encoding = "windows-1251", tz = "Europe/Moscow"), # таймзону, в принципе, можно установить здесь
-                     # col_types = list(date = col_datetime(format = "%d.%m.%Y %H:%M")), 
-                     progress = interactive()
-) # http://barryrowlingson.github.io/hadleyverse/#5
+# http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/
+plot_palette <- brewer.pal(n = 8, name = "Dark2")
 
-raw.df["timegroup"] <- round_date(raw.df$timestamp, unit = "hour")
-raw.df$value <- round(raw.df$value, 1)
+# а теперь попробуем отобразить растром, понимая все потенциальные проблемы
+# проблемы хорошо описаны здесь: https://groups.google.com/forum/embed/#!topic/ggplot2/nqzBX22MeAQ
+mm3 <- ggmap(fmap, extent = "normal", legend = "topleft") +
+  # geom_raster(data = dInterp, aes(x, y, fill = z), alpha = 0.5) +
+  # coord_cartesian() +
+  # scale_fill_distiller(palette = "Spectral") + #color -- цвет линий
+  # stat_contour(data = dInterp, aes(x, y, z = z), bins = 4, color="white", size=0.5) +
+  # To use for line and point colors, add
+  scale_colour_manual(values = plot_palette) +
+  geom_point(data = sensors.df, size = 4, alpha = 0.8, aes(x = lon, y = lat, colour = level)) +
+  geom_text(data = sensors.df, aes(lon, lat, label = round(value, digits = 1)), hjust = 0.5, vjust = -1) +
+  theme_bw()
+
+mm3
 
