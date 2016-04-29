@@ -274,7 +274,6 @@ plot_weather_data <- function(ifile = ".\\data\\tweather.csv") {
   
 
   # разметим данные на прошлое и будущее. будем использовать для цветовой группировки
-  
   raw.df['time.pos'] <- ifelse(raw.df$timestamp < now(), "PAST", "FUTURE")
   raw.df$temp[raw.df$time.pos == "FUTURE"] <- NA
   
