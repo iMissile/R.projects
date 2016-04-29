@@ -13,7 +13,8 @@ library(ggthemes)
 library(ggmap)
 library(RColorBrewer)
 library(gtable)
-library(grid) 
+library(grid) # для grid.newpage()
+library(gridExtra) # для grid.arrange()
 
 
 source("..\\common_funcs.R") # сюда выносим все вычислительные и рисовательные функции

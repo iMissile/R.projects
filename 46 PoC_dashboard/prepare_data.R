@@ -9,6 +9,7 @@ library(ggmap)
 library(RColorBrewer)
 library(gtable)
 library(grid) # для grid.newpage()
+library(gridExtra) # для grid.arrange()
 
 # library(ggthemr) # устарело :(
 # library(wesanderson)
