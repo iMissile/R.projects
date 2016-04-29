@@ -60,11 +60,11 @@ ui <- fluidPage(theme = shinytheme("united"), titlePanel("Контроль по�
                   
                   mainPanel(
                     fluidRow(
-                             column(6, plotOutput('map_plot'), height = "300px"),
-                             column(6, plotOutput('weather_plot', height = "300px"))),
+                             column(5, plotOutput('map_plot')), # , height = "300px"
+                             column(7, plotOutput('weather_plot'))), # , height = "300px"
                     fluidRow(
-                             column(6, plotOutput('data_plot')),
-                             column(6, plotOutput('temp_plot'))),
+                             column(5, plotOutput('temp_plot')),
+                             column(7, plotOutput('data_plot'))),
                     width = 10 # обязательно ширины надо взаимно балансировать!!!!
                    )
                 ))
@@ -123,7 +123,25 @@ server <- function(input, output, session) {
   
   output$map_plot <- renderPlot({
     p <- NULL
-    p <- draw_field_ggmap()
+    
+    slicetime <- now()
+    slicetime <- dmy_hm("29.04.2016 5:00", tz = "Europe/Moscow")
+    sensors.df <- raw_field.df %>%
+      filter(timestamp <= slicetime) %>%
+      group_by(name) %>%
+      filter(timestamp == max(timestamp)) %>%
+      mutate(delta = round(difftime(slicetime, timestamp, unit = "min"), 0)) %>%
+      arrange(name)
+    
+    # откатегоризируем
+    sensors.df <- within(sensors.df, {
+      level <- NA
+      level[value >= 0 & value <= 33] <- "Low"
+      level[value > 33  & value <= 66] <- "Average"
+      level[value > 66  & value <= 100] <- "High"
+    })
+    
+    p <- draw_field_ggmap(sensors.df)
     p
   })
   

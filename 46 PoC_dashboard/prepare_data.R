@@ -10,6 +10,10 @@ library(RColorBrewer) # http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/
 library(gtable)
 library(grid) # для grid.newpage()
 library(gridExtra) # для grid.arrange()
+# library(KernSmooth)
+library(akima)
+# library(rgl)
+
 
 # library(ggthemr) # устарело :(
 # library(wesanderson)
@@ -382,6 +386,12 @@ sensors.df <- within(sensors.df, {
 # и надо сделать reorder
 # sensors.df$level <- reorder(sensors.df$level, new.order = c("Low", "Average", "High"))
 
+smap.df <- sensors.df %>%
+  ungroup() %>%
+  select(lon, lat, value) %>%
+  rename(val = value)
+print(smap.df)
+
 object.size(sensors.df)
 
 stop()
@@ -392,13 +402,13 @@ fmap <-
     # source = "stamen", maptype = "watercolor", 
     # source = "stamen", maptype = "toner-hybrid",
     # source = "stamen", maptype = "toner-2011",
-    # source = "stamen", maptype = "toner-lite",
-    source = "google", maptype = "terrain",
+    source = "stamen", maptype = "toner-lite",
+    # source = "google", maptype = "terrain",
     # source = "osm", maptype = "terrain-background",
     # source = "google", maptype = "hybrid",
     zoom = 16
   )
-# ggmap(fmap, extent = "normal", legend = "topleft")
+ggmap(fmap, extent = "device", legend = "topleft")
 
 # http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/
 plot_palette <- brewer.pal(n = 8, name = "Dark2")
