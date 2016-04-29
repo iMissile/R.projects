@@ -45,6 +45,9 @@ ui <- fluidPage(titlePanel("Контроль полива полей"),
                   mainPanel(
                     fluidRow(column(6, plotOutput('map_plot')),
                              column(6, plotOutput('data_plot'))),
+                    p(),
+                    fluidRow(column(6, plotOutput('weather_plot')),
+                             column(6, plotOutput('temp_plot'))),
                     width = 10 # обязательно ширины надо взаимно балансировать!!!!
                   )
                 ))
@@ -87,7 +90,6 @@ server <- function(input, output, session) {
     # делаем выборку данных
 
     p1 <- plot_ts_data(rvars$work.df)
-    
     grid.arrange(p1, p1, ncol = 1)
   })
   

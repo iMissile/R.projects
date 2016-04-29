@@ -29,23 +29,29 @@ plot_ts_data <- function(raw.df) {
 }
 
 plot_weather_data <- function(raw.df) {
+  # разметим данные на прошлое и будущее. будем использовать для цветовой группировки
+  raw.df['time.pos'] <-
+    ifelse(raw.df$timestamp < now(), "PAST", "FUTURE")
+  raw.df$temp[raw.df$time.pos == "FUTURE"] <- NA
   
-  avg.df <- raw.df %>%
-    group_by(location, timegroup) %>%
-    summarise(value.mean = mean(value), value.sd = sd(value))
+  # http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/
+  jBrewColors <- brewer.pal(n = 8, name = "Dark2")
   
-  p <- ggplot(avg.df, aes(timegroup, value.mean, colour = factor(location))) +
+  # https://www.datacamp.com/community/tutorials/make-histogram-ggplot2
+  p <- ggplot(raw.df, aes(timestamp, temp)) +
     # ggtitle("График температуры") +
-    geom_point() +
-    geom_line() +
-    ylim(0, NA) +
-    theme_solarized() +
-    scale_colour_solarized("blue") +
-    theme(panel.border = element_rect(
-      colour = "black",
-      fill = NA,
-      size = 2
-    ))
+    # scale_fill_brewer(palette="Set1") +
+    scale_fill_brewer(palette = "Paired") +
+    geom_ribbon(aes(
+      ymin = temp.min,
+      ymax = temp.max,
+      fill = time.pos
+    ), alpha = 0.5) +
+    geom_point(shape = 1, size = 3) +
+    geom_line(lwd = 1,
+              linetype = 'dashed',
+              color = "red") +
+    theme_igray()
   
   p # возвращаем ggplot
 }
