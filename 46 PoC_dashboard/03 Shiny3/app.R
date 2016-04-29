@@ -5,7 +5,7 @@ library(magrittr)
 #library(leaflet)
 library(readr) #Hadley Wickham, http://blog.rstudio.org/2015/04/09/readr-0-1-0/
 library(ggmap)
-library(DT)
+# library(DT)
 library(ggplot2) #load first! (Wickham)
 library(lubridate) #load second!
 library(dplyr)
@@ -20,7 +20,8 @@ library(gridExtra) # для grid.arrange()
 source("..\\common_funcs.R") # сюда выносим все вычислительные и рисовательные функции
 
 # ================ первичная загрузка данных =========================
-raw.df <- reload_raw_data()
+raw.df <- load_field_data()
+weather.df <- load_weather_data()
 
 # ================================================================
 ui <- fluidPage(titlePanel("Контроль полива полей"),
@@ -69,7 +70,7 @@ server <- function(input, output, session) {
     autoInvalidate()
     
     # подгрузим данные
-    raw.df <- reload_raw_data()
+    raw.df <- load_field_data()
     
     # отобразили время последнего обновления
     output$time_updated <- renderText({ 
@@ -94,25 +95,17 @@ server <- function(input, output, session) {
     grid.arrange(p1, p1, ncol = 1)
   })
   
-  output$map_plot1 <- renderPlot({
-    # i <- input$daysDepth
-    
-    getMap <- get_map(
-      enc2utf8("Москва, Зоологическая 2"),
-      language = "ru-RU",
-      # source = "stamen",
-      # maptype = "watercolor", 
-      maptype = "terrain",
-      zoom = 16
-    )
-    
-    ggmap(getMap, extent="panel")
+  output$weather_plot <- renderPlot({
+    # на выходе должен получиться ggplot!!!
+    # делаем выборку данных
+
+    plot_weather_data(weather.df)
   })
   
-  # временно отключим для ускорения
-  # output$data_tbl <- DT::renderDataTable(
-  output$data_tbl1 <- DT::renderDataTable(
-    rvars$work.df, options = list(lengthChange = FALSE))
+  output$map_plot <- renderPlot({
+    p <- draw_field_ggmap()
+    p
+  })
   
   
 }

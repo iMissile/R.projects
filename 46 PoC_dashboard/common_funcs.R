@@ -1,10 +1,40 @@
 
-# 
-# plot_ts_data <- function(depth) {
-#   p <- plot(rnorm(depth))
-#   
-#   p # возвращаем ggplot
-# }
+load_field_data <- function() {
+  ifile <- "..\\.\\data\\test_data.csv"
+  # подгружаем данные по сенсорам
+  raw.df <- read_delim(ifile, delim = ",", quote = "\"",
+                       col_names = TRUE,
+                       locale = locale("ru", encoding = "windows-1251", tz = "Europe/Moscow"), # таймзону, в принципе, можно установить здесь
+                       # col_types = list(date = col_datetime(format = "%d.%m.%Y %H:%M")), 
+                       progress = interactive()
+  ) # http://barryrowlingson.github.io/hadleyverse/#5
+  
+  raw.df["timegroup"] <- round_date(raw.df$timestamp, unit = "hour")
+  raw.df$value <- round(raw.df$value, 1)
+  
+  raw.df # возвращаем загруженные данные
+}
+
+load_weather_data <- function() {
+  ifile <- "..\\.\\data\\tweather.csv"
+  
+  raw.df <- read_delim(
+    ifile,
+    delim = ",",
+    quote = "\"",
+    col_names = TRUE,
+    locale = locale("ru", encoding = "windows-1251", tz = "Europe/Moscow"),
+    # таймзону, в принципе, можно установить здесь
+    # col_types = list(date = col_datetime(format = "%d.%m.%Y %H:%M")),
+    progress = interactive()
+  ) # http://barryrowlingson.github.io/hadleyverse/#5
+  
+  # сформируем часовые группы и посчитаем среднее по ансамблю сенсоров за каждую часовую группу
+  raw.df['timegroup'] <-
+    round_date(raw.df$timestamp, unit = "hour")
+  
+  raw.df # возвращаем загруженные данные
+}
 
 plot_ts_data <- function(raw.df) {
 
@@ -35,10 +65,10 @@ plot_weather_data <- function(raw.df) {
   raw.df$temp[raw.df$time.pos == "FUTURE"] <- NA
   
   # http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/
-  jBrewColors <- brewer.pal(n = 8, name = "Dark2")
+  plot_palette <- brewer.pal(n = 8, name = "Paired") 
   
   # https://www.datacamp.com/community/tutorials/make-histogram-ggplot2
-  p <- ggplot(raw.df, aes(timestamp, temp)) +
+  p1 <- ggplot(raw.df, aes(timestamp, temp)) +
     # ggtitle("График температуры") +
     # scale_fill_brewer(palette="Set1") +
     scale_fill_brewer(palette = "Paired") +
@@ -51,24 +81,44 @@ plot_weather_data <- function(raw.df) {
     geom_line(lwd = 1,
               linetype = 'dashed',
               color = "red") +
-    theme_igray()
+    theme_igray() +
+    theme(legend.position="none")
   
-  p # возвращаем ggplot
+  # рисуем влажность в виде geom_bar, это работает для дискретных переменных
+  p2 <- ggplot(raw.df, aes(timestamp, precipitation)) +
+    # ggtitle("График температуры") +
+    # scale_fill_brewer(palette="Set1") +
+    scale_fill_brewer(palette = "Paired") +
+    geom_bar(fill = plot_palette[7], stat="identity") +
+    geom_line(aes(timestamp, temp), lwd = 1,
+              linetype = 'dashed',
+              color = "red") +
+    
+    theme_igray() +
+    theme(legend.position="none")
+  
+  grid.arrange(p1, p2, ncol = 1) # возвращаем ggplot
 }
 
-reload_raw_data <- function() {
-  ifilename <- "..\\.\\data\\test_data.csv"
-  # подгружаем данные по сенсорам
-  raw.df <- read_delim(ifilename, delim = ",", quote = "\"",
-                       col_names = TRUE,
-                       locale = locale("ru", encoding = "windows-1251", tz = "Europe/Moscow"), # таймзону, в принципе, можно установить здесь
-                       # col_types = list(date = col_datetime(format = "%d.%m.%Y %H:%M")), 
-                       progress = interactive()
-  ) # http://barryrowlingson.github.io/hadleyverse/#5
+draw_field_ggmap <- function() {
+  fmap <-
+    get_map(
+      # enc2utf8("Москва, Зоологическая 2"),
+      "Москва, Зоологическая 2", # надо понимать из какой кодировки грузим
+      language = "ru-RU",
+      # source = "stamen", maptype = "watercolor", 
+      # source = "stamen", maptype = "toner-hybrid",
+      source = "stamen", maptype = "toner-2011",
+      # source = "stamen", maptype = "toner-lite",
+      # source = "google", maptype = "terrain",
+      # source = "osm", maptype = "terrain-background",
+      # source = "google", maptype = "hybrid",
+      zoom = 16
+    )
+  p <- ggmap(fmap, extent = "panel")
   
-  raw.df["timegroup"] <- round_date(raw.df$timestamp, unit = "hour")
-  raw.df$value <- round(raw.df$value, 1)
-  
-  raw.df # возвращаем загруженные данные
+  p # возвращаем ggpmap!
 }
+
+
 

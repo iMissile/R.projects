@@ -17,26 +17,32 @@ options(warn=1) # http://stackoverflow.com/questions/11239428/how-to-change-warn
 # options(viewer = NULL) # send output directly to browser
 
 
-ifilename <- ".\\data\\sensors_zoo.csv"
-ifilename <- ".\\data\\sensors_calc.csv"
-ifilename <- ".\\data\\sensors_manual.csv"
-# подгружаем данные по сенсорам
-mydata <- read_delim(ifilename, delim = ",", quote = "\"",
-                     col_names = TRUE,
-                     locale = locale("ru", encoding = "windows-1251", tz = "Europe/Moscow"), # таймзону, в принципе, можно установить здесь
-                     # col_types = list(date = col_datetime(format = "%d.%m.%Y %H:%M")), 
-                     progress = interactive()
-) # http://barryrowlingson.github.io/hadleyverse/#5
+load_sensors_list <- function() {
+  ifilename <- ".\\data\\sensors_zoo.csv"
+  ifilename <- ".\\data\\sensors_calc.csv"
+  ifilename <- ".\\data\\sensors_manual.csv"
+  # подгружаем данные по сенсорам
+  s.df <- read_delim(ifilename, delim = ",", quote = "\"",
+                       col_names = TRUE,
+                       locale = locale("ru", encoding = "windows-1251", tz = "Europe/Moscow"), # таймзону, в принципе, можно установить здесь
+                       # col_types = list(date = col_datetime(format = "%d.%m.%Y %H:%M")), 
+                       progress = interactive()
+  ) # http://barryrowlingson.github.io/hadleyverse/#5
+  
+  ## Load the sensor positions.
+  # s.df <- read.csv(ifilename, header=T, stringsAsFactors = FALSE)
+  # данные должны быть в формате data.frame
+  # иначе SpatialPointsDataFrame ругаетс€: unable to find an inherited method 
+  # for function СcoordinatesТ for signature С"tbl_df"Т
+  
+  s.df <- as.data.frame(s.df)
+  # ƒобавим колонку принудительно. јктуально дл€ загрузки расчетных позиций сенсоров
+  s.df$val <- runif(nrow(s.df), 10, 90) # накидываем влажность в процентах
+  
+  s.df
+}
 
-## Load the sensor positions.
-# mydata <- read.csv(ifilename, header=T, stringsAsFactors = FALSE)
-# данные должны быть в формате data.frame
-# иначе SpatialPointsDataFrame ругаетс€: unable to find an inherited method 
-# for function СcoordinatesТ for signature С"tbl_df"Т
-
-mydata <- as.data.frame(mydata)
-# ƒобавим колонку принудительно. јктуально дл€ загрузки расчетных позиций сенсоров
-mydata$val <- runif(nrow(mydata), 10, 90) # накидываем влажность в процентах
+mydata <- load_sensors_list()
 
 # —начала надо преобразовать в Spatial Data
 # 1. ќпредел€ем CRS
@@ -80,12 +86,16 @@ fmap <-
   get_map(
     enc2utf8("ћосква, «оологическа€ 2"),
     language = "ru-RU",
-    source = "stamen",
-    maptype = "watercolor", 
-    #maptype = "terrain",
+    # source = "stamen", maptype = "watercolor", 
+    # source = "stamen", maptype = "toner-hybrid",
+    source = "stamen", maptype = "toner-2011",
+    # source = "stamen", maptype = "toner-lite",
+    # source = "google", maptype = "terrain",
+    # source = "osm", maptype = "terrain-background",
+    # source = "google", maptype = "hybrid",
     zoom = 16
   )
-# source = "osm",
+ggmap(fmap, extent = "normal", legend = "topleft")
 
 mydata$val <- runif(nrow(mydata), 30, 80) # накидываем влажность в процентах
 
@@ -128,8 +138,8 @@ tdata <- rbind(mydata, hdata, vdata)
 # берем идеи отсюда: http://stackoverflow.com/questions/24410292/how-to-improve-interp-with-akima
 # и отсюда: http://www.kevjohnson.org/making-maps-in-r-part-2/
 fld <- interp(tdata$lon, tdata$lat, tdata$val,
-              xo = seq(min(tdata$lon), max(tdata$lon), length = 200),
-              yo = seq(min(tdata$lat), max(tdata$lat), length = 200),
+              xo = seq(min(tdata$lon), max(tdata$lon), length = 20),
+              yo = seq(min(tdata$lat), max(tdata$lat), length = 20),
               duplicate = "mean", # дубликаты возникают по углам искуственного пр€моугольника
               #linear = TRUE, #FALSE (после того, как добавили внешний пр€моугольник, можно)
               linear = FALSE,

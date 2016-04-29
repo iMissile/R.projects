@@ -6,7 +6,7 @@ library(dplyr)
 library(readr)
 library(ggthemes)
 library(ggmap)
-library(RColorBrewer)
+library(RColorBrewer) # http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/
 library(gtable)
 library(grid) # для grid.newpage()
 library(gridExtra) # для grid.arrange()
@@ -139,12 +139,15 @@ generate_field_data <- function(ofile = "tsensors.csv", back_days = 7, forward_d
   # tick.seq <- seq(as.POSIXct("2016-03-01 23:00:00"), as.POSIXct("2016-03-10 08:32:00"), by = "4 hours") # http://stackoverflow.com/questions/10887923/hourly-date-sequence-in-r
   tick.seq <- seq(now() - days(back_days), now() + days(forward_days), by = "4 hours") # http://stackoverflow.com/questions/10887923/hourly-date-sequence-in-r
   # собираем сразу data.frame: время, #сенсора, показание
-  mydata <- data.frame(name = rep(sensor$name, each = length(tick.seq)),
+  n <- length(tick.seq)
+  mydata <- data.frame(name = rep(sensor$name, each = n),
+                       lon = rep(sensor$lon, each = n),
+                       lat = rep(sensor$lat, each = n),
                        type = "Temp",
                        location = "Капуста 1",
                        #location = "Картофель 1",
                        timestamp = tick.seq, 
-                       value = rnorm(nrow(sensor)*length(tick.seq), 15, 1)) # используем методику дополнения
+                       value = rnorm(nrow(sensor) * n, 15, 1)) # используем методику дополнения
   # rnorm(1000, 3, .25) # Generates 1000 numbers from a normal with mean 3 and sd=.25
   
   # для соотв реалиям сделаем разброс во времени измерения
@@ -279,76 +282,75 @@ plot_weather_data <- function(ifile = ".\\data\\tweather.csv") {
   raw.df$temp[raw.df$time.pos == "FUTURE"] <- NA
   
   # http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/
-  jBrewColors <- brewer.pal(n = 8, name = "Dark2") 
+  plot_palette <- brewer.pal(n = 8, name = "Paired") 
   
   # https://www.datacamp.com/community/tutorials/make-histogram-ggplot2
-  ggplot(raw.df, aes(timestamp, temp)) +
+  p1 <- ggplot(raw.df, aes(timestamp, temp)) +
     # ggtitle("График температуры") +
     # scale_fill_brewer(palette="Set1") +
-    scale_fill_brewer(palette="Paired") +
+    scale_fill_brewer(palette = "Paired") +
     geom_ribbon(aes(ymin = temp.min, ymax = temp.max, fill = time.pos), alpha = 0.5) +
     geom_point(shape = 1, size = 3) +
-    geom_line(lwd = 1, linetype = 'dashed', color = "red") +
-    
-    # а теперь добавим данные по осадкам
-    theme_igray() 
-  
-    # scale_colour_tableau() +
-    # theme_solarized(light = FALSE) +
-    # scale_colour_solarized("red")
-  
-  
+    geom_line(lwd = 1,
+              linetype = 'dashed',
+              color = "red") +
+    theme_igray() +
+    theme(legend.position="none")
     
   
+  # scale_colour_tableau() +
+  # theme_solarized(light = FALSE) +
+  # scale_colour_solarized("red")
   
-    # geom_area(fill="violet", alpha=.4) +
-    # geom_step() +
-    # ylim(0, NA)
-    # наложим гистограмму с влажностью
-    # geom_histogram(breaks = seq(20, 50, by = 2),
-    #                col="red",
-    #                fill="green",
-    #                alpha = .2)
-    # theme_solarized() +
-    # scale_colour_solarized("blue") +
-    # theme(panel.border = element_rect(colour = "black", fill=NA, size = 2))
+  
+  # рисуем влажность в виде geom_bar, это работает для дискретных переменных
+  p2 <- ggplot(raw.df, aes(timestamp, precipitation)) +
+    # ggtitle("График температуры") +
+    # scale_fill_brewer(palette="Set1") +
+    scale_fill_brewer(palette = "Paired") +
+    geom_bar(fill = plot_palette[7], stat="identity") +
+    geom_line(aes(timestamp, temp), lwd = 1,
+              linetype = 'dashed',
+              color = "red") +
+    
+    theme_igray() +
+    theme(legend.position="none")
+  
+  
+  # geom_area(fill="violet", alpha=.4) +
+  # geom_step() +
+  # ylim(0, NA)
+  # наложим гистограмму с влажностью
+  # geom_histogram(breaks = seq(20, 50, by = 2),
+  #                col="red",
+  #                fill="green",
+  #                alpha = .2)
+  # theme_solarized() +
+  # scale_colour_solarized("blue") +
+  # theme(panel.border = element_rect(colour = "black", fill=NA, size = 2))
   # theme_solarized(light = TRUE) +
   # scale_colour_solarized("blue")
   # theme_hc() +
   # scale_colour_hc()
+  
+  grid.arrange(p1, p2, ncol = 1)
 }
 
 
 # =================== main ==================
 
 # ofile <- ".\\data\\tsensors.csv"
-# generate_field_data(ofile, back_days = 7, forward_days = 0)
+# generate_field_data(ofile, back_days = 30, forward_days = 30)
 # plot_field_data(".\\data\\test_data.csv")
 # 
 #generate_weather_data(".\\data\\tweather.csv", back_days = 7, forward_days = 3)
+# p1 <- plot_weather_data(".\\data\\test_weather.csv")
 p1 <- plot_weather_data(".\\data\\test_weather.csv")
 
-# dual_axis_demo()
-
-# Add boxplots to a scatterplot
-par(fig = c(0,0.8,0,0.8), new = FALSE) 
 p1
-
-grid.arrange(p1, p1, ncol = 1)
-
 stop()
 
-# Add boxplots to a scatterplot
-par(fig=c(0,0.8,0,0.8), new=FALSE)
-plot(mtcars$wt, mtcars$mpg, xlab="Car Weight",
-     ylab="Miles Per Gallon")
-par(fig=c(0,0.8,0.55,1), new=TRUE)
-boxplot(mtcars$wt, horizontal=TRUE, axes=FALSE)
-#par(fig=c(0.65,1,0,0.8),new=TRUE)
-#boxplot(mtcars$mpg, axes=FALSE)
-#mtext("Enhanced Scatterplot", side=3, outer=TRUE, line=-3) 
 
-stop()
 
 # ======================
 getMap <- get_map(
