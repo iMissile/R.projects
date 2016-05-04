@@ -44,42 +44,43 @@ load_sensors_list <- function() {
 
 mydata <- load_sensors_list()
 
-# —начала надо преобразовать в Spatial Data
-# 1. ќпредел€ем CRS
-dCRS <- CRS("+init=epsg:4326")
-# http://www.r-tutor.com/r-introduction/data-frame/data-frame-column-slice
-mydataSp <- SpatialPointsDataFrame(mydata[c('lon', 'lat')], mydata, proj4string = dCRS)
-
-# plot spatial object
-plot(mydataSp, main = '—енсоры на поле')
-
-
-
-# =================== leaflet ==================
-# дл€ leaflet необ€зательна работа с Spatial Objects
-#build the map without "pipes"
-# m <- leaflet(mydata, base.map="osm") #setup map
-m <- leaflet(mydata) %>% #setup map
-  addTiles() %>% #add open street map data
-  setView(lng = 37.58, lat = 55.76, zoom = 15) %>%
-  addMarkers(lng = ~lon, lat = ~lat)
-# map$tileLayer(provider = 'Stamen.Watercolor') # https://github.com/ramnathv/rMaps
-#m$tileLayer(provider = 'Stamen.Watercolor')
-
-#m <- addCircleMarkers(radius = ~size, color = ~color, fill = FALSE)
-# имена провайдеров смотрим в т.ч. здесь: http://leaflet-extras.github.io/leaflet-providers/preview/
-# m <- addProviderTiles(m, "CartoDB.Positron")
-#m <- addProviderTiles(m, "Stamen.Watercolor")
-# m <- addProviderTiles(m, "OpenWeatherMap.RainClassic")
-
-
-m
-
-stop()
+plot_GIS_map <- function(){
+  # —начала надо преобразовать в Spatial Data
+  # 1. ќпредел€ем CRS
+  dCRS <- CRS("+init=epsg:4326")
+  # http://www.r-tutor.com/r-introduction/data-frame/data-frame-column-slice
+  mydataSp <-
+    SpatialPointsDataFrame(mydata[c('lon', 'lat')], mydata, proj4string = dCRS)
+  
+  # plot spatial object
+  plot(mydataSp, main = '—енсоры на поле')
+  
+  
+  
+  # =================== leaflet ==================
+  # дл€ leaflet необ€зательна работа с Spatial Objects
+  #build the map without "pipes"
+  # m <- leaflet(mydata, base.map="osm") #setup map
+  m <- leaflet(mydata) %>% #setup map
+    addTiles() %>% #add open street map data
+    setView(lng = 37.58, lat = 55.76, zoom = 15) %>%
+    addMarkers(lng = ~ lon, lat = ~ lat)
+  # map$tileLayer(provider = 'Stamen.Watercolor') # https://github.com/ramnathv/rMaps
+  #m$tileLayer(provider = 'Stamen.Watercolor')
+  
+  #m <- addCircleMarkers(radius = ~size, color = ~color, fill = FALSE)
+  # имена провайдеров смотрим в т.ч. здесь: http://leaflet-extras.github.io/leaflet-providers/preview/
+  # m <- addProviderTiles(m, "CartoDB.Positron")
+  #m <- addProviderTiles(m, "Stamen.Watercolor")
+  # m <- addProviderTiles(m, "OpenWeatherMap.RainClassic")
+  
+  m
+}
 # =============================================
 # ƒл€ статических дашбордов достаточно фиксированных растров
 # https://github.com/dkahle/ggmap
 # www.unomaha.edu/mahbubulmajumder/data-science/fall-2014/lectures/06-display-spatial-data/06-display-spatial-data.html
+
 library(ggmap)
 
 fmap <-
@@ -196,20 +197,31 @@ mm <- ggmap(fmap, extent = "normal", legend = "topleft") +
 
 # mm
 
+
+cfpalette <- colorRampPalette(c("white", "blue"))
+
+                               
 # а теперь попробуем отобразить растром, понима€ все потенциальные проблемы
 # проблемы хорошо описаны здесь: https://groups.google.com/forum/embed/#!topic/ggplot2/nqzBX22MeAQ
 mm3 <- ggmap(fmap, extent = "normal", legend = "topleft") +
   geom_raster(data = dInterp, aes(x, y, fill = z), alpha = 0.5) +
   coord_cartesian() +
-  scale_fill_distiller(palette = "Spectral") + #color -- цвет линий
+  # scale_fill_distiller(palette = "Spectral") + # http://docs.ggplot2.org/current/scale_brewer.html
+  # scale_fill_distiller(palette = "YlOrRd", breaks = pretty_breaks(n = 10))+ #, labels = percent) +
+  # scale_fill_gradientn(colours = brewer.pal(9,"YlOrRd"), guide="colorbar") +
+  scale_fill_gradientn(colours = c("#FFFFFF", "#FFFFFF", "#FFFFFF", "#0571B0", "#1A9641", "#D7191C"), 
+                       limits = c(0, 100), breaks = c(25, 40, 55, 70, 85), guide="colorbar") +
+  # scale_fill_manual(values=c("#CC6666", "#9999CC", "#66CC99")) + # минимум -- белый
   stat_contour(data = dInterp, aes(x, y, z = z), bins = 4, color="white", size=0.5) +
   geom_point(data = mydata, size = 4, alpha = 1/2, aes(x = lon, y = lat), color = "red") +
   geom_text(data = mydata, aes(lon, lat, label = round(val, digits = 1)), hjust = 0.5, vjust = -1) +
   theme_bw()
 
+mm3
+stop()
 
 start.time <- Sys.time()
-ggsave("plot.png", mm, width = 200, height = 200, units = "mm", dpi = 300)
+# ggsave("plot.png", mm, width = 200, height = 200, units = "mm", dpi = 300)
 print(paste0("¬ывод длилс€ ", 
              round(as.numeric(difftime(Sys.time(), start.time, unit = "sec")), digits = 0), 
              " сек"))
@@ -241,9 +253,12 @@ mm2 <- ggmap(tile_map, extent = "normal", legend = "topleft") +
 
 
 mm2
+
+start.time <- Sys.time()
 ggsave("plot2.png", mm2, width = 200, height = 200, units = "mm", dpi = 300)
-
-
+print(paste0("¬ывод длилс€ ", 
+             round(as.numeric(difftime(Sys.time(), start.time, unit = "sec")), digits = 0), 
+             " сек"))
 
 stop()
 

@@ -128,23 +128,6 @@ draw_field_ggmap <- function(sensors.df) {
   
   # данных крайне мало, чтобы не было сильных перепадов принудительно раскидаем 
   # по периметру прямоугольника сенсоры с минимальным значением влажности. (мы там не поливаем)
-  local({
-    dlon <- (max(smap.df$lon) - min(smap.df$lon)) * 0.2
-    dlat <- (max(smap.df$lat) - min(smap.df$lat)) * 0.2
-    
-    hdata <- data.frame(expand.grid(
-      lon = seq(min(smap.df$lon) - dlon, max(smap.df$lon) + dlon, length = 10),
-      lat = c(min(smap.df$lat) - dlat, max(smap.df$lat) + dlat),
-      val = min(smap.df$val)
-    ))
-    
-    vdata <- data.frame(expand.grid(
-      lon = c(min(smap.df$lon) - dlon, max(smap.df$lon) + dlon),
-      lat = seq(min(smap.df$lat) - dlat, max(smap.df$lat) + dlat, length = 10),
-      val = min(smap.df$val)
-    ))
-  })
-  
   # сделаем периметр по размеру прямоугольника отображения карты
   hdata <- data.frame(expand.grid(
     lon = seq(attr(fmap,"bb")$ll.lon, attr(fmap,"bb")$ur.lon, length = 10),
