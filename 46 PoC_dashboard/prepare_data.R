@@ -199,7 +199,7 @@ generate_weather_data <- function(ofile = "tweather.csv", back_days = 7, forward
   )
 }
 
-plot_field_data <- function(ifile = ".\\data\\test_data.csv") {
+plot_field_data <- function(ifile = "./data/test_data.csv") {
   # отобразим за указанный диапазон график: среднее, стандартное отклонение в виде серой области, выбросы
 
   # подгружаем данные по сенсорам
@@ -264,7 +264,7 @@ plot_field_data <- function(ifile = ".\\data\\test_data.csv") {
     geom_smooth(method="loess", level = 0.99999)
 }
 
-plot_weather_data <- function(ifile = ".\\data\\tweather.csv") {
+plot_weather_data <- function(ifile = "./data/tweather.csv") {
   
   raw.df <- read_delim(
     ifile,
@@ -343,17 +343,17 @@ plot_weather_data <- function(ifile = ".\\data\\tweather.csv") {
 
 # =================== main ==================
 
-# ofile <- ".\\data\\tsensors.csv"
+# ofile <- "./data/tsensors.csv"
 # generate_field_data(ofile, back_days = 30, forward_days = 30)
-# plot_field_data(".\\data\\test_data.csv")
+# plot_field_data("./data/test_data.csv")
 # 
-#generate_weather_data(".\\data\\tweather.csv", back_days = 7, forward_days = 3)
-# p1 <- plot_weather_data(".\\data\\test_weather.csv")
+#generate_weather_data("./data/tweather.csv", back_days = 7, forward_days = 3)
+# p1 <- plot_weather_data("./data/test_weather.csv")
 # p1
 # ================== повторяем GIS ===========
 
 # ======== загружаем данные
-ifile <- ".\\data\\appdata_field.csv"
+ifile <- "./data/appdata_field.csv"
 # подгружаем данные по сенсорам
 raw_field.df <- read_delim(ifile, delim = ",", quote = "\"",
                      col_names = TRUE,
