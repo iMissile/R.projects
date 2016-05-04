@@ -1,6 +1,6 @@
 
 load_field_data <- function() {
-  ifile <- "..\\.\\data\\appdata_field.csv"
+  ifile <- ".././data/appdata_field.csv"
   # подгружаем данные по сенсорам
   raw.df <- read_delim(ifile, delim = ",", quote = "\"",
                        col_names = TRUE,
@@ -16,7 +16,7 @@ load_field_data <- function() {
 }
 
 load_weather_data <- function() {
-  ifile <- "..\\.\\data\\appdata_weather.csv"
+  ifile <- ".././data/appdata_weather.csv"
   
   raw.df <- read_delim(
     ifile,
