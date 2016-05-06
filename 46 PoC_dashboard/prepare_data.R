@@ -347,25 +347,54 @@ test_ordered_dotplot <- function(){
   
   # пока сделаем вручную
   n <- 40
-  m <- data.frame(x = runif(n, min = 0, max = 6),
+  df <- data.frame(x = runif(n, min = 0, max = 6),
                   y = runif(n, min = 0, max = 6),
                   lev = as.character(sample(c('Low', 'Average', 'High', 'Bad'), replace = TRUE, size = n)),
                   stringsAsFactors = FALSE)
   
-  m <- data.frame(x = runif(n, min = 0, max = 6),
+  df <- data.frame(x = runif(n, min = 0, max = 6),
                   y = runif(n, min = 0, max = 6),
                   val = runif(n, min = -20, max = 120))
   
   # откатегоризируем ручками. значение влажности должно быть в диапазоне [0-100], либо датчик вообще не работает
   
-  m$lev <- NA # инициализируем вектор и по умолчанию считаем, что не работает
-  m <- within(m, {
+  df$lev <- NA # инициализируем вектор и по умолчанию считаем, что не работает
+  df <- within(df, {
     lev[val >= 0 & val <= 33] <- "Low"
     lev[val > 33  & val <= 66] <- "Normal"
     lev[val > 66  & val <= 100] <- "High"
   })  
   
-  m
+  # при группировке по Lev по умолчанию, порядок следования строк осуществляется по алфавиту
+  ggplot(df, aes(x = x, y = y, colour = lev)) + 
+    geom_point(size = 4)
+  
+  # пытаемся изменить группировку
+  # http://docs.ggplot2.org/current/aes_group_order.html
+  # сделаем из текстовых строк factor и их принудительно отсортируем
+  # http://www.ats.ucla.edu/stat/r/modules/factor_variables.htm
+  
+  # у нас два критерия разделения -- диапазон значений и работоспособность.
+  # диапазон измерений -- цвет, работоспособность -- форма
+  
+  df1 <- df %>%
+    # mutate(lev.of = ordered(lev, levels = c('Low', 'Normal', 'High'))) %>%
+    mutate(lev.f = factor(lev, levels = c('High', 'Normal', 'Low'))) %>%
+    mutate(work.status = !is.na(lev))
+  # labels=c("MBB", "MAA", "MCC")
+  
+  # http://www.cookbook-r.com/Graphs/Shapes_and_line_types/
+  ggplot(df1 %>% filter(work.status), aes(x = x, y = y, colour = lev.f)) + 
+    # http://www.sthda.com/english/wiki/ggplot2-colors-how-to-change-colors-automatically-and-manually
+    # scale_fill_brewer(palette="Spectral") + 
+    # scale_color_manual(values=wes_palette(n=3, name="GrandBudapest")) +
+    #  scale_color_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
+    scale_color_brewer(palette="Dark2", name="Влажность\nпочвы") + 
+    geom_point(size = 5) + 
+    # добавляем нерабочие сенсоры
+    geom_point(data = df1 %>% filter(!work.status), size = 5, shape = 21, stroke = 0, colour = 'red', fill = 'yellow') +
+    geom_point(data = df1 %>% filter(!work.status), size = 5, shape = 13, stroke = 1.1, colour = 'red')
+
 }
 
 # =================== main ==================
@@ -378,45 +407,7 @@ test_ordered_dotplot <- function(){
 # p1 <- plot_weather_data("./data/test_weather.csv")
 # p1
 
-# при группировке по Lev по умолчанию, порядок следования строк осуществляется по алфавиту
-df <- test_ordered_dotplot()
-
-ggplot(m, aes(x = x, y = y, colour = lev)) + 
-  geom_point(size = 4)
-
-# пытаемся изменить группировку
-# http://docs.ggplot2.org/current/aes_group_order.html
-# сделаем из текстовых строк factor и их принудительно отсортируем
-# http://www.ats.ucla.edu/stat/r/modules/factor_variables.htm
-
-# у нас два критерия разделения -- диапазон значений и работоспособность.
-# диапазон измерений -- цвет, работоспособность -- форма
-
-df1 <- df %>%
-  # mutate(lev.of = ordered(lev, levels = c('Low', 'Normal', 'High'))) %>%
-  mutate(lev.f = factor(lev, levels = c('High', 'Normal', 'Low'))) %>%
-  mutate(work.status = !is.na(lev))
-
-  
-
-  # labels=c("MBB", "MAA", "MCC")
-
-# http://www.cookbook-r.com/Graphs/Shapes_and_line_types/
-ggplot(df1 %>% filter(work.status), aes(x = x, y = y, colour = lev.f)) + 
-  # http://www.sthda.com/english/wiki/ggplot2-colors-how-to-change-colors-automatically-and-manually
-  # scale_fill_brewer(palette="Spectral") + 
-  # scale_color_manual(values=wes_palette(n=3, name="GrandBudapest")) +
-  #  scale_color_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
-  scale_color_brewer(palette="Dark2", name="Влажность\nпочвы") + 
-  geom_point(size = 5) + 
-  # добавляем нерабочие сенсоры
-  geom_point(data = df1 %>% filter(!work.status), size = 5, shape = 21, stroke = 0, colour = 'red', fill = 'yellow') +
-  geom_point(data = df1 %>% filter(!work.status), size = 5, shape = 13, stroke = 1.1, colour = 'red')
-  
-
-
-
-
+test_ordered_dotplot()
 
 stop()
 # ================== повторяем GIS ===========
