@@ -340,6 +340,33 @@ plot_weather_data <- function(ifile = "./data/tweather.csv") {
   grid.arrange(p1, p2, ncol = 1)
 }
 
+test_ordered_dotplot <- function(){
+  # тестируем произвольную группировку по текстовому вектору
+  # Wakefield: Random Data Set (Part II)
+  # https://trinkerrstuff.wordpress.com/2015/04/30/wakefield-random-data-set-part-ii/
+  
+  # пока сделаем вручную
+  n <- 40
+  m <- data.frame(x = runif(n, min = 0, max = 6),
+                  y = runif(n, min = 0, max = 6),
+                  lev = as.character(sample(c('Low', 'Average', 'High', 'Bad'), replace = TRUE, size = n)),
+                  stringsAsFactors = FALSE)
+  
+  m <- data.frame(x = runif(n, min = 0, max = 6),
+                  y = runif(n, min = 0, max = 6),
+                  val = runif(n, min = -20, max = 120))
+  
+  # откатегоризируем ручками. значение влажности должно быть в диапазоне [0-100], либо датчик вообщене работает
+  m$lev <- 'Bad' # инициализируем вектор и по умолчанию считаем, что не работает
+  m <- within(m, {
+    lev[val >= 0 & val <= 33] <- "Low"
+    lev[val > 33  & val <= 66] <- "Average"
+    lev[val > 66  & val <= 100] <- "High"
+  })  
+  
+  
+  m
+}
 
 # =================== main ==================
 
@@ -350,6 +377,25 @@ plot_weather_data <- function(ifile = "./data/tweather.csv") {
 # generate_weather_data("./data/tweather.csv", back_days = 7, forward_days = 7)
 # p1 <- plot_weather_data("./data/test_weather.csv")
 # p1
+
+# при группировке по Lev по умолчанию, порядок следования строк осуществляется по алфавиту
+m <- test_ordered_dotplot()
+
+ggplot(m, aes(x = x, y = y, colour = factor(lev))) + 
+  geom_point(size = 4)
+
+# пытаемся изменить группировку
+# http://docs.ggplot2.org/current/aes_group_order.html
+# сделаем из текстовых строк factor и их принудительно отсортируем
+# http://www.ats.ucla.edu/stat/r/modules/factor_variables.htm
+m2 <- m %>%
+  mutate(lev.of = ordered(lev, levels = c('Low', 'Average', 'High'))) %>%
+  mutate(lev.f = factor(lev, levels = c('High', 'Average', 'Low')))
+  # labels=c("MBB", "MAA", "MCC")
+
+ggplot(m2, aes(x = x, y = y, colour = lev.f)) + 
+  geom_point(size = 4)
+
 stop()
 # ================== повторяем GIS ===========
 
