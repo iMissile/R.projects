@@ -124,7 +124,7 @@ draw_field_ggmap <- function(sensors.df) {
     select(lon, lat, value) %>%
     rename(val = value)
   
-  print(smap.df)
+  # print(smap.df)
   
   # данных крайне мало, чтобы не было сильных перепадов принудительно раскидаем 
   # по периметру прямоугольника сенсоры с минимальным значением влажности. (мы там не поливаем)
@@ -143,7 +143,7 @@ draw_field_ggmap <- function(sensors.df) {
   
  
   tdata <- rbind(smap.df, hdata, vdata)
-  print(tdata)
+  # print(tdata)
   
   # smap.df <- tdata
   # теперь готовим матрицу для градиентной заливки

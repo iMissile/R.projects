@@ -347,9 +347,10 @@ plot_weather_data <- function(ifile = "./data/tweather.csv") {
 # generate_field_data(ofile, back_days = 30, forward_days = 30)
 # plot_field_data("./data/test_data.csv")
 # 
-#generate_weather_data("./data/tweather.csv", back_days = 7, forward_days = 3)
+# generate_weather_data("./data/tweather.csv", back_days = 7, forward_days = 7)
 # p1 <- plot_weather_data("./data/test_weather.csv")
 # p1
+stop()
 # ================== повторяем GIS ===========
 
 # ======== загружаем данные
