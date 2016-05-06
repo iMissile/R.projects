@@ -4,6 +4,9 @@ library(ggplot2) #load first! (Wickham)
 library(lubridate) #load second!
 library(dplyr)
 library(readr)
+library(jsonlite)
+library(magrittr)
+library(httr)
 library(ggthemes)
 library(ggmap)
 library(RColorBrewer) # http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/
@@ -407,7 +410,22 @@ test_ordered_dotplot <- function(){
 # p1 <- plot_weather_data("./data/test_weather.csv")
 # p1
 
-test_ordered_dotplot()
+# test_ordered_dotplot()
+
+# как работать с API OpenWeatherMap: http://openweathermap.org/appid
+# просмотр погоды по ћоскве: http://openweathermap.org/city/524901
+
+# Call current weather data for one location By city ID
+# http://openweathermap.org/current
+
+url <- "api.openweathermap.org/data/2.5/"   
+MoscowID <- '524901'
+APPID <- '19deaa2837b6ae0e41e4a140329a1809'
+#resp <- GET(paste0(url, "weather?id=", MoscowID, "&APPID=", APPID), add_headers("Eiot-Instance" = instanceID))
+resp <- GET(paste0(url, "weather?id=", MoscowID, "&APPID=", APPID))
+tokenID <- content(resp)[[1]]$Token  # Advanced R, 3.2 Subsetting operators
+tokenID
+
 
 stop()
 # ================== повтор€ем GIS ===========
