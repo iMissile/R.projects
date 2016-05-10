@@ -45,6 +45,9 @@ ui <- fluidPage(theme = shinytheme("united"), titlePanel("Контроль по�
                     ),
                     strong("Время последнего обновления"),
                     textOutput("time_updated"),
+                    p(),
+                    strong("Текущая погода"),
+                    plotOutput('cweather_plot', height = "200px"),
                     width = 2 # обязательно ширины надо взаимно балансировать!!!!
                   ),
                   
@@ -63,7 +66,7 @@ ui <- fluidPage(theme = shinytheme("united"), titlePanel("Контроль по�
                   
                   mainPanel(
                     fluidRow(
-                             column(5, plotOutput('map_plot')), # , height = "300px"
+                             column(5, plotOutput('map_plot1')), # , height = "300px"
                              column(7, plotOutput('weather_plot'))), # , height = "300px"
                     fluidRow(
                              column(5, plotOutput('temp_plot')),
@@ -124,6 +127,12 @@ server <- function(input, output, session) {
     # делаем выборку данных по состоянию на текущий момент и по установленной глубине выборки
 
     plot_weather_data(rvars$work_weather.df)
+  })
+  
+  output$cweather_plot <- renderPlot({
+    # на выходе должен получиться ggplot!!!
+    p1 <- plot_ts_data(rvars$work_field.df)
+    p1
   })
   
   output$map_plot <- renderPlot({

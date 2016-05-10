@@ -15,8 +15,13 @@ library(grid) # для grid.newpage()
 library(gridExtra) # для grid.arrange()
 # library(KernSmooth)
 library(akima)
+library(rdrop2)
 # library(rgl)
 
+# глобальный исторический прогноз погоды
+history_weather_data <- NA
+tempDir <- "agritemp"
+history_weather_filename <- "weather_history.csv"
 
 # library(ggthemr) # устарело :(
 # library(wesanderson)
@@ -412,19 +417,95 @@ test_ordered_dotplot <- function(){
 
 # test_ordered_dotplot()
 
+# Persistent data storage in Shiny apps
+# http://shiny.rstudio.com/articles/persistent-data-storage.html
+
+
+
+save_history_weather <- function(data) {
+  # data <- t(data)
+  # Create a unique file name
+  # fileName <- sprintf("%s_%s.csv", as.integer(Sys.time()), digest::digest(data))
+  # Write the file to the local system
+  write.csv(
+    x = data,
+    file = file.path(tempDir, history_weather_filename), 
+    row.names = FALSE, quote = TRUE
+  )
+  # drop_upload('mtcars.csv', dest = "drop_test")
+}
+
+load_history_weather <- function(){
+  raw.df <- read_delim(
+    paste0("./", tempDir, "/", history_weather_filename),
+    delim = ",",
+    quote = "\"",
+    col_names = TRUE,
+    locale = locale("ru", encoding = "windows-1251", tz = "Europe/Moscow"),
+    # таймзону, в принципе, можно установить здесь
+    # col_types = list(date = col_datetime(format = "%d.%m.%Y %H:%M")),
+    progress = interactive()
+  ) # http://barryrowlingson.github.io/hadleyverse/#5
+  
+  raw.df # возвращаем загруженные данные
+}
+
+
+# ======== загружаем данные
+get_current_weather <- function(){
+  # получаем данные по текущей погоде с учетом кеширования предыдущих запросов
+  if (is.na(history_weather_data)){
+    # необходимо подгрузить данные из исторического файла
+    history_weather_data <<- load_history_weather()
+    print("Подгружаем исторические данные о погоде")
+  } 
+
+  # проверим, как давно првоеряли последние показания
+  df <- history_weather_data %>%
+    filter(timestamp > now() - hours(1)) %>%
+    filter(timestamp <= now()) %>%
+    filter(timestamp == max(timestamp))
+    
+  print(df)
+  if(nrow(df) != 1){
+    # нет записи, походящей критерию, надо запрашивать сайт о погоде
+  }
+
+  save_history_weather(history_weather_data)
+}
+
+get_current_weather()
+print("d")
+
+stop()
 # как работать с API OpenWeatherMap: http://openweathermap.org/appid
 # просмотр погоды по Москве: http://openweathermap.org/city/524901
 
 # Call current weather data for one location By city ID
 # http://openweathermap.org/current
 
+
+
+
 url <- "api.openweathermap.org/data/2.5/"   
 MoscowID <- '524901'
 APPID <- '19deaa2837b6ae0e41e4a140329a1809'
-#resp <- GET(paste0(url, "weather?id=", MoscowID, "&APPID=", APPID), add_headers("Eiot-Instance" = instanceID))
-resp <- GET(paste0(url, "weather?id=", MoscowID, "&APPID=", APPID))
-tokenID <- content(resp)[[1]]$Token  # Advanced R, 3.2 Subsetting operators
-tokenID
+# resp <- GET(paste0(url, "weather?id=", MoscowID, "&APPID=", APPID))
+if(status_code(resp) == 200){
+  r <- content(resp)
+  # конструируем вектор
+  d <- data.frame(
+    timestamp = now(),
+    temp = r$main$temp - 273,
+    # используем методику дополнения
+    pressure = r$main$pressure,
+    humidity = r$main$humidity
+    # precipitation = r$main$precipitation
+  )
+  history_weather_data  
+}
+# 
+
 
 
 stop()
