@@ -109,37 +109,75 @@ p3 <-
   ylim(0, NA)
 
 
+
+# проверим округление дат и подсчет интервалов
+round_date(lubridate::dmy_hm("11.05.2016 6:14"), unit = "day")
+round_date(lubridate::dmy_hm("11.05.2016 20:14"), unit = "day")
+t <- abs(as.numeric(difftime(Sys.time(), lubridate::dmy_hm("11.05.2016 6:14"), unit = "min")))
+
+str(t)
+
+
+
 plot_palette <- brewer.pal(n = 8, name = "Paired") 
 
-my_label_format <- function(x){
-  # делаем условное форматирование
+# http://stackoverflow.com/questions/20326946/how-to-put-ggplot2-ticks-labels-between-dollars
+my_date_format <- function(format = "%d.%m, %H:%M", tz = "Europe/Moscow") {
+  # делаем хитрую функцию условного форматирования
   # для начала суток указываем дату, для остальных меток, только время
-  label <- as.numeric(x)
-  # date_format(format = "%d.%m, %H:%M", tz = "Europe/Moscow") 
-  label
+  
+  function(x){
+    # на вход поступает вектор дат, на выходе надо выдать вектор форматов
+    # оценим расстояние до границы суток
+    # dput(x)
+    # dt <- abs(as.numeric(difftime(x, round_date(x), unit = "min")))
+    # dput(dt)
+    
+    labels <- lapply(x, function(el) {
+      print(paste0("Element:", el))
+      dt <-
+        abs(as.numeric(difftime(el, round_date(el, unit = "day"), unit = "min")))
+      str(dt)
+      if (is.na(dt)) {
+        ret <- NA
+      }
+      else {
+        if (dt < 130) {
+          # допустим разброс в 30 минут
+          ret <- format(el, "%d.%m,\n%H:%M", tz = tz)
+        } else {
+          ret <- format(el, "%H:%M", tz = tz)
+        }
+      }
+      ret
+    })
+
+    labels
+  }
 }
 
 p4 <- ggplot(avg.df, aes(timegroup, value.mean)) +
   ggtitle("Влажность почвы") +
-  # geom_line() +
+  geom_line(lwd = 2, colour = "blue") +
   # рисуем разрешенный диапазон
   geom_ribbon(aes(ymin = 70, ymax = 90), fill = plot_palette[3]) +
   geom_hline(yintercept = 70) +
   geom_hline(yintercept = 90) +
   geom_ribbon(
     aes(ymin = value.mean - value.sd, ymax = value.mean + value.sd),
-    fill = plot_palette[5],
-    alpha = 0.5
+    fill = plot_palette[1],
+    alpha = 0.8
   ) +
   geom_point() +
-  geom_smooth(size = 1.5, method = "loess", se = FALSE) +
-  scale_x_datetime(labels = my_label_format(x),
-                   breaks = date_breaks('1 day'),
-                   minor_breaks = date_breaks('4 hours')) +
+  #geom_smooth(size = 1.5, method = "loess", se = FALSE) +
+  scale_x_datetime(labels = my_date_format(format = "%d.%m,\n%H:%M", tz = "Europe/Moscow"),
+                   breaks = date_breaks('4 hours')) +
+                   # minor_breaks = date_breaks('4 hours')) +
   ylim(0, NA) +
   xlab("Время и дата измерения") +
   ylab("Влажность почвы, %") +
   theme_solarized() +
-  scale_colour_solarized("blue")
+  scale_colour_solarized("blue") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 p4
