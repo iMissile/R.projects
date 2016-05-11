@@ -50,7 +50,7 @@ raw.df <- read_delim(
 # обрежем по глубине анализа
 t.df <- raw.df %>%
   filter(timestamp < lubridate::now()) %>%
-  filter(timestamp > lubridate::now() - days(back_days)) %>%
+  filter(timestamp > floor_date(lubridate::now() - days(back_days), unit = "day")) %>% 
   mutate(timegroup = round_date(timestamp, unit = "hour"))
 
 avg.df <- t.df %>%

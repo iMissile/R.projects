@@ -67,10 +67,10 @@ ui <- fluidPage(theme = shinytheme("united"), titlePanel("Контроль по�
                   mainPanel(
                     fluidRow(
                              column(5, plotOutput('map_plot1')), # , height = "300px"
-                             column(7, plotOutput('weather_plot'))), # , height = "300px"
+                             column(7, plotOutput('data_plot'))), # , height = "300px"
                     fluidRow(
                              column(5, plotOutput('temp_plot')),
-                             column(7, plotOutput('data_plot'))),
+                             column(7, plotOutput('weather_plot'))),
                     width = 10 # обязательно ширины надо взаимно балансировать!!!!
                    )
                 ))
@@ -106,10 +106,10 @@ server <- function(input, output, session) {
     # делаем выборку данных на заданную глубину
     rvars$work_field.df <- raw_field.df %>%
       filter(timegroup < lubridate::now()) %>%
-      filter(timegroup > lubridate::now() - days(input$daysDepth))
+      filter(timegroup > floor_date(lubridate::now() - days(input$daysDepth), unit = "day"))
     
     rvars$work_weather.df <- raw_weather.df %>%
-      filter(timegroup > lubridate::now() - days(input$daysDepth))
+      filter(timegroup > floor_date(lubridate::now() - days(input$daysDepth), unit = "day"))
     
     print(rvars$work_weather.df)
   })

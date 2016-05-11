@@ -1,4 +1,40 @@
 
+# http://stackoverflow.com/questions/20326946/how-to-put-ggplot2-ticks-labels-between-dollars
+my_date_format <- function(format = "%d.%m, %H:%M", tz = "Europe/Moscow") {
+  # делаем хитрую функцию условного форматирования
+  # для начала суток указываем дату, для остальных меток, только время
+  
+  function(x){
+    # на вход поступает вектор дат, на выходе надо выдать вектор форматов
+    # оценим расстояние до границы суток
+    # dput(x)
+    # dt <- abs(as.numeric(difftime(x, round_date(x), unit = "min")))
+    # dput(dt)
+    
+    labels <- lapply(x, function(el) {
+      print(paste0("Element:", el))
+      dt <-
+        abs(as.numeric(difftime(el, round_date(el, unit = "day"), unit = "min")))
+      str(dt)
+      if (is.na(dt)) {
+        ret <- NA
+      }
+      else {
+        if (dt < 130) {
+          # допустим разброс в 30 минут
+          # ret <- format(el, "%d.%m\n%H:%M", tz = tz)
+          ret <- format(el, "%d %h    ", tz = tz)
+        } else {
+          ret <- format(el, "%H:%M", tz = tz)
+        }
+      }
+      ret
+    })
+    
+    labels
+  }
+}
+
 load_field_data <- function() {
   ifile <- ".././data/appdata_field.csv"
   # подгружаем данные по сенсорам
@@ -37,6 +73,46 @@ load_weather_data <- function() {
 }
 
 plot_ts_data <- function(raw.df) {
+  
+  plot_palette <- brewer.pal(n = 5, name = "Blues") 
+  
+  
+  avg.df <- raw.df %>%
+    group_by(location, timegroup) %>%
+    summarise(value.mean = mean(value), value.sd = sd(value)) %>%
+    ungroup() # очистили группировки
+  
+    p <- ggplot(avg.df, aes(timegroup, value.mean)) +
+      # ggtitle("Влажность почвы") +
+      # рисуем разрешенный диапазон
+      geom_ribbon(aes(ymin = 70, ymax = 90), fill = "chartreuse") +
+      geom_ribbon(
+        aes(ymin = value.mean - value.sd, ymax = value.mean + value.sd),
+        fill = plot_palette[3],
+        alpha = 0.8
+      ) +
+      geom_line(lwd = 2, colour = plot_palette[4]) +
+      geom_point(shape = 19, size = 5, colour = plot_palette[5]) +
+      geom_hline(yintercept = c(70, 90), lwd = 1.2, linetype = 'dashed') +
+      # geom_hline(yintercept = 90) +
+      #geom_smooth(size = 1.5, method = "loess", se = FALSE) +
+      scale_x_datetime(labels = my_date_format(format = "%d.%m\n%H:%M", tz = "Europe/Moscow"),
+                       breaks = date_breaks('4 hours')) +
+      # minor_breaks = date_breaks('4 hours')) +
+      theme_igray() + 
+      scale_colour_tableau("colorblind10") +
+      ylim(0, NA) +
+      xlab("Время и дата измерения") +
+      ylab("Влажность почвы, %") +
+      # theme_solarized() +
+      # scale_colour_solarized("blue") +
+      theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+      theme(axis.text.y = element_text(angle = 0))
+    
+  p # возвращаем ggplot
+}
+
+plot_ts_data_old <- function(raw.df) {
 
   avg.df <- raw.df %>%
     group_by(location, timegroup) %>%
