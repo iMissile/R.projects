@@ -21,7 +21,12 @@ library(akima)
 # library(rgl)
 
 
-source("../common_funcs.R") # сюда выносим все вычислительные и рисовательные функции
+# source("../common_funcs.R") # сюда выносим все вычислительные и рисовательные функции
+
+# это вместо source
+# How to source() .R file saved using UTF-8 encoding?
+# http://stackoverflow.com/questions/5031630/how-to-source-r-file-saved-using-utf-8-encoding
+eval(parse("../common_funcs.R", encoding="UTF-8"))
 
 # ================ первичная загрузка данных =========================
 raw_field.df <- load_field_data()
@@ -119,7 +124,7 @@ server <- function(input, output, session) {
     # делаем выборку данных
 
     p1 <- plot_ts_data(rvars$work_field.df)
-    grid.arrange(p1, p1, ncol = 1)
+    grid.arrange(p1, ncol = 1)
   })
   
   output$weather_plot <- renderPlot({
@@ -131,7 +136,7 @@ server <- function(input, output, session) {
   
   output$cweather_plot <- renderPlot({
     # на выходе должен получиться ggplot!!!
-    p1 <- plot_ts_data(rvars$work_field.df)
+    p1 <- plot_ts_data_old(rvars$work_field.df)
     p1
   })
   

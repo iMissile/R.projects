@@ -140,7 +140,7 @@ my_date_format <- function(format = "%d.%m, %H:%M", tz = "Europe/Moscow") {
         ret <- NA
       }
       else {
-        if (dt < 130) {
+        if (dt < 10) {
           # допустим разброс в 30 минут
           # ret <- format(el, "%d.%m\n%H:%M", tz = tz)
           ret <- format(el, "%d %h    ", tz = tz)
@@ -155,7 +155,12 @@ my_date_format <- function(format = "%d.%m, %H:%M", tz = "Europe/Moscow") {
   }
 }
 
-plot_palette <- brewer.pal(n = 5, name = "Blues") 
+plot_palette <- brewer.pal(n = 5, name = "Blues")
+# Что делать, если метки на графике надо расставить по фиксированным местам? 
+# [how to fix x-axis and y-axis scale](http://stackoverflow.com/questions/30799845/how-to-fix-x-axis-and-y-axis-scale)
+man.lims <- c(min(avg.df$timegroup), max(avg.df$timegroup))
+man.breaks <- seq(from = man.lims[1], to = man.lims[2], by = "4 hours")
+
 
 p4 <- ggplot(avg.df, aes(timegroup, value.mean)) +
   # ggtitle("Влажность почвы") +
@@ -171,10 +176,12 @@ p4 <- ggplot(avg.df, aes(timegroup, value.mean)) +
   geom_hline(yintercept = c(70, 90), lwd = 1.2, linetype = 'dashed') +
   # geom_hline(yintercept = 90) +
   #geom_smooth(size = 1.5, method = "loess", se = FALSE) +
-  scale_x_datetime(labels = my_date_format(format = "%d.%m\n%H:%M", tz = "Europe/Moscow"),
-                   breaks = date_breaks('4 hours')) +
-                   # minor_breaks = date_breaks('4 hours')) +
-  theme_igray() + 
+  scale_x_datetime(labels = date_format(format = "%d.%m\n%H:%M", tz = "Europe/Moscow"),
+                   breaks = man.breaks,
+                   limits = man.lims) + 
+  #scale_x_datetime(labels = date_format(format = "%d.%m %H:%M", tz = "Europe/Moscow"),                      
+  #                 breaks = date_breaks('4 hours')) +
+  # theme_igray() + 
   scale_colour_tableau("colorblind10") +
   ylim(0, NA) +
   xlab("Время и дата измерения") +

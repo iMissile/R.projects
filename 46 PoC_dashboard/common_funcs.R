@@ -1,6 +1,6 @@
 
 # http://stackoverflow.com/questions/20326946/how-to-put-ggplot2-ticks-labels-between-dollars
-my_date_format <- function(format = "%d.%m, %H:%M", tz = "Europe/Moscow") {
+my_date_format <- function(format = "%d %b", tz = "Europe/Moscow") {
   # делаем хитрую функцию условного форматирования
   # для начала суток указываем дату, для остальных меток, только время
   
@@ -96,14 +96,15 @@ plot_ts_data <- function(raw.df) {
       geom_hline(yintercept = c(70, 90), lwd = 1.2, linetype = 'dashed') +
       # geom_hline(yintercept = 90) +
       #geom_smooth(size = 1.5, method = "loess", se = FALSE) +
-      scale_x_datetime(labels = my_date_format(format = "%d.%m\n%H:%M", tz = "Europe/Moscow"),
+      # scale_x_datetime(labels = my_date_format(format = "%d.%m %H:%M", tz = "Europe/Moscow"),
+      scale_x_datetime(labels = date_format(format = "%d.%m %H:%M", tz = "Europe/Moscow"),                      
                        breaks = date_breaks('4 hours')) +
       # minor_breaks = date_breaks('4 hours')) +
       theme_igray() + 
       scale_colour_tableau("colorblind10") +
       ylim(0, NA) +
-      xlab("Время и дата измерения") +
-      ylab("Влажность почвы, %") +
+      xlab(enc2utf8("Время и дата измерения")) +
+      ylab(enc2utf8("Влажность почвы, %")) +
       # theme_solarized() +
       # scale_colour_solarized("blue") +
       theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +

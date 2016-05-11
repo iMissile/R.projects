@@ -170,7 +170,7 @@ p4 <- ggplot(avg.df, aes(timegroup, value.mean)) +
   ) +
   geom_point() +
   #geom_smooth(size = 1.5, method = "loess", se = FALSE) +
-  scale_x_datetime(labels = my_date_format(format = "%d.%m,\n%H:%M", tz = "Europe/Moscow"),
+  scale_x_datetime(labels = date_format(format = "%d.%m,\n%H:%M", tz = "Europe/Moscow"),
                    breaks = date_breaks('4 hours')) +
                    # minor_breaks = date_breaks('4 hours')) +
   ylim(0, NA) +
