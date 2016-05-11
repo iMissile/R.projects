@@ -7,9 +7,10 @@ library(readr)
 library(jsonlite)
 library(magrittr)
 #library(httr)
-#library(ggthemes)
+library(ggthemes)
 #library(ggmap)
 library(RColorBrewer) # http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/
+library(scales)
 library(gtable)
 library(grid) # для grid.newpage()
 library(gridExtra) # для grid.arrange()
@@ -54,7 +55,8 @@ t.df <- raw.df %>%
 
 avg.df <- t.df %>%
   group_by(location, timegroup) %>%
-  summarise(value.mean = mean(value), value.sd = sd(value))
+  summarise(value.mean = mean(value), value.sd = sd(value)) %>%
+  ungroup() # очистили группировки
 
 object.size(raw.df)
 object.size(avg.df)
@@ -100,15 +102,44 @@ p3 <-
   ggplot(t.df, aes(factor(timegroup), value)) +
   # ggtitle("График температуры") +
   # geom_point() +
-  geom_line(data = avg.df, aes(x = factor(timegroup), y = value.mean)) +
-  #geom_boxplot(alpha = 0.7) +
-  ylim(0, NA) +
-  theme_solarized() +
-  scale_colour_solarized("blue") +
-  theme(panel.border = element_rect(
-    colour = "black",
-    fill = NA,
-    size = 2
-  ))
+  geom_boxplot(outlier.colour = "red", outlier.shape = 20, outlier.size = 5, alpha = 0.5) +
+  # почему надо писать group = 1: http://stackoverflow.com/questions/16350720/using-geom-line-with-x-axis-being-factors
+  # geom_line(data = avg.df, aes(x = factor(timegroup), y = value.mean, group=1)) +
+  geom_smooth(data = avg.df, aes(x = factor(timegroup), y = value.mean, group=1), size = 1.5, method = "loess", se = FALSE) +
+  ylim(0, NA)
 
-p3
+
+plot_palette <- brewer.pal(n = 8, name = "Paired") 
+
+my_label_format <- function(x){
+  # делаем условное форматирование
+  # для начала суток указываем дату, для остальных меток, только время
+  label <- as.numeric(x)
+  # date_format(format = "%d.%m, %H:%M", tz = "Europe/Moscow") 
+  label
+}
+
+p4 <- ggplot(avg.df, aes(timegroup, value.mean)) +
+  ggtitle("Влажность почвы") +
+  # geom_line() +
+  # рисуем разрешенный диапазон
+  geom_ribbon(aes(ymin = 70, ymax = 90), fill = plot_palette[3]) +
+  geom_hline(yintercept = 70) +
+  geom_hline(yintercept = 90) +
+  geom_ribbon(
+    aes(ymin = value.mean - value.sd, ymax = value.mean + value.sd),
+    fill = plot_palette[5],
+    alpha = 0.5
+  ) +
+  geom_point() +
+  geom_smooth(size = 1.5, method = "loess", se = FALSE) +
+  scale_x_datetime(labels = my_label_format(x),
+                   breaks = date_breaks('1 day'),
+                   minor_breaks = date_breaks('4 hours')) +
+  ylim(0, NA) +
+  xlab("Время и дата измерения") +
+  ylab("Влажность почвы, %") +
+  theme_solarized() +
+  scale_colour_solarized("blue")
+
+p4
