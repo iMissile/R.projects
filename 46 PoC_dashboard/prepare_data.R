@@ -148,7 +148,8 @@ generate_field_data <- function(ofile = "tsensors.csv", back_days = 7, forward_d
   
   # генерируем данные по показаниям сенсоров (почасовая раскладка)
   # tick.seq <- seq(as.POSIXct("2016-03-01 23:00:00"), as.POSIXct("2016-03-10 08:32:00"), by = "4 hours") # http://stackoverflow.com/questions/10887923/hourly-date-sequence-in-r
-  tick.seq <- seq(now() - days(back_days), now() + days(forward_days), by = "4 hours") # http://stackoverflow.com/questions/10887923/hourly-date-sequence-in-r
+  start_time <- round_date(now(), unit = "day") # для синхронных 4-х часовых измерений необходимо привести к 0:00
+  tick.seq <- seq(start_time - days(back_days), start_time + days(forward_days), by = "4 hours") # http://stackoverflow.com/questions/10887923/hourly-date-sequence-in-r
   # собираем сразу data.frame: время, #сенсора, показание
   # генерируем показатели влажности, допустимый диапазон [0; 100]
   n <- length(tick.seq)
@@ -411,7 +412,7 @@ test_ordered_dotplot <- function(){
 
 # =================== main ==================
 
-# generate_field_data("./data/tsensors.csv", back_days = 30, forward_days = 30)
+generate_field_data("./data/tsensors.csv", back_days = 30, forward_days = 30)
 plot_field_data("./data/appdata_field.csv", back_days = 3)
 # 
 #generate_weather_data("./data/tweather.csv", back_days = 7, forward_days = 7)
@@ -477,7 +478,6 @@ get_current_weather <- function(){
 }
 
 # get_current_weather()
-print("d")
 
 stop()
 # как работать с API OpenWeatherMap: http://openweathermap.org/appid
