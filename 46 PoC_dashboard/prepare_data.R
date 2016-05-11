@@ -155,7 +155,7 @@ generate_field_data <- function(ofile = "tsensors.csv", back_days = 7, forward_d
   mydata <- data.frame(name = rep(sensor$name, each = n),
                        lon = rep(sensor$lon, each = n),
                        lat = rep(sensor$lat, each = n),
-                       type = "Temp",
+                       type = "soil_moisture",
                        location = " апуста 1",
                        #location = " артофель 1",
                        timestamp = tick.seq, 
@@ -207,7 +207,7 @@ generate_weather_data <- function(ofile = "tweather.csv", back_days = 7, forward
   )
 }
 
-plot_field_data <- function(ifile = "./data/test_data.csv") {
+plot_field_data <- function(ifile = "./data/appdata_field.csv", back_days = 3) {
   # отобразим за указанный диапазон график: среднее, стандартное отклонение в виде серой области, выбросы
 
   # подгружаем данные по сенсорам
@@ -228,13 +228,14 @@ plot_field_data <- function(ifile = "./data/test_data.csv") {
   # m <- round_date(t, unit = "hour") # самый быстрый и компактный вариант
   # object.size(m)
   # object.size(m[[2]])
-  raw.df["timegroup"] <- round_date(raw.df$timestamp, unit = "hour")
+
+    # обрежем по глубине анализа
+  t.df <- raw.df %>%
+    filter(timestamp < lubridate::now()) %>%
+    filter(timestamp > lubridate::now() - days(back_days)) %>%
+    mutate(timegroup = round_date(timestamp, unit = "hour"))
   
-  # t.df <- raw.df %>%
-  #   filter(timegroup < lubridate::now()) %>%
-  #   filter(timegroup > lubridate::now() - days(3))
-  
-  avg.df <- raw.df %>%
+  avg.df <- t.df %>%
     group_by(location, timegroup) %>%
     summarise(value.mean = mean(value), value.sd = sd(value))
   
@@ -246,14 +247,15 @@ plot_field_data <- function(ifile = "./data/test_data.csv") {
   #   geom_point() +
   #   geom_smooth(method="loess", level = 0.99999)
   
-  ggplot(avg.df, aes(timegroup, value.mean, colour = factor(location))) +
+  p1 <- ggplot(avg.df, aes(timegroup, value.mean, colour = factor(location))) +
     # ggtitle("√рафик температуры") +
     geom_point() +
     geom_line() +
+    #geom_boxplot() +
     ylim(0, NA) +
     theme_solarized() +
     scale_colour_solarized("blue") +
-    theme(panel.border = element_rect(colour = "black", fill=NA, size = 2))
+    theme(panel.border = element_rect(colour = "black", fill = NA, size = 2))
   # theme_solarized(light = TRUE) +
   # scale_colour_solarized("blue")
   # theme_hc() +
@@ -263,13 +265,15 @@ plot_field_data <- function(ifile = "./data/test_data.csv") {
   # http://docs.ggplot2.org/current/geom_boxplot.html
   # You can also use boxplots with continuous x, as long as you supply a grouping variable.
   # http://stackoverflow.com/questions/23433776/change-thickness-of-the-whole-line-geom-boxplot
-  ggplot(raw.df, aes(timestamp, value)) +
+  p2 <- ggplot(raw.df, aes(timestamp, value)) +
     # geom_point(shape = 1) +
     # geom_line() +
     geom_jitter(width = 0.2) +
     ylim(0, NA) +
     geom_boxplot(aes(group = cut_width(timestamp, 86400/5))) + 
     geom_smooth(method="loess", level = 0.99999)
+  
+  print(p1)
 }
 
 plot_weather_data <- function(ifile = "./data/tweather.csv") {
@@ -407,20 +411,19 @@ test_ordered_dotplot <- function(){
 
 # =================== main ==================
 
-# ofile <- "./data/tsensors.csv"
-# generate_field_data(ofile, back_days = 30, forward_days = 30)
-# plot_field_data("./data/test_data.csv")
+# generate_field_data("./data/tsensors.csv", back_days = 30, forward_days = 30)
+plot_field_data("./data/appdata_field.csv", back_days = 3)
 # 
-# generate_weather_data("./data/tweather.csv", back_days = 7, forward_days = 7)
-# p1 <- plot_weather_data("./data/test_weather.csv")
-# p1
+#generate_weather_data("./data/tweather.csv", back_days = 7, forward_days = 7)
+#p1 <- plot_weather_data("./data/test_weather.csv")
+#p1
 
 # test_ordered_dotplot()
 
 # Persistent data storage in Shiny apps
 # http://shiny.rstudio.com/articles/persistent-data-storage.html
 
-
+stop()
 
 save_history_weather <- function(data) {
   # data <- t(data)
@@ -450,7 +453,6 @@ load_history_weather <- function(){
   raw.df # возвращаем загруженные данные
 }
 
-
 # ======== загружаем данные
 get_current_weather <- function(){
   # получаем данные по текущей погоде с учетом кешировани€ предыдущих запросов
@@ -474,7 +476,7 @@ get_current_weather <- function(){
   save_history_weather(history_weather_data)
 }
 
-get_current_weather()
+# get_current_weather()
 print("d")
 
 stop()
