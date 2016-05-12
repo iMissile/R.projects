@@ -80,14 +80,11 @@ server <- function(input, output, session) {
   
   # создаем инстанс текущих данных
   # data.frame -- подмножество для анализа и отображения
-  rvars <- reactiveValues(work_field.df = NA, #raw_field.df,
-                          work_weather.df = NA, #raw_weather.df,
-                          work_github_field.df = NA #raw_field.df
-                          ) 
+  rvars <- reactiveValues() 
   # Anything that calls autoInvalidate will automatically invalidate every 5 seconds.
   # See:  http://shiny.rstudio.com/reference/shiny/latest/reactiveTimer.html
   # Also: http://rpackages.ianhowson.com/cran/shiny/man/reactiveTimer.html
-  autoInvalidate <- reactiveTimer(5000, session)
+  autoInvalidate <- reactiveTimer(1000 * 60, session) # раз в минуту
 
 #  observe({
 #    rvars$should_update <- rvars$should_update + 1 # поставили флаг на обновление данных
@@ -115,50 +112,30 @@ server <- function(input, output, session) {
     })
   })
   
-  #observeEvent(input$update_btn, {
-  #  # нажали на кнопку "обновить исходные данные", напрямик не делаем
-  #  rvars$should_update <- rvars$should_update + 1 # поставили флаг на обновление данных
-  #})  
-  
-  observeEvent(input$daysDepth, {
-    # делаем выборку данных на заданную глубину
-      rvars$work_field.df <- raw_field.df %>%
-        filter(timegroup < lubridate::now()) %>%
-        filter(timegroup > floor_date(lubridate::now() - days(input$daysDepth), unit = "day"))
-      
-      rvars$work_weather.df <- raw_weather.df %>%
-        filter(timegroup > floor_date(lubridate::now() - days(input$daysDepth), unit = "day"))
-      
-      rvars$work_github_field.df <- raw_github_field.df %>%
-        filter(timestamp < lubridate::now()) %>%
-        filter(timestamp > floor_date(lubridate::now() - days(input$daysDepth), unit = "day"))
-      # print(paste("rvars$work_weather.df", rvars$work_weather.df))
-    
-  })
-  
   output$data_plot <- renderPlot({
     # на выходе должен получиться ggplot!!!
-    # делаем выборку данных
-    p1 <- plot_average_ts_data(rvars$work_field.df)
+    print(paste0(input$update_btn, ": data_plot")) # формально используем
+    p1 <- plot_average_ts_data(raw_field.df, input$daysDepth)
     grid.arrange(p1, ncol = 1)
   })
   
   output$temp_plot <- renderPlot({
     # на выходе должен получиться ggplot!!!
-    plot_github_ts_data(rvars$work_github_field.df)
+    print(paste0(input$update_btn, ": temp_plot")) # формально используем
+    plot_github_ts_data(raw_github_field.df, input$daysDepth)
     # invalidateLater(5000, session) # обновляем график раз в 5 секунд
   })
 
-    output$weather_plot <- renderPlot({
+  output$weather_plot <- renderPlot({
     # на выходе должен получиться ggplot!!!
-    # делаем выборку данных по состоянию на текущий момент и по установленной глубине выборки
-    plot_weather_data(rvars$work_weather.df)
+    print(paste0(input$update_btn, ": weather_plot")) # формально используем  
+    plot_weather_data(raw_weather.df, input$daysDepth)
   })
   
   output$cweather_plot <- renderPlot({
     # на выходе должен получиться ggplot!!!
-    p1 <- plot_ts_data_old(rvars$work_field.df)
-    p1
+    print(paste0(input$update_btn, ": cweather_plot")) # формально используем
+    plot_ts_data_old(raw_field.df, input$daysDepth)
   })
   
   output$map_plot <- renderPlot({
