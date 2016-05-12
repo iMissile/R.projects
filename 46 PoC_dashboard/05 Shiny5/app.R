@@ -35,6 +35,7 @@ eval(parse("../common_funcs.R", encoding="UTF-8"))
 
 # ================ первичная загрузка данных =========================
 raw_field.df <- load_field_data()
+raw_github_field.df <- load_github_field_data()
 raw_weather.df <- load_weather_data()
 
 # ================================================================
@@ -58,29 +59,18 @@ ui <- fluidPage(theme = shinytheme("united"), titlePanel("Контроль по�
                     p(),
                     strong("Текущая погода"),
                     plotOutput('cweather_plot', height = "200px"),
+                    p(),
+                    actionButton("update_btn", "Обновить данные сенсоров"),
                     width = 2 # обязательно ширины надо взаимно балансировать!!!!
                   ),
-                  
-                  # http://stackoverflow.com/questions/25340847/control-the-height-in-fluidrow-in-r-shiny
-                  # mainPanel(
-                  #   fluidRow(class = "myRow1", 
-                  #            column(6, div(style = "height:600px;background-color: yellow;", plotOutput('map_plot'))),
-                  #            column(6, div(style = "height:600px;background-color: blue;", plotOutput('data_plot')))),
-                  #   p(),
-                  #   fluidRow(class = "myRow2",
-                  #            column(6, div(style = "height:100px;background-color: green;", plotOutput('weather_plot'))),
-                  #            column(6, div(style = "height:150px;background-color: red;", plotOutput('temp_plot')))),
-                  #   width = 10, # обязательно ширины надо взаимно балансировать!!!!
-                  #   tags$head(tags$style(".myRow1{height:650px;}.myRow2{height:350px;background-color: pink;}"))
-                  #   )
                   
                   mainPanel(
                     fluidRow(
                              column(5, plotOutput('map_plot1')), # , height = "300px"
                              column(7, plotOutput('data_plot'))), # , height = "300px"
                     fluidRow(
-                             column(5, plotOutput('temp_plot')),
-                             column(7, plotOutput('weather_plot'))),
+                             column(5, plotOutput('weather_plot')),
+                             column(7, plotOutput('temp_plot'))),
                     width = 10 # обязательно ширины надо взаимно балансировать!!!!
                    )
                 ))
@@ -90,28 +80,45 @@ server <- function(input, output, session) {
   
   # создаем инстанс текущих данных
   # data.frame -- подмножество для анализа и отображения
-  rvars <- reactiveValues(work_field.df = raw_field.df,
-                          work_weather.df = raw_weather.df
+  rvars <- reactiveValues(work_field.df = NA, #raw_field.df,
+                          work_weather.df = NA, #raw_weather.df,
+                          work_github_field.df = NA #raw_field.df
                           ) 
   # Anything that calls autoInvalidate will automatically invalidate every 5 seconds.
-  # See:   http://shiny.rstudio.com/reference/shiny/latest/reactiveTimer.html
+  # See:  http://shiny.rstudio.com/reference/shiny/latest/reactiveTimer.html
+  # Also: http://rpackages.ianhowson.com/cran/shiny/man/reactiveTimer.html
   autoInvalidate <- reactiveTimer(5000, session)
 
+#  observe({
+#    rvars$should_update <- rvars$should_update + 1 # поставили флаг на обновление данных
+#  })
+  
   observe({
-    # Invalidate and re-execute this reactive expression every time the
-    # timer fires.
+    # в одном месте следим и за таймером и за нажатием на кнопку
+    # Invalidate and re-execute this reactive expression every time the timer fires.
     autoInvalidate()
-    
+    # смотрим, требуется ли обновление данных
+    print(paste0(rvars$should_update, " - ", input$update_btn, " - ", Sys.time()))
+
     # подгрузим данные
     raw_field.df <- load_field_data()
     raw_weather.df <- load_weather_data()
+
+    # берем лабораторные данные с github
+    df <- load_github_field_data()
+    if (!is.na(df)) { raw_github_field.df <- df}    
     
     # отобразили время последнего обновления
     output$time_updated <- renderText({ 
       paste0(Sys.time())
     })
   })
-    
+  
+  #observeEvent(input$update_btn, {
+  #  # нажали на кнопку "обновить исходные данные", напрямик не делаем
+  #  rvars$should_update <- rvars$should_update + 1 # поставили флаг на обновление данных
+  #})  
+  
   observeEvent(input$daysDepth, {
     # делаем выборку данных на заданную глубину
     rvars$work_field.df <- raw_field.df %>%
@@ -121,21 +128,29 @@ server <- function(input, output, session) {
     rvars$work_weather.df <- raw_weather.df %>%
       filter(timegroup > floor_date(lubridate::now() - days(input$daysDepth), unit = "day"))
     
-    print(paste("rvars$work_weather.df", rvars$work_weather.df))
+    rvars$work_github_field.df <- raw_github_field.df %>%
+      filter(timestamp < lubridate::now()) %>%
+      filter(timestamp > floor_date(lubridate::now() - days(input$daysDepth), unit = "day"))
+    # print(paste("rvars$work_weather.df", rvars$work_weather.df))
+    browser()
   })
   
   output$data_plot <- renderPlot({
     # на выходе должен получиться ggplot!!!
     # делаем выборку данных
-
     p1 <- plot_average_ts_data(rvars$work_field.df)
     grid.arrange(p1, ncol = 1)
   })
   
-  output$weather_plot <- renderPlot({
+  output$temp_plot <- renderPlot({
+    # на выходе должен получиться ggplot!!!
+    plot_github_ts_data(rvars$work_github_field.df)
+    # invalidateLater(5000, session) # обновляем график раз в 5 секунд
+  })
+
+    output$weather_plot <- renderPlot({
     # на выходе должен получиться ggplot!!!
     # делаем выборку данных по состоянию на текущий момент и по установленной глубине выборки
-
     plot_weather_data(rvars$work_weather.df)
   })
   

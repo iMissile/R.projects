@@ -58,7 +58,7 @@ if(class(temp.df) != "try-error") {
     mutate(work.status = (value >= 0 & value <= 100)) %>%
     # получим временную метку
     mutate(timestamp = ymd_hm(paste(date, time), tz = "Europe/Moscow")) %>%
-    select(-calibration_0,-calibration_100,-voltage)
+    select(-calibration_0, -calibration_100, -voltage)
 }
 # в противном случае мы просто оставляем данные неизменными
 
