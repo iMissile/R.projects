@@ -426,6 +426,7 @@ plot_field_data("./data/appdata_field.csv", back_days = 3)
 
 stop()
 
+# ======== загружаем данные
 save_history_weather <- function(data) {
   # data <- t(data)
   # Create a unique file name
@@ -438,7 +439,6 @@ save_history_weather <- function(data) {
   )
   # drop_upload('mtcars.csv', dest = "drop_test")
 }
-
 load_history_weather <- function(){
   raw.df <- read_delim(
     paste0("./", tempDir, "/", history_weather_filename),
@@ -453,8 +453,6 @@ load_history_weather <- function(){
   
   raw.df # возвращаем загруженные данные
 }
-
-# ======== загружаем данные
 get_current_weather <- function(){
   # получаем данные по текущей погоде с учетом кеширования предыдущих запросов
   if (is.na(history_weather_data)){
@@ -492,19 +490,18 @@ stop()
 url <- "api.openweathermap.org/data/2.5/"   
 MoscowID <- '524901'
 APPID <- '19deaa2837b6ae0e41e4a140329a1809'
-# resp <- GET(paste0(url, "weather?id=", MoscowID, "&APPID=", APPID))
+resp <- GET(paste0(url, "weather?id=", MoscowID, "&APPID=", APPID))
 if(status_code(resp) == 200){
   r <- content(resp)
   # конструируем вектор
   d <- data.frame(
     timestamp = now(),
-    temp = r$main$temp - 273,
-    # используем методику дополнения
-    pressure = r$main$pressure,
+    temp = r$main$temp - 273, # пересчитываем из кельвинов в градусы цельсия
+    pressure = round(r$main$pressure * 0.75006375541921, 3), # пересчитываем из гектопаскалей (hPa) в мм рт. столба
     humidity = r$main$humidity
     # precipitation = r$main$precipitation
   )
-  history_weather_data  
+  # history_weather_data  
 }
 # 
 

@@ -1,6 +1,7 @@
 # генерируем тестовые файлы для отладки интерфейса
 #library(tidyr)
 library(ggplot2) #load first! (Wickham)
+library(ggdendro) # для пустой темы
 library(lubridate) #load second!
 library(dplyr)
 library(readr)
@@ -19,6 +20,47 @@ library(curl)
 #library(akima)
 #library(rdrop2)
 # library(rgl)
+
+
+
+
+
+url <- "api.openweathermap.org/data/2.5/"   
+MoscowID <- '524901'
+APPID <- '19deaa2837b6ae0e41e4a140329a1809'
+resp <- GET(paste0(url, "weather?id=", MoscowID, "&APPID=", APPID))
+if(status_code(resp) == 200){
+  r <- content(resp)
+  # конструируем вектор
+  d <- data.frame(
+    # timestamp = now(),
+    timestamp = as.POSIXct(r$dt, origin='1970-01-01'),
+    temp = round(r$main$temp - 273, 1), # пересчитываем из кельвинов в градусы цельсия
+    pressure = round(r$main$pressure * 0.75006375541921, 3), # пересчитываем из гектопаскалей (hPa) в мм рт. столба
+    humidity = r$main$humidity
+    # precipitation = r$main$precipitation
+  )
+}
+
+df <- data.frame(x = c(0, 1), y = c(0, 1))
+
+windowsFonts(verdana = "TT Verdana")
+windowsFonts(geinspira = "GE Inspira")
+windowsFonts(corbel = "Corbel")
+p <- ggplot(df, aes(x, y)) + 
+  geom_point() +
+  geom_text(aes(.5, .8), label = paste0(d$temp, " C"), size = 40, color="blue", family = "corbel") +
+  geom_text(aes(.5, .1), label = paste0(d$timestamp), size = 7, color="blue", family = "verdana")
+  # theme_dendro() # совершенно пустая тема
+
+
+print(p)
+
+
+
+
+
+stop()
 
 
 ifile <- "./data/appdata_field.csv"
