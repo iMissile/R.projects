@@ -70,7 +70,7 @@ p <- ggplot(raw.df %>% filter(work.status), aes(x = timestamp, y = value, colour
   # scale_color_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
   # рисуем разрешенный диапазон
   
-  #geom_ribbon(aes(ymin = 70, ymax = 90), fill = "chartreuse") +
+  geom_ribbon(aes(ymin = 70, ymax = 90), fill = "chartreuse") +
   geom_line(lwd = 2) +
   geom_point(shape = 19, size = 3) +
   geom_hline(yintercept = c(70, 90), lwd = 1.2, linetype = 'dashed') +
@@ -85,7 +85,7 @@ p <- ggplot(raw.df %>% filter(work.status), aes(x = timestamp, y = value, colour
   theme_igray() + 
   scale_colour_tableau("colorblind10", name = "Влажность\nпочвы") +
   # scale_color_brewer(palette = "Set2", name = "Влажность\nпочвы") +
-  ylim(0, NA) +
+  ylim(0, 100) +
   xlab("Время и дата измерения") +
   ylab("Влажность почвы, %") +
   # theme_solarized() +
