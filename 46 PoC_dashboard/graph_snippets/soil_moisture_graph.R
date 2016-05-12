@@ -179,9 +179,10 @@ p4 <- ggplot(avg.df, aes(timegroup, value.mean)) +
   scale_x_datetime(labels = date_format(format = "%d.%m\n%H:%M", tz = "Europe/Moscow"),
                    breaks = man.breaks,
                    limits = man.lims) + 
-  #scale_x_datetime(labels = date_format(format = "%d.%m %H:%M", tz = "Europe/Moscow"),                      
-  #                 breaks = date_breaks('4 hours')) +
-  # theme_igray() + 
+  # scale_x_datetime(labels = date_format(format = "%d.%m %H:%M", tz = "Europe/Moscow"),                      
+  # breaks = date_breaks('4 hours')) +
+  # minor_breaks = date_breaks('4 hours')) +
+  theme_igray() + 
   scale_colour_tableau("colorblind10") +
   ylim(0, NA) +
   xlab("Время и дата измерения") +

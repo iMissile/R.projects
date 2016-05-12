@@ -1,5 +1,9 @@
 # Single-file Shiny apps (http://shiny.rstudio.com/articles/single-file.html)
 # Обязательно в кодировке UTF-8
+
+# задаем фиксированный порт для shiny (http://shiny.rstudio.com/reference/shiny/latest/runApp.html)
+options(shiny.port = 7775)
+
 library(shiny)
 library(shinythemes) # https://rstudio.github.io/shinythemes/
 library(magrittr)
@@ -9,6 +13,7 @@ library(ggmap)
 # library(DT)
 library(ggplot2) #load first! (Wickham)
 library(lubridate) #load second!
+library(scales)
 library(dplyr)
 library(ggthemes)
 library(ggmap)
@@ -116,14 +121,14 @@ server <- function(input, output, session) {
     rvars$work_weather.df <- raw_weather.df %>%
       filter(timegroup > floor_date(lubridate::now() - days(input$daysDepth), unit = "day"))
     
-    print(rvars$work_weather.df)
+    print(paste("rvars$work_weather.df", rvars$work_weather.df))
   })
   
   output$data_plot <- renderPlot({
     # на выходе должен получиться ggplot!!!
     # делаем выборку данных
 
-    p1 <- plot_ts_data(rvars$work_field.df)
+    p1 <- plot_average_ts_data(rvars$work_field.df)
     grid.arrange(p1, ncol = 1)
   })
   
@@ -168,3 +173,6 @@ server <- function(input, output, session) {
 }
 
 shinyApp(ui = ui, server = server)
+# http://shiny.rstudio.com/reference/shiny/latest/runApp.html
+# app <- shinyApp(ui = ui, server = server)
+# runApp(app, port = "8080")

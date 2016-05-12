@@ -1,5 +1,8 @@
 https://github.com/iot-rus/Moscow-Lab/blob/master/result.txt
 
+сами сырые данные надо брать отсюда:
+https://github.com/iot-rus/Moscow-Lab/raw/master/result.txt
+
 дата; время; имя; широта; долгота; минимум (0% влажности); максимум (100%); текущие показания
 
 

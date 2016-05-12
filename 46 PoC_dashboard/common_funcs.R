@@ -72,15 +72,20 @@ load_weather_data <- function() {
   raw.df # возвращаем загруженные данные
 }
 
-plot_ts_data <- function(raw.df) {
+plot_average_ts_data <- function(raw.df) {
   
-  plot_palette <- brewer.pal(n = 5, name = "Blues") 
-  
+  print(raw.df)
+  plot_palette <- brewer.pal(n = 5, name = "Blues")
   
   avg.df <- raw.df %>%
     group_by(location, timegroup) %>%
     summarise(value.mean = mean(value), value.sd = sd(value)) %>%
     ungroup() # очистили группировки
+
+  # Что делать, если метки на графике надо расставить по фиксированным местам? 
+  # [how to fix x-axis and y-axis scale](http://stackoverflow.com/questions/30799845/how-to-fix-x-axis-and-y-axis-scale)
+  man.lims <- c(min(avg.df$timegroup), max(avg.df$timegroup))
+  man.breaks <- seq(from = man.lims[1], to = man.lims[2], by = "4 hours")
   
     p <- ggplot(avg.df, aes(timegroup, value.mean)) +
       # ggtitle("Влажность почвы") +
@@ -96,9 +101,11 @@ plot_ts_data <- function(raw.df) {
       geom_hline(yintercept = c(70, 90), lwd = 1.2, linetype = 'dashed') +
       # geom_hline(yintercept = 90) +
       #geom_smooth(size = 1.5, method = "loess", se = FALSE) +
-      # scale_x_datetime(labels = my_date_format(format = "%d.%m %H:%M", tz = "Europe/Moscow"),
-      scale_x_datetime(labels = date_format(format = "%d.%m %H:%M", tz = "Europe/Moscow"),                      
-                       breaks = date_breaks('4 hours')) +
+      scale_x_datetime(labels = date_format(format = "%d.%m\n%H:%M", tz = "Europe/Moscow"),
+                       breaks = man.breaks,
+                       limits = man.lims) + 
+      # scale_x_datetime(labels = date_format(format = "%d.%m %H:%M", tz = "Europe/Moscow"),                      
+      # breaks = date_breaks('4 hours')) +
       # minor_breaks = date_breaks('4 hours')) +
       theme_igray() + 
       scale_colour_tableau("colorblind10") +
