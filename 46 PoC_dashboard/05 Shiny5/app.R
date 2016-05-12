@@ -98,7 +98,7 @@ server <- function(input, output, session) {
     # Invalidate and re-execute this reactive expression every time the timer fires.
     autoInvalidate()
     # смотрим, требуется ли обновление данных
-    print(paste0(rvars$should_update, " - ", input$update_btn, " - ", Sys.time()))
+    print(paste0(input$update_btn, " - ", Sys.time()))
 
     # подгрузим данные
     raw_field.df <- load_field_data()
@@ -108,6 +108,7 @@ server <- function(input, output, session) {
     df <- load_github_field_data()
     if (!is.na(df)) { raw_github_field.df <- df}    
     
+    # принудительно меняем 
     # отобразили время последнего обновления
     output$time_updated <- renderText({ 
       paste0(Sys.time())
@@ -121,18 +122,18 @@ server <- function(input, output, session) {
   
   observeEvent(input$daysDepth, {
     # делаем выборку данных на заданную глубину
-    rvars$work_field.df <- raw_field.df %>%
-      filter(timegroup < lubridate::now()) %>%
-      filter(timegroup > floor_date(lubridate::now() - days(input$daysDepth), unit = "day"))
+      rvars$work_field.df <- raw_field.df %>%
+        filter(timegroup < lubridate::now()) %>%
+        filter(timegroup > floor_date(lubridate::now() - days(input$daysDepth), unit = "day"))
+      
+      rvars$work_weather.df <- raw_weather.df %>%
+        filter(timegroup > floor_date(lubridate::now() - days(input$daysDepth), unit = "day"))
+      
+      rvars$work_github_field.df <- raw_github_field.df %>%
+        filter(timestamp < lubridate::now()) %>%
+        filter(timestamp > floor_date(lubridate::now() - days(input$daysDepth), unit = "day"))
+      # print(paste("rvars$work_weather.df", rvars$work_weather.df))
     
-    rvars$work_weather.df <- raw_weather.df %>%
-      filter(timegroup > floor_date(lubridate::now() - days(input$daysDepth), unit = "day"))
-    
-    rvars$work_github_field.df <- raw_github_field.df %>%
-      filter(timestamp < lubridate::now()) %>%
-      filter(timestamp > floor_date(lubridate::now() - days(input$daysDepth), unit = "day"))
-    # print(paste("rvars$work_weather.df", rvars$work_weather.df))
-    browser()
   })
   
   output$data_plot <- renderPlot({
