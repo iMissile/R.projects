@@ -1,28 +1,26 @@
 # генерируем тестовые файлы для отладки интерфейса
 #library(tidyr)
 library(ggplot2) #load first! (Wickham)
-library(ggdendro) # для пустой темы
 library(lubridate) #load second!
 library(dplyr)
 library(readr)
 library(jsonlite)
 library(magrittr)
+library(curl)
 library(httr)
 library(ggthemes)
+library(ggdendro) # для пустой темы
 #library(ggmap)
 library(RColorBrewer) # http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/
 library(scales)
 library(gtable)
 library(grid) # для grid.newpage()
 library(gridExtra) # для grid.arrange()
-library(curl)
+
 # library(KernSmooth)
 #library(akima)
 #library(rdrop2)
 # library(rgl)
-
-
-
 
 
 url <- "api.openweathermap.org/data/2.5/"   
@@ -74,18 +72,21 @@ p <- ggplot(df, aes(x, y)) +
 # autoresize ==============================================
 # взят отсюда: https://ryouready.wordpress.com/2012/08/01/creating-a-text-grob-that-automatically-adjusts-to-viewport-size/
 gr <- NA
-resizingTextGrob <- function(..., max.font.size = 40) { 
+resizingTextGrob <- function(..., max.font.size = 40) {
   gr <- grob(tg = textGrob(...), cl = "resizingTextGrob")
   # добавим свой доп. атрибут -- максимальный размер текста до которого масштабируем
   # str(gr)
   gr[['max.font.size']] <- max.font.size
   gr
-  }
-drawDetails.resizingTextGrob <- function(x, recording=TRUE) { grid.draw(x$tg) }
-preDrawDetails.resizingTextGrob <- function(x, max.size)
+}
+drawDetails.resizingTextGrob <- function(x, recording = TRUE) { grid.draw(x$tg) }
+preDrawDetails.resizingTextGrob <- function(x)
 {
   h <- convertHeight(unit(1, "snpc"), "mm", valueOnly = TRUE)
-  fs <- rescale(h, to = c(18, 7), from = c(120, 20))
+  fs <- rescale(h, to = c(x$max.font.size, 7), from = c(50, 5))
+  print(paste0("h = ", h, ", fs = ", fs))
+  # browser()
+  #pushViewport(viewport(gp = gpar(fontsize = fs, fontface = 'bold')))
   pushViewport(viewport(gp = gpar(fontsize = fs)))
 }
 postDrawDetails.resizingTextGrob <- function(x) { popViewport() }
@@ -96,22 +97,29 @@ postDrawDetails.resizingTextGrob <- function(x) { popViewport() }
 p <- qplot(0:10, 0:10) + theme_bw()
 g <- ggplotGrob(qplot(1, 1))
 g1 <- textGrob(label = "Static sizeText")
-g2 <- resizingTextGrob(label = "Resizing Text", max.size = 7)
+g2 <- resizingTextGrob(label = "Resizing Text", max.font.size = 16)
 p + 
   annotation_custom(grob = g1, xmin = 2, xmax = 2, ymin = 6) +
   annotation_custom(grob = g2, xmin = 2, ymin = 4)
 
 # тест работает ==============================================================
-l1 <- resizingTextGrob(label = "Resizing Text") 
+l1 <- resizingTextGrob(label = paste0(d$temp, " C"), max.font.size = 120)
+l2 <- resizingTextGrob(label = paste0(d$pressure, " мм"), max.font.size = 80)
+l3 <- resizingTextGrob(label = paste0(d$humidity, " %"), max.font.size = 80)
+l4 <- resizingTextGrob(label = paste0(d$timestamp), max.font.size = 60)
+
 p <- ggplot(df, aes(x, y)) + 
   geom_point() +
   geom_rect(aes(xmin = 0, ymin = 0, xmax = 1, ymax = 1), fill = "peachpuff") +
   # geom_text(aes(.5, .8), label = paste0(d$temp, " C"), size = rel(40), color="blue", family = "verdana") +
-  # annotation_custom(grob = resizingTextGrob(label = "Resizing Text"))
+  annotation_custom(grob = l1, xmin = 0.3, xmax = 0.7, ymin = .7, ymax = .9) +
+  annotation_custom(grob = l2, xmin = 0.3, xmax = 0.7, ymin = .5, ymax = .7) +
+  annotation_custom(grob = l3, xmin = 0.3, xmax = 0.7, ymin = .3, ymax = .5) +
+  annotation_custom(grob = l4, xmin = 0.3, xmax = 0.7, ymin = .1, ymax = .3) +
   #geom_text(aes(.5, .5), label = paste0(d$pressure, " мм"), size = 16, color="blue", family = "verdana") +
   #geom_text(aes(.5, .3), label = paste0(d$humidity, " %"), size = 16, color="blue", family = "verdana") +
   #geom_text(aes(.5, .1), label = paste0(d$timestamp), size = rel(8), color="blue", family = "verdana") +
   theme_dendro() # совершенно пустая тема
 
 
-
+p

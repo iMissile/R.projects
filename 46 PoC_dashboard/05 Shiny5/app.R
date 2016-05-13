@@ -17,6 +17,7 @@ library(lubridate) #load second!
 library(scales)
 library(dplyr)
 library(ggthemes)
+library(ggdendro) # для пустой темы
 library(ggmap)
 library(RColorBrewer)
 library(gtable)
@@ -24,6 +25,9 @@ library(grid) # для grid.newpage()
 library(gridExtra) # для grid.arrange()
 # library(KernSmooth)
 library(akima)
+library(curl)
+library(httr)
+
 # library(rgl)
 
 
@@ -136,8 +140,9 @@ server <- function(input, output, session) {
   # виджет текущей погоды
   output$cweather_plot <- renderPlot({
     # на выходе должен получиться ggplot!!!
-    invalidateLater(1000 * 5) # обновляем в автономном режиме раз в N минут
-    plot_cweather()
+    # invalidateLater(1000 * 5) # обновляем в автономном режиме раз в N минут
+    # plot_cweather()
+    plot_cweather_scaled()
   })
   
   output$map_plot <- renderPlot({
