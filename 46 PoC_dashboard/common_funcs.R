@@ -287,6 +287,42 @@ plot_weather_data <- function(raw.df, ddepth = 1) {
   grid.arrange(p1, p2, ncol = 1) # возвращаем ggplot
 }
 
+plot_cweather <- function() {
+  
+  url <- "api.openweathermap.org/data/2.5/"   
+  MoscowID <- '524901'
+  APPID <- '19deaa2837b6ae0e41e4a140329a1809'
+  resp <- GET(paste0(url, "weather?id=", MoscowID, "&APPID=", APPID))
+  if(status_code(resp) == 200){
+    r <- content(resp)
+    # конструируем вектор
+    d <- data.frame(
+      # timestamp = now(),
+      timestamp = as.POSIXct(r$dt, origin='1970-01-01'),
+      temp = round(r$main$temp - 273, 1), # пересчитываем из кельвинов в градусы цельсия
+      pressure = round(r$main$pressure * 0.75006375541921, 0), # пересчитываем из гектопаскалей (hPa) в мм рт. столба
+      humidity = round(r$main$humidity, 0)
+      # precipitation = r$main$precipitation
+    )
+  }
+  
+  df <- data.frame(x = c(0, 1), y = c(0, 1))
+  
+  windowsFonts(verdana = "TT Verdana")
+  windowsFonts(geinspira = "GE Inspira")
+  windowsFonts(corbel = "Corbel")
+  p <- ggplot(df, aes(x, y)) + 
+    geom_point() +
+    geom_rect(aes(xmin = 0, ymin = 0, xmax = 1, ymax = 1), fill = "peachpuff") +
+    geom_text(aes(.5, .8), label = paste0(d$temp, " C"), size = 40, color="blue", family = "verdana") +
+    geom_text(aes(.5, .5), label = paste0(d$pressure, " мм"), size = 16, color="blue", family = "verdana") +
+    geom_text(aes(.5, .3), label = paste0(d$humidity, " %"), size = 16, color="blue", family = "verdana") +
+    geom_text(aes(.5, .1), label = paste0(d$timestamp), size = 7, color="blue", family = "verdana") +
+    theme_dendro() # совершенно пустая тема
+  
+  p # возвращаем ggpmap!
+}
+  
 draw_field_ggmap <- function(sensors.df) {
   fmap <-
     get_map(

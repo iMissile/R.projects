@@ -2,6 +2,7 @@
 # Обязательно в кодировке UTF-8
 
 # задаем фиксированный порт для shiny (http://shiny.rstudio.com/reference/shiny/latest/runApp.html)
+#options(shiny.host = "127.0.0.1")
 options(shiny.port = 7775)
 
 library(shiny)
@@ -132,10 +133,11 @@ server <- function(input, output, session) {
     plot_weather_data(raw_weather.df, input$daysDepth)
   })
   
+  # виджет текущей погоды
   output$cweather_plot <- renderPlot({
     # на выходе должен получиться ggplot!!!
-    print(paste0(input$update_btn, ": cweather_plot")) # формально используем
-    plot_ts_data_old(raw_field.df, input$daysDepth)
+    invalidateLater(1000 * 5) # обновляем в автономном режиме раз в N минут
+    plot_cweather()
   })
   
   output$map_plot <- renderPlot({

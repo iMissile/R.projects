@@ -7,7 +7,7 @@ library(dplyr)
 library(readr)
 library(jsonlite)
 library(magrittr)
-#library(httr)
+library(httr)
 library(ggthemes)
 #library(ggmap)
 library(RColorBrewer) # http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/
@@ -36,8 +36,8 @@ if(status_code(resp) == 200){
     # timestamp = now(),
     timestamp = as.POSIXct(r$dt, origin='1970-01-01'),
     temp = round(r$main$temp - 273, 1), # пересчитываем из кельвинов в градусы цельсия
-    pressure = round(r$main$pressure * 0.75006375541921, 3), # пересчитываем из гектопаскалей (hPa) в мм рт. столба
-    humidity = r$main$humidity
+    pressure = round(r$main$pressure * 0.75006375541921, 0), # пересчитываем из гектопаскалей (hPa) в мм рт. столба
+    humidity = round(r$main$humidity, 0)
     # precipitation = r$main$precipitation
   )
 }
@@ -49,9 +49,12 @@ windowsFonts(geinspira = "GE Inspira")
 windowsFonts(corbel = "Corbel")
 p <- ggplot(df, aes(x, y)) + 
   geom_point() +
-  geom_text(aes(.5, .8), label = paste0(d$temp, " C"), size = 40, color="blue", family = "corbel") +
-  geom_text(aes(.5, .1), label = paste0(d$timestamp), size = 7, color="blue", family = "verdana")
-  # theme_dendro() # совершенно пустая тема
+  geom_rect(aes(xmin = 0, ymin = 0, xmax = 1, ymax = 1), fill = "peachpuff") +
+  geom_text(aes(.5, .8), label = paste0(d$temp, " C"), size = 40, color="blue", family = "verdana") +
+  geom_text(aes(.5, .5), label = paste0(d$pressure, " мм"), size = 16, color="blue", family = "verdana") +
+  geom_text(aes(.5, .3), label = paste0(d$humidity, " %"), size = 16, color="blue", family = "verdana") +
+  geom_text(aes(.5, .1), label = paste0(d$timestamp), size = 7, color="blue", family = "verdana") +
+  theme_dendro() # совершенно пустая тема
 
 
 print(p)
