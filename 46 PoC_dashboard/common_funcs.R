@@ -481,16 +481,16 @@ plot_cweather <- function() {
   
   df <- data.frame(x = c(0, 1), y = c(0, 1))
   
-  windowsFonts(verdana = "TT Verdana")
-  windowsFonts(geinspira = "GE Inspira")
-  windowsFonts(corbel = "Corbel")
+  # windowsFonts(verdana = "TT Verdana")
+  # windowsFonts(geinspira = "GE Inspira")
+  # windowsFonts(corbel = "Corbel")
   p <- ggplot(df, aes(x, y)) + 
     geom_point() +
     geom_rect(aes(xmin = 0, ymin = 0, xmax = 1, ymax = 1), fill = "peachpuff") +
-    geom_text(aes(.5, .8), label = paste0(d$temp, " C"), size = 20, color="blue", family = "verdana") +
-    geom_text(aes(.5, .5), label = paste0(d$pressure, " мм"), size = 8, color="blue", family = "verdana") +
-    geom_text(aes(.5, .3), label = paste0(d$humidity, " %"), size = 8, color="blue", family = "verdana") +
-    geom_text(aes(.5, .1), label = paste0(d$timestamp), size = 6, color="blue", family = "verdana") +
+    geom_text(aes(.5, .8), label = paste0(d$temp, " C"), size = 20, color="blue") + #, family = "verdana") +
+    geom_text(aes(.5, .5), label = paste0(d$pressure, " мм"), size = 8, color="blue") + #, family = "verdana") +
+    geom_text(aes(.5, .3), label = paste0(d$humidity, " %"), size = 8, color="blue") + #, family = "verdana") +
+    geom_text(aes(.5, .1), label = paste0(d$timestamp), size = 6, color="blue") + #, family = "verdana") +
     theme_dendro() # совершенно пустая тема
   
   p # возвращаем ggpmap!
