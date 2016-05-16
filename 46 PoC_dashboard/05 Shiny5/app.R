@@ -53,12 +53,6 @@ ui <- fluidPage(theme = shinytheme("united"), titlePanel("Контроль по�
                       choices = c("Картофель 1", "Капуста 1"),
                       selected = "Картофель 1"
                     ),
-                    selectInput(
-                      "daysDepth",
-                      "Глубина истории (дни)",
-                      choices = c(1, 3, 7),
-                      selected = 3
-                    ),
                     strong("Время последнего обновления"),
                     textOutput("time_updated"),
                     p(),
@@ -66,6 +60,20 @@ ui <- fluidPage(theme = shinytheme("united"), titlePanel("Контроль по�
                     plotOutput('cweather_plot', height = "200px"),
                     p(),
                     actionButton("update_btn", "Обновить данные сенсоров"),
+                    p(),
+                    strong("-------- Debug Zone --------"),
+                    selectInput(
+                      "daysDepth",
+                      "Глубина истории (дни)",
+                      choices = c(1, 3, 7),
+                      selected = 3
+                    ),
+                    selectInput(
+                      "timeBin",
+                      "Период опроса (часы)",
+                      choices = c(1, 2, 3, 4, 6, 12),
+                      selected = 4
+                    ),
                     width = 2 # обязательно ширины надо взаимно балансировать!!!!
                   ),
                   
@@ -127,14 +135,16 @@ server <- function(input, output, session) {
   output$temp_plot <- renderPlot({
     # на выходе должен получиться ggplot!!!
     print(paste0(input$update_btn, ": temp_plot")) # формально используем
-    plot_github_ts_data(raw_github_field.df, input$daysDepth)
+    # параметры select передаются как character vector!!!!!!!!
+    plot_github_ts2_data(raw_github_field.df, as.numeric(input$daysDepth), as.numeric(input$timeBin))
     # invalidateLater(5000, session) # обновляем график раз в 5 секунд
   })
 
   output$weather_plot <- renderPlot({
     # на выходе должен получиться ggplot!!!
     print(paste0(input$update_btn, ": weather_plot")) # формально используем  
-    plot_weather_data(raw_weather.df, input$daysDepth)
+    # параметры select передаются как character vector!!!!!!!!
+    plot_weather_data(raw_weather.df, as.numeric(input$daysDepth))
   })
   
   # виджет текущей погоды
