@@ -21,6 +21,28 @@ library(curl)
 #library(rgl)
 
 
+
+test_timegroup <- function() {
+  dd <- dmy_hm("12-05-2016 1:30", tz = "Europe/Moscow")
+  dd
+  twidth <- 3
+  dd + minutes(twidth * 60) / 2
+  n <- floor(hour(dd + minutes(twidth * 60) / 2) / twidth)
+  n
+  
+  floor_date(dd + minutes(twidth * 60) / 2, unit = "day") + hours(n * twidth)
+}
+
+
+hgroup.enum <- function(date, twidth = 4){
+  # привязываем все измерения, которые попали в промежуток +-1/2 интервала, к точке измерения. 
+  # точки измерения могут быть кратны 1, 2, 3, 4, 6, 12 часам, определяется twidth
+  # отсчет измерений идет с 0:00
+  tick_time <- date + minutes(twidth * 60)/2 # сдвигаем на пол интервала вперед
+  n <- floor(hour(tick_time) / twidth)
+  floor_date(tick_time, unit = "day") + hours(n * twidth)
+}
+
 load_github_field_data <- function() {
   # подгружаем данные по сенсорам
   #x <- read.csv( curl("https://github.com/iot-rus/Moscow-Lab/raw/master/result.txt") )
@@ -50,11 +72,12 @@ load_github_field_data <- function() {
   if(class(temp.df) != "try-error") {
     # расчитываем необходимые данные
     df <- temp.df %>%
-      mutate(value = 100 / (calibration_100 - calibration_0) * (voltage - calibration_0)) %>%
+      mutate(value = round(100 / (calibration_100 - calibration_0) * (voltage - calibration_0), 0)) %>%
       # откалибруем всплески
       mutate(work.status = (value >= 0 & value <= 100)) %>%
       # получим временную метку
       mutate(timestamp = ymd_hm(paste(date, time), tz = "Europe/Moscow")) %>%
+      mutate(timegroup = hgroup.enum(timestamp, twidth = 3)) %>%
       # упростим имя сенсора
       mutate(name = gsub(".*:", "", name, perl = TRUE)) %>%
       mutate(location = "Moscow Lab") %>%
@@ -71,8 +94,17 @@ df <- load_github_field_data()
 if (!is.na(df)) { raw.df <- df}
 # .Last.value
 
+# проведем усреднение по временным группам, если измерения проводились несколько раз в течение этого времени
+# усредняем только по рабочим датчикам
+
+avg.df <- raw.df %>%
+  filter(work.status) %>%
+  group_by(location, timegroup) %>%
+  summarise(value.mean = mean(value), value.sd = sd(value)) %>%
+  ungroup() # очистили группировки
+
 # http://www.cookbook-r.com/Graphs/Shapes_and_line_types/
-p <- ggplot(raw.df %>% filter(work.status), aes(x = timestamp, y = value, colour = name)) + 
+p <- ggplot(raw.df %>% filter(work.status), aes(x = timegroup, y = value, colour = name)) + 
   # http://www.sthda.com/english/wiki/ggplot2-colors-how-to-change-colors-automatically-and-manually
   # scale_fill_brewer(palette="Spectral") + 
   # scale_color_manual(values=wes_palette(n=3, name="GrandBudapest")) +
@@ -85,16 +117,17 @@ p <- ggplot(raw.df %>% filter(work.status), aes(x = timestamp, y = value, colour
   geom_hline(yintercept = c(70, 90), lwd = 1.2, linetype = 'dashed') +
   
   scale_x_datetime(labels = date_format(format = "%d.%m%n%H:%M", tz = "Europe/Moscow"),
-                   breaks = date_breaks('2 hour'), 
-                   minor_breaks = date_breaks('1 hour')) +
+                   breaks = date_breaks('4 hour') 
+                   # minor_breaks = date_breaks('1 hour')
+                   ) +
   # добавляем нерабочие сенсоры
-  #geom_point(data = raw.df %>% filter(!work.status), size = 3, shape = 21, stroke = 0, colour = 'red', fill = 'yellow') +
-  #geom_point(data = raw.df %>% filter(!work.status), size = 3, shape = 13, stroke = 1.1, colour = 'red')
+  geom_point(data = raw.df %>% filter(!work.status), size = 3, shape = 21, stroke = 0, colour = 'red', fill = 'yellow') +
+  geom_point(data = raw.df %>% filter(!work.status), size = 3, shape = 13, stroke = 1.1, colour = 'red') +
 
   theme_igray() + 
   scale_colour_tableau("colorblind10", name = "Влажность\nпочвы") +
   # scale_color_brewer(palette = "Set2", name = "Влажность\nпочвы") +
-  ylim(0, 100) +
+  # ylim(0, 100) +
   xlab("Время и дата измерения") +
   ylab("Влажность почвы, %") +
   # theme_solarized() +

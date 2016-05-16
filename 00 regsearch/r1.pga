@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pgr:powergrep xmlns:pgr="http://www.powergrep.com/powergrep42.xsd" version="4.2">
+	<actionfile>
+		<fileselection archives="1" globalmasks="1"/>
+		<action actiontype="simple" searchtype="literal" concurrent="1">
+			<searchtext>timegroup</searchtext>
+			<sectioning sectiontype="whole file"/>
+			<context contexttype="line" numbering="1" extra="context"/>
+		</action>
+	</actionfile>
+</pgr:powergrep>
