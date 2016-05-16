@@ -35,6 +35,15 @@ my_date_format <- function(format = "%d %b", tz = "Europe/Moscow") {
   }
 }
 
+hgroup.enum <- function(date, time.bin = 4){
+  # привязываем все измерения, которые попали в промежуток +-1/2 интервала, к точке измерения. 
+  # точки измерения могут быть кратны 1, 2, 3, 4, 6, 12 часам, определяется time.bin
+  # отсчет измерений идет с 0:00
+  tick_time <- date + minutes(time.bin * 60)/2 # сдвигаем на пол интервала вперед
+  n <- floor(hour(tick_time) / time.bin)
+  floor_date(tick_time, unit = "day") + hours(n * time.bin)
+}
+
 load_field_data <- function() {
   ifile <- ".././data/appdata_field.csv"
   # подгружаем данные по сенсорам
@@ -80,7 +89,7 @@ load_github_field_data <- function() {
   if(class(temp.df) != "try-error") {
     # расчитываем необходимые данные
     df <- temp.df %>%
-      mutate(value = 100 / (calibration_100 - calibration_0) * (voltage - calibration_0)) %>%
+      mutate(value = round(100 / (calibration_100 - calibration_0) * (voltage - calibration_0), 0)) %>%
       # откалибруем всплески
       mutate(work.status = (value >= 0 & value <= 100)) %>%
       # получим временную метку
@@ -153,11 +162,8 @@ plot_average_ts_data <- function(raw.df, ddepth = 1) {
                linetype = 'dashed') +
     # geom_hline(yintercept = 90) +
     #geom_smooth(size = 1.5, method = "loess", se = FALSE) +
-    scale_x_datetime(
-      labels = date_format(format = "%d.%m\n%H:%M", tz = "Europe/Moscow"),
-      breaks = man.breaks,
-      limits = man.lims
-    ) +
+    scale_x_datetime(labels = date_format(format = "%d.%m\n%H:%M", tz = "Europe/Moscow"),
+                     breaks = man.breaks, limits = man.lims) +
     # scale_x_datetime(labels = date_format(format = "%d.%m %H:%M", tz = "Europe/Moscow"),
     # breaks = date_breaks('4 hours')) +
     # minor_breaks = date_breaks('4 hours')) +
@@ -174,16 +180,79 @@ plot_average_ts_data <- function(raw.df, ddepth = 1) {
   p # возвращаем ggplot
 }
 
-plot_github_ts_data <- function(raw.df, ddepth = 1) {
+plot_github_ts2_data <- function(df, ddepth = 1, tbin = 4) {
+
+  # фильтруем данные
+  raw.df <- df %>%
+    # filter(work.status) %>%
+    filter(timestamp < lubridate::now()) %>%
+    filter(timestamp > floor_date(lubridate::now() - days(ddepth), unit = "day")) %>%
+    # сгруппируем по временным интервалам
+    mutate(timegroup = hgroup.enum(timestamp, time.bin = tbin))
+
+  # проведем усреднение по временным группам, если измерения проводились несколько раз в течение этого времени
+  # усредняем только по рабочим датчикам
+  
+  avg.df <- raw.df %>%
+    filter(work.status) %>%
+    group_by(location, name, timegroup) %>%
+    summarise(value.mean = mean(value), value.sd = sd(value)) %>%
+    ungroup() # очистили группировки
+  
+  plot_palette <- brewer.pal(n = 5, name = "Blues")
+  plot_palette <- wes_palette(name = "Moonrise2") # https://github.com/karthik/wesanderson
+
+  # -----------------------------------------------------------
+  # http://www.cookbook-r.com/Graphs/Shapes_and_line_types/
+  p <- ggplot(avg.df, aes(x = timegroup, y = value.mean, colour = name)) +
+    # http://www.sthda.com/english/wiki/ggplot2-colors-how-to-change-colors-automatically-and-manually
+    # scale_fill_brewer(palette="Dark2") +
+    # scale_color_brewer(palette="Dark2") +
+    scale_color_manual(values = plot_palette) +
+    scale_fill_manual(values = plot_palette) +
+    #scale_fill_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
+    # рисуем разрешенный диапазон
+    # geom_ribbon(aes(ymin = 70, ymax = 90), fill = "darkseagreen1") +
+    geom_ribbon(aes(ymin = 70, ymax = 90), fill = "mediumaquamarine") +
+    geom_ribbon(aes(ymin = value.mean - value.sd, ymax = value.mean + value.sd, fill = name), 
+                alpha = 0.3) +
+    geom_line(lwd = 1.5) +
+    geom_point(data = raw.df, aes(x = timestamp, y = value), shape = 1, size = 2) +
+    geom_hline(yintercept = c(70, 90), lwd = 1.2, linetype = 'dashed') +
+    geom_point(shape = 19, size = 3) +
+    scale_x_datetime(labels = date_format(format = "%d.%m%n%H:%M", tz = "Europe/Moscow"),
+                     breaks = date_breaks('8 hour')) +
+      # minor_breaks = date_breaks('1 hour')
+    # добавляем нерабочие сенсоры
+    # geom_point(data = raw.df %>% filter(!work.status), aes(x = timegroup, y = value),
+    #            size = 3, shape = 21, stroke = 0, colour = 'red', fill = 'yellow') +
+    # geom_point(data = raw.df %>% filter(!work.status), aes(x = timegroup, y = value),
+    #            size = 3, shape = 13, stroke = 1.1, colour = 'red') +
+    
+    theme_igray() +
+    # scale_colour_tableau("colorblind10", name = "Влажность\nпочвы") +
+    # scale_color_brewer(palette = "Set2", name = "Влажность\nпочвы") +
+    # ylim(0, 100) +
+    xlab("Время и дата измерения") +
+    ylab("Влажность почвы, %") +
+    # theme_solarized() +
+    # scale_colour_solarized("blue") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+    theme(axis.text.y = element_text(angle = 0))
+
+  p # возвращаем ggplot
+}
+
+plot_github_ts_data <- function(df, ddepth = 1, tbin = 4) {
   
   # фильтруем данные
-  df <- raw.df %>%
+  raw.df <- df %>%
     filter(work.status) %>%
     filter(timestamp < lubridate::now()) %>%
     filter(timestamp > floor_date(lubridate::now() - days(ddepth), unit = "day"))
   
   # http://www.cookbook-r.com/Graphs/Shapes_and_line_types/
-  p <- ggplot(df, aes(x = timestamp, y = value, colour = name)) + 
+  p <- ggplot(raw.df, aes(x = timestamp, y = value, colour = name)) + 
     # http://www.sthda.com/english/wiki/ggplot2-colors-how-to-change-colors-automatically-and-manually
     # scale_fill_brewer(palette="Spectral") + 
     # scale_color_manual(values=wes_palette(n=3, name="GrandBudapest")) +
@@ -215,6 +284,7 @@ plot_github_ts_data <- function(raw.df, ddepth = 1) {
   
   p # возвращаем ggplot
 }
+
 
 plot_ts_data_old <- function(raw.df, ddepth = 1) {
 
