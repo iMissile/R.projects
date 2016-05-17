@@ -401,25 +401,26 @@ test_ordered_dotplot <- function(){
     # http://www.sthda.com/english/wiki/ggplot2-colors-how-to-change-colors-automatically-and-manually
     # scale_fill_brewer(palette="Spectral") + 
     # scale_color_manual(values=wes_palette(n=3, name="GrandBudapest")) +
-    #  scale_color_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
-    scale_color_brewer(palette="Dark2", name="Влажность\nпочвы") + 
+    # scale_color_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
+    scale_color_manual(values=c("royalblue", "palegreen3", "sienna1")) +
+    # scale_color_brewer(palette = "Dark2", name = "Влажность\nпочвы") + 
     geom_point(size = 5) + 
     # добавляем нерабочие сенсоры
-    geom_point(data = df1 %>% filter(!work.status), size = 5, shape = 21, stroke = 0, colour = 'red', fill = 'yellow') +
-    geom_point(data = df1 %>% filter(!work.status), size = 5, shape = 13, stroke = 1.1, colour = 'red')
+    geom_point(data = df1 %>% filter(!work.status), size = 5, shape = 21, stroke = 1, colour = 'black', fill = 'gold') +
+    geom_point(data = df1 %>% filter(!work.status), size = 5, shape = 13, stroke = 1, colour = 'black')
 
 }
 
 # =================== main ==================
 
-generate_field_data("./data/tsensors.csv", back_days = 30, forward_days = 30)
-plot_field_data("./data/appdata_field.csv", back_days = 3)
+#generate_field_data("./data/tsensors.csv", back_days = 30, forward_days = 30)
+#plot_field_data("./data/appdata_field.csv", back_days = 3)
 # 
 #generate_weather_data("./data/tweather.csv", back_days = 7, forward_days = 7)
 #p1 <- plot_weather_data("./data/test_weather.csv")
 #p1
 
-# test_ordered_dotplot()
+test_ordered_dotplot()
 
 # Persistent data storage in Shiny apps
 # http://shiny.rstudio.com/articles/persistent-data-storage.html
@@ -532,7 +533,8 @@ sensors.df <- raw_field.df %>%
   group_by(name) %>%
   filter(timestamp == max(timestamp)) %>%
   mutate(delta = round(difftime(slicetime, timestamp, unit = "min"), 0)) %>%
-  arrange(name)
+  arrange(name) %>%
+  ungroup()
 
 # откатегоризируем
 sensors.df <- within(sensors.df, {
@@ -545,7 +547,6 @@ sensors.df <- within(sensors.df, {
 # sensors.df$level <- reorder(sensors.df$level, new.order = c("Low", "Average", "High"))
 
 smap.df <- sensors.df %>%
-  ungroup() %>%
   select(lon, lat, value) %>%
   rename(val = value)
 print(smap.df)

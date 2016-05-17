@@ -165,7 +165,8 @@ server <- function(input, output, session) {
       group_by(name) %>%
       filter(timestamp == max(timestamp)) %>%
       mutate(delta = round(difftime(slicetime, timestamp, unit = "min"), 0)) %>%
-      arrange(name)
+      arrange(name) %>%
+      ungroup()
     
     # откатегоризируем
     sensors.df <- within(sensors.df, {
@@ -175,7 +176,7 @@ server <- function(input, output, session) {
       level[value > 66  & value <= 100] <- "High"
     })
     
-    p <- draw_field_ggmap(sensors.df)
+    p <- draw_field_ggmap(sensors.df, hmap = TRUE)
     p
   })
   
