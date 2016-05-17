@@ -4,6 +4,8 @@
 # задаем фиксированный порт для shiny (http://shiny.rstudio.com/reference/shiny/latest/runApp.html)
 #options(shiny.host = "127.0.0.1")
 # options(shiny.port = 7775)
+options(shiny.trace = TRUE)
+options(shiny.error = browser)
 
 library(shiny)
 library(shinythemes) # https://rstudio.github.io/shinythemes/
@@ -158,8 +160,11 @@ server <- function(input, output, session) {
   output$map_plot <- renderPlot({
     
     slicetime <- now()
-    slicetime <- dmy_hm("29.04.2016 5:00", tz = "Europe/Moscow")
-    df <- raw_field.df %>%
+    #slicetime <- dmy_hm("29.04.2016 5:00", tz = "Europe/Moscow")
+    input.df <- raw_field.df
+    input.df <- raw_github_field.df
+    
+    df <- input.df %>%
       filter(timestamp <= slicetime) %>%
       group_by(name) %>%
       filter(timestamp == max(timestamp)) %>%
@@ -196,8 +201,8 @@ server <- function(input, output, session) {
       mutate(level = factor(level.unordered, levels = c('High', 'Normal', 'Low'))) %>%
       mutate(work.status = work.status & !is.na(level)) # что не попало в категорию также считается нерабочим
     
-    
-    gm <- draw_field_ggmap(sensors.df, heatmap = TRUE)
+    print(sensors.df)
+    gm <- draw_field_ggmap(sensors.df, heatmap = FALSE)
     # benchplot(gm)
     gm
   })

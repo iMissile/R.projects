@@ -198,11 +198,17 @@ plot_github_ts2_data <- function(df, ddepth = 1, tbin = 4) {
     group_by(location, name, timegroup) %>%
     summarise(value.mean = mean(value), value.sd = sd(value)) %>%
     ungroup() # очистили группировки
-  
+
+  # выводим в json-файл  ----------------------------------------
+  # http://stackoverflow.com/questions/25550711/convert-data-frame-to-json
+  avg_json <- jsonlite::toJSON(avg.df, pretty = TRUE)
+  # запуск идет из папки с app.R
+  write(avg_json, file = "avg_df.json")
+
+  # готовим графическое представление ----------------------------------------
   plot_palette <- brewer.pal(n = 5, name = "Blues")
   plot_palette <- wes_palette(name = "Moonrise2") # https://github.com/karthik/wesanderson
 
-  # -----------------------------------------------------------
   # http://www.cookbook-r.com/Graphs/Shapes_and_line_types/
   p <- ggplot(avg.df, aes(x = timegroup, y = value.mean, colour = name)) +
     # http://www.sthda.com/english/wiki/ggplot2-colors-how-to-change-colors-automatically-and-manually
@@ -221,7 +227,7 @@ plot_github_ts2_data <- function(df, ddepth = 1, tbin = 4) {
     geom_hline(yintercept = c(70, 90), lwd = 1.2, linetype = 'dashed') +
     geom_point(shape = 19, size = 3) +
     scale_x_datetime(labels = date_format(format = "%d.%m%n%H:%M", tz = "Europe/Moscow"),
-                     breaks = date_breaks('8 hour')) +
+                     breaks = date_breaks('4 hour')) +
       # minor_breaks = date_breaks('1 hour')
     # добавляем нерабочие сенсоры
     # geom_point(data = raw.df %>% filter(!work.status), aes(x = timegroup, y = value),
@@ -443,7 +449,7 @@ draw_field_ggmap <- function(sensors.df, heatmap = TRUE) {
   
   # а теперь попробуем отобразить растром, понимая все потенциальные проблемы
   # проблемы хорошо описаны здесь: https://groups.google.com/forum/embed/#!topic/ggplot2/nqzBX22MeAQ
-  gm <- ggmap(fmap, extent = "normal", legend = "topleft", darken = c(.7, "white")) # осветлили карту
+  gm <- ggmap(fmap, extent = "normal", legend = "topleft", darken = c(0.3, "white")) # осветлили карту
   # legend = device
   if (heatmap){
     gm <- gm +
@@ -464,20 +470,28 @@ draw_field_ggmap <- function(sensors.df, heatmap = TRUE) {
   broken.df <- sensors.df %>% filter(!work.status)
   
   # рисуем показания по рабочим сенсорам
-  gm <- gm +
-    # scale_colour_manual(values = plot_palette) +
-    scale_color_manual(values=c("royalblue", "palegreen3", "sienna1"), name = "Влажность\nпочвы") +
-    geom_point(data = work.df, size = 4, alpha = 0.8, aes(x = lon, y = lat, colour = level)) +
-    geom_text(data = work.df, aes(lon, lat, label = round(value, digits = 1)), hjust = 0.5, vjust = -1)
-  
+  if (nrow(work.df) > 0){
+    gm <- gm +
+      # scale_colour_manual(values = plot_palette) +
+      scale_color_manual(values = c("royalblue", "palegreen3", "sienna1"),
+                         name = "Влажность\nпочвы") +
+      geom_point(data = work.df, size = 4, alpha = 0.8,
+        aes(x = lon, y = lat, colour = level))
+  }
   # отдельно отрисовываем нерабочие сенсоры
-  gm <- gm +
-    geom_point(data = broken.df, size = 4, shape = 21, stroke = 1, colour = 'black', fill = 'gold') +
-    geom_point(data = broken.df, size = 4, shape = 13, stroke = 1, colour = 'black') +
-    geom_text(data = broken.df, aes(lon, lat, label = paste0(delta, " мин"), hjust = 0.5, vjust = 1.8), size = rel(3))
-  
+  if (nrow(broken.df) > 0){
+    gm <- gm +
+      geom_point(data = broken.df, size = 4, shape = 21, 
+                 stroke = 1, colour = 'black', fill = 'gold') +
+      geom_point(data = broken.df, size = 4, shape = 13, 
+                 stroke = 1, colour = 'black') +
+      geom_text(data = broken.df, aes(lon, lat, label = paste0(delta, " мин"), 
+                                      hjust = 0.5, vjust = 1.8), size = rel(3))
+  }
   # тематическое оформление
   gm <- gm +
+    geom_text(data = sensors.df, aes(lon, lat, label = round(value, digits = 1)),
+              hjust = 0.5, vjust = -1) +
     theme_bw() +
     # убираем все отметки
     theme(axis.line=element_blank(),
@@ -515,6 +529,7 @@ plot_cweather <- function() {
       # precipitation = r$main$precipitation
     )
     print(paste0(now(),": погода запрошена успешно"))
+    print(d)
   }
   
   df <- data.frame(x = c(0, 1), y = c(0, 1))

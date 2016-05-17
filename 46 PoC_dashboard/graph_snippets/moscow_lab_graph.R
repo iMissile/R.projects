@@ -188,3 +188,10 @@ p2 <- ggplot(avg.df, aes(x = timegroup, y = value.mean, colour = name)) +
 
 benchplot(p2)
 
+# и сохраним в файл
+# http://stackoverflow.com/questions/25550711/convert-data-frame-to-json
+x <- jsonlite::toJSON(avg.df, pretty = TRUE)
+# x <- serializeJSON(avg.df, digits = 3, pretty = TRUE)
+cat(x)
+write(x, file="./export/avg_df.json")
+
