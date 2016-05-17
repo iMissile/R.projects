@@ -34,11 +34,13 @@ load_field_data <- function() {
 }
 
 draw_field_ggmap <- function(sensors.df, heatmap = TRUE) {
-  # определяем, рисовать ли тепловую карту
+
   fmap <-
     get_map(
-      enc2utf8("Москва, Зоологическая 2"),
+      # enc2utf8("Москва, Зоологическая 2"),
       # "Москва, Зоологическая 2", # надо понимать из какой кодировки грузим
+      
+      c(median(sensors.df$lon), median(sensors.df$lat)), # будем запрашивать по координатам c(lon, lat)
       language = "ru-RU",
       # source = "stamen", maptype = "watercolor", 
       # source = "stamen", maptype = "toner-hybrid",
@@ -49,13 +51,13 @@ draw_field_ggmap <- function(sensors.df, heatmap = TRUE) {
       # source = "stamen", maptype = "toner-2011",
       zoom = 16
     )
-  
+
+  # определяем, рисовать ли тепловую карту
   if (heatmap) {
     # ================================ вычисляем тепловую карту
     
     # структура sensors должна быть предельно простая: lon, lat, val. Алгоритм расчитан именно на это
     smap.df <- sensors.df %>%
-      ungroup() %>% # убрали группировку по name
       select(lon, lat, value) %>%
       rename(val = value)
     
@@ -109,14 +111,15 @@ draw_field_ggmap <- function(sensors.df, heatmap = TRUE) {
     dInterp$z[is.nan(dInterp$z)] <- min(smap.df$val)
   }
   
-  # ========================================генерируем карту
+  # ======================================== генерируем карту
   # http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/
   plot_palette <- brewer.pal(n = 8, name = "Dark2")
   cfpalette <- colorRampPalette(c("white", "blue"))
-  
+
   # а теперь попробуем отобразить растром, понимая все потенциальные проблемы
   # проблемы хорошо описаны здесь: https://groups.google.com/forum/embed/#!topic/ggplot2/nqzBX22MeAQ
-  gm <- ggmap(fmap, extent = "device", legend = "topleft")
+  gm <- ggmap(fmap, extent = "normal", legend = "topleft", darken = c(.5, "white")) # осветлили карту
+  # legend = device
   if (heatmap){
     gm <- gm +
       # geom_tile(data = dInterp, aes(x, y, fill = z), alpha = 0.5, colour = NA) +
@@ -131,10 +134,25 @@ draw_field_ggmap <- function(sensors.df, heatmap = TRUE) {
       # To use for line and point colors, add
       stat_contour(data = dInterp, aes(x, y, z = z), bins = 4, lwd = 1.1, color="black")
   }
+  
+  work.df <- sensors.df %>% filter(work.status)
+  broken.df <- sensors.df %>% filter(!work.status)
+  
+  # рисуем показания по рабочим сенсорам
   gm <- gm +
-    scale_colour_manual(values = plot_palette) +
-    geom_point(data = sensors.df, size = 4, alpha = 0.8, aes(x = lon, y = lat, colour = level)) +
-    geom_text(data = sensors.df, aes(lon, lat, label = round(value, digits = 1)), hjust = 0.5, vjust = -1) +
+    # scale_colour_manual(values = plot_palette) +
+    scale_color_manual(values=c("royalblue", "palegreen3", "sienna1"), name = "Влажность\nпочвы") +
+    geom_point(data = work.df, size = 4, alpha = 0.8, aes(x = lon, y = lat, colour = level)) +
+    geom_text(data = work.df, aes(lon, lat, label = round(value, digits = 1)), hjust = 0.5, vjust = -1)
+  
+  # отдельно отрисовываем нерабочие сенсоры
+  gm <- gm +
+    geom_point(data = broken.df, size = 4, shape = 21, stroke = 1, colour = 'black', fill = 'gold') +
+    geom_point(data = broken.df, size = 4, shape = 13, stroke = 1, colour = 'black') +
+    geom_text(data = broken.df, aes(lon, lat, label = paste0(delta, " мин"), hjust = 0.5, vjust = 1.8), size = rel(3))
+  
+  # тематическое оформление
+  gm <- gm +
     theme_bw() +
     # убираем все отметки
     theme(axis.line=element_blank(),
@@ -143,7 +161,7 @@ draw_field_ggmap <- function(sensors.df, heatmap = TRUE) {
           axis.ticks=element_blank(),
           axis.title.x=element_blank(),
           axis.title.y=element_blank(),
-          legend.position="none",
+          # legend.position="none",
           panel.background=element_blank(),
           panel.border=element_blank(),
           panel.grid.major=element_blank(),
@@ -158,21 +176,43 @@ raw_field.df <- load_field_data()
 
 slicetime <- now()
 slicetime <- dmy_hm("29.04.2016 5:00", tz = "Europe/Moscow")
-sensors.df <- raw_field.df %>%
+df <- raw_field.df %>%
   filter(timestamp <= slicetime) %>%
   group_by(name) %>%
   filter(timestamp == max(timestamp)) %>%
-  mutate(delta = round(difftime(slicetime, timestamp, unit = "min"), 0)) %>%
+  mutate(delta = round(as.numeric(difftime(slicetime, timestamp, unit = "min")), 0)) %>%
   arrange(name) %>%
-  ungroup()
+  ungroup() %>%
+  # рабочий статус также определяется тем, насколько давно мы видели показания от конкретного сенсора
+  mutate(work.status = (delta < 60))
+
 
 # откатегоризируем
-sensors.df <- within(sensors.df, {
+df <- within(df, {
   level <- NA
   level[value >= 0 & value <= 33] <- "Low"
-  level[value > 33  & value <= 66] <- "Average"
+  level[value > 33  & value <= 66] <- "Normal"
   level[value > 66  & value <= 100] <- "High"
 })
+
+# при группировке по Lev по умолчанию, порядок следования строк осуществляется по алфавиту
+# ggplot(sensors.df, aes(x = lat, y = lon, colour = level)) + 
+#  geom_point(size = 4)
+
+# пытаемся изменить группировку
+# http://docs.ggplot2.org/current/aes_group_order.html
+# сделаем из текстовых строк factor и их принудительно отсортируем
+# http://www.ats.ucla.edu/stat/r/modules/factor_variables.htm
+
+# у нас два критерия разделения -- диапазон значений и работоспособность.
+# диапазон измерений -- цвет, работоспособность -- форма
+
+sensors.df <- df %>%
+  rename(level.unordered = level) %>%
+  # mutate(lev.of = ordered(lev, levels = c('Low', 'Normal', 'High'))) %>%
+  mutate(level = factor(level.unordered, levels = c('High', 'Normal', 'Low'))) %>%
+  mutate(work.status = work.status & !is.na(level)) # что не попало в категорию также считается нерабочим
+
 
 gm <- draw_field_ggmap(sensors.df, heatmap = FALSE)
 # benchplot(gm)

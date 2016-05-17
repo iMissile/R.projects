@@ -402,7 +402,7 @@ test_ordered_dotplot <- function(){
     # scale_fill_brewer(palette="Spectral") + 
     # scale_color_manual(values=wes_palette(n=3, name="GrandBudapest")) +
     # scale_color_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
-    scale_color_manual(values=c("royalblue", "palegreen3", "sienna1")) +
+    scale_color_manual(values=c("royalblue", "palegreen3", "sienna1"), name = "Влажность\nпочвы") +
     # scale_color_brewer(palette = "Dark2", name = "Влажность\nпочвы") + 
     geom_point(size = 5) + 
     # добавляем нерабочие сенсоры
