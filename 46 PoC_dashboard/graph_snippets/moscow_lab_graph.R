@@ -90,7 +90,7 @@ load_github_field_data <- function() {
 
 # main() ===================================================
 
-#df <- load_github_field_data()
+df <- load_github_field_data()
 if (!is.na(df)) { raw.df <- df}
 # .Last.value
 
@@ -186,5 +186,5 @@ p2 <- ggplot(avg.df, aes(x = timegroup, y = value.mean, colour = name)) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
   theme(axis.text.y = element_text(angle = 0))
 
-p2
+benchplot(p2)
 
