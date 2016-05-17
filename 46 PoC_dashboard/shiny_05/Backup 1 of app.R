@@ -44,7 +44,7 @@ raw_github_field.df <- load_github_field_data()
 raw_weather.df <- load_weather_data()
 
 # ================================================================
-ui <- fluidPage(theme = shinytheme("united"), titlePanel("Контроль влажности"),
+ui <- fluidPage(theme = shinytheme("united"), titlePanel("Контроль полива полей"),
                 sidebarLayout(
                   sidebarPanel(
                     radioButtons(
@@ -70,7 +70,7 @@ ui <- fluidPage(theme = shinytheme("united"), titlePanel("Контроль вл�
                     ),
                     selectInput(
                       "timeBin",
-                      "Период группировки (часы)",
+                      "Период опроса (часы)",
                       choices = c(1, 2, 3, 4, 6, 12),
                       selected = 4
                     ),
@@ -79,7 +79,7 @@ ui <- fluidPage(theme = shinytheme("united"), titlePanel("Контроль вл�
                   
                   mainPanel(
                     fluidRow(
-                             column(5, plotOutput('map_plot')), # , height = "300px"
+                             column(5, plotOutput('map_plot1')), # , height = "300px"
                              column(7, plotOutput('data_plot'))), # , height = "300px"
                     fluidRow(
                              column(5, plotOutput('weather_plot')),
@@ -108,7 +108,7 @@ server <- function(input, output, session) {
     # Invalidate and re-execute this reactive expression every time the timer fires.
     autoInvalidate()
     # смотрим, требуется ли обновление данных
-    print(paste0("autoInvalidate. ", input$update_btn, " - ", Sys.time()))
+    print(paste0(input$update_btn, " - ", Sys.time()))
 
     # подгрузим данные
     raw_field.df <- load_field_data()
@@ -197,7 +197,7 @@ server <- function(input, output, session) {
       mutate(work.status = work.status & !is.na(level)) # что не попало в категорию также считается нерабочим
     
     
-    gm <- draw_field_ggmap(sensors.df, heatmap = TRUE)
+    gm <- draw_field_ggmap(sensors.df, heatmap = FALSE)
     # benchplot(gm)
     gm
   })

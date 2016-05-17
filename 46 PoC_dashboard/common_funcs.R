@@ -358,11 +358,14 @@ plot_weather_data <- function(raw.df, ddepth = 1) {
 }
 
 
-draw_field_ggmap <- function(sensors.df) {
+draw_field_ggmap <- function(sensors.df, heatmap = TRUE) {
+  
   fmap <-
     get_map(
       # enc2utf8("Москва, Зоологическая 2"),
-      "Москва, Зоологическая 2", # надо понимать из какой кодировки грузим
+      # "Москва, Зоологическая 2", # надо понимать из какой кодировки грузим
+      
+      c(median(sensors.df$lon), median(sensors.df$lat)), # будем запрашивать по координатам c(lon, lat)
       language = "ru-RU",
       # source = "stamen", maptype = "watercolor", 
       # source = "stamen", maptype = "toner-hybrid",
@@ -374,73 +377,107 @@ draw_field_ggmap <- function(sensors.df) {
       zoom = 16
     )
   
-  # ================================ вычисляем тепловую карту
+  # определяем, рисовать ли тепловую карту
+  if (heatmap) {
+    # ================================ вычисляем тепловую карту
+    
+    # структура sensors должна быть предельно простая: lon, lat, val. Алгоритм расчитан именно на это
+    smap.df <- sensors.df %>%
+      select(lon, lat, value) %>%
+      rename(val = value)
+    
+    # print(smap.df)
+    
+    # данных крайне мало, чтобы не было сильных перепадов принудительно раскидаем
+    # по периметру прямоугольника сенсоры с минимальным значением влажности. (мы там не поливаем)
+    # сделаем периметр по размеру прямоугольника отображения карты
+    hdata <- data.frame(expand.grid(
+      lon = seq(attr(fmap, "bb")$ll.lon, attr(fmap, "bb")$ur.lon, length = 10),
+      lat = c(attr(fmap, "bb")$ll.lat, attr(fmap, "bb")$ur.lat),
+      val = min(smap.df$val)
+    ))
+    
+    vdata <- data.frame(expand.grid(
+      lon = c(attr(fmap, "bb")$ll.lon, attr(fmap, "bb")$ur.lon),
+      lat = seq(attr(fmap, "bb")$ll.lat, attr(fmap, "bb")$ur.lat, length = 10),
+      val = min(smap.df$val)
+    ))
+    
+    
+    tdata <- rbind(smap.df, hdata, vdata)
+    # print(tdata)
+    
+    # smap.df <- tdata
+    # теперь готовим матрицу для градиентной заливки
+    # берем идеи отсюда: http://stackoverflow.com/questions/24410292/how-to-improve-interp-with-akima
+    # и отсюда: http://www.kevjohnson.org/making-maps-in-r-part-2/
+    fld <- interp(
+      tdata$lon,
+      tdata$lat,
+      tdata$val,
+      xo = seq(min(tdata$lon), max(tdata$lon), length = 100),
+      yo = seq(min(tdata$lat), max(tdata$lat), length = 100),
+      duplicate = "mean",
+      # дубликаты возникают по углам искуственного прямоугольника
+      #linear = TRUE, #FALSE (после того, как добавили внешний прямоугольник, можно)
+      linear = FALSE,
+      extrap = TRUE
+    )
+    
+    # превращаем в таблицу значений для комбинаций (x, y)
+    # хранение колоночного типа, адресация (x, y)
+    # поэтому для делается хитрая развертка -- бегущий x раскладывается по фиксированным y, как оно хранится
+    dInterp <-
+      data.frame(expand.grid(x = fld$x, y = fld$y), z = c(fld$z))
+    # при моделировании сплайнами,
+    # в случае крайне разреженных данных могут быть косяки со слишком кривыми аппроксимациями
+    # dInterp$z[dInterp$z < min(smap.df$val)] <- min(smap.df$val)
+    # dInterp$z[dInterp$z > max(smap.df$val)] <- max(smap.df$val)
+    dInterp$z[is.nan(dInterp$z)] <- min(smap.df$val)
+  }
   
-  # структура sensors должна быть предельно простая: lon, lat, val. Алгоритм расчитан именно на это
-  smap.df <- sensors.df %>%
-    ungroup() %>% # убрали группировку по name
-    select(lon, lat, value) %>%
-    rename(val = value)
-  
-  # print(smap.df)
-  
-  # данных крайне мало, чтобы не было сильных перепадов принудительно раскидаем 
-  # по периметру прямоугольника сенсоры с минимальным значением влажности. (мы там не поливаем)
-  # сделаем периметр по размеру прямоугольника отображения карты
-  hdata <- data.frame(expand.grid(
-    lon = seq(attr(fmap,"bb")$ll.lon, attr(fmap,"bb")$ur.lon, length = 10),
-    lat = c(attr(fmap,"bb")$ll.lat, attr(fmap,"bb")$ur.lat),
-    val = min(smap.df$val)
-  ))
-  
-  vdata <- data.frame(expand.grid(
-    lon = c(attr(fmap,"bb")$ll.lon, attr(fmap,"bb")$ur.lon),
-    lat = seq(attr(fmap,"bb")$ll.lat, attr(fmap,"bb")$ur.lat, length = 10),
-    val = min(smap.df$val)
-  ))
-  
- 
-  tdata <- rbind(smap.df, hdata, vdata)
-  # print(tdata)
-  
-  # smap.df <- tdata
-  # теперь готовим матрицу для градиентной заливки
-  # берем идеи отсюда: http://stackoverflow.com/questions/24410292/how-to-improve-interp-with-akima
-  # и отсюда: http://www.kevjohnson.org/making-maps-in-r-part-2/
-  fld <- interp(tdata$lon, tdata$lat, tdata$val,
-                xo = seq(min(tdata$lon), max(tdata$lon), length = 20),
-                yo = seq(min(tdata$lat), max(tdata$lat), length = 20),
-                duplicate = "mean", # дубликаты возникают по углам искуственного прямоугольника
-                #linear = TRUE, #FALSE (после того, как добавили внешний прямоугольник, можно)
-                linear = FALSE,
-                extrap = TRUE)
-  
-  # превращаем в таблицу значений для комбинаций (x, y)
-  # хранение колоночного типа, адресация (x, y) 
-  # поэтому для делается хитрая развертка -- бегущий x раскладывается по фиксированным y, как оно хранится
-  dInterp <- data.frame(expand.grid(x = fld$x, y = fld$y), z = c(fld$z)) 
-  # при моделировании сплайнами, 
-  # в случае крайне разреженных данных могут быть косяки со слишком кривыми аппроксимациями
-  # dInterp$z[dInterp$z < min(smap.df$val)] <- min(smap.df$val)
-  # dInterp$z[dInterp$z > max(smap.df$val)] <- max(smap.df$val)
-  dInterp$z[is.nan(dInterp$z)] <- min(smap.df$val)
-  
-  # ========================================генерируем карту
+  # ======================================== генерируем карту
   # http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/
   plot_palette <- brewer.pal(n = 8, name = "Dark2")
+  cfpalette <- colorRampPalette(c("white", "blue"))
   
   # а теперь попробуем отобразить растром, понимая все потенциальные проблемы
   # проблемы хорошо описаны здесь: https://groups.google.com/forum/embed/#!topic/ggplot2/nqzBX22MeAQ
-  gm <- ggmap(fmap, extent = "device", legend = "topleft") +
-    geom_tile(data = dInterp, aes(x, y, fill = z), alpha = 0.5, colour = NA) +
-    #geom_raster(data = dInterp, aes(x, y, fill = z), alpha = 0.5) +
-    #coord_cartesian() +
-    scale_fill_distiller(palette = "Spectral") + #color -- цвет линий
-    stat_contour(data = dInterp, aes(x, y, z = z), bins = 4, color="white", size=0.5) +
-    # To use for line and point colors, add
-    scale_colour_manual(values = plot_palette) +
-    geom_point(data = sensors.df, size = 4, alpha = 0.8, aes(x = lon, y = lat, colour = level)) +
-    geom_text(data = sensors.df, aes(lon, lat, label = round(value, digits = 1)), hjust = 0.5, vjust = -1) +
+  gm <- ggmap(fmap, extent = "normal", legend = "topleft", darken = c(.7, "white")) # осветлили карту
+  # legend = device
+  if (heatmap){
+    gm <- gm +
+      # geom_tile(data = dInterp, aes(x, y, fill = z), alpha = 0.5, colour = NA) +
+      geom_raster(data = dInterp, aes(x, y, fill = z), alpha = 0.5) +
+      coord_cartesian() +
+      # scale_fill_distiller(palette = "Spectral") + # http://docs.ggplot2.org/current/scale_brewer.html
+      # scale_fill_distiller(palette = "YlOrRd", breaks = pretty_breaks(n = 10))+ #, labels = percent) +
+      # scale_fill_gradientn(colours = brewer.pal(9,"YlOrRd"), guide="colorbar") +
+      scale_fill_gradientn(colours = c("#FFFFFF", "#FFFFFF", "#FFFFFF", "#0571B0", "#1A9641", "#D7191C"), 
+                           limits = c(0, 100), breaks = c(25, 40, 55, 70, 85), guide="colorbar") +
+      # scale_fill_manual(values=c("#CC6666", "#9999CC", "#66CC99")) + # минимум -- белый    stat_contour(data = dInterp, aes(x, y, z = z), bins = 4, color="white", size=0.5) +
+      # To use for line and point colors, add
+      stat_contour(data = dInterp, aes(x, y, z = z), bins = 4, lwd = 1, color="blue")
+  }
+  
+  work.df <- sensors.df %>% filter(work.status)
+  broken.df <- sensors.df %>% filter(!work.status)
+  
+  # рисуем показания по рабочим сенсорам
+  gm <- gm +
+    # scale_colour_manual(values = plot_palette) +
+    scale_color_manual(values=c("royalblue", "palegreen3", "sienna1"), name = "Влажность\nпочвы") +
+    geom_point(data = work.df, size = 4, alpha = 0.8, aes(x = lon, y = lat, colour = level)) +
+    geom_text(data = work.df, aes(lon, lat, label = round(value, digits = 1)), hjust = 0.5, vjust = -1)
+  
+  # отдельно отрисовываем нерабочие сенсоры
+  gm <- gm +
+    geom_point(data = broken.df, size = 4, shape = 21, stroke = 1, colour = 'black', fill = 'gold') +
+    geom_point(data = broken.df, size = 4, shape = 13, stroke = 1, colour = 'black') +
+    geom_text(data = broken.df, aes(lon, lat, label = paste0(delta, " мин"), hjust = 0.5, vjust = 1.8), size = rel(3))
+  
+  # тематическое оформление
+  gm <- gm +
     theme_bw() +
     # убираем все отметки
     theme(axis.line=element_blank(),
@@ -449,7 +486,7 @@ draw_field_ggmap <- function(sensors.df) {
           axis.ticks=element_blank(),
           axis.title.x=element_blank(),
           axis.title.y=element_blank(),
-          legend.position="none",
+          # legend.position="none",
           panel.background=element_blank(),
           panel.border=element_blank(),
           panel.grid.major=element_blank(),
@@ -477,6 +514,7 @@ plot_cweather <- function() {
       humidity = round(r$main$humidity, 0)
       # precipitation = r$main$precipitation
     )
+    print(paste0(now(),": погода запрошена успешно"))
   }
   
   df <- data.frame(x = c(0, 1), y = c(0, 1))
