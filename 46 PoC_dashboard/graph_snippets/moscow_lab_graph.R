@@ -20,8 +20,20 @@ library(curl)
 #library(akima)
 #library(rdrop2)
 #library(rgl)
+library(futile.logger)
 
+# настраиваем кастомный логгер
+## define the log file's
+# t <- tempfile()
+t <- paste0("iot_", format(now(), "%Y%m%d_%H%M%S"), ".log")
+t
+flog.appender(appender.file(t), name = 'iotlog')
+# flog.appender(appender.console(), name = 'iotlog')
+flog.threshold(TRACE, 'iotlog')
 
+flog.info("Hello, %s", "world", name = 'iotlog')
+
+flog.info("str(t) %s", capture.output(str(t)), name = "iotlog")
 
 test_timegroup <- function() {
   dd <- dmy_hm("12-05-2016 1:30", tz = "Europe/Moscow")

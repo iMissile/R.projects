@@ -1,0 +1,72 @@
+library(ggplot2) #load first! (Wickham)
+library(lubridate) #load second!
+library(dplyr)
+library(readr)
+library(jsonlite)
+library(magrittr)
+library(futile.logger)
+
+
+generate_field_data <- function(back_days = 7, forward_days = 7) {
+  # данные по расположению сенсоров
+  sensor <- data.frame(
+    c(1, 37.578691607470724, 55.766160765720493),
+    c(2, 37.57990362015564, 55.766504551149772),
+    c(3, 37.580025839922193, 55.765874275547077),
+    c(4, 37.577632369493983, 55.764819973580607),
+    c(5, 37.581431367237478, 55.764384492709446),
+    c(6, 37.579109191673091, 55.765158040903287),
+    c(7, 37.58182858147876, 55.766160765720493),
+    c(8, 37.580586013852198, 55.767008764295831),
+    c(9, 37.579862880233463, 55.764109449653162),
+    c(10, 37.577856439065989, 55.766567578149633),
+    c(11, 37.576776831128157, 55.76609773806296)
+  )
+  # sensor <- t(sensor) #транспонируем
+  # sensor <- tFrame(sensor) #транспонируем
+  sensor <- as.data.frame(t(sensor))
+  rownames(sensor) <- NULL
+  colnames(sensor) <- c("name", "lon", "lat") # http://stackoverflow.com/questions/6081439/changing-column-names-of-a-data-frame-in-r
+  
+  #sensor <- as.data.frame(t(sensor)) #транспонируем
+  # dimnames(sensor) <- NULL
+  
+  # генерируем данные по показаниям сенсоров (почасовая раскладка)
+  # tick.seq <- seq(as.POSIXct("2016-03-01 23:00:00"), as.POSIXct("2016-03-10 08:32:00"), by = "4 hours") # http://stackoverflow.com/questions/10887923/hourly-date-sequence-in-r
+  start_time <- round_date(now(), unit = "day") # для синхронных 4-х часовых измерений необходимо привести к 0:00
+  tick.seq <- seq(start_time - days(back_days), start_time + days(forward_days), by = "4 hours") # http://stackoverflow.com/questions/10887923/hourly-date-sequence-in-r
+  # собираем сразу data.frame: время, #сенсора, показание
+  # генерируем показатели влажности, допустимый диапазон [0; 100]
+  n <- length(tick.seq)
+  mydata <- data.frame(name = rep(sensor$name, each = n),
+                       lon = rep(sensor$lon, each = n),
+                       lat = rep(sensor$lat, each = n),
+                       type = "soil_moisture",
+                       location = "Moscow Lab",
+                       #location = "Картофель 1",
+                       timestamp = tick.seq, 
+                       value = runif(nrow(sensor) * n, 0, 100)) # используем методику дополнения
+  # rnorm(1000, 3, .25) # Generates 1000 numbers from a normal with mean 3 and sd=.25
+  
+  # для соотв реалиям сделаем разброс во времени измерения
+  mydata$timestamp <- mydata$timestamp + runif(nrow(mydata), min = -5*60, max = 5*60)
+  mydata$value <- round(mydata$value + 0.2*sin(as.numeric(mydata$timestamp)/86400*(0.1*pi)), 1)
+  
+  qplot(timestamp, value, data = mydata)
+  
+  mydata
+}
+
+
+flog.appender(appender.file("./log/iot.log"))
+flog.threshold(TRACE)
+flog.info("Job started")
+flog.info("Working directory: %s", getwd())
+
+flog.info("Processing started")
+df <- generate_field_data()
+# http://stackoverflow.com/questions/25550711/convert-data-frame-to-json
+x <- jsonlite::toJSON(df, pretty = TRUE)
+write(x, file="./export/sample.json")
+flog.info("Job finished")
+

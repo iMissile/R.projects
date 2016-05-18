@@ -29,9 +29,15 @@ library(gridExtra) # для grid.arrange()
 library(akima)
 library(curl)
 library(httr)
+library(futile.logger)
 
 # library(rgl)
-
+# настраиваем кастомный логгер
+# t <- paste0("iot_", format(now(), "%Y%m%d_%H%M%S"), ".log")
+# flog.appender(appender.file(t), name = 'iotlog')
+flog.appender(appender.file('iot-dashboard.log'))
+flog.threshold(TRACE)
+flog.info("PoC dashboard started")
 
 # source("../common_funcs.R") # сюда выносим все вычислительные и рисовательные функции
 
