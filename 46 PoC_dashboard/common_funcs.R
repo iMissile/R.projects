@@ -22,7 +22,7 @@ my_date_format <- function(format = "%d %b", tz = "Europe/Moscow") {
       }
       else {
         if (dt < 130) {
-          # допустим разброс в 30 минут
+          # допустим разброс в 130 минут
           # ret <- format(el, "%d.%m\n%H:%M", tz = tz)
           ret <- format(el, "%d %h    ", tz = tz)
         } else {
@@ -225,14 +225,14 @@ plot_github_ts2_data <- function(df, ddepth = 1, tbin = 4) {
     #scale_fill_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
     # рисуем разрешенный диапазон
     # geom_ribbon(aes(ymin = 70, ymax = 90), fill = "darkseagreen1") +
-    geom_ribbon(aes(ymin = 70, ymax = 90), fill = "mediumaquamarine") +
+    geom_ribbon(aes(ymin = 70, ymax = 90), fill = "mediumaquamarine", alpha = 0.3) +
     geom_ribbon(aes(ymin = value.mean - value.sd, ymax = value.mean + value.sd, fill = name), 
                 alpha = 0.3) +
     geom_line(lwd = 1.5) +
     geom_point(data = raw.df, aes(x = timestamp, y = value), shape = 1, size = 2) +
     geom_hline(yintercept = c(70, 90), lwd = 1.2, linetype = 'dashed') +
     geom_point(shape = 19, size = 3) +
-    scale_x_datetime(labels = date_format(format = "%d.%m%n%H:%M", tz = "Europe/Moscow"),
+    scale_x_datetime(labels = my_date_format(format = "%d.%m%n%H:%M", tz = "Europe/Moscow"),
                      breaks = date_breaks('4 hour')) +
       # minor_breaks = date_breaks('1 hour')
     # добавляем нерабочие сенсоры
@@ -249,6 +249,8 @@ plot_github_ts2_data <- function(df, ddepth = 1, tbin = 4) {
     ylab("Влажность почвы, %") +
     # theme_solarized() +
     # scale_colour_solarized("blue") +
+    # theme(legend.position=c(0.5, .2)) +
+    theme(legend.position = "top") +
     theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
     theme(axis.text.y = element_text(angle = 0))
 

@@ -167,8 +167,8 @@ p2 <- ggplot(avg.df, aes(x = timegroup, y = value.mean, colour = name)) +
   #scale_fill_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
   # рисуем разрешенный диапазон
   
-  geom_ribbon(aes(ymin = 70, ymax = 90), fill = "darkseagreen1") +
-  geom_ribbon(aes(ymin = 70, ymax = 90), fill = "mediumaquamarine") +
+  #geom_ribbon(aes(ymin = 70, ymax = 90), fill = "darkseagreen1") +
+  geom_ribbon(aes(ymin = 70, ymax = 90), fill = "mediumaquamarine", alpha = 0.3) +
   geom_ribbon(
     aes(ymin = value.mean - value.sd, ymax = value.mean + value.sd, fill = name),
     alpha = 0.3
@@ -195,6 +195,8 @@ p2 <- ggplot(avg.df, aes(x = timegroup, y = value.mean, colour = name)) +
   ylab("Влажность почвы, %") +
   # theme_solarized() +
   # scale_colour_solarized("blue") +
+  # theme(legend.position=c(0.5, .2)) +
+  theme(legend.position = "top") +
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
   theme(axis.text.y = element_text(angle = 0))
 

@@ -74,7 +74,7 @@ ui <- fluidPage(theme = shinytheme("united"), titlePanel("Контроль вл�
                       "daysDepth",
                       "Глубина истории (дни)",
                       choices = c(1, 3, 7),
-                      selected = 3
+                      selected = 7
                     ),
                     selectInput(
                       "timeBin",
@@ -88,11 +88,12 @@ ui <- fluidPage(theme = shinytheme("united"), titlePanel("Контроль вл�
                   mainPanel(
                     fluidRow(
                              column(5, plotOutput('map_plot')), # , height = "300px"
-                             column(7, plotOutput('data_plot'))), # , height = "300px"
+                             # column(7, plotOutput('data_plot'))), # , height = "300px"
+                             column(7, plotOutput('temp_plot'))), # , height = "300px"
                     fluidRow(
                              # column(5, plotOutput('weather_plot')),
-                             column(5, DT::dataTableOutput('data_tbl1')),
-                             column(7, plotOutput('temp_plot'))),
+                             column(5, DT::dataTableOutput('data_tbl')),
+                             column(7, plotOutput('weather_plot'))),
                     width = 10 # обязательно ширины надо взаимно балансировать!!!!
                    )
                 ))
@@ -165,8 +166,10 @@ server <- function(input, output, session) {
   })
   
   output$data_tbl <- DT::renderDataTable(
-    raw_github_field.df %>% select(-lon, -lat, -location), 
-    options = list(lengthChange = FALSE, pageLength = 5))
+    DT::datatable(raw_github_field.df %>% select(-lon, -lat, -location),
+    options = list(lengthChange = FALSE, pageLength = 6)) %>%
+    formatDate('timestamp', method = "toLocaleString") # см. https://rstudio.github.io/DT/functions.html 
+    )
 
   output$map_plot <- renderPlot({
     
