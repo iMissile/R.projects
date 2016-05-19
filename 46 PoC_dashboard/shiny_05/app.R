@@ -4,15 +4,15 @@
 # задаем фиксированный порт для shiny (http://shiny.rstudio.com/reference/shiny/latest/runApp.html)
 #options(shiny.host = "127.0.0.1")
 # options(shiny.port = 7775)
-options(shiny.trace = TRUE)
-options(shiny.error = browser)
+# options(shiny.trace = TRUE)
+# options(shiny.error = browser)
 
 library(shiny)
 library(shinythemes) # https://rstudio.github.io/shinythemes/
 library(magrittr)
 #library(leaflet)
 library(readr) #Hadley Wickham, http://blog.rstudio.org/2015/04/09/readr-0-1-0/
-# library(DT)
+library(DT)
 library(ggplot2) #load first! (Wickham)
 library(lubridate) #load second!
 library(scales)
@@ -90,7 +90,8 @@ ui <- fluidPage(theme = shinytheme("united"), titlePanel("Контроль вл�
                              column(5, plotOutput('map_plot')), # , height = "300px"
                              column(7, plotOutput('data_plot'))), # , height = "300px"
                     fluidRow(
-                             column(5, plotOutput('weather_plot')),
+                             # column(5, plotOutput('weather_plot')),
+                             column(5, DT::dataTableOutput('data_tbl1')),
                              column(7, plotOutput('temp_plot'))),
                     width = 10 # обязательно ширины надо взаимно балансировать!!!!
                    )
@@ -116,7 +117,7 @@ server <- function(input, output, session) {
     # Invalidate and re-execute this reactive expression every time the timer fires.
     autoInvalidate()
     # смотрим, требуется ли обновление данных
-    print(paste0("autoInvalidate. ", input$update_btn, " - ", Sys.time()))
+    flog.info(paste0("autoInvalidate. ", input$update_btn, " - ", Sys.time()))
 
     # подгрузим данные
     raw_field.df <- load_field_data()
@@ -135,14 +136,14 @@ server <- function(input, output, session) {
   
   output$data_plot <- renderPlot({
     # на выходе должен получиться ggplot!!!
-    print(paste0(input$update_btn, ": data_plot")) # формально используем
+    flog.info(paste0(input$update_btn, ": data_plot")) # формально используем
     p1 <- plot_average_ts_data(raw_field.df, input$daysDepth)
     grid.arrange(p1, ncol = 1)
   })
   
   output$temp_plot <- renderPlot({
     # на выходе должен получиться ggplot!!!
-    print(paste0(input$update_btn, ": temp_plot")) # формально используем
+    flog.info(paste0(input$update_btn, ": temp_plot")) # формально используем
     # параметры select передаются как character vector!!!!!!!!
     plot_github_ts2_data(raw_github_field.df, as.numeric(input$daysDepth), as.numeric(input$timeBin))
     # invalidateLater(5000, session) # обновляем график раз в 5 секунд
@@ -150,7 +151,7 @@ server <- function(input, output, session) {
 
   output$weather_plot <- renderPlot({
     # на выходе должен получиться ggplot!!!
-    print(paste0(input$update_btn, ": weather_plot")) # формально используем  
+    flog.info(paste0(input$update_btn, ": weather_plot")) # формально используем  
     # параметры select передаются как character vector!!!!!!!!
     plot_weather_data(raw_weather.df, as.numeric(input$daysDepth))
   })
@@ -163,6 +164,10 @@ server <- function(input, output, session) {
     # plot_cweather_scaled()
   })
   
+  output$data_tbl <- DT::renderDataTable(
+    raw_github_field.df %>% select(-lon, -lat, -location), 
+    options = list(lengthChange = FALSE, pageLength = 5))
+
   output$map_plot <- renderPlot({
     
     slicetime <- now()
@@ -207,7 +212,8 @@ server <- function(input, output, session) {
       mutate(level = factor(level.unordered, levels = c('High', 'Normal', 'Low'))) %>%
       mutate(work.status = work.status & !is.na(level)) # что не попало в категорию также считается нерабочим
     
-    print(sensors.df)
+    flog.info("sensors.df")
+    flog.info(capture.output(print(sensors.df)))
     gm <- draw_field_ggmap(sensors.df, heatmap = FALSE)
     # benchplot(gm)
     gm

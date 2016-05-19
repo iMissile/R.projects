@@ -1,0 +1,16 @@
+# перезагрузка
+
+
+Igor Schastiev [5:58 PM] 
+ssh 10.0.0.201
+Login: root
+Password: F0rever!
+cd /etc/shiny-server/
+restart shiny-server
+
+[5:59] 
+ждем пока не появится что-то вида:
+[root@mt-zoo-shiny01 ~]# cd /etc/shiny-server/
+[root@mt-zoo-shiny01 shiny-server]# restart shiny-server
+shiny-server start/running, process 11153
+[root@mt-zoo-shiny01 shiny-server]#

@@ -12,7 +12,8 @@ my_date_format <- function(format = "%d %b", tz = "Europe/Moscow") {
     # dput(dt)
     
     labels <- lapply(x, function(el) {
-      print(paste0("Element:", el))
+
+      flog.info((paste0("Element:", el)))
       dt <-
         abs(as.numeric(difftime(el, round_date(el, unit = "day"), unit = "min")))
       # str(dt)
@@ -98,8 +99,13 @@ load_github_field_data <- function() {
       mutate(name = gsub(".*:", "", name, perl = TRUE)) %>%
       mutate(location = "Moscow Lab") %>%
       select(-calibration_0, -calibration_100, -voltage, -date, -time)
+    
+    flog.info("Данные с GitHub получены, последние записи:")
+    flog.info(capture.output(print(head(arrange(df, desc(timestamp)), n = 4))))
+    
   } else {
     df <- NA # в противном случае мы сигнализируем о невозможности обновить данные
+    flog.error("Не удалось получить данные с GitHub")
   }
   df
 }
@@ -528,8 +534,9 @@ plot_cweather <- function() {
       humidity = round(r$main$humidity, 0)
       # precipitation = r$main$precipitation
     )
-    print(paste0(now(),": погода запрошена успешно"))
-    print(d)
+    flog.info(paste0("Погода запрошена успешно"))
+    flog.info(capture.output(print(d)))
+    flog.info('--------------------------------')
   }
   
   df <- data.frame(x = c(0, 1), y = c(0, 1))
@@ -563,7 +570,7 @@ preDrawDetails.resizingTextGrob <- function(x)
 {
   h <- convertHeight(unit(1, "snpc"), "mm", valueOnly = TRUE)
   fs <- rescale(h, to = c(x$max.font.size, 7), from = c(50, 5))
-  print(paste0("h = ", h, ", fs = ", fs))
+  flog.info(paste0("h = ", h, ", fs = ", fs))
   browser()
   # pushViewport(viewport(gp = gpar(fontsize = fs, fontface = 'bold')))
   pushViewport(viewport(gp = gpar(fontsize = fs)))
