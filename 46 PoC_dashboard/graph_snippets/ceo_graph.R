@@ -1,7 +1,9 @@
 library(ggplot2) #load first! (Wickham)
 library(lubridate) #load second!
 library(dplyr)
+library(tidyr)
 library(readr)
+library(reshape2)
 library(jsonlite)
 library(magrittr)
 library(curl)
@@ -34,3 +36,19 @@ if(status_code(resp) == 200){
     # precipitation = r$main$precipitation
   #)
 }
+
+# получаем погодные данные
+m <- r$list
+ll <- lapply(m, function(x){ 
+  ldate <- getElement(x, 'main')
+  ldate$timestamp <- getElement(x, 'dt')
+  ldate
+  })
+l2 <- melt(ll)
+l3 <- tidyr::spread(l2, L2, value) %>% 
+  select(-temp_kf, -temp_max, -temp_min, -sea_level, -grnd_level, -L1) %>%
+  mutate(temp = round(temp - 273, 1)) %>% # пересчитываем из кельвинов в градусы цельсия
+  mutate(pressure = round(pressure * 0.75006375541921, 0)) %>% # пересчитываем из гектопаскалей (hPa) в мм рт. столба
+  mutate(humidity = round(humidity, 0)) %>%
+  mutate(timestamp = as.POSIXct(timestamp, origin='1970-01-01'))
+  
