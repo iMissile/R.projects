@@ -38,7 +38,7 @@ flog.info("str(t) %s", capture.output(str(t)), name = "iotlog")
 test_timegroup <- function() {
   dd <- dmy_hm("12-05-2016 1:30", tz = "Europe/Moscow")
   dd
-  time.bin <- 3
+  time.bin <- 2
   dd + minutes(time.bin * 60) / 2
   n <- floor(hour(dd + minutes(time.bin * 60) / 2) / time.bin)
   n
@@ -47,7 +47,7 @@ test_timegroup <- function() {
 }
 
 
-hgroup.enum <- function(date, time.bin = 4){
+hgroup.enum0 <- function(date, time.bin = 4){
   # привязываем все измерения, которые попали в промежуток +-1/2 интервала, к точке измерения. 
   # точки измерения могут быть кратны 1, 2, 3, 4, 6, 12 часам, определяется time.bin
   # отсчет измерений идет с 0:00
@@ -55,6 +55,16 @@ hgroup.enum <- function(date, time.bin = 4){
   n <- floor(hour(tick_time) / time.bin)
   floor_date(tick_time, unit = "day") + hours(n * time.bin)
 }
+
+hgroup.enum <- function(date, time.bin = 4){
+  # привязываем все измерения, которые попали в промежуток [0, t] к точке измерения. 
+  # точки измерения могут быть кратны 1, 2, 3, 4, 6, 12 часам, определяется time.bin
+  # отсчет измерений идет с 0:00
+  tick_time <- date
+  n <- floor(hour(tick_time) / time.bin)
+  floor_date(tick_time, unit = "day") + hours(n * time.bin)
+}
+
 
 load_github_field_data <- function() {
   # подгружаем данные по сенсорам
@@ -209,3 +219,72 @@ x <- jsonlite::toJSON(avg.df, pretty = TRUE)
 cat(x)
 write(x, file="./export/avg_df.json")
 
+# график на портал по требованиям Паши ------------------------------------------------
+# http://www.cookbook-r.com/Graphs/Shapes_and_line_types/
+
+# протестируем группировку
+hgroup.enum(dmy_hm("12-05-2016 4:59", tz = "Europe/Moscow"), time.bin = 2)
+
+# фильтруем 7 дней назад, 3 вперед, почасовая  группировка
+# сгруппируем по временным интервалам
+raw.df <- raw.df %>%
+  mutate(timegroup = hgroup.enum(timestamp, time.bin = 1))
+
+
+avg.df <- raw.df %>%
+  filter(timegroup >= floor_date(now() - days(7), unit = "day")) %>%
+  filter(timegroup <= now()) %>%
+  filter(work.status) %>%
+  group_by(location, timegroup) %>%
+  summarise(value.mean = mean(value), value.min = min(value), value.max = max(value)) %>%
+  ungroup() # очистили группировки
+
+write.csv(
+  x = avg.df,
+  file = "avg_df.csv", 
+  row.names = FALSE, quote = TRUE
+)
+
+p3 <- ggplot(avg.df, aes(x = timegroup, y = value.mean)) + 
+  # http://www.sthda.com/english/wiki/ggplot2-colors-how-to-change-colors-automatically-and-manually
+  # scale_fill_brewer(palette="Dark2") +
+  # scale_color_brewer(palette="Dark2") + 
+  # scale_color_manual(values = plot_palette) +
+  # scale_fill_manual(values = plot_palette) +
+  #scale_fill_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
+  # рисуем разрешенный диапазон
+  
+  #geom_ribbon(aes(ymin = 70, ymax = 90), fill = "darkseagreen1") +
+  geom_ribbon(aes(ymin = 70, ymax = 90), fill = "mediumaquamarine", alpha = 0.3) +
+  geom_ribbon(
+    aes(ymin = value.min, ymax = value.max),
+    alpha = 0.3
+  ) +
+  geom_line(lwd = 1.5, colour = "red") +
+  geom_point(shape = 1, size = 2) +
+  geom_hline(yintercept = c(70, 90), lwd = 1.2, linetype = 'dashed') +
+  geom_point(shape = 19, size = 3, colour = "red") +
+  #scale_x_datetime(labels = date_format(format = "%d.%m%n%H:%M", tz = "Europe/Moscow"),
+  #                 breaks = date_breaks('8 hour') 
+  #                 # minor_breaks = date_breaks('1 hour')
+  # ) +
+  # добавляем нерабочие сенсоры
+  # geom_point(data = raw.df %>% filter(!work.status), aes(x = timegroup, y = value), 
+  #            size = 3, shape = 21, stroke = 0, colour = 'red', fill = 'yellow') +
+  # geom_point(data = raw.df %>% filter(!work.status), aes(x = timegroup, y = value), 
+  #            size = 3, shape = 13, stroke = 1.1, colour = 'red') +
+  
+  theme_igray() + 
+  # scale_colour_tableau("colorblind10", name = "Влажность\nпочвы") +
+  # scale_color_brewer(palette = "Set2", name = "Влажность\nпочвы") +
+  # ylim(0, 100) +
+  xlab("Время и дата измерения") +
+  ylab("Влажность почвы, %") +
+  # theme_solarized() +
+  # scale_colour_solarized("blue") +
+  # theme(legend.position=c(0.5, .2)) +
+  theme(legend.position = "top") +
+  theme(axis.text.x = element_text(angle = 0, hjust = 1, vjust = 0.5)) +
+  theme(axis.text.y = element_text(angle = 0))
+
+p3

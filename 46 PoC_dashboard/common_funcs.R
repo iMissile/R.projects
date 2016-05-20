@@ -524,7 +524,8 @@ plot_cweather <- function() {
   url <- "api.openweathermap.org/data/2.5/"   
   MoscowID <- '524901'
   APPID <- '19deaa2837b6ae0e41e4a140329a1809'
-  resp <- GET(paste0(url, "weather?id=", MoscowID, "&APPID=", APPID))
+  reqstring <- paste0(url, "weather?id=", MoscowID, "&APPID=", APPID) 
+  resp <- GET(reqstring)
   if(status_code(resp) == 200){
     r <- content(resp)
     # конструируем вектор
