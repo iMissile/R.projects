@@ -416,11 +416,11 @@ test_ordered_dotplot <- function(){
 #generate_field_data("./data/tsensors.csv", back_days = 30, forward_days = 30)
 #plot_field_data("./data/appdata_field.csv", back_days = 3)
 # 
-#generate_weather_data("./data/tweather.csv", back_days = 7, forward_days = 7)
-#p1 <- plot_weather_data("./data/test_weather.csv")
-#p1
+generate_weather_data("./data/tweather.csv", back_days = 7, forward_days = 7)
+p1 <- plot_weather_data("./data/tweather.csv")
+p1
 
-test_ordered_dotplot()
+#test_ordered_dotplot()
 
 # Persistent data storage in Shiny apps
 # http://shiny.rstudio.com/articles/persistent-data-storage.html

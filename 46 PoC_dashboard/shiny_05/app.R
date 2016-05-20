@@ -82,6 +82,7 @@ ui <- fluidPage(theme = shinytheme("united"), titlePanel("Контроль вл�
                       choices = c(1, 2, 3, 4, 6, 12),
                       selected = 4
                     ),
+                    actionButton("logdata_btn", "Сброс данных в лог"),
                     width = 2 # обязательно ширины надо взаимно балансировать!!!!
                   ),
                   
@@ -113,6 +114,16 @@ server <- function(input, output, session) {
 #    rvars$should_update <- rvars$should_update + 1 # поставили флаг на обновление данных
 #  })
   
+  observeEvent(input$logdata_btn, {
+    flog.info("Сброс глобальных данных")
+    flog.info("raw_field.df")
+    flog.info(capture.output(print(head(arrange(raw_field.df, desc(timestamp)), n = 10))))
+    flog.info("raw_github_field.df")
+    flog.info(capture.output(print(head(arrange(raw_github_field.df, desc(timestamp)), n = 10))))
+    flog.info("raw_weather.df")
+    flog.info(capture.output(print(head(arrange(raw_weather.df, desc(timestamp)), n = 10))))
+  })
+  
   observe({
     # в одном месте следим и за таймером и за нажатием на кнопку
     # Invalidate and re-execute this reactive expression every time the timer fires.
@@ -121,12 +132,12 @@ server <- function(input, output, session) {
     flog.info(paste0("autoInvalidate. ", input$update_btn, " - ", Sys.time()))
 
     # подгрузим данные
-    raw_field.df <- load_field_data()
-    raw_weather.df <- load_weather_data()
+    raw_field.df <<- load_field_data()
+    raw_weather.df <<- load_weather_data()
 
     # берем лабораторные данные с github
     df <- load_github_field_data()
-    if (!is.na(df)) { raw_github_field.df <- df}    
+    if (!is.na(df)) { raw_github_field.df <<- df }    
     
     # принудительно меняем 
     # отобразили время последнего обновления
@@ -165,11 +176,19 @@ server <- function(input, output, session) {
     # plot_cweather_scaled()
   })
   
-  output$data_tbl <- DT::renderDataTable(
-    DT::datatable(raw_github_field.df %>% select(-lon, -lat, -location),
-    options = list(lengthChange = FALSE, pageLength = 6)) %>%
-    formatDate('timestamp', method = "toLocaleString") # см. https://rstudio.github.io/DT/functions.html 
-    )
+  output$data_tbl <- DT::renderDataTable({
+    df <- raw_github_field.df %>% 
+      select(-lon, -lat, -location) %>% 
+      arrange(desc(timestamp))
+    # изменим значения на русский
+    df$work.status <- ifelse(df$work.status, "Ок", "Неисправен")
+    
+    DT::datatable(df,
+                  # colnames = c('время' = 'timestamp'),
+                  colnames = c('# сенсора', '%', 'статус', 'время'), # https://rstudio.github.io/DT/, п.2.4
+                  options = list(lengthChange = FALSE, pageLength = 6)) %>%
+      formatDate('timestamp', method = "toLocaleString") # см. https://rstudio.github.io/DT/functions.html 
+    })
 
   output$map_plot <- renderPlot({
     
