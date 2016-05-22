@@ -13,3 +13,7 @@
 vignettes/*.html
 vignettes/*.pdf
 .Rproj.user
+
+# logs and data
+.log
+.json

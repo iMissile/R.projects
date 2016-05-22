@@ -4,6 +4,7 @@ library(ggplot2) #load first! (Wickham)
 library(lubridate) #load second!
 library(dplyr)
 library(readr)
+library(tidyr)
 library(jsonlite)
 library(magrittr)
 #library(httr)
@@ -18,6 +19,7 @@ library(gridExtra) # для grid.arrange()
 #library(akima)
 #library(rdrop2)
 # library(rgl)
+library(highcharter)
 
 
 ifile <- "./data/appdata_field.csv"
@@ -193,3 +195,40 @@ p4 <- ggplot(avg.df, aes(timegroup, value.mean)) +
   theme(axis.text.y = element_text(angle = 0))
 
 p4
+
+d <- data.frame(as.numeric(avg.df$timegroup), avg.df$value.sd, avg.df$value.mean)
+df1 <- avg.df %>%
+  mutate(timegroup = as.numeric(timegroup)*1000) %>%
+  mutate(min = value.mean - value.sd, max = value.mean + value.sd) %>%
+  select(-location, -value.sd)
+m1 <- t(df1 %>% select(-value.mean))
+m2 <- as.data.frame(m1)
+m3 <- unname(as.list(m2))
+
+j1 <- t(df1 %>% select(-min, -max))
+j2 <- as.data.frame(j1)
+j3 <- unname(as.list(j2)) 
+hc <- highchart() %>%
+  # hc_chart(type = "arearange") %>% 
+  # hc_xAxis(categories = avg.df$timegroup) %>%
+  hc_xAxis(type = "datetime") %>%
+  hc_add_series(name = "[Мин-Макс]", data = m3, type = "arearange") %>%
+  hc_add_series(name = "Среднее", data = j3, type = "line") %>%
+  # hc_add_series_times_values(name = "Влажность, %", dates = as.Date(avg.df$timegroup), 
+  #                          values = avg.df$value.mean) %>%
+  # hc_add_series_ts(ts(), name = "Female")
+  # hc_add_theme(hc_theme_gridlight())
+  hc_add_theme(hc_theme_smpl())
+hc
+
+m <- list(c(1,2,3), c(4,5,6))
+hc <- highchart() %>%
+  # hc_chart(type = "arearange") %>% 
+  # hc_xAxis(categories = avg.df$timegroup) %>%
+  hc_add_series(name = "Tokyo", data = m, type = "arearange") %>%
+  #hc_add_series(name = "sd", data = avg.df$value.sd) %>%
+  hc_add_theme(hc_theme_gridlight())
+hc
+
+library("forecast")
+x <- forecast(ets(USAccDeaths), h = 48, level = 95)
