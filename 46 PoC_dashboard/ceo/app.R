@@ -187,7 +187,7 @@ server <- function(input, output, session) {
                   # colnames = c('время' = 'timestamp'),
                   colnames = c('# сенсора', '%', 'статус', 'время'), # https://rstudio.github.io/DT/, п.2.4
                   options = list(lengthChange = FALSE, pageLength = 6)) %>%
-      formatDate('timestamp', method = "toLocaleString") # см. https://rstudio.github.io/DT/functions.html, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#Conversion_getter 
+      formatDate('timestamp', method = "toLocaleString") # см. https://rstudio.github.io/DT/functions.html 
     })
 
   output$map_plot <- renderPlot({
