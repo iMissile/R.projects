@@ -311,7 +311,14 @@
     "location": "Moscow Lab",
     "name": "af02",
     "timegroup": "2016-05-20 12:00:00",
-    "value.mean": 89
+    "value.mean": 93.375,
+    "value.sd": 1.7678
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "af02",
+    "timegroup": "2016-05-20 16:00:00",
+    "value.mean": 94
   },
   {
     "location": "Moscow Lab",
@@ -632,6 +639,13 @@
     "location": "Moscow Lab",
     "name": "b002",
     "timegroup": "2016-05-20 12:00:00",
-    "value.mean": 88
+    "value.mean": 82.875,
+    "value.sd": 8.999
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "b002",
+    "timegroup": "2016-05-20 16:00:00",
+    "value.mean": 91
   }
 ]

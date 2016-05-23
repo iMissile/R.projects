@@ -13,5 +13,12 @@
 vignettes/*.html
 vignettes/*.pdf
 .Rproj.user
+<<<<<<< HEAD
 *.json
 *.RData
+=======
+
+# logs and data
+.log
+.json
+>>>>>>> origin/master
