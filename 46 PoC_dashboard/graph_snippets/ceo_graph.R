@@ -1,3 +1,5 @@
+rm(list=ls()) # очистим все переменные
+
 library(ggplot2) #load first! (Wickham)
 library(lubridate) #load second!
 library(dplyr)
@@ -17,6 +19,30 @@ library(gtable)
 library(grid) # для grid.newpage()
 library(gridExtra) # для grid.arrange()
 
+
+# https://cran.r-project.org/web/packages/curl/vignettes/intro.html
+req <- curl_fetch_memory("https://raw.githubusercontent.com/iot-rus/Moscow-Lab/master/weather.txt")
+wrecs <- rawToChar(req$content) # weather history
+# wh_json <- gsub('\\\"', "'", txt, perl = TRUE) 
+# заменим концы строк на , и добавим шапочку и окончание для формирования семантически правильного json
+# последнюю ',' надо удалить, может такое встретиться (перевод строки)
+tmp <- paste0('{"res":[', gsub("\\n", ",\n", wrecs, perl = TRUE), ']}')
+wh_json <- gsub("},\n]}", "}]}", tmp)
+# t <- cat(wh_json)
+write(wh_json, file="./export/wh_json.txt")
+data <- fromJSON(wh_json)
+
+whist.df <- data$res$main
+whist.df$timestamp <- data$res$dt
+  
+# t0 <- '{"coord":{"lon":37.61,"lat":55.76},"weather":[{"id":800,"main":"Clear","description":"clear sky","icon":"01d"}],"base":"cmc stations","main":{"temp":291.77,"pressure":1012,"humidity":72,"temp_min":290.15,"temp_max":295.35},"wind":{"speed":4,"deg":340},"clouds":{"all":0},"dt":1464008912,"sys":{"type":1,"id":7323,"message":0.0031,"country":"RU","sunrise":1463965411,"sunset":1464025820},"id":524894,"name":"Moskva","cod":200}'
+# t1 <- '{"coord":{"lon":37.61,"lat":55.76},"weather":[{"id":800,"main":"Clear","description":"clear sky","icon":"01d"}],"base":"stations","main":{"temp":291.01,"pressure":1012,"humidity":72,"temp_min":289.15,"temp_max":292.15},"visibility":10000,"wind":{"speed":4,"deg":330},"clouds":{"all":0},"dt":1464007798,"sys":{"type":1,"id":7323,"message":0.0354,"country":"RU","sunrise":1463965412,"sunset":1464025819},"id":524894,"name":"Moskva","cod":200}'
+# t <- paste0('{"results":[', t0, ',', t1, ']}')
+# mdata <- fromJSON(t)
+
+head(wh_json)
+
+stop()
 
 url <- "api.openweathermap.org/data/2.5/"   
 MoscowID <- '524901'

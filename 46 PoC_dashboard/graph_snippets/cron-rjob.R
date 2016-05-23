@@ -1,3 +1,5 @@
+rm(list=ls()) # очистим все переменные
+
 library(ggplot2) #load first! (Wickham)
 library(lubridate) #load second!
 library(dplyr)
@@ -45,14 +47,17 @@ generate_field_data <- function(back_days = 7, forward_days = 7) {
                        location = "Moscow Lab",
                        #location = "Картофель 1",
                        timestamp = tick.seq, 
-                       value = runif(nrow(sensor) * n, 0, 100)) # используем методику дополнения
+                       value = rescale(rnorm(nrow(sensor) * n, 70, 30), to = c(50, 80)))
+  mydata <- mydata %>%
+    mutate(min = value * runif(nrow(sensor) * n, 0.1, 0.9)) %>%
+    mutate(max = value * runif(nrow(sensor) * n, 1.1, 1.5)) %>%
+    mutate(max = ifelse(max <= 100, max, 100))
+    
   # rnorm(1000, 3, .25) # Generates 1000 numbers from a normal with mean 3 and sd=.25
   
-  # для соотв реалиям сделаем разброс во времени измерения
-  mydata$timestamp <- mydata$timestamp + runif(nrow(mydata), min = -5*60, max = 5*60)
+  # для соотв. реалиям сделаем разброс во времени измерения
+  # mydata$timestamp <- mydata$timestamp + runif(nrow(mydata), min = -5*60, max = 5*60)
   mydata$value <- round(mydata$value + 0.2*sin(as.numeric(mydata$timestamp)/86400*(0.1*pi)), 1)
-  
-  qplot(timestamp, value, data = mydata)
   
   mydata
 }
@@ -64,9 +69,50 @@ flog.info("Job started")
 flog.info("Working directory: %s", getwd())
 
 flog.info("Processing started")
-df <- generate_field_data()
+df <- generate_field_data(back_days = 7, forward_days = 3)
+qplot(timestamp, value, data = df)
 # http://stackoverflow.com/questions/25550711/convert-data-frame-to-json
 x <- jsonlite::toJSON(df, pretty = TRUE)
 write(x, file="./export/sample.json")
 flog.info("Job finished")
+
+
+# сгеренируем json под требования Паши ---------------------------------------------------
+# http://arxiv.org/pdf/1403.2805v1.pdf  |   http://arxiv.org/abs/1403.2805
+df2 <- data.frame(timestamp = round(as.numeric(df$timestamp), 0), 
+                  soil_moisture = round(df$value, 1),
+                  soil_moisture_min = round(df$min, 1), 
+                  soil_moisture_max = round(df$max, 1)) %>%
+  arrange(timestamp)
+
+x <- jsonlite::toJSON(list(results = df2), pretty = TRUE)
+write(x, file="./export/sample_highcharts.json")
+
+
+stop() # изыскания
+# сгеренируем json под требования Паши ---------------------------------------------------
+# http://arxiv.org/pdf/1403.2805v1.pdf  |   http://arxiv.org/abs/1403.2805
+options(stringsAsFactors = FALSE)
+df1 <- data.frame(results = rep('name', nrow(df)))
+df2 <- data.frame(timestamp = round(as.numeric(df$timestamp), 0), 
+                  soil_moisture = round(df$value, 1),
+                  soil_moisture_min = round(df$min, 1), 
+                  soil_moisture_max = round(df$max, 1)) %>%
+  arrange(timestamp)
+
+# Обязательно надо уровнять количество элементов, иначе получаем ошибку: 
+# Error in `$<-.data.frame`(`*tmp*`, "results", value = list(timestamp = c(1463345834,  : replacement has 671 rows, data has 1
+df1$results <- df2 
+
+ll <- list(results = df2)
+
+# df3 <- data.frame(results = df2) # так встроенный data.frame не получим
+
+gp <- ggplot(df1$results, aes(timestamp, soil_moisture)) +
+  geom_line()
+gp
+
+x <- jsonlite::toJSON(ll, pretty = TRUE)
+write(x, file="./export/sample_highcharts.json")
+
 

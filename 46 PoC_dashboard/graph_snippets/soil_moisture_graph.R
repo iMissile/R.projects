@@ -221,6 +221,8 @@ hc <- highchart() %>%
   hc_add_theme(hc_theme_smpl())
 hc
 
+stop()
+
 m <- list(c(1,2,3), c(4,5,6))
 hc <- highchart() %>%
   # hc_chart(type = "arearange") %>% 
