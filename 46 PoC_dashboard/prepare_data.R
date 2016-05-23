@@ -462,7 +462,7 @@ get_current_weather <- function(){
     print("Подгружаем исторические данные о погоде")
   } 
 
-  # проверим, как давно првоеряли последние показания
+  # проверим, как давно проверяли последние показания
   df <- history_weather_data %>%
     filter(timestamp > now() - hours(1)) %>%
     filter(timestamp <= now()) %>%
