@@ -74,13 +74,13 @@ ui <- fluidPage(theme = shinytheme("united"), titlePanel("Контроль вл�
                       "daysDepth",
                       "Глубина истории (дни)",
                       choices = c(1, 3, 7),
-                      selected = 7
+                      selected = 1
                     ),
                     selectInput(
                       "timeBin",
                       "Период группировки (часы)",
                       choices = c(1, 2, 3, 4, 6, 12),
-                      selected = 4
+                      selected = 1
                     ),
                     actionButton("logdata_btn", "Сброс данных в лог"),
                     width = 2 # обязательно ширины надо взаимно балансировать!!!!

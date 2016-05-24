@@ -23,3 +23,4 @@ vignettes/*.pdf
 .json
 >>>>>>> origin/master
 *.RData
+*.json
