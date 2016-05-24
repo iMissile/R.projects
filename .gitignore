@@ -22,3 +22,4 @@ vignettes/*.pdf
 .log
 .json
 >>>>>>> origin/master
+*.RData
