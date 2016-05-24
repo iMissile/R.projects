@@ -25,7 +25,7 @@ source("common_funcs.R") # сюда выносим все вычислительные и рисовательные функц
 
 getwd()
 
-# получаем исторические данные из репозитория --------------------------------------------------------
+# получаем исторические данные по погоде из репозитория Гарика --------------------------------------------------------
 # https://cran.r-project.org/web/packages/curl/vignettes/intro.html
 req <- curl_fetch_memory("https://raw.githubusercontent.com/iot-rus/Moscow-Lab/master/weather.txt")
 wrecs <- rawToChar(req$content) # weather history
@@ -57,15 +57,6 @@ reqstring <- paste0(url, "forecast?id=", MoscowID, "&APPID=", APPID)
 resp <- GET(reqstring)
 if(status_code(resp) == 200){
   r <- content(resp)
-  # конструируем вектор
-  # d <- data.frame(
-  #   # timestamp = now(),
-  #   timestamp = as.POSIXct(r$dt, origin='1970-01-01'),
-  #   temp = round(r$main$temp - 273, 1), # пересчитываем из кельвинов в градусы цельсия
-  #   pressure = round(r$main$pressure * 0.75006375541921, 0), # пересчитываем из гектопаскалей (hPa) в мм рт. столба
-  #   humidity = round(r$main$humidity, 0)
-    # precipitation = r$main$precipitation
-  #)
 }
 
 # получаем погодные данные
@@ -102,6 +93,16 @@ outw.df <- weather.df %>%
   group_by(timegroup, time.pos) %>%
   summarise(temp = mean(temp), pressure = mean(pressure), humidity = mean(humidity)) %>%
   ungroup
+
+# чтобы график не был разорванным, надо продублировать максимальную точку из PAST в группу FUTURE
+POI.df <- outw.df %>%
+  filter(time.pos == 'PAST') %>%
+  filter(timegroup == max(timegroup)) %>%
+  mutate(time.pos = 'FUTURE')
+
+outw.df <- outw.df %>%
+  bind_rows(POI.df) %>%
+  arrange(timegroup)
 
 
 # сделаем выгрузку в json --------------------------------------------------------
