@@ -197,42 +197,7 @@ server <- function(input, output, session) {
     input.df <- raw_field.df
     input.df <- raw_github_field.df
     
-    df <- input.df %>%
-      filter(timestamp <= slicetime) %>%
-      group_by(name) %>%
-      filter(timestamp == max(timestamp)) %>%
-      mutate(delta = round(as.numeric(difftime(slicetime, timestamp, unit = "min")), 0)) %>%
-      arrange(name) %>%
-      ungroup() %>%
-      # рабочий статус также определяется тем, насколько давно мы видели показания от конкретного сенсора
-      mutate(work.status = (delta < 60))
-    
-    
-    # откатегоризируем
-    df <- within(df, {
-      level <- NA
-      level[value >= 0 & value <= 33] <- "Low"
-      level[value > 33  & value <= 66] <- "Normal"
-      level[value > 66  & value <= 100] <- "High"
-    })
-    
-    # при группировке по Lev по умолчанию, порядок следования строк осуществляется по алфавиту
-    # ggplot(sensors.df, aes(x = lat, y = lon, colour = level)) + 
-    #  geom_point(size = 4)
-    
-    # пытаемся изменить группировку
-    # http://docs.ggplot2.org/current/aes_group_order.html
-    # сделаем из текстовых строк factor и их принудительно отсортируем
-    # http://www.ats.ucla.edu/stat/r/modules/factor_variables.htm
-    
-    # у нас два критерия разделения -- диапазон значений и работоспособность.
-    # диапазон измерений -- цвет, работоспособность -- форма
-    
-    sensors.df <- df %>%
-      rename(level.unordered = level) %>%
-      # mutate(lev.of = ordered(lev, levels = c('Low', 'Normal', 'High'))) %>%
-      mutate(level = factor(level.unordered, levels = c('High', 'Normal', 'Low'))) %>%
-      mutate(work.status = work.status & !is.na(level)) # что не попало в категорию также считается нерабочим
+    sensors.df <- prepare_sesnors_mapdf(input.df, slicetime)
     
     flog.info("sensors.df")
     flog.info(capture.output(print(sensors.df)))

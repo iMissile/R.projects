@@ -23,14 +23,15 @@ library(futile.logger)
 # }
 
 # запуск скрипта из рабочей директории, так настраиваем cron
-logfilename <- "./log/iot.log"
-weatherfilename <- "./output/real_weather.json"
-sensorfilename <- "./output/real_sensor.json"
+log_filename <- "./log/iot.log"
+weather_filename <- "./output/real_weather.json"
+sensorts_filename <- "./output/real_sensor_ts.json"
+sensorslice_filename <- "./output/real_sensor_slice.json"
 
 source("common_funcs.R") # сюда выносим все вычислительные и рисовательные функции
 
 # инициализация ----------------------------------------------
-flog.appender(appender.file(logfilename))
+flog.appender(appender.file(log_filename))
 flog.threshold(TRACE)
 flog.info("Job started")
 flog.info("Working directory: %s", getwd())
@@ -48,18 +49,19 @@ df3 <- with(df, {
              air_humidity_future = ifelse(time.pos == "FUTURE", round(humidity, 1), NA)) %>%
     arrange(timestamp)
 })
+flog.info("Weather data")
 flog.info(capture.output(summary(df3)))
 
 # сгеренируем json с погодой под требования Паши ---------------------------------------------------
 # http://arxiv.org/pdf/1403.2805v1.pdf  |   http://arxiv.org/abs/1403.2805
 x <- jsonlite::toJSON(list(results = df3), pretty = TRUE)
-write(x, file = weatherfilename)
-
+write(x, file = weather_filename)
 
 # запрос и формирование данных по данным сенсоров ==============================================
 raw.df <- load_github_field_data()
 # if (!is.na(df)) { raw.df <- df}
 
+# формирование временного ряда по сенсорам ---------------------------------------------------
 # проведем усреднение по временным группам, если измерения проводились несколько раз в течение этого времени
 # усредняем только по рабочим датчикам
 
@@ -74,8 +76,23 @@ avg.df <- raw.df %>%
   summarise(value.mean = mean(value), value.min = min(value), value.max = max(value)) %>%
   ungroup() # очистили группировки
 
-x <- jsonlite::toJSON(list(results = avg.df), pretty = TRUE)
-write(x, file = sensorfilename)
+flog.info("Time-series data")
+flog.info(capture.output(head(avg.df, n = 4)))
 
+x <- jsonlite::toJSON(list(results = avg.df), pretty = TRUE)
+write(x, file = sensorts_filename)
+
+# формирование временного среза в пространстве по сенсорам ---------------------------------------------------
+sensors.df <- prepare_sesnors_mapdf(raw.df, slicetime = lubridate::now()) %>%
+  mutate(timegroup = hgroup.enum(timestamp, time.bin = 1)) %>%
+  mutate(timestamp = round(as.numeric(timegroup), 0))
+
+flog.info("Time-slice data")
+flog.info(capture.output(head(sensors.df, n = 4)))
+
+x <- jsonlite::toJSON(list(results = sensors.df), pretty = TRUE)
+write(x, file = sensorslice_filename)
+  
+  
 
 flog.info("Job finished")
