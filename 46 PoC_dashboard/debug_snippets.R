@@ -24,7 +24,35 @@ library(curl)
 
 
 
+url <- "api.openweathermap.org/data/2.5/"   
+MoscowID <- '524901'
+APPID <- '19deaa2837b6ae0e41e4a140329a1809'
+# reqstring <- paste0(url, "weather?id=", MoscowID, "&APPID=", APPID)
+reqstring <- paste0(url, "forecast?id=", MoscowID, "&APPID=", APPID) 
+resp <- GET(reqstring)
+if(status_code(resp) == 200){
+  r <- content(resp)
+}
 
+# получаем погодные данные
+m <- r$list
+ll <- lapply(m, function(x){ 
+  ldate <- getElement(x, 'main')
+  ldate$timestamp <- getElement(x, 'dt')
+  ldate$rain <- getElement(x, 'rain')[['3h']] ## мм осадков на следующие 3 часа
+  ldate
+})
+
+l2 <- melt(ll)
+
+# нормализуем под колонки, которые есть в исторических данных
+l3 <- tidyr::spread(l2, L2, value) %>% 
+  select(-L1, -temp_kf) %>%
+  mutate(timestamp = as.integer(timestamp))
+
+stop()
+
+# ====================================
 url <- "api.openweathermap.org/data/2.5/"   
 MoscowID <- '524901'
 APPID <- '19deaa2837b6ae0e41e4a140329a1809'
@@ -35,7 +63,7 @@ if(status_code(resp) == 200){
   d <- data.frame(
     # timestamp = now(),
     timestamp = as.POSIXct(r$dt, origin='1970-01-01'),
-    temp = round(r$main$temp - 273, 1), # пересчитываем из кельвинов в градусы цельсия
+    temp = round(r$main$temp - 273.15, 1), # пересчитываем из кельвинов в градусы цельсия
     pressure = round(r$main$pressure * 0.75006375541921, 0), # пересчитываем из гектопаскалей (hPa) в мм рт. столба
     humidity = round(r$main$humidity, 0)
     # precipitation = r$main$precipitation

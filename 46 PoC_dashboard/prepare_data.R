@@ -497,7 +497,7 @@ if(status_code(resp) == 200){
   # конструируем вектор
   d <- data.frame(
     timestamp = now(),
-    temp = r$main$temp - 273, # пересчитываем из кельвинов в градусы цельсия
+    temp = r$main$temp - 273.15, # пересчитываем из кельвинов в градусы цельсия
     pressure = round(r$main$pressure * 0.75006375541921, 3), # пересчитываем из гектопаскалей (hPa) в мм рт. столба
     humidity = r$main$humidity
     # precipitation = r$main$precipitation

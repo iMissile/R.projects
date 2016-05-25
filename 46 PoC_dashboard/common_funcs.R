@@ -94,6 +94,7 @@ get_weather_df <- function(back_days = 7, forward_days = 3) {
   ll <- lapply(m, function(x){ 
     ldate <- getElement(x, 'main')
     ldate$timestamp <- getElement(x, 'dt')
+    ldate$rain3h <- getElement(x, 'rain')[['3h']] ## мм осадков на следующие 3 часа
     ldate
   })
   l2 <- melt(ll)
@@ -107,7 +108,7 @@ get_weather_df <- function(back_days = 7, forward_days = 3) {
   weather.df <- bind_rows(whist.df, l3) %>%
     select(-temp_max, -temp_min, -sea_level, -grnd_level) %>%
     distinct() %>% # удаляем дубли, которые навыдавал API
-    mutate(temp = round(temp - 273, 1)) %>% # пересчитываем из кельвинов в градусы цельсия
+    mutate(temp = round(temp - 273.15, 1)) %>% # пересчитываем из кельвинов в градусы цельсия
     mutate(pressure = round(pressure * 0.75006375541921, 0)) %>% # пересчитываем из гектопаскалей (hPa) в мм рт. столба
     mutate(humidity = round(humidity, 0)) %>%
     mutate(timestamp = as.POSIXct(timestamp, origin='1970-01-01')) %>%
@@ -116,12 +117,17 @@ get_weather_df <- function(back_days = 7, forward_days = 3) {
   # разметим данные на прошлое и будущее. будем использовать для цветовой группировки
   weather.df['time.pos'] <- ifelse(weather.df$timestamp < now(), "PAST", "FUTURE")
   
+  # browser()
   # причешем данные для графика у Паши + проведем усреднение по часовым группам
+  # есть нюансы, связанные с выдачей данных из прогноза. 
+  # rain3h соотв. прогнозу осадков в мм, на след. три часа
+  # за консистентность информации (нарезка тиков 3-х часовыми интервалами) отвечает API.
+  # поэтому что mean, что sum -- все одно. timegroup для каждого прогнозного измерения должна быть ровно одна
   outw.df <- weather.df %>%
     filter(timegroup >= floor_date(now() - days(back_days), unit = "day")) %>%
     filter(timegroup <= ceiling_date(now() + days(forward_days), unit = "day")) %>%
     group_by(timegroup, time.pos) %>%
-    summarise(temp = mean(temp), pressure = mean(pressure), humidity = mean(humidity)) %>%
+    summarise(temp = mean(temp), pressure = mean(pressure), humidity = mean(humidity), rain3h_av = mean(rain3h)) %>%
     ungroup
   
   # чтобы график не был разорванным, надо продублировать максимальную точку из PAST в группу FUTURE
@@ -710,7 +716,7 @@ plot_cweather <- function() {
     d <- data.frame(
       # timestamp = now(),
       timestamp = as.POSIXct(r$dt, origin='1970-01-01'),
-      temp = round(r$main$temp - 273, 1), # пересчитываем из кельвинов в градусы цельсия
+      temp = round(r$main$temp - 273.15, 1), # пересчитываем из кельвинов в градусы цельсия
       pressure = round(r$main$pressure * 0.75006375541921, 0), # пересчитываем из гектопаскалей (hPa) в мм рт. столба
       humidity = round(r$main$humidity, 0)
       # precipitation = r$main$precipitation
@@ -772,7 +778,7 @@ plot_cweather_scaled <- function() {
     d <- data.frame(
       # timestamp = now(),
       timestamp = as.POSIXct(r$dt, origin='1970-01-01'),
-      temp = round(r$main$temp - 273, 1), # пересчитываем из кельвинов в градусы цельсия
+      temp = round(r$main$temp - 273.15, 1), # пересчитываем из кельвинов в градусы цельсия
       pressure = round(r$main$pressure * 0.75006375541921, 0), # пересчитываем из гектопаскалей (hPa) в мм рт. столба
       humidity = round(r$main$humidity, 0)
       # precipitation = r$main$precipitation

@@ -14,3 +14,9 @@ restart shiny-server
 [root@mt-zoo-shiny01 shiny-server]# restart shiny-server
 shiny-server start/running, process 11153
 [root@mt-zoo-shiny01 shiny-server]#
+
+
+
+# API к погоде
+api.openweathermap.org/data/2.5/weather?id=524901&APPID=19deaa2837b6ae0e41e4a140329a1809
+api.openweathermap.org/data/2.5/forecast?id=524901&APPID=19deaa2837b6ae0e41e4a140329a1809

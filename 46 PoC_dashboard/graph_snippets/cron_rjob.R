@@ -43,6 +43,8 @@ df <- get_weather_df(back_days = 7, forward_days = 3)
 # http://stackoverflow.com/questions/25550711/convert-data-frame-to-json
 df3 <- with(df, {
   data.frame(timestamp = round(as.numeric(timegroup), 0), 
+             timegroup = timegroup,
+             rain3h_av = rain3h_av,
              air_temp_past = ifelse(time.pos == "PAST", round(temp, 0), NA),
              air_temp_future = ifelse(time.pos == "FUTURE", round(temp, 0), NA),
              air_humidity_past = ifelse(time.pos == "PAST", round(humidity, 0), NA),

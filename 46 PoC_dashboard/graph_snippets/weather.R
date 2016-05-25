@@ -33,7 +33,7 @@ if(status_code(resp) == 200){
   d <- data.frame(
     # timestamp = now(),
     timestamp = as.POSIXct(r$dt, origin='1970-01-01'),
-    temp = round(r$main$temp - 273, 1), # пересчитываем из кельвинов в градусы цельсия
+    temp = round(r$main$temp - 273.15, 1), # пересчитываем из кельвинов в градусы цельсия
     pressure = round(r$main$pressure * 0.75006375541921, 0), # пересчитываем из гектопаскалей (hPa) в мм рт. столба
     humidity = round(r$main$humidity, 0)
     # precipitation = r$main$precipitation
