@@ -27,6 +27,7 @@ log_filename <- "./log/iot.log"
 weather_filename <- "./output/real_weather.json"
 sensorts_filename <- "./output/real_sensor_ts.json"
 sensorslice_filename <- "./output/real_sensor_slice.json"
+precipitation_filename <- "./output/real_sensor_slice.json"
 
 source("common_funcs.R") # сюда выносим все вычислительные и рисовательные функции
 

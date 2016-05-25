@@ -24,31 +24,43 @@ library(curl)
 
 
 
-url <- "api.openweathermap.org/data/2.5/"   
-MoscowID <- '524901'
-APPID <- '19deaa2837b6ae0e41e4a140329a1809'
-# reqstring <- paste0(url, "weather?id=", MoscowID, "&APPID=", APPID)
-reqstring <- paste0(url, "forecast?id=", MoscowID, "&APPID=", APPID) 
-resp <- GET(reqstring)
-if(status_code(resp) == 200){
-  r <- content(resp)
-}
+# получаем исторические данные по погоде из репозитория Гарика --------------------------------------------------------
+# https://cran.r-project.org/web/packages/curl/vignettes/intro.html
+req <- curl_fetch_memory("https://raw.githubusercontent.com/iot-rus/Moscow-Lab/master/weather.txt")
+wrecs <- rawToChar(req$content) # weather history
+# wh_json <- gsub('\\\"', "'", txt, perl = TRUE) 
+# заменим концы строк на , и добавим шапочку и окончание для формирования семантически правильного json
+# последнюю ',' надо удалить, может такое встретиться (перевод строки)
+tmp <- paste0('{"res":[', gsub("\\n", ",\n", wrecs, perl = TRUE), ']}')
+wh_json <- gsub("},\n]}", "}]}", tmp)
+# t <- cat(wh_json)
+# write(wh_json, file="./export/wh_json.txt")
+data <- fromJSON(wh_json)
 
-# получаем погодные данные
-m <- r$list
-ll <- lapply(m, function(x){ 
-  ldate <- getElement(x, 'main')
-  ldate$timestamp <- getElement(x, 'dt')
-  ldate$rain <- getElement(x, 'rain')[['3h']] ## мм осадков на следующие 3 часа
-  ldate
-})
+whist.df <- data$res$main
+whist.df$timestamp <- data$res$dt
+# поскольку историю мы сохраняем сами из данных текущих запросов, то
+# rain$3h -- Rain volume for the last 3 hours (http://openweathermap.org/current#parameter)
+whist.df$rain3h <- data$res$rain[['3h']]
+whist.df$human_time <- as.POSIXct(whist.df$timestamp, origin='1970-01-01')
 
-l2 <- melt(ll)
 
-# нормализуем под колонки, которые есть в исторических данных
-l3 <- tidyr::spread(l2, L2, value) %>% 
-  select(-L1, -temp_kf) %>%
-  mutate(timestamp = as.integer(timestamp))
+# считаем осадки за сутки
+df <- data.frame(timestamp = whist.df$human_time, rain3h = whist.df$rain3h)
+  
+myfun <- function(x){
+  res <- sum(x$rain3h, na.rm = TRUE)
+  print(paste0("==============================="))
+  print(x)
+  print(paste0("----- Sum:", res, " --------"))
+  res
+  }
+
+df1 <- df %>%
+  mutate(date = lubridate::date(timestamp)) %>%
+  group_by(date) %>% # собираем агрегаты по суткам
+  summarise(rain = myfun(data.frame(timestamp = timestamp, rain3h = rain3h))) # пытаемся высчитать агрегат за сутки
+  
 
 stop()
 
