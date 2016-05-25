@@ -44,8 +44,8 @@ df3 <- with(df, {
   arrange(timestamp)
 })
 
-x <- jsonlite::toJSON(list(results = df3), pretty = TRUE)
-write(x, file="./export/real_weather.json")
+# x <- jsonlite::toJSON(list(results = df3), pretty = TRUE)
+# write(x, file="./export/real_weather.json")
 
 # отобразим для себя --------------------------------------------------------
 
@@ -65,4 +65,21 @@ p1 <- ggplot(df, aes(timegroup, temp, colour = time.pos)) +
   xlab("Дата") +
   ylab("Температура, град. C")
 
-p1
+
+p2 <- ggplot(df, aes(timegroup, humidity, colour = time.pos)) +
+  # ggtitle("График температуры") +
+  # scale_fill_brewer(palette="Set1") +
+  # scale_fill_brewer(palette = "Paired") +
+  scale_color_brewer(palette = "Set2") +
+  # geom_ribbon(aes(ymin = temp.min, ymax = temp.max, fill = time.pos), alpha = 0.5) +
+  # geom_point(shape = 1, size = 3) +
+  # geom_line(lwd = 1, linetype = 'dashed', color = "red") +
+  scale_x_datetime(labels = date_format("%d.%m"), breaks = date_breaks("1 days"), minor_breaks = date_breaks("6 hours")) +
+  geom_line(lwd = 1.2) +
+  theme_igray() +
+  theme(legend.position="none") +
+  ylim(0, 100) +
+  xlab("Дата") +
+  ylab("Влажность воздуха, %")
+
+grid.arrange(p1, p2, ncol = 1) # возвращаем ggplot

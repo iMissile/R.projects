@@ -43,10 +43,10 @@ df <- get_weather_df(back_days = 7, forward_days = 3)
 # http://stackoverflow.com/questions/25550711/convert-data-frame-to-json
 df3 <- with(df, {
   data.frame(timestamp = round(as.numeric(timegroup), 0), 
-             air_temp_past = ifelse(time.pos == "PAST", round(temp, 1), NA),
-             air_temp_future = ifelse(time.pos == "FUTURE", round(temp, 1), NA),
-             air_humidity_past = ifelse(time.pos == "PAST", round(humidity, 1), NA),
-             air_humidity_future = ifelse(time.pos == "FUTURE", round(humidity, 1), NA)) %>%
+             air_temp_past = ifelse(time.pos == "PAST", round(temp, 0), NA),
+             air_temp_future = ifelse(time.pos == "FUTURE", round(temp, 0), NA),
+             air_humidity_past = ifelse(time.pos == "PAST", round(humidity, 0), NA),
+             air_humidity_future = ifelse(time.pos == "FUTURE", round(humidity, 0), NA)) %>%
     arrange(timestamp)
 })
 flog.info("Weather data")
@@ -74,6 +74,7 @@ avg.df <- raw.df %>%
   filter(work.status) %>%
   group_by(location, timegroup) %>%
   summarise(value.mean = mean(value), value.min = min(value), value.max = max(value)) %>%
+  mutate(timestamp = round(as.numeric(timegroup), 0)) %>%
   ungroup() # очистили группировки
 
 flog.info("Time-series data")
@@ -92,7 +93,5 @@ flog.info(capture.output(head(sensors.df, n = 4)))
 
 x <- jsonlite::toJSON(list(results = sensors.df), pretty = TRUE)
 write(x, file = sensorslice_filename)
-  
-  
 
 flog.info("Job finished")

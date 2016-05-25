@@ -188,7 +188,7 @@ p2 <- ggplot(avg.df, aes(x = timegroup, y = value.mean, colour = name)) +
   geom_hline(yintercept = c(70, 90), lwd = 1.2, linetype = 'dashed') +
   geom_point(shape = 19, size = 3) +
   scale_x_datetime(labels = date_format(format = "%d.%m%n%H:%M", tz = "Europe/Moscow"),
-                   breaks = date_breaks('8 hour') 
+                   breaks = date_breaks('12 hour') 
                    # minor_breaks = date_breaks('1 hour')
   ) +
   # добавляем нерабочие сенсоры
@@ -207,7 +207,7 @@ p2 <- ggplot(avg.df, aes(x = timegroup, y = value.mean, colour = name)) +
   # scale_colour_solarized("blue") +
   # theme(legend.position=c(0.5, .2)) +
   theme(legend.position = "top") +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+  theme(axis.text.x = element_text(angle = 0, hjust = 1, vjust = 0.5)) +
   theme(axis.text.y = element_text(angle = 0))
 
 benchplot(p2)
@@ -231,7 +231,7 @@ raw.df <- raw.df %>%
   mutate(timegroup = hgroup.enum(timestamp, time.bin = 1))
 
 
-avg.df <- raw.df %>%
+avg2.df <- raw.df %>%
   filter(timegroup >= floor_date(now() - days(7), unit = "day")) %>%
   filter(timegroup <= now()) %>%
   filter(work.status) %>%
@@ -240,7 +240,7 @@ avg.df <- raw.df %>%
   ungroup() # очистили группировки
 
 write.csv(
-  x = avg.df,
+  x = avg2.df,
   file = "avg_df.csv", 
   row.names = FALSE, quote = TRUE
 )

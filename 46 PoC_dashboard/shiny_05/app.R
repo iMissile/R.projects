@@ -49,7 +49,8 @@ eval(parse("../common_funcs.R", encoding="UTF-8"))
 # ================ первичная загрузка данных =========================
 raw_field.df <- load_field_data()
 raw_github_field.df <- load_github_field_data()
-raw_weather.df <- load_weather_data()
+# raw_weather.df <- load_weather_data()
+raw_weather.df <- get_weather_df()
 
 # ================================================================
 ui <- fluidPage(theme = shinytheme("united"), titlePanel("Контроль влажности"),
@@ -88,12 +89,12 @@ ui <- fluidPage(theme = shinytheme("united"), titlePanel("Контроль вл�
                   
                   mainPanel(
                     fluidRow(
-                             column(5, plotOutput('map_plot')), # , height = "300px"
+                             column(5, plotOutput('map_plot1')), # , height = "300px"
                              # column(7, plotOutput('data_plot'))), # , height = "300px"
                              column(7, plotOutput('temp_plot'))), # , height = "300px"
                     fluidRow(
                              # column(5, plotOutput('weather_plot')),
-                             column(5, DT::dataTableOutput('data_tbl')),
+                             column(5, DT::dataTableOutput('data_tbl1')),
                              column(7, plotOutput('weather_plot'))),
                     width = 10 # обязательно ширины надо взаимно балансировать!!!!
                    )
@@ -133,7 +134,8 @@ server <- function(input, output, session) {
 
     # подгрузим данные
     raw_field.df <<- load_field_data()
-    raw_weather.df <<- load_weather_data()
+    # raw_weather.df <<- load_weather_data()
+    raw_weather.df <<- get_weather_df()
 
     # берем лабораторные данные с github
     df <- load_github_field_data()
@@ -165,7 +167,11 @@ server <- function(input, output, session) {
     # на выходе должен получиться ggplot!!!
     flog.info(paste0(input$update_btn, ": weather_plot")) # формально используем  
     # параметры select передаются как character vector!!!!!!!!
-    plot_weather_data(raw_weather.df, as.numeric(input$daysDepth))
+    # raw_weather_df
+    # timestamp temp.min pressure humidity precipitation temp.max     temp           timegroup
+    #    (time)    (dbl)    (dbl)    (dbl)         (dbl)    (dbl)    (dbl)              (time)
+    #plot_weather_data(raw_weather.df, as.numeric(input$daysDepth))
+    plot_real_weather_data(raw_weather.df, as.numeric(input$daysDepth))
   })
   
   # виджет текущей погоды
