@@ -21,33 +21,34 @@ library(curl)
 #library(rdrop2)
 # library(rgl)
 
+source("common_funcs.R") # сюда выносим все вычислительные и рисовательные функции
 
 
+# # получаем исторические данные по погоде из репозитория Гарика --------------------------------------------------------
+# # https://cran.r-project.org/web/packages/curl/vignettes/intro.html
+# req <- curl_fetch_memory("https://raw.githubusercontent.com/iot-rus/Moscow-Lab/master/weather.txt")
+# wrecs <- rawToChar(req$content) # weather history
+# # wh_json <- gsub('\\\"', "'", txt, perl = TRUE) 
+# # заменим концы строк на , и добавим шапочку и окончание для формирования семантически правильного json
+# # последнюю ',' надо удалить, может такое встретиться (перевод строки)
+# tmp <- paste0('{"res":[', gsub("\\n", ",\n", wrecs, perl = TRUE), ']}')
+# wh_json <- gsub("},\n]}", "}]}", tmp)
+# # t <- cat(wh_json)
+# # write(wh_json, file="./export/wh_json.txt")
+# data <- fromJSON(wh_json)
+# 
+# whist.df <- data$res$main
+# whist.df$timestamp <- data$res$dt
+# # поскольку историю мы сохраняем сами из данных текущих запросов, то
+# # rain$3h -- Rain volume for the last 3 hours (http://openweathermap.org/current#parameter)
+# whist.df$rain3h <- data$res$rain[['3h']]
+# whist.df$human_time <- as.POSIXct(whist.df$timestamp, origin='1970-01-01')
 
-# получаем исторические данные по погоде из репозитория Гарика --------------------------------------------------------
-# https://cran.r-project.org/web/packages/curl/vignettes/intro.html
-req <- curl_fetch_memory("https://raw.githubusercontent.com/iot-rus/Moscow-Lab/master/weather.txt")
-wrecs <- rawToChar(req$content) # weather history
-# wh_json <- gsub('\\\"', "'", txt, perl = TRUE) 
-# заменим концы строк на , и добавим шапочку и окончание для формирования семантически правильного json
-# последнюю ',' надо удалить, может такое встретиться (перевод строки)
-tmp <- paste0('{"res":[', gsub("\\n", ",\n", wrecs, perl = TRUE), ']}')
-wh_json <- gsub("},\n]}", "}]}", tmp)
-# t <- cat(wh_json)
-# write(wh_json, file="./export/wh_json.txt")
-data <- fromJSON(wh_json)
-
-whist.df <- data$res$main
-whist.df$timestamp <- data$res$dt
-# поскольку историю мы сохраняем сами из данных текущих запросов, то
-# rain$3h -- Rain volume for the last 3 hours (http://openweathermap.org/current#parameter)
-whist.df$rain3h <- data$res$rain[['3h']]
-whist.df$human_time <- as.POSIXct(whist.df$timestamp, origin='1970-01-01')
-
+weather.df <- prepare_raw_weather_data()
 
 # считаем осадки за сутки ------------------------------
 # полагаем, что идентичность выпавших осадков с точностью до третьего знака просто означает дублирование показаний!!!!
-df0 <- data.frame(timestamp = whist.df$human_time, rain3h = whist.df$rain3h) %>%
+df0 <- data.frame(timestamp = weather.df$timestamp, rain3h = weather.df$rain3h) %>%
   filter(!is.na(rain3h)) %>% # записи без дождя нас вообще не интересуют
   distinct() %>% # полностью дублирующиеся записи также неинтересны
   mutate(date = lubridate::date(timestamp)) %>%
@@ -113,7 +114,7 @@ df2 <- df1 %>%
 #   summarise(rain = myfun(data.frame(timestamp = timestamp, rain3h = rain3h))) # пытаемся высчитать агрегат за сутки
 #   
 
-ggplot(df, aes(timestamp, rain3h)) +
+ggplot(df2, aes(date, rain)) +
   geom_point()
 
 

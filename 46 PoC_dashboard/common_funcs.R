@@ -54,7 +54,7 @@ hgroup.enum <- function(date, time.bin = 4){
   floor_date(tick_time, unit = "day") + hours(n * time.bin)
 }
 
-get_weather_df <- function(back_days = 7, forward_days = 3) {
+prepare_raw_weather_data <- function() {
   # получаем исторические данные по погоде из репозитория Гарика --------------------------------------------------------
   # https://cran.r-project.org/web/packages/curl/vignettes/intro.html
   req <- curl_fetch_memory("https://raw.githubusercontent.com/iot-rus/Moscow-Lab/master/weather.txt")
@@ -124,7 +124,14 @@ get_weather_df <- function(back_days = 7, forward_days = 3) {
   # разметим данные на прошлое и будущее. будем использовать для цветовой группировки
   weather.df['time.pos'] <- ifelse(weather.df$timestamp < now(), "PAST", "FUTURE")
   
-  browser()
+  weather.df
+}
+
+get_weather_df <- function(back_days = 7, forward_days = 3) {
+
+  weather.df <- prepare_raw_weather_data()
+
+  # browser()
   # причешем данные для графика у Паши + проведем усреднение по часовым группам
   # есть нюансы, связанные с выдачей данных из прогноза. 
   # rain3h соотв. прогнозу осадков в мм, на предыдущих три часа
