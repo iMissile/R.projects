@@ -74,7 +74,7 @@ get_weather_df <- function(back_days = 7, forward_days = 3) {
   # rain$3h -- Rain volume for the last 3 hours (http://openweathermap.org/current#parameter)
   whist.df$rain3h <- data$res$rain[['3h']]
   whist.df$human_time <- as.POSIXct(whist.df$timestamp, origin='1970-01-01')
-  browser()  
+  # browser()  
   
   # t0 <- '{"coord":{"lon":37.61,"lat":55.76},"weather":[{"id":800,"main":"Clear","description":"clear sky","icon":"01d"}],"base":"cmc stations","main":{"temp":291.77,"pressure":1012,"humidity":72,"temp_min":290.15,"temp_max":295.35},"wind":{"speed":4,"deg":340},"clouds":{"all":0},"dt":1464008912,"sys":{"type":1,"id":7323,"message":0.0031,"country":"RU","sunrise":1463965411,"sunset":1464025820},"id":524894,"name":"Moskva","cod":200}'
   # t1 <- '{"coord":{"lon":37.61,"lat":55.76},"weather":[{"id":800,"main":"Clear","description":"clear sky","icon":"01d"}],"base":"stations","main":{"temp":291.01,"pressure":1012,"humidity":72,"temp_min":289.15,"temp_max":292.15},"visibility":10000,"wind":{"speed":4,"deg":330},"clouds":{"all":0},"dt":1464007798,"sys":{"type":1,"id":7323,"message":0.0354,"country":"RU","sunrise":1463965412,"sunset":1464025819},"id":524894,"name":"Moskva","cod":200}'
@@ -124,10 +124,10 @@ get_weather_df <- function(back_days = 7, forward_days = 3) {
   # разметим данные на прошлое и будущее. будем использовать для цветовой группировки
   weather.df['time.pos'] <- ifelse(weather.df$timestamp < now(), "PAST", "FUTURE")
   
-  # browser()
+  browser()
   # причешем данные для графика у Паши + проведем усреднение по часовым группам
   # есть нюансы, связанные с выдачей данных из прогноза. 
-  # rain3h соотв. прогнозу осадков в мм, на след. три часа
+  # rain3h соотв. прогнозу осадков в мм, на предыдущих три часа
   # за консистентность информации (нарезка тиков 3-х часовыми интервалами) отвечает API.
   # поэтому что mean, что sum -- все одно. timegroup для каждого прогнозного измерения должна быть ровно одна
   outw.df <- weather.df %>%

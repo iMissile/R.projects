@@ -11,13 +11,15 @@ library(shiny)
 library(shinythemes) # https://rstudio.github.io/shinythemes/
 library(magrittr)
 #library(leaflet)
-library(readr) #Hadley Wickham, http://blog.rstudio.org/2015/04/09/readr-0-1-0/
 library(DT)
 library(ggplot2) #load first! (Wickham)
 library(lubridate) #load second!
 library(scales)
 library(ggmap)
 library(dplyr)
+library(tidyr)
+library(readr)  #Hadley Wickham, http://blog.rstudio.org/2015/04/09/readr-0-1-0/
+library(reshape2)
 library(ggthemes)
 library(ggdendro) # для пустой темы
 library(wesanderson) # https://github.com/karthik/wesanderson
@@ -29,6 +31,7 @@ library(gridExtra) # для grid.arrange()
 library(akima)
 library(curl)
 library(httr)
+library(jsonlite)
 library(futile.logger)
 
 # library(rgl)

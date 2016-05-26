@@ -45,22 +45,77 @@ whist.df$rain3h <- data$res$rain[['3h']]
 whist.df$human_time <- as.POSIXct(whist.df$timestamp, origin='1970-01-01')
 
 
-# считаем осадки за сутки
-df <- data.frame(timestamp = whist.df$human_time, rain3h = whist.df$rain3h)
-  
-myfun <- function(x){
-  res <- sum(x$rain3h, na.rm = TRUE)
-  print(paste0("==============================="))
-  print(x)
-  print(paste0("----- Sum:", res, " --------"))
-  res
-  }
-
-df1 <- df %>%
+# считаем осадки за сутки ------------------------------
+# полагаем, что идентичность выпавших осадков с точностью до третьего знака просто означает дублирование показаний!!!!
+df0 <- data.frame(timestamp = whist.df$human_time, rain3h = whist.df$rain3h) %>%
+  filter(!is.na(rain3h)) %>% # записи без дождя нас вообще не интересуют
+  distinct() %>% # полностью дублирующиеся записи также неинтересны
   mutate(date = lubridate::date(timestamp)) %>%
-  group_by(date) %>% # собираем агрегаты по суткам
-  summarise(rain = myfun(data.frame(timestamp = timestamp, rain3h = rain3h))) # пытаемся высчитать агрегат за сутки
+  group_by(date, rain3h) %>% # собираем агрегаты по суткам, а потом по повторяющимся значениям, 
+  # может быть погрешность по переходам через сутки, но при группировке по значениям можем случайно объединить данных с разных дат
+  # в каждой группе посчитаем временную протяженность события
+  arrange(timestamp) %>%
+  mutate (dtime = as.numeric(difftime(timestamp, min(timestamp), unit = "min")))
   
+# теперь мы можем проверить, чтобы максимальное значение в группе не превышало 180 мин (3 часа)
+# поглядел на данные, таких групп нет за месяц не нашел, решил пока для простоты забить
+df1 <- df0 %>% 
+  # в каждой группе выберем значение с минимальным временем измерения
+  filter(timestamp == min(timestamp)) %>% # см. допущение об идентичности показаний
+  ungroup() %>%
+  arrange(timestamp)
+
+# а теперь посчитаем агрегаты по суткам
+df2 <- df1 %>%
+  select(-dtime) %>%
+  group_by(date) %>%
+  summarise(rain = sum(rain3h)) %>% # пытаемся высчитать агрегат за сутки
+  ungroup %>%
+  arrange(date)
+  
+  
+
+# # попробуем на каждое измерение добавить строчку с 0-ми осадками на 3 часа назад. Посмотрим как будет выглядеть
+# df2 <- bind_rows(select(df0, -date), data.frame(timestamp = df0$timestamp - hours(3), rain3h = 0)) %>%
+#   arrange(timestamp)
+# # получается фигня
+# 
+# # посчитаем дельту во времени между измерениями
+# # df3 <- data.frame(df0$timestamp, dt = c(NA, difftime(tail(df0$timestamp, -1), head(df0$timestamp, -1), unit = "min")))
+# df0$dt <- c(3*60, as.numeric(difftime(tail(df0$timestamp, -1), head(df0$timestamp, -1), unit = "min")))
+# # df0$dt <- c(3*60*60, (tail(df0$timestamp,-1) - head(df0$timestamp,-1))) # полагаем, что предыдущее измерение было более 3-х часов назад
+# 
+# 
+# # попробуем по другому
+# df <- df0
+#   
+#   
+# # посчитаем дельту в осадках
+# # # http://stackoverflow.com/questions/16212097/r-how-can-i-calculate-difference-between-rows-in-a-data-frame
+# df0$dt <- c(3*60*60, (tail(df0$timestamp,-1) - head(df0$timestamp,-1))) # полагаем, что предыдущее измерение было более 3-х часов назад
+# df0$dr <- c(head(df0$rain3h, 1), (tail(df0$rain3h,-1) - head(df0$rain3h,-1)))
+# 
+# # устраним все записи с нулевой дельтой (это просто повторы предыдущих событий, дождь может уже и кончился))
+# df <- filter(df0, dr != 0)
+# # отбросим записи, которые следуют чаще, чем через час
+#   
+# myfun <- function(x){
+#   res <- sum(x$rain3h, na.rm = TRUE)
+#   print(paste0("==============================="))
+#   print(x)
+#   print(paste0("----- Sum:", res, " --------"))
+#   res
+#   }
+# 
+# df1 <- df %>%
+#   mutate(date = lubridate::date(timestamp)) %>%
+#   group_by(date) %>% # собираем агрегаты по суткам
+#   summarise(rain = myfun(data.frame(timestamp = timestamp, rain3h = rain3h))) # пытаемся высчитать агрегат за сутки
+#   
+
+ggplot(df, aes(timestamp, rain3h)) +
+  geom_point()
+
 
 stop()
 
