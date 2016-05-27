@@ -93,12 +93,12 @@ ui <- fluidPage(theme = shinytheme("united"), titlePanel("Контроль вл�
                   
                   mainPanel(
                     fluidRow(
-                             column(5, plotOutput('map_plot1')), # , height = "300px"
+                             column(5, plotOutput('map_plot')), # , height = "300px"
                              # column(7, plotOutput('data_plot'))), # , height = "300px"
                              column(7, plotOutput('temp_plot'))), # , height = "300px"
                     fluidRow(
                              # column(5, plotOutput('weather_plot')),
-                             column(5, DT::dataTableOutput('data_tbl1')),
+                             column(5, DT::dataTableOutput('data_tbl')),
                              column(7, plotOutput('weather_plot'))),
                     width = 10 # обязательно ширины надо взаимно балансировать!!!!
                    )

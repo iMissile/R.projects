@@ -68,10 +68,10 @@ hgroup.enum <- function(date, time.bin = 4){
 
 load_github_field_data <- function() {
   # подгружаем данные по сенсорам
-  #x <- read.csv( curl("https://github.com/iot-rus/Moscow-Lab/raw/master/result.txt") )
+  #x <- read.csv( curl("https://github.com/iot-rus/Moscow-Lab/raw/master/result_moisture.txt") )
   temp.df <- try({
     read_delim(
-      curl("https://github.com/iot-rus/Moscow-Lab/raw/master/result.txt"),
+      curl("https://github.com/iot-rus/Moscow-Lab/raw/master/result_moisture.txt"),
       delim = ";",
       quote = "\"",
       # дата; время; имя; широта; долгота; минимум (0% влажности); максимум (100%); текущие показания

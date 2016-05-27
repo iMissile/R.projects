@@ -209,10 +209,10 @@ load_field_data <- function() {
 
 load_github_field_data <- function() {
   # подгружаем данные по сенсорам
-  #x <- read.csv( curl("https://github.com/iot-rus/Moscow-Lab/raw/master/result.txt") )
+  #x <- read.csv( curl("https://github.com/iot-rus/Moscow-Lab/raw/master/result_moisture.txt") )
   temp.df <- try({
     read_delim(
-      curl("https://github.com/iot-rus/Moscow-Lab/raw/master/result.txt"),
+      curl("https://github.com/iot-rus/Moscow-Lab/raw/master/result_moisture.txt"),
       delim = ";",
       quote = "\"",
       # дата; время; имя; широта; долгота; минимум (0% влажности); максимум (100%); текущие показания
@@ -548,7 +548,7 @@ plot_real_weather_data <- function(raw.df, ddepth = 1) {
     # geom_ribbon(aes(ymin = temp.min, ymax = temp.max, fill = time.pos), alpha = 0.5) +
     # geom_point(shape = 1, size = 3) +
     # geom_line(lwd = 1, linetype = 'dashed', color = "red") +
-    scale_x_datetime(labels = date_format("%d.%m %H:%M", tz = "Europe/Moscow"), 
+    scale_x_datetime(labels = date_format("%d.%m", tz = "Europe/Moscow"), 
                    breaks = date_breaks("1 days"), 
                    #minor_breaks = date_breaks("6 hours"),
                    limits = lims
@@ -571,7 +571,7 @@ p2 <- ggplot(df, aes(timegroup, humidity, colour = time.pos)) +
     # geom_ribbon(aes(ymin = temp.min, ymax = temp.max, fill = time.pos), alpha = 0.5) +
     # geom_point(shape = 1, size = 3) +
     # geom_line(lwd = 1, linetype = 'dashed', color = "red") +
-  scale_x_datetime(labels = date_format("%d.%m %H:%M", tz = "Europe/Moscow"), 
+  scale_x_datetime(labels = date_format("%d.%m", tz = "Europe/Moscow"), 
                    breaks = date_breaks("1 days"), 
                    #minor_breaks = date_breaks("6 hours"),
                    limits = lims
