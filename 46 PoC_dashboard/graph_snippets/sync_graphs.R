@@ -10,6 +10,7 @@ library(httr)
 library(ggthemes)
 library(ggmap)
 library(RColorBrewer) # http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/
+library(viridis) # https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html
 library(gtable)
 library(grid) # для grid.newpage()
 library(gridExtra) # для grid.arrange()
@@ -68,7 +69,7 @@ p1 <- ggplot(df, aes(timegroup, temp, colour = time.pos)) +
   # ggtitle("График температуры") +
   # scale_fill_brewer(palette="Set1") +
   # scale_fill_brewer(palette = "Paired") +
-  scale_color_brewer(palette = "Paired") +
+  scale_color_manual(values = brewer.pal(n = 9, name = "Oranges")[c(3, 7)]) +
   # geom_ribbon(aes(ymin = temp.min, ymax = temp.max, fill = time.pos), alpha = 0.5) +
   # geom_point(shape = 1, size = 3) +
   # geom_line(lwd = 1, linetype = 'dashed', color = "red") +
@@ -78,17 +79,20 @@ p1 <- ggplot(df, aes(timegroup, temp, colour = time.pos)) +
                    limits = lims
   ) +
   geom_line(lwd = 1.2) +
-  #theme_igray() +
+  theme_igray() +
   theme(legend.position="none") +
   xlab("Дата") +
   ylab("Температура, град. C")
 
-
+## brewer.pal.info
 p2 <- ggplot(df, aes(timegroup, humidity, colour = time.pos)) +
   # ggtitle("График температуры") +
   # scale_fill_brewer(palette="Set1") +
   # scale_fill_brewer(palette = "Paired") +
-  scale_color_brewer(palette = "Set2") +
+  # scale_color_brewer(palette = "Purples") +
+  # scale_color_manual(values = brewer.pal(n = 3, name = "Spectral")) +
+  scale_color_manual(values = brewer.pal(n = 9, name = "Blues")[c(4, 7)]) +
+  # scale_color_viridis(discrete=TRUE) +
   # geom_ribbon(aes(ymin = temp.min, ymax = temp.max, fill = time.pos), alpha = 0.5) +
   # geom_point(shape = 1, size = 3) +
   # geom_line(lwd = 1, linetype = 'dashed', color = "red") +
@@ -98,7 +102,7 @@ p2 <- ggplot(df, aes(timegroup, humidity, colour = time.pos)) +
                    limits = lims
   ) +
   geom_line(lwd = 1.2) +
-  #theme_igray() +
+  theme_igray() +
   theme(legend.position="none") +
   ylim(0, 100) +
   xlab("Дата") +
@@ -107,7 +111,8 @@ p2 <- ggplot(df, aes(timegroup, humidity, colour = time.pos)) +
 
 # запрос и формирование данных по осадкам (прошлое и прогноз) =====================================
 
-plot_palette <- brewer.pal(n = 8, name = "Paired") 
+# http://moderndata.plot.ly/create-colorful-graphs-in-r-with-rcolorbrewer-and-plotly/
+plot_palette <- brewer.pal(n = 8, name = "Paired")
 
 df2 <- df %>%
   group_by(date) %>%
@@ -118,7 +123,8 @@ p3 <- ggplot(df2, aes(date, rain)) +
   # scale_fill_brewer(palette="Set1") +
   # scale_fill_brewer(palette = "Paired") +
   # scale_color_brewer(palette = "Set2") +
-  geom_bar(fill = plot_palette[7], stat="identity") +
+  # geom_bar(fill = brewer.pal(n = 11, name = "Spectral")[5], alpha = 0.5, stat="identity") +
+  geom_bar(fill = brewer.pal(n = 9, name = "Blues")[4], alpha = 0.5, stat="identity") +
   # geom_ribbon(aes(ymin = temp.min, ymax = temp.max, fill = time.pos), alpha = 0.5) +
   # geom_point(shape = 1, size = 3) +
   # geom_line(lwd = 1, linetype = 'dashed', color = "red") +

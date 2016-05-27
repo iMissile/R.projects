@@ -58,7 +58,7 @@ p1 <- ggplot(df, aes(timegroup, temp, colour = time.pos)) +
   # ggtitle("График температуры") +
   # scale_fill_brewer(palette="Set1") +
   # scale_fill_brewer(palette = "Paired") +
-  scale_color_brewer(palette = "Paired") +
+  scale_color_manual(values = brewer.pal(n = 9, name = "Oranges")[c(3, 7)]) +
   # geom_ribbon(aes(ymin = temp.min, ymax = temp.max, fill = time.pos), alpha = 0.5) +
   # geom_point(shape = 1, size = 3) +
   # geom_line(lwd = 1, linetype = 'dashed', color = "red") +
@@ -71,14 +71,17 @@ p1 <- ggplot(df, aes(timegroup, temp, colour = time.pos)) +
   theme_igray() +
   theme(legend.position="none") +
   xlab("Дата") +
-  ylab("Температура, град. C")
+  ylab("Температура,\nград. C")
 
-
+## brewer.pal.info
 p2 <- ggplot(df, aes(timegroup, humidity, colour = time.pos)) +
   # ggtitle("График температуры") +
   # scale_fill_brewer(palette="Set1") +
   # scale_fill_brewer(palette = "Paired") +
-  scale_color_brewer(palette = "Spectral") +
+  # scale_color_brewer(palette = "Purples") +
+  # scale_color_manual(values = brewer.pal(n = 3, name = "Spectral")) +
+  scale_color_manual(values = brewer.pal(n = 9, name = "Blues")[c(4, 7)]) +
+  # scale_color_viridis(discrete=TRUE) +
   # geom_ribbon(aes(ymin = temp.min, ymax = temp.max, fill = time.pos), alpha = 0.5) +
   # geom_point(shape = 1, size = 3) +
   # geom_line(lwd = 1, linetype = 'dashed', color = "red") +
@@ -92,7 +95,7 @@ p2 <- ggplot(df, aes(timegroup, humidity, colour = time.pos)) +
   theme(legend.position="none") +
   ylim(0, 100) +
   xlab("Дата") +
-  ylab("Влажность воздуха, %")
+  ylab("Влажность\nвоздуха, %")
 
 
 # запрос и формирование данных по осадкам (прошлое и прогноз) =====================================
@@ -103,14 +106,16 @@ df2 <- calc_rain_per_date(weather.df) %>%
   bind_rows(data.frame(date = as.Date(min(df$timegroup)), rain = 0, timestamp = NA))
 
 
-plot_palette <- brewer.pal(n = 8, name = "Paired") 
+# http://moderndata.plot.ly/create-colorful-graphs-in-r-with-rcolorbrewer-and-plotly/
+plot_palette <- brewer.pal(n = 8, name = "Paired")
 
 p3 <- ggplot(df2, aes(date, rain)) +
   # ggtitle("График температуры") +
   # scale_fill_brewer(palette="Set1") +
   # scale_fill_brewer(palette = "Paired") +
   # scale_color_brewer(palette = "Set2") +
-  geom_bar(fill = plot_palette[7], stat="identity") +
+  # geom_bar(fill = brewer.pal(n = 11, name = "Spectral")[5], alpha = 0.5, stat="identity") +
+  geom_bar(fill = brewer.pal(n = 9, name = "Blues")[4], alpha = 0.5, stat="identity") +
   # geom_ribbon(aes(ymin = temp.min, ymax = temp.max, fill = time.pos), alpha = 0.5) +
   # geom_point(shape = 1, size = 3) +
   # geom_line(lwd = 1, linetype = 'dashed', color = "red") +
@@ -123,8 +128,8 @@ p3 <- ggplot(df2, aes(date, rain)) +
   theme(legend.position="none") +
   ylim(0, NA) +
   xlab("Дата") +
-  ylab("Осадки (дождь), мм")
+  ylab("Осадки\n(дождь), мм")
 
 # grid.arrange(p1, p2, p3, ncol = 1) # возвращаем ggplot
 grid.newpage()
-grid.draw(rbind(ggplotGrob(p1), ggplotGrob(p2), ggplotGrob(p3), size = "last"))
+grid.draw(rbind(ggplotGrob(p1), ggplotGrob(p2), ggplotGrob(p3), size = "first"))
