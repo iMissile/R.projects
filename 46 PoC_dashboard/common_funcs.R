@@ -157,6 +157,40 @@ get_weather_df <- function(back_days = 7, forward_days = 3) {
   outw.df
 }
 
+calc_rain_per_date <- function(weather.df) {
+  # считаем осадки за сутки ------------------------------
+  # полагаем, что идентичность выпавших осадков с точностью до третьего знака просто означает дублирование показаний!!!!
+  dfw0 <- data.frame(timestamp = weather.df$timestamp, rain3h = weather.df$rain3h) %>%
+    filter(!is.na(rain3h)) %>% # записи без дождя нас вообще не интересуют
+    distinct() %>% # полностью дублирующиеся записи также неинтересны
+    # mutate(date = lubridate::date(timestamp)) %>%
+    mutate(date = as.Date(timestamp)) %>%
+    group_by(date, rain3h) %>% # собираем агрегаты по суткам, а потом по повторяющимся значениям, 
+    # может быть погрешность по переходам через сутки, но при группировке по значениям можем случайно объединить данных с разных дат
+    # в каждой группе посчитаем временную протяженность события
+    arrange(timestamp) %>%
+    mutate (dtime = as.numeric(difftime(timestamp, min(timestamp), unit = "min")))
+  
+  # теперь мы можем проверить, чтобы максимальное значение в группе не превышало 180 мин (3 часа)
+  # поглядел на данные, таких групп нет за месяц не нашел, решил пока для простоты забить
+  dfw1 <- dfw0 %>% 
+    # в каждой группе выберем значение с минимальным временем измерения
+    filter(timestamp == min(timestamp)) %>% # см. допущение об идентичности показаний
+    ungroup() %>%
+    arrange(timestamp)
+  
+  # а теперь посчитаем агрегаты по суткам
+  dfw2 <- dfw1 %>%
+    select(-dtime) %>%
+    group_by(date) %>%
+    summarise(rain = sum(rain3h)) %>% # пытаемся высчитать агрегат за сутки
+    ungroup %>%
+    mutate(timestamp = as.numeric(as.POSIXct(date, origin='1970-01-01'))) %>%
+    arrange(date)
+
+  dfw2
+  }
+
 load_field_data <- function() {
   ifile <- ".././data/appdata_field.csv"
   # подгружаем данные по сенсорам

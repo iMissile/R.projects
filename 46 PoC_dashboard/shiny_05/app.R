@@ -6,6 +6,7 @@
 # options(shiny.port = 7775)
 # options(shiny.trace = TRUE)
 # options(shiny.error = browser)
+# options(shiny.reactlog = TRUE)
 
 library(shiny)
 library(shinythemes) # https://rstudio.github.io/shinythemes/

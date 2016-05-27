@@ -1,57 +1,67 @@
-rm(list=ls()) # очистим все переменные
-
+# генерируем тестовые файлы дл€ отладки интерфейса
+#library(tidyr)
 library(ggplot2) #load first! (Wickham)
 library(lubridate) #load second!
 library(dplyr)
-library(tidyr)
 library(readr)
-library(reshape2)
 library(jsonlite)
 library(magrittr)
-library(curl)
 library(httr)
 library(ggthemes)
-library(ggdendro) # дл€ пустой темы
-#library(ggmap)
+library(ggmap)
 library(RColorBrewer) # http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/
-library(scales)
 library(gtable)
 library(grid) # дл€ grid.newpage()
 library(gridExtra) # дл€ grid.arrange()
+# library(KernSmooth)
+library(akima)
+library(rdrop2)
+# library(rgl)
 
-getwd()
-source("common_funcs.R") # сюда выносим все вычислительные и рисовательные функции
-
-# main ================================================================
-
-df <- get_weather_df(back_days = 7, forward_days = 3)
-
-min_lim <- ceiling_date(min(df$timegroup), unit = "day")
-max_lim <- floor_date(max(df$timegroup), unit = "day")
+min_lim <- ceiling_date(now() - days(3), unit = "day")
+max_lim <- floor_date(now() + days(2), unit = "day")
 lims <- c(min_lim, max_lim)
 
-# сделаем выгрузку в json --------------------------------------------------------
+# Setting limits with scale_x_datetime and time data
+# http://stackoverflow.com/questions/30607514/setting-limits-with-scale-x-datetime-and-time-data
 
-# df2 <- data.frame(timestamp = round(as.numeric(outw.df$timegroup), 0), 
-#                   air_temp_past = ifelse(outw.df$time.pos == "PAST", round(outw.df$temp, 1), NA),
-#                   air_temp_future = ifelse(outw.df$time.pos == "FUTURE", round(outw.df$temp, 1), NA),
-#                   air_humidity_past = ifelse(outw.df$time.pos == "PAST", round(outw.df$humidity, 1), NA),
-#                   air_humidity_future = ifelse(outw.df$time.pos == "FUTURE", round(outw.df$humidity, 1), NA)) %>%
-#   arrange(timestamp)
+hgroup.enum <- function(date, time.bin = 4){
+  # прив€зываем все измерени€, которые попали в промежуток [0, t] к точке измерени€. 
+  # точки измерени€ могут быть кратны 1, 2, 3, 4, 6, 12 часам, определ€етс€ time.bin
+  # отсчет измерений идет с 0:00
+  tick_time <- date
+  n <- floor(hour(tick_time) / time.bin)
+  floor_date(tick_time, unit = "day") + hours(n * time.bin)
+}
 
-df3 <- with(df, {
-  data.frame(timestamp = round(as.numeric(timegroup), 0), 
-                  air_temp_past = ifelse(time.pos == "PAST", round(temp, 1), NA),
-                  air_temp_future = ifelse(time.pos == "FUTURE", round(temp, 1), NA),
-                  air_humidity_past = ifelse(time.pos == "PAST", round(humidity, 1), NA),
-                  air_humidity_future = ifelse(time.pos == "FUTURE", round(humidity, 1), NA)) %>%
-  arrange(timestamp)
-})
+generate_raw_data <- function() {
+  # генерируем погодные даты
+  
+  tick.seq <- seq(min_lim, max_lim, by = "4 hours") # http://stackoverflow.com/questions/10887923/hourly-date-sequence-in-r
+  
+  # дл€ подготовки данных 
+  # собираем сразу data.frame: врем€, #сенсора, показание
+  n <- length(tick.seq)
+  mydata <- data.frame(timestamp = tick.seq,
+                       temp.min = rnorm(n, 14, 3), # используем методику дополнени€
+                       pressure = rnorm(n, 750, 30),
+                       humidity = runif(n, 10, 100),
+                       rain = runif(n, 0, 20))
+  
+  # максимальна€ температура должна быть выше минимальной
+  # средн€€ должна быть между максимальной и минимальной
+  mydata %<>% mutate(temp.max = temp.min + runif(n, 5, 15)) %>%
+    mutate(temp = temp.min + 0.7 * runif(n, 0, temp.max - temp.min)) %>%
+    mutate(timegroup = hgroup.enum(timestamp, time.bin = 1)) %>%
+    mutate(date = date(timestamp))
+    
+  
+  mydata['time.pos'] <- ifelse(mydata$timestamp < now(), "PAST", "FUTURE")
+  mydata
+}
 
-# x <- jsonlite::toJSON(list(results = df3), pretty = TRUE)
-# write(x, file="./export/real_weather.json")
+df <- generate_raw_data()
 
-# отобразим дл€ себ€ --------------------------------------------------------
 
 # https://www.datacamp.com/community/tutorials/make-histogram-ggplot2
 p1 <- ggplot(df, aes(timegroup, temp, colour = time.pos)) +
@@ -68,7 +78,7 @@ p1 <- ggplot(df, aes(timegroup, temp, colour = time.pos)) +
                    limits = lims
   ) +
   geom_line(lwd = 1.2) +
-  theme_igray() +
+  #theme_igray() +
   theme(legend.position="none") +
   xlab("ƒата") +
   ylab("“емпература, град. C")
@@ -78,7 +88,7 @@ p2 <- ggplot(df, aes(timegroup, humidity, colour = time.pos)) +
   # ggtitle("√рафик температуры") +
   # scale_fill_brewer(palette="Set1") +
   # scale_fill_brewer(palette = "Paired") +
-  scale_color_brewer(palette = "Spectral") +
+  scale_color_brewer(palette = "Set2") +
   # geom_ribbon(aes(ymin = temp.min, ymax = temp.max, fill = time.pos), alpha = 0.5) +
   # geom_point(shape = 1, size = 3) +
   # geom_line(lwd = 1, linetype = 'dashed', color = "red") +
@@ -88,7 +98,7 @@ p2 <- ggplot(df, aes(timegroup, humidity, colour = time.pos)) +
                    limits = lims
   ) +
   geom_line(lwd = 1.2) +
-  theme_igray() +
+  #theme_igray() +
   theme(legend.position="none") +
   ylim(0, 100) +
   xlab("ƒата") +
@@ -96,14 +106,12 @@ p2 <- ggplot(df, aes(timegroup, humidity, colour = time.pos)) +
 
 
 # запрос и формирование данных по осадкам (прошлое и прогноз) =====================================
-weather.df <- prepare_raw_weather_data()
-df2 <- calc_rain_per_date(weather.df) %>%
-  filter(timestamp >= floor_date(now() - days(7), unit = "day")) %>%
-  filter(timestamp <= ceiling_date(now() + days(3), unit = "day")) %>%
-  bind_rows(data.frame(date = as.Date(min(df$timegroup)), rain = 0, timestamp = NA))
-
 
 plot_palette <- brewer.pal(n = 8, name = "Paired") 
+
+df2 <- df %>%
+  group_by(date) %>%
+  summarise(rain = mean(rain))
 
 p3 <- ggplot(df2, aes(date, rain)) +
   # ggtitle("√рафик температуры") +
