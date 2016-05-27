@@ -19,13 +19,14 @@ library(akima)
 library(rdrop2)
 # library(rgl)
 
-
 min_lim <- ceiling_date(now() - days(3), unit = "day")
 max_lim <- floor_date(now() + days(2), unit = "day")
 lims <- c(min_lim, max_lim)
 
 # Setting limits with scale_x_datetime and time data
 # http://stackoverflow.com/questions/30607514/setting-limits-with-scale-x-datetime-and-time-data
+# Error: Invalid input: time_trans works with objects of class POSIXct only
+# force_tz -- сюда же относится
 
 hgroup.enum <- function(date, time.bin = 4){
   # привязываем все измерения, которые попали в промежуток [0, t] к точке измерения. 
@@ -63,83 +64,49 @@ generate_raw_data <- function() {
 }
 
 df <- generate_raw_data()
-
-
-# https://www.datacamp.com/community/tutorials/make-histogram-ggplot2
-p1 <- ggplot(df, aes(timegroup, temp, colour = time.pos)) +
-  # ggtitle("График температуры") +
-  # scale_fill_brewer(palette="Set1") +
-  # scale_fill_brewer(palette = "Paired") +
-  scale_color_manual(values = brewer.pal(n = 9, name = "Oranges")[c(3, 7)]) +
-  # geom_ribbon(aes(ymin = temp.min, ymax = temp.max, fill = time.pos), alpha = 0.5) +
-  # geom_point(shape = 1, size = 3) +
-  # geom_line(lwd = 1, linetype = 'dashed', color = "red") +
-  scale_x_datetime(labels = date_format("%d.%m %H:%M", tz = "Europe/Moscow"), 
-                   breaks = date_breaks("1 days"), 
-                   #minor_breaks = date_breaks("6 hours"),
-                   limits = lims
-  ) +
-  geom_line(lwd = 1.2) +
-  theme_igray() +
-  theme(legend.position="none") +
-  xlab("Дата") +
-  ylab("Температура, град. C")
-
-## brewer.pal.info
-p2 <- ggplot(df, aes(timegroup, humidity, colour = time.pos)) +
-  # ggtitle("График температуры") +
-  # scale_fill_brewer(palette="Set1") +
-  # scale_fill_brewer(palette = "Paired") +
-  # scale_color_brewer(palette = "Purples") +
-  # scale_color_manual(values = brewer.pal(n = 3, name = "Spectral")) +
-  scale_color_manual(values = brewer.pal(n = 9, name = "Blues")[c(4, 7)]) +
-  # scale_color_viridis(discrete=TRUE) +
-  # geom_ribbon(aes(ymin = temp.min, ymax = temp.max, fill = time.pos), alpha = 0.5) +
-  # geom_point(shape = 1, size = 3) +
-  # geom_line(lwd = 1, linetype = 'dashed', color = "red") +
-  scale_x_datetime(labels = date_format("%d.%m %H:%M", tz = "Europe/Moscow"), 
-                   breaks = date_breaks("1 days"), 
-                   #minor_breaks = date_breaks("6 hours"),
-                   limits = lims
-  ) +
-  geom_line(lwd = 1.2) +
-  theme_igray() +
-  theme(legend.position="none") +
-  ylim(0, 100) +
-  xlab("Дата") +
-  ylab("Влажность воздуха, %")
-
-
-# запрос и формирование данных по осадкам (прошлое и прогноз) =====================================
+df2 <- df %>%
+  group_by(date) %>%
+  summarise(rain = mean(rain)) %>%
+  mutate(timestamp = force_tz(with_tz(as.POSIXct(date), tz = "GMT"), tz = "Europe/Moscow"))
 
 # http://moderndata.plot.ly/create-colorful-graphs-in-r-with-rcolorbrewer-and-plotly/
 plot_palette <- brewer.pal(n = 8, name = "Paired")
 
-df2 <- df %>%
-  group_by(date) %>%
-  summarise(rain = mean(rain))
 
-p3 <- ggplot(df2, aes(date, rain)) +
+# схлопнем рисование графика
+## brewer.pal.info
+# https://www.datacamp.com/community/tutorials/make-histogram-ggplot2
+pp <- ggplot(df) +
   # ggtitle("График температуры") +
   # scale_fill_brewer(palette="Set1") +
   # scale_fill_brewer(palette = "Paired") +
-  # scale_color_brewer(palette = "Set2") +
-  # geom_bar(fill = brewer.pal(n = 11, name = "Spectral")[5], alpha = 0.5, stat="identity") +
-  geom_bar(fill = brewer.pal(n = 9, name = "Blues")[4], alpha = 0.5, stat="identity") +
   # geom_ribbon(aes(ymin = temp.min, ymax = temp.max, fill = time.pos), alpha = 0.5) +
   # geom_point(shape = 1, size = 3) +
   # geom_line(lwd = 1, linetype = 'dashed', color = "red") +
-  scale_x_date(labels = date_format("%d.%m", tz = "Europe/Moscow"), 
-               breaks = date_breaks("1 days"),
-               limits = as.Date(lims, tz = "Europe/Moscow")
-               ) +
-  # geom_line(lwd = 1.2) +
+  scale_x_datetime(labels = date_format("%d.%m %H:%M", tz = "Europe/Moscow"), 
+                   breaks = date_breaks("1 days"), 
+                   #minor_breaks = date_breaks("6 hours"),
+                   limits = lims) +
   theme_igray() +
   theme(legend.position="none") +
+  xlab("Дата")
+  
+p1 <- pp +
+  geom_line(aes(timegroup, temp, colour = time.pos), lwd = 1.2) +
+  scale_color_manual(values = brewer.pal(n = 9, name = "Oranges")[c(3, 7)]) +
+  ylab("Температура,\n град. C")
+
+p2 <- pp +
+  geom_line(aes(timegroup, humidity, colour = time.pos), lwd = 1.2) +
+  scale_color_manual(values = brewer.pal(n = 9, name = "Blues")[c(4, 7)]) +
+  ylim(0, 100) +
+  ylab("Влажность\nвоздуха, %")
+
+p3 <- pp + 
+  geom_bar(data = df2, aes(timestamp, rain), fill = brewer.pal(n = 9, name = "Blues")[4], alpha = 0.5, stat="identity") +
   ylim(0, NA) +
-  xlab("Дата") +
-  ylab("Осадки (дождь), мм")
+  ylab("Осадки\n(дождь), мм")
 
 # grid.arrange(p1, p2, p3, ncol = 1) # возвращаем ggplot
 grid.newpage()
-grid.draw(rbind(ggplotGrob(p1), ggplotGrob(p2), ggplotGrob(p3), size = "last"))
+grid.draw(rbind(ggplotGrob(p1), ggplotGrob(p2), ggplotGrob(p3), size = "first"))
