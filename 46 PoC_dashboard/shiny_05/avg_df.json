@@ -2,650 +2,538 @@
   {
     "location": "Moscow Lab",
     "name": "af02",
-    "timegroup": "2016-05-13 04:00:00",
-    "value.mean": 56.8,
-    "value.sd": 0.4472
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "af02",
-    "timegroup": "2016-05-13 08:00:00",
-    "value.mean": 57.375,
-    "value.sd": 0.5175
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "af02",
-    "timegroup": "2016-05-13 12:00:00",
-    "value.mean": 57.875,
-    "value.sd": 0.3536
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "af02",
-    "timegroup": "2016-05-13 16:00:00",
-    "value.mean": 58.125,
-    "value.sd": 0.3536
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "af02",
-    "timegroup": "2016-05-13 20:00:00",
-    "value.mean": 58.1429,
-    "value.sd": 0.378
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "af02",
-    "timegroup": "2016-05-14 00:00:00",
-    "value.mean": 59,
-    "value.sd": 0
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "af02",
-    "timegroup": "2016-05-14 04:00:00",
-    "value.mean": 60.4286,
-    "value.sd": 0.5345
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "af02",
-    "timegroup": "2016-05-14 08:00:00",
-    "value.mean": 61,
-    "value.sd": 0
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "af02",
-    "timegroup": "2016-05-14 12:00:00",
-    "value.mean": 61.8571,
-    "value.sd": 0.6901
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "af02",
-    "timegroup": "2016-05-14 16:00:00",
-    "value.mean": 62.5714,
-    "value.sd": 0.7868
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "af02",
-    "timegroup": "2016-05-14 20:00:00",
-    "value.mean": 63.8571,
-    "value.sd": 0.6901
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "af02",
-    "timegroup": "2016-05-15 00:00:00",
-    "value.mean": 65.25,
-    "value.sd": 1.2817
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "af02",
-    "timegroup": "2016-05-15 04:00:00",
-    "value.mean": 66.375,
-    "value.sd": 0.744
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "af02",
-    "timegroup": "2016-05-15 08:00:00",
-    "value.mean": 61.5714,
-    "value.sd": 3.8235
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "af02",
-    "timegroup": "2016-05-15 12:00:00",
-    "value.mean": 62.7143,
-    "value.sd": 1.1127
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "af02",
-    "timegroup": "2016-05-15 16:00:00",
-    "value.mean": 62.875,
-    "value.sd": 3.6031
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "af02",
-    "timegroup": "2016-05-15 20:00:00",
-    "value.mean": 63.375,
-    "value.sd": 1.9955
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "af02",
-    "timegroup": "2016-05-16 00:00:00",
-    "value.mean": 67.5714,
-    "value.sd": 0.9759
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "af02",
-    "timegroup": "2016-05-16 04:00:00",
-    "value.mean": 62,
-    "value.sd": 2.0702
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "af02",
-    "timegroup": "2016-05-16 08:00:00",
-    "value.mean": 67.5714,
-    "value.sd": 0.9759
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "af02",
-    "timegroup": "2016-05-16 12:00:00",
-    "value.mean": 66.25,
-    "value.sd": 5.5603
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "af02",
-    "timegroup": "2016-05-16 16:00:00",
-    "value.mean": 61.5,
-    "value.sd": 1.8708
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "af02",
-    "timegroup": "2016-05-16 20:00:00",
-    "value.mean": 66.5,
-    "value.sd": 0.7559
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "af02",
-    "timegroup": "2016-05-17 00:00:00",
-    "value.mean": 68.2,
-    "value.sd": 0.8367
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "af02",
-    "timegroup": "2016-05-17 04:00:00",
-    "value.mean": 69.6667,
-    "value.sd": 1.0328
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "af02",
-    "timegroup": "2016-05-17 08:00:00",
-    "value.mean": 68.375,
-    "value.sd": 4.8679
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "af02",
-    "timegroup": "2016-05-17 12:00:00",
-    "value.mean": 93,
-    "value.sd": 1.7889
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "af02",
-    "timegroup": "2016-05-17 16:00:00",
-    "value.mean": 88.5714,
-    "value.sd": 4.1975
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "af02",
-    "timegroup": "2016-05-17 20:00:00",
-    "value.mean": 90,
-    "value.sd": 0
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "af02",
-    "timegroup": "2016-05-18 00:00:00",
-    "value.mean": 90,
-    "value.sd": 0
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "af02",
-    "timegroup": "2016-05-18 04:00:00",
-    "value.mean": 90,
-    "value.sd": 0
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "af02",
-    "timegroup": "2016-05-18 08:00:00",
-    "value.mean": 89.8571,
-    "value.sd": 1.3452
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "af02",
-    "timegroup": "2016-05-18 12:00:00",
-    "value.mean": 91,
-    "value.sd": 0
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "af02",
-    "timegroup": "2016-05-18 16:00:00",
-    "value.mean": 91,
-    "value.sd": 1.8257
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "af02",
-    "timegroup": "2016-05-18 20:00:00",
-    "value.mean": 92.1429,
-    "value.sd": 0.378
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "af02",
-    "timegroup": "2016-05-19 00:00:00",
+    "timegroup": "2016-05-23 01:00:00",
     "value.mean": 93,
     "value.sd": 0
   },
   {
     "location": "Moscow Lab",
     "name": "af02",
-    "timegroup": "2016-05-19 04:00:00",
+    "timegroup": "2016-05-23 02:00:00",
     "value.mean": 93,
     "value.sd": 0
   },
   {
     "location": "Moscow Lab",
     "name": "af02",
-    "timegroup": "2016-05-19 08:00:00",
-    "value.mean": 93.125,
-    "value.sd": 0.3536
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "af02",
-    "timegroup": "2016-05-19 12:00:00",
-    "value.mean": 93.1667,
-    "value.sd": 1.6021
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "af02",
-    "timegroup": "2016-05-19 16:00:00",
-    "value.mean": 94,
+    "timegroup": "2016-05-23 03:00:00",
+    "value.mean": 93,
     "value.sd": 0
   },
   {
     "location": "Moscow Lab",
     "name": "af02",
-    "timegroup": "2016-05-19 20:00:00",
-    "value.mean": 94,
+    "timegroup": "2016-05-23 04:00:00",
+    "value.mean": 93,
     "value.sd": 0
   },
   {
     "location": "Moscow Lab",
     "name": "af02",
-    "timegroup": "2016-05-20 00:00:00",
-    "value.mean": 94,
+    "timegroup": "2016-05-23 05:00:00",
+    "value.mean": 93,
     "value.sd": 0
   },
   {
     "location": "Moscow Lab",
     "name": "af02",
-    "timegroup": "2016-05-20 04:00:00",
-    "value.mean": 94,
+    "timegroup": "2016-05-23 06:00:00",
+    "value.mean": 93,
     "value.sd": 0
   },
   {
     "location": "Moscow Lab",
     "name": "af02",
-    "timegroup": "2016-05-20 08:00:00",
-    "value.mean": 94.1429,
-    "value.sd": 0.378
+    "timegroup": "2016-05-23 07:00:00",
+    "value.mean": 93,
+    "value.sd": 0
   },
   {
     "location": "Moscow Lab",
     "name": "af02",
-    "timegroup": "2016-05-20 12:00:00",
-    "value.mean": 93.375,
-    "value.sd": 1.7678
+    "timegroup": "2016-05-23 08:00:00",
+    "value.mean": 93,
+    "value.sd": 0
   },
   {
     "location": "Moscow Lab",
     "name": "af02",
-    "timegroup": "2016-05-20 16:00:00",
-    "value.mean": 94
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "b002",
-    "timegroup": "2016-05-13 00:00:00",
-    "value.mean": 85,
+    "timegroup": "2016-05-23 09:00:00",
+    "value.mean": 93,
     "value.sd": 0
   },
   {
     "location": "Moscow Lab",
-    "name": "b002",
-    "timegroup": "2016-05-13 04:00:00",
-    "value.mean": 85,
+    "name": "af02",
+    "timegroup": "2016-05-23 10:00:00",
+    "value.mean": 93,
     "value.sd": 0
   },
   {
     "location": "Moscow Lab",
-    "name": "b002",
-    "timegroup": "2016-05-13 08:00:00",
-    "value.mean": 84.125,
-    "value.sd": 1.4577
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "b002",
-    "timegroup": "2016-05-13 12:00:00",
-    "value.mean": 85,
+    "name": "af02",
+    "timegroup": "2016-05-23 11:00:00",
+    "value.mean": 93,
     "value.sd": 0
   },
   {
     "location": "Moscow Lab",
-    "name": "b002",
-    "timegroup": "2016-05-13 16:00:00",
-    "value.mean": 84.7143,
-    "value.sd": 1.8898
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "b002",
-    "timegroup": "2016-05-13 20:00:00",
-    "value.mean": 86.3333,
-    "value.sd": 1.8619
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "b002",
-    "timegroup": "2016-05-14 00:00:00",
-    "value.mean": 86.4286,
-    "value.sd": 1.1339
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "b002",
-    "timegroup": "2016-05-14 04:00:00",
-    "value.mean": 85.2857,
-    "value.sd": 0.488
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "b002",
-    "timegroup": "2016-05-14 08:00:00",
-    "value.mean": 85.3333,
-    "value.sd": 0.5164
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "b002",
-    "timegroup": "2016-05-14 12:00:00",
-    "value.mean": 84.875,
-    "value.sd": 1.9594
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "b002",
-    "timegroup": "2016-05-14 16:00:00",
-    "value.mean": 83.5714,
-    "value.sd": 1.1339
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "b002",
-    "timegroup": "2016-05-14 20:00:00",
-    "value.mean": 84.4286,
-    "value.sd": 0.7868
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "b002",
-    "timegroup": "2016-05-15 00:00:00",
-    "value.mean": 84.5,
-    "value.sd": 0.7559
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "b002",
-    "timegroup": "2016-05-15 04:00:00",
-    "value.mean": 84,
+    "name": "af02",
+    "timegroup": "2016-05-23 12:00:00",
+    "value.mean": 93,
     "value.sd": 0
   },
   {
     "location": "Moscow Lab",
-    "name": "b002",
-    "timegroup": "2016-05-15 08:00:00",
-    "value.mean": 81.375,
-    "value.sd": 19.7335
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "b002",
-    "timegroup": "2016-05-15 12:00:00",
-    "value.mean": 87.7143,
-    "value.sd": 1.7995
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "b002",
-    "timegroup": "2016-05-15 16:00:00",
-    "value.mean": 79.125,
-    "value.sd": 22.0418
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "b002",
-    "timegroup": "2016-05-15 20:00:00",
-    "value.mean": 89.25,
-    "value.sd": 1.0351
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "b002",
-    "timegroup": "2016-05-16 00:00:00",
-    "value.mean": 82.625,
-    "value.sd": 13.1902
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "b002",
-    "timegroup": "2016-05-16 04:00:00",
-    "value.mean": 90.375,
-    "value.sd": 2.0659
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "b002",
-    "timegroup": "2016-05-16 08:00:00",
-    "value.mean": 88,
-    "value.sd": 0.8165
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "b002",
-    "timegroup": "2016-05-16 12:00:00",
-    "value.mean": 76.8,
-    "value.sd": 25.7527
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "b002",
-    "timegroup": "2016-05-16 16:00:00",
-    "value.mean": 90,
-    "value.sd": 1.4142
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "b002",
-    "timegroup": "2016-05-16 20:00:00",
+    "name": "af02",
+    "timegroup": "2016-05-23 13:00:00",
     "value.mean": 89,
-    "value.sd": 0.9258
+    "value.sd": 12.7279
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "af02",
+    "timegroup": "2016-05-23 14:00:00",
+    "value.mean": 76,
+    "value.sd": 3.4641
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "af02",
+    "timegroup": "2016-05-23 15:00:00",
+    "value.mean": 74,
+    "value.sd": 0
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "af02",
+    "timegroup": "2016-05-23 16:00:00",
+    "value.mean": 74,
+    "value.sd": 0
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "af02",
+    "timegroup": "2016-05-23 17:00:00",
+    "value.mean": 74
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "af02",
+    "timegroup": "2016-05-23 18:00:00",
+    "value.mean": 74,
+    "value.sd": 0
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "af02",
+    "timegroup": "2016-05-23 19:00:00",
+    "value.mean": 74,
+    "value.sd": 0
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "af02",
+    "timegroup": "2016-05-23 20:00:00",
+    "value.mean": 74
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "af02",
+    "timegroup": "2016-05-23 21:00:00",
+    "value.mean": 86,
+    "value.sd": 0
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "af02",
+    "timegroup": "2016-05-23 22:00:00",
+    "value.mean": 86,
+    "value.sd": 0
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "af02",
+    "timegroup": "2016-05-23 23:00:00",
+    "value.mean": 86,
+    "value.sd": 0
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "af02",
+    "timegroup": "2016-05-24 00:00:00",
+    "value.mean": 86,
+    "value.sd": 0
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "af02",
+    "timegroup": "2016-05-24 01:00:00",
+    "value.mean": 85.5,
+    "value.sd": 0.7071
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "af02",
+    "timegroup": "2016-05-24 02:00:00",
+    "value.mean": 85.5,
+    "value.sd": 0.7071
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "af02",
+    "timegroup": "2016-05-24 03:00:00",
+    "value.mean": 85,
+    "value.sd": 0
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "af02",
+    "timegroup": "2016-05-24 04:00:00",
+    "value.mean": 85,
+    "value.sd": 0
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "af02",
+    "timegroup": "2016-05-24 05:00:00",
+    "value.mean": 85,
+    "value.sd": 0
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "af02",
+    "timegroup": "2016-05-24 06:00:00",
+    "value.mean": 85,
+    "value.sd": 0
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "af02",
+    "timegroup": "2016-05-24 07:00:00",
+    "value.mean": 85,
+    "value.sd": 0
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "af02",
+    "timegroup": "2016-05-24 08:00:00",
+    "value.mean": 85,
+    "value.sd": 0
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "af02",
+    "timegroup": "2016-05-24 09:00:00",
+    "value.mean": 85,
+    "value.sd": 0
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "af02",
+    "timegroup": "2016-05-24 10:00:00",
+    "value.mean": 85,
+    "value.sd": 0
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "af02",
+    "timegroup": "2016-05-24 11:00:00",
+    "value.mean": 85
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "af02",
+    "timegroup": "2016-05-24 12:00:00",
+    "value.mean": 85,
+    "value.sd": 0
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "af02",
+    "timegroup": "2016-05-24 13:00:00",
+    "value.mean": 85,
+    "value.sd": 0
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "af02",
+    "timegroup": "2016-05-24 14:00:00",
+    "value.mean": 85
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "af02",
+    "timegroup": "2016-05-24 15:00:00",
+    "value.mean": 85,
+    "value.sd": 0
   },
   {
     "location": "Moscow Lab",
     "name": "b002",
-    "timegroup": "2016-05-17 00:00:00",
-    "value.mean": 88.5,
-    "value.sd": 0.5477
+    "timegroup": "2016-05-23 01:00:00",
+    "value.mean": 96,
+    "value.sd": 0
   },
   {
     "location": "Moscow Lab",
     "name": "b002",
-    "timegroup": "2016-05-17 04:00:00",
-    "value.mean": 87.7143,
-    "value.sd": 0.488
+    "timegroup": "2016-05-23 02:00:00",
+    "value.mean": 96,
+    "value.sd": 0
   },
   {
     "location": "Moscow Lab",
     "name": "b002",
-    "timegroup": "2016-05-17 08:00:00",
-    "value.mean": 82.4286,
-    "value.sd": 15.339
+    "timegroup": "2016-05-23 03:00:00",
+    "value.mean": 96,
+    "value.sd": 0
   },
   {
     "location": "Moscow Lab",
     "name": "b002",
-    "timegroup": "2016-05-17 12:00:00",
-    "value.mean": 94.7143,
-    "value.sd": 1.8898
+    "timegroup": "2016-05-23 04:00:00",
+    "value.mean": 96,
+    "value.sd": 0
   },
   {
     "location": "Moscow Lab",
     "name": "b002",
-    "timegroup": "2016-05-17 16:00:00",
-    "value.mean": 94.1667,
-    "value.sd": 0.4082
+    "timegroup": "2016-05-23 05:00:00",
+    "value.mean": 96,
+    "value.sd": 0
   },
   {
     "location": "Moscow Lab",
     "name": "b002",
-    "timegroup": "2016-05-17 20:00:00",
-    "value.mean": 93.25,
-    "value.sd": 0.4629
+    "timegroup": "2016-05-23 06:00:00",
+    "value.mean": 96,
+    "value.sd": 0
   },
   {
     "location": "Moscow Lab",
     "name": "b002",
-    "timegroup": "2016-05-18 00:00:00",
-    "value.mean": 90.8571,
-    "value.sd": 7.9252
+    "timegroup": "2016-05-23 07:00:00",
+    "value.mean": 96,
+    "value.sd": 0
   },
   {
     "location": "Moscow Lab",
     "name": "b002",
-    "timegroup": "2016-05-18 04:00:00",
-    "value.mean": 92.75,
+    "timegroup": "2016-05-23 08:00:00",
+    "value.mean": 96,
+    "value.sd": 0
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "b002",
+    "timegroup": "2016-05-23 09:00:00",
+    "value.mean": 96
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "b002",
+    "timegroup": "2016-05-23 10:00:00",
+    "value.mean": 96,
+    "value.sd": 0
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "b002",
+    "timegroup": "2016-05-23 11:00:00",
+    "value.mean": 96,
+    "value.sd": 0
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "b002",
+    "timegroup": "2016-05-23 12:00:00",
+    "value.mean": 96,
+    "value.sd": 0
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "b002",
+    "timegroup": "2016-05-23 13:00:00",
+    "value.mean": 86.5,
+    "value.sd": 13.435
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "b002",
+    "timegroup": "2016-05-23 14:00:00",
+    "value.mean": 66.6667,
+    "value.sd": 8.9629
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "b002",
+    "timegroup": "2016-05-23 15:00:00",
+    "value.mean": 62,
+    "value.sd": 0
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "b002",
+    "timegroup": "2016-05-23 16:00:00",
+    "value.mean": 62,
+    "value.sd": 0
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "b002",
+    "timegroup": "2016-05-23 17:00:00",
+    "value.mean": 62
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "b002",
+    "timegroup": "2016-05-23 18:00:00",
+    "value.mean": 62,
+    "value.sd": 0
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "b002",
+    "timegroup": "2016-05-23 19:00:00",
+    "value.mean": 62,
+    "value.sd": 0
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "b002",
+    "timegroup": "2016-05-23 20:00:00",
+    "value.mean": 62
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "b002",
+    "timegroup": "2016-05-23 21:00:00",
+    "value.mean": 62,
+    "value.sd": 0
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "b002",
+    "timegroup": "2016-05-23 22:00:00",
+    "value.mean": 61.5,
     "value.sd": 0.7071
   },
   {
     "location": "Moscow Lab",
     "name": "b002",
-    "timegroup": "2016-05-18 08:00:00",
-    "value.mean": 91.75,
-    "value.sd": 0.4629
+    "timegroup": "2016-05-23 23:00:00",
+    "value.mean": 61
   },
   {
     "location": "Moscow Lab",
     "name": "b002",
-    "timegroup": "2016-05-18 12:00:00",
-    "value.mean": 89.4286,
-    "value.sd": 8.5996
+    "timegroup": "2016-05-24 00:00:00",
+    "value.mean": 61.5,
+    "value.sd": 0.7071
   },
   {
     "location": "Moscow Lab",
     "name": "b002",
-    "timegroup": "2016-05-18 16:00:00",
-    "value.mean": 89.25,
-    "value.sd": 7.4017
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "b002",
-    "timegroup": "2016-05-18 20:00:00",
-    "value.mean": 90.7143,
-    "value.sd": 0.488
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "b002",
-    "timegroup": "2016-05-19 00:00:00",
-    "value.mean": 90,
+    "timegroup": "2016-05-24 01:00:00",
+    "value.mean": 61,
     "value.sd": 0
   },
   {
     "location": "Moscow Lab",
     "name": "b002",
-    "timegroup": "2016-05-19 04:00:00",
-    "value.mean": 89.8571,
-    "value.sd": 0.378
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "b002",
-    "timegroup": "2016-05-19 08:00:00",
-    "value.mean": 87.6667,
-    "value.sd": 8.3347
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "b002",
-    "timegroup": "2016-05-19 12:00:00",
-    "value.mean": 88.4286,
-    "value.sd": 7.6997
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "b002",
-    "timegroup": "2016-05-19 16:00:00",
-    "value.mean": 88,
-    "value.sd": 7.9373
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "b002",
-    "timegroup": "2016-05-19 20:00:00",
-    "value.mean": 90,
+    "timegroup": "2016-05-24 02:00:00",
+    "value.mean": 61,
     "value.sd": 0
   },
   {
     "location": "Moscow Lab",
     "name": "b002",
-    "timegroup": "2016-05-20 00:00:00",
-    "value.mean": 88,
-    "value.sd": 7.2899
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "b002",
-    "timegroup": "2016-05-20 04:00:00",
-    "value.mean": 88.875,
-    "value.sd": 0.6409
-  },
-  {
-    "location": "Moscow Lab",
-    "name": "b002",
-    "timegroup": "2016-05-20 08:00:00",
-    "value.mean": 88,
+    "timegroup": "2016-05-24 03:00:00",
+    "value.mean": 61,
     "value.sd": 0
   },
   {
     "location": "Moscow Lab",
     "name": "b002",
-    "timegroup": "2016-05-20 12:00:00",
-    "value.mean": 82.875,
-    "value.sd": 8.999
+    "timegroup": "2016-05-24 04:00:00",
+    "value.mean": 61,
+    "value.sd": 0
   },
   {
     "location": "Moscow Lab",
     "name": "b002",
-    "timegroup": "2016-05-20 16:00:00",
-    "value.mean": 91
+    "timegroup": "2016-05-24 05:00:00",
+    "value.mean": 61
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "b002",
+    "timegroup": "2016-05-24 06:00:00",
+    "value.mean": 61,
+    "value.sd": 0
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "b002",
+    "timegroup": "2016-05-24 07:00:00",
+    "value.mean": 60.5,
+    "value.sd": 0.7071
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "b002",
+    "timegroup": "2016-05-24 08:00:00",
+    "value.mean": 60.5,
+    "value.sd": 0.7071
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "b002",
+    "timegroup": "2016-05-24 09:00:00",
+    "value.mean": 60,
+    "value.sd": 0
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "b002",
+    "timegroup": "2016-05-24 10:00:00",
+    "value.mean": 60,
+    "value.sd": 0
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "b002",
+    "timegroup": "2016-05-24 11:00:00",
+    "value.mean": 60,
+    "value.sd": 0
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "b002",
+    "timegroup": "2016-05-24 12:00:00",
+    "value.mean": 60,
+    "value.sd": 0
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "b002",
+    "timegroup": "2016-05-24 13:00:00",
+    "value.mean": 60,
+    "value.sd": 0
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "b002",
+    "timegroup": "2016-05-24 14:00:00",
+    "value.mean": 60,
+    "value.sd": 0
+  },
+  {
+    "location": "Moscow Lab",
+    "name": "b002",
+    "timegroup": "2016-05-24 15:00:00",
+    "value.mean": 60,
+    "value.sd": 0
   }
 ]

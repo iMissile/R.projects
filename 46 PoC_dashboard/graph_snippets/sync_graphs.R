@@ -19,8 +19,8 @@ library(akima)
 library(rdrop2)
 # library(rgl)
 
-min_lim <- ceiling_date(now() - days(3), unit = "day")
-max_lim <- floor_date(now() + days(2), unit = "day")
+min_lim <- ceiling_date(now() - days(1), unit = "day")
+max_lim <- floor_date(now() + days(1), unit = "day")
 lims <- c(min_lim, max_lim)
 
 # Setting limits with scale_x_datetime and time data
@@ -49,7 +49,16 @@ generate_raw_data <- function() {
                        temp.min = rnorm(n, 14, 3), # используем методику дополнения
                        pressure = rnorm(n, 750, 30),
                        humidity = runif(n, 10, 100),
-                       rain = runif(n, 0, 20))
+                       rain = runif(n, 0, 5))
+  
+  m2 <- data.frame(timestamp = tick.seq,
+                   rain2 = runif(n, 0, 5)) %>%
+    arrange(desc(timestamp))
+  
+  browser()
+  # а теперь объединим данные
+  m3 <- left_join(mydata, m2, by = "timestamp")
+  
   
   # максимальная температура должна быть выше минимальной
   # средняя должна быть между максимальной и минимальной
@@ -89,19 +98,18 @@ pp <- ggplot(df) +
                    limits = lims) +
   theme_igray() +
   theme(legend.position="none") +
+  geom_vline(xintercept = as.numeric(now()), linetype = "dotted", color = "yellowgreen", lwd = 1.1) +
   xlab("Дата")
   
 p1 <- pp +
   geom_line(aes(timegroup, temp, colour = time.pos), lwd = 1.2) +
   scale_color_manual(values = brewer.pal(n = 9, name = "Oranges")[c(3, 7)]) +
   ylab("Температура,\n град. C")
-
 p2 <- pp +
   geom_line(aes(timegroup, humidity, colour = time.pos), lwd = 1.2) +
   scale_color_manual(values = brewer.pal(n = 9, name = "Blues")[c(4, 7)]) +
   ylim(0, 100) +
   ylab("Влажность\nвоздуха, %")
-
 p3 <- pp + 
   geom_bar(data = df2, aes(timestamp, rain), fill = brewer.pal(n = 9, name = "Blues")[4], alpha = 0.5, stat="identity") +
   ylim(0, NA) +
@@ -109,4 +117,4 @@ p3 <- pp +
 
 # grid.arrange(p1, p2, p3, ncol = 1) # возвращаем ggplot
 grid.newpage()
-grid.draw(rbind(ggplotGrob(p1), ggplotGrob(p2), ggplotGrob(p3), size = "first"))
+grid.draw(rbind(ggplotGrob(p1), ggplotGrob(p2), ggplotGrob(p3), size = "last"))

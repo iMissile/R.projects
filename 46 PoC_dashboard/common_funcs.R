@@ -1,4 +1,16 @@
 
+get_timeframe <- function(days_back = 7, days_forward = 3){
+  # если по каким-либо причинам наверху не определились с прогнозом (NA), 
+  # то полагаем что он есть и он равен базовому горизонту
+  days_formard <- ifelse(is.na(days_forward), 3, days_forward)
+  min_lim <- ceiling_date(now() - days(days_back), unit = "day")
+  max_lim <- floor_date(now() + days(days_forward), unit = "day")
+  timeframe <- c(min_lim, max_lim)
+  
+  timeframe
+}
+  
+
 # http://stackoverflow.com/questions/20326946/how-to-put-ggplot2-ticks-labels-between-dollars
 my_date_format <- function(format = "%d %b", tz = "Europe/Moscow") {
   # делаем хитрую функцию условного форматирования
@@ -185,7 +197,9 @@ calc_rain_per_date <- function(weather.df) {
     group_by(date) %>%
     summarise(rain = sum(rain3h)) %>% # пытаемся высчитать агрегат за сутки
     ungroup %>%
-    mutate(timestamp = as.numeric(as.POSIXct(date, origin='1970-01-01'))) %>%
+    #mutate(timegroup = as.numeric(as.POSIXct(date, origin='1970-01-01'))) %>%
+    mutate(timestamp.human = force_tz(with_tz(as.POSIXct(date), tz = "GMT"), tz = "Europe/Moscow")) %>%
+    mutate(timestamp = as.numeric(timestamp.human)) %>%
     arrange(date)
 
   dfw2
@@ -212,7 +226,7 @@ load_github_field_data <- function() {
   #x <- read.csv( curl("https://github.com/iot-rus/Moscow-Lab/raw/master/result_moisture.txt") )
   temp.df <- try({
     read_delim(
-      curl("https://github.com/iot-rus/Moscow-Lab/raw/master/result_moisture.txt"),
+      curl("https://github.com/iot-rus/Moscow-Lab/raw/master/result.txt"),
       delim = ";",
       quote = "\"",
       # дата; время; имя; широта; долгота; минимум (0% влажности); максимум (100%); текущие показания
@@ -277,71 +291,19 @@ load_weather_data <- function() {
   raw.df # возвращаем загруженные данные
 }
 
-plot_average_ts_data <- function(raw.df, ddepth = 1) {
+plot_github_ts3_data <- function(df, timeframe, tbin = 4) {
+  # timeframe -- [POSIXct min, POSIXct max]
   
-  df <- raw.df %>%
-    filter(timegroup < lubridate::now()) %>%
-    filter(timegroup > floor_date(lubridate::now() - days(ddepth), unit = "day"))
-  
-  # print(raw.df)
-  plot_palette <- brewer.pal(n = 5, name = "Blues")
-  
-  avg.df <- df %>%
-    group_by(location, timegroup) %>%
-    summarise(value.mean = mean(value), value.sd = sd(value)) %>%
-    ungroup() # очистили группировки
-  
-  # Что делать, если метки на графике надо расставить по фиксированным местам?
-  # [how to fix x-axis and y-axis scale](http://stackoverflow.com/questions/30799845/how-to-fix-x-axis-and-y-axis-scale)
-  man.lims <- c(min(avg.df$timegroup), max(avg.df$timegroup))
-  man.breaks <- seq(from = man.lims[1], to = man.lims[2], by = "4 hours")
-  
-  p <- ggplot(avg.df, aes(timegroup, value.mean)) +
-    # ggtitle("Влажность почвы") +
-    # рисуем разрешенный диапазон
-    geom_ribbon(aes(ymin = 70, ymax = 90), fill = "chartreuse") +
-    geom_ribbon(
-      aes(ymin = value.mean - value.sd, ymax = value.mean + value.sd),
-      fill = plot_palette[3],
-      alpha = 0.8
-    ) +
-    geom_line(lwd = 2, colour = plot_palette[4]) +
-    geom_point(shape = 19,
-               size = 5,
-               colour = plot_palette[5]) +
-    geom_hline(yintercept = c(70, 90),
-               lwd = 1.2,
-               linetype = 'dashed') +
-    # geom_hline(yintercept = 90) +
-    #geom_smooth(size = 1.5, method = "loess", se = FALSE) +
-    scale_x_datetime(labels = date_format(format = "%d.%m\n%H:%M", tz = "Europe/Moscow"),
-                     breaks = man.breaks, limits = man.lims) +
-    # scale_x_datetime(labels = date_format(format = "%d.%m %H:%M", tz = "Europe/Moscow"),
-    # breaks = date_breaks('4 hours')) +
-    # minor_breaks = date_breaks('4 hours')) +
-    theme_igray() +
-    scale_colour_tableau("colorblind10") +
-    ylim(0, NA) +
-    xlab(enc2utf8("Время и дата измерения")) +
-    ylab(enc2utf8("Влажность почвы, %")) +
-    # theme_solarized() +
-    # scale_colour_solarized("blue") +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
-    theme(axis.text.y = element_text(angle = 0))
-  
-  p # возвращаем ggplot
-}
-
-plot_github_ts2_data <- function(df, ddepth = 1, tbin = 4) {
-
-  # фильтруем данные
+  # фильтруем данные. сгруппируем по временным интервалам
+  # и удалим все данные с NA. Из-за неполных данных возникают всякие косяки
+  # [filter for complete cases in data.frame using dplyr (case-wise deletion)](http://stackoverflow.com/questions/22353633/filter-for-complete-cases-in-data-frame-using-dplyr-case-wise-deletion)
   raw.df <- df %>%
-    # filter(work.status) %>%
-    filter(timestamp < lubridate::now()) %>%
-    filter(timestamp > floor_date(lubridate::now() - days(ddepth), unit = "day")) %>%
-    # сгруппируем по временным интервалам
-    mutate(timegroup = hgroup.enum(timestamp, time.bin = tbin))
-
+    filter(complete.cases(.)) %>%
+    mutate(timegroup = hgroup.enum(timestamp, time.bin = tbin)) %>%
+    filter(timegroup >= timeframe[1]) %>%
+    filter(timegroup <= timeframe[2])
+  
+  lims <- timeframe  
   # проведем усреднение по временным группам, если измерения проводились несколько раз в течение этого времени
   # усредняем только по рабочим датчикам
   
@@ -350,39 +312,43 @@ plot_github_ts2_data <- function(df, ddepth = 1, tbin = 4) {
     group_by(location, name, timegroup) %>%
     summarise(value.mean = mean(value), value.sd = sd(value)) %>%
     ungroup() # очистили группировки
-
-  # выводим в json-файл  ----------------------------------------
-  # http://stackoverflow.com/questions/25550711/convert-data-frame-to-json
-  # avg_json <- jsonlite::toJSON(avg.df, pretty = TRUE)
-  # запуск идет из папки с app.R
-  # write(avg_json, file = "avg_df.json")
-
+  
   # готовим графическое представление ----------------------------------------
   plot_palette <- brewer.pal(n = 5, name = "Blues")
   plot_palette <- wes_palette(name = "Moonrise2") # https://github.com/karthik/wesanderson
-
+  
   # http://www.cookbook-r.com/Graphs/Shapes_and_line_types/
-  p <- ggplot(avg.df, aes(x = timegroup, y = value.mean, colour = name)) +
+  p <- ggplot(avg.df, aes(x = timegroup, y = value.mean)) +
     # http://www.sthda.com/english/wiki/ggplot2-colors-how-to-change-colors-automatically-and-manually
-    # scale_fill_brewer(palette="Dark2") +
-    # scale_color_brewer(palette="Dark2") +
-    scale_color_manual(values = plot_palette) +
-    scale_fill_manual(values = plot_palette) +
+    scale_fill_brewer(palette="Dark2", direction = -1, guide = FALSE) +
+    scale_color_brewer(palette="Dark2", direction = -1, name = "Сенсор", guide = guide_legend(reverse = FALSE, fill = FALSE)) + 
+  
+    # scale_fill_manual(values = plot_palette, guide = FALSE) + # легенду по заполнению отключаем
+    # scale_color_manual(values = plot_palette, name = "Сенсор", guide = guide_legend(reverse = FALSE, fill = FALSE)) +
+  
     #scale_fill_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
     # рисуем разрешенный диапазон
-    # geom_ribbon(aes(ymin = 70, ymax = 90), fill = "darkseagreen1") +
-    geom_ribbon(aes(ymin = 70, ymax = 90), fill = "mediumaquamarine", alpha = 0.3) +
-    geom_ribbon(aes(ymin = value.mean - value.sd, ymax = value.mean + value.sd, fill = name), 
-                alpha = 0.3) +
-    geom_line(lwd = 1.5) +
-    geom_point(data = raw.df, aes(x = timestamp, y = value), shape = 1, size = 2) +
-    geom_hline(yintercept = c(70, 90), lwd = 1.2, linetype = 'dashed') +
-    geom_point(shape = 19, size = 3) +
+    geom_ribbon(aes(x = timegroup, ymin = 70, ymax = 90), linetype = 'blank', 
+                fill = "olivedrab3", alpha = 0.4) +
+    geom_ribbon(
+      aes(ymin = value.mean - value.sd, ymax = value.mean + value.sd, fill = name),
+      alpha = 0.3
+      ) +
+    geom_line(aes(colour = name), lwd = 1.2) +
+    # точки сырых данных
+    geom_point(data = raw.df, aes(x = timestamp, y = value, colour = name), shape = 1, size = 2) +
+    geom_point(aes(colour = name), shape = 19, size = 3) + # усредненные точки
+    geom_hline(yintercept = c(70, 90), lwd = 1, linetype = 'dashed') +
     # scale_x_datetime(labels = date_format(format = "%d.%m%n%H:%M", tz = "Europe/Moscow"),
     #                  breaks = date_breaks('4 hour')) +
-    scale_x_datetime(labels = date_format("%d.%m"), breaks = date_breaks("1 days"), minor_breaks = date_breaks("6 hours")) +
+    # текщуее время отобразим
+    geom_vline(xintercept = as.numeric(now()), linetype = "dotted", color = "yellowgreen", lwd = 1.1) +
+    scale_x_datetime(labels = date_format("%d.%m", tz = "Europe/Moscow"),
+                     breaks = date_breaks("1 days"), 
+                     #minor_breaks = date_breaks("6 hours"),
+                     limits = lims) +
     
-      # minor_breaks = date_breaks('1 hour')
+    # minor_breaks = date_breaks('1 hour')
     # добавляем нерабочие сенсоры
     # geom_point(data = raw.df %>% filter(!work.status), aes(x = timegroup, y = value),
     #            size = 3, shape = 21, stroke = 0, colour = 'red', fill = 'yellow') +
@@ -399,218 +365,71 @@ plot_github_ts2_data <- function(df, ddepth = 1, tbin = 4) {
     # scale_colour_solarized("blue") +
     # theme(legend.position=c(0.5, .2)) +
     theme(legend.position = "top") +
-    theme(axis.text.x = element_text(angle = 0, hjust = 1, vjust = 0.5)) +
-    theme(axis.text.y = element_text(angle = 0))
+    # theme(axis.text.x = element_text(angle = 0, hjust = 1, vjust = 0.5)) +
+    # theme(axis.text.y = element_text(angle = 0)) +
+    # убрали заливку, см. stackoverflow.com/questions/21066077/remove-fill-around-legend-key-in-ggplot
+    guides(color = guide_legend(override.aes = list(fill = NA)))
 
   p # возвращаем ggplot
 }
 
-plot_github_ts_data <- function(df, ddepth = 1, tbin = 4) {
+plot_real_weather2_data <- function(weather.df, rain.df, timeframe) {
+  # timeframe -- [POSIXct min, POSIXct max]
+  # агрегат осадков за сутки
+  # чтобы график нарисовался столбиками строго по дням, необходимо пропущенные дни добить нулями
+  dft <- data.frame(date = seq.Date(as.Date(timeframe[1]), as.Date(timeframe[2]), by = "1 day"),
+                    rain2 = 0)
+  df2 <- dft %>%
+    left_join(rain.df, by = "date") %>%
+    mutate(rain = rain2 + ifelse(is.na(rain), 0, rain)) %>%
+    select(date, rain) %>%
+    mutate(timestamp = force_tz(with_tz(as.POSIXct(date), tz = "GMT"), tz = "Europe/Moscow")) %>%
+    filter(timestamp >= timeframe[1]) %>%
+    filter(timestamp <= timeframe[2])
   
-  # фильтруем данные
-  raw.df <- df %>%
-    filter(work.status) %>%
-    filter(timestamp < lubridate::now()) %>%
-    filter(timestamp > floor_date(lubridate::now() - days(ddepth), unit = "day"))
-  
-  # http://www.cookbook-r.com/Graphs/Shapes_and_line_types/
-  p <- ggplot(raw.df, aes(x = timestamp, y = value, colour = name)) + 
-    # http://www.sthda.com/english/wiki/ggplot2-colors-how-to-change-colors-automatically-and-manually
-    # scale_fill_brewer(palette="Spectral") + 
-    # scale_color_manual(values=wes_palette(n=3, name="GrandBudapest")) +
-    # scale_color_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
-    # рисуем разрешенный диапазон
-    
-    geom_ribbon(aes(ymin = 70, ymax = 90), fill = "chartreuse") +
-    geom_line(lwd = 2) +
-    geom_point(shape = 19, size = 3) +
-    geom_hline(yintercept = c(70, 90), lwd = 1.2, linetype = 'dashed') +
-    
-    scale_x_datetime(labels = date_format(format = "%d.%m%n%H:%M", tz = "Europe/Moscow"),
-                    breaks = date_breaks('2 hour'), 
-                    minor_breaks = date_breaks('1 hour')) +
-    
-    # добавляем нерабочие сенсоры
-    #geom_point(data = raw.df %>% filter(!work.status), size = 3, shape = 21, stroke = 0, colour = 'red', fill = 'yellow') +
-    #geom_point(data = raw.df %>% filter(!work.status), size = 3, shape = 13, stroke = 1.1, colour = 'red')
-    
-    theme_igray() + 
-    scale_colour_tableau("colorblind10", name = "Влажность\nпочвы") +
-    # scale_color_brewer(palette = "Set2", name = "Влажность\nпочвы") +
-    ylim(0, 100) +
-    xlab("Время и дата измерения") +
-    ylab("Влажность почвы, %") +
-    # theme_solarized() +
-    # scale_colour_solarized("blue") +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
-    theme(axis.text.y = element_text(angle = 0))
-  
-  p # возвращаем ggplot
-}
+  # погода
+  df <- weather.df %>%
+    filter(timegroup >= timeframe[1]) %>%
+    filter(timegroup <= timeframe[2])
 
-
-plot_ts_data_old <- function(raw.df, ddepth = 1) {
-
-  df <- raw.df %>%
-    filter(timegroup < lubridate::now()) %>%
-    filter(timegroup > floor_date(lubridate::now() - days(ddepth), unit = "day"))
-  
-  avg.df <- df %>%
-    group_by(location, timegroup) %>%
-    summarise(value.mean = mean(value), value.sd = sd(value))
-  
-  p <- ggplot(avg.df, aes(timegroup, value.mean, colour = factor(location))) +
-    # ggtitle("График температуры") +
-    geom_point() +
-    geom_line() +
-    ylim(0, NA) +
-    theme_solarized() +
-    scale_colour_solarized("blue") +
-    theme(panel.border = element_rect(
-      colour = "black",
-      fill = NA,
-      size = 2
-    ))
-  
-  p # возвращаем ggplot
-}
-
-plot_weather_data <- function(raw.df, ddepth = 1) {
-  
-  df <- raw.df %>%
-    filter(timegroup > floor_date(lubridate::now() - days(ddepth), unit = "day"))
-  
-  # разметим данные на прошлое и будущее. будем использовать для цветовой группировки
-  df['time.pos'] <- ifelse(df$timestamp < now(), "PAST", "FUTURE")
-  df$temp[df$time.pos == "FUTURE"] <- NA # в будущем нет актуальных
-  
-  # http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/
-  plot_palette <- brewer.pal(n = 8, name = "Paired") 
-  
+  lims <- timeframe
+  # схлопнем рисование графика
+  ## brewer.pal.info
   # https://www.datacamp.com/community/tutorials/make-histogram-ggplot2
-  p1 <- ggplot(df, aes(timestamp, temp)) +
-    # ggtitle("График температуры") +
-    # scale_fill_brewer(palette="Set1") +
-    scale_fill_brewer(palette = "Paired") +
-    geom_ribbon(aes(
-      ymin = temp.min,
-      ymax = temp.max,
-      fill = time.pos
-    ), alpha = 0.5) +
-    geom_point(shape = 1, size = 3) +
-    geom_line(lwd = 1,
-              linetype = 'dashed',
-              color = "red") +
-    theme_igray() +
-    theme(legend.position="none")
-  
-  # рисуем влажность в виде geom_bar, это работает для дискретных переменных
-  p2 <- ggplot(df, aes(timestamp, precipitation)) +
-    # ggtitle("График температуры") +
-    # scale_fill_brewer(palette="Set1") +
-    scale_fill_brewer(palette = "Paired") +
-    geom_bar(fill = plot_palette[7], stat="identity") +
-    geom_line(aes(timestamp, temp), lwd = 1,
-              linetype = 'dashed',
-              color = "red") +
-    
-    theme_igray() +
-    theme(legend.position="none")
-  
-  grid.arrange(p1, p2, ncol = 1) # возвращаем ggplot
-}
-
-plot_real_weather_data <- function(raw.df, ddepth = 1) {
-  
-  # запрос и формирование данных по осадкам (прошлое и прогноз) =====================================
-  weather.df <- prepare_raw_weather_data()
-  #browser()
-  df2 <- calc_rain_per_date(weather.df) %>%
-    filter(timestamp >= floor_date(now() - days(ddepth), unit = "day")) %>%
-    filter(timestamp <= ceiling_date(now() + days(3), unit = "day")) # %>%
-    #bind_rows(data.frame(date = as.Date(min(timegroup)), rain = 0, timestamp = NA))
-  
-  # надо дополнительно отфильтровать по глубине данных
-  df <- raw.df %>%
-    filter(timegroup >= floor_date(now() - days(ddepth), unit = "day")) # %>%
-    #filter(timegroup <= ceiling_date(now() + days(forward_days), unit = "day")) %>%
-  
-  min_lim <- ceiling_date(min(df$timegroup), unit = "day")
-  max_lim <- floor_date(max(df$timegroup), unit = "day")
-  lims <- c(min_lim, max_lim)
-  
-  # https://www.datacamp.com/community/tutorials/make-histogram-ggplot2
-  p1 <- ggplot(df, aes(timegroup, temp, colour = time.pos)) +
+  pp <- ggplot(df) +
     # ggtitle("График температуры") +
     # scale_fill_brewer(palette="Set1") +
     # scale_fill_brewer(palette = "Paired") +
-    scale_color_manual(values = brewer.pal(n = 9, name = "Oranges")[c(3, 7)]) +
     # geom_ribbon(aes(ymin = temp.min, ymax = temp.max, fill = time.pos), alpha = 0.5) +
     # geom_point(shape = 1, size = 3) +
     # geom_line(lwd = 1, linetype = 'dashed', color = "red") +
     scale_x_datetime(labels = date_format("%d.%m", tz = "Europe/Moscow"), 
-                   breaks = date_breaks("1 days"), 
-                   #minor_breaks = date_breaks("6 hours"),
-                   limits = lims
-    ) +
-    geom_line(lwd = 1.2) +
+                     breaks = date_breaks("1 days"), 
+                     #minor_breaks = date_breaks("6 hours"),
+                     limits = lims) +
     theme_igray() +
     theme(legend.position="none") +
-    xlab("Дата") +
-    ylab("Температура,\nград. C")
-
-## brewer.pal.info
-p2 <- ggplot(df, aes(timegroup, humidity, colour = time.pos)) +
-    # ggtitle("График температуры") +
-    # scale_fill_brewer(palette="Set1") +
-    # scale_fill_brewer(palette = "Paired") +
-  # scale_color_brewer(palette = "Purples") +
-  # scale_color_manual(values = brewer.pal(n = 3, name = "Spectral")) +
-  scale_color_manual(values = brewer.pal(n = 9, name = "Blues")[c(4, 7)]) +
-  # scale_color_viridis(discrete=TRUE) +
-    # geom_ribbon(aes(ymin = temp.min, ymax = temp.max, fill = time.pos), alpha = 0.5) +
-    # geom_point(shape = 1, size = 3) +
-    # geom_line(lwd = 1, linetype = 'dashed', color = "red") +
-  scale_x_datetime(labels = date_format("%d.%m", tz = "Europe/Moscow"), 
-                   breaks = date_breaks("1 days"), 
-                   #minor_breaks = date_breaks("6 hours"),
-                   limits = lims
-  ) +
-    geom_line(lwd = 1.2) +
-    theme_igray() +
-    theme(legend.position = "none") +
+    geom_vline(xintercept = as.numeric(now()), linetype = "dotted", color = "yellowgreen", lwd = 1.1) +
+    xlab("Дата")
+  
+  p1 <- pp +
+    geom_line(aes(timegroup, temp, colour = time.pos), lwd = 1.2) +
+    scale_color_manual(values = brewer.pal(n = 9, name = "Oranges")[c(3, 7)]) +
+    ylab("Температура,\n град. C")
+  p2 <- pp +
+    geom_line(aes(timegroup, humidity, colour = time.pos), lwd = 1.2) +
+    scale_color_manual(values = brewer.pal(n = 9, name = "Blues")[c(4, 7)]) +
     ylim(0, 100) +
-    xlab("Дата") +
     ylab("Влажность\nвоздуха, %")
-
-# http://moderndata.plot.ly/create-colorful-graphs-in-r-with-rcolorbrewer-and-plotly/
-plot_palette <- brewer.pal(n = 8, name = "Paired")
-
-p3 <- ggplot(df2, aes(date, rain)) +
-  # ggtitle("График температуры") +
-  # scale_fill_brewer(palette="Set1") +
-  # scale_fill_brewer(palette = "Paired") +
-  # scale_color_brewer(palette = "Set2") +
-  # geom_bar(fill = brewer.pal(n = 11, name = "Spectral")[5], alpha = 0.5, stat="identity") +
-  geom_bar(fill = brewer.pal(n = 9, name = "Blues")[4], alpha = 0.5, stat="identity") +
-  # geom_ribbon(aes(ymin = temp.min, ymax = temp.max, fill = time.pos), alpha = 0.5) +
-  # geom_point(shape = 1, size = 3) +
-  # geom_line(lwd = 1, linetype = 'dashed', color = "red") +
-  scale_x_date(labels = date_format("%d.%m", tz = "Europe/Moscow"), 
-               breaks = date_breaks("1 days"),
-               limits = as.Date(lims, tz = "Europe/Moscow")
-  ) +
-  # geom_line(lwd = 1.2) +
-  theme_igray() +
-  theme(legend.position="none") +
-  ylim(0, NA) +
-  xlab("Дата") +
-  ylab("Осадки\n(дождь), мм")
-
-# grid.arrange(p1, p2, p3, ncol = 1) # возвращаем ggplot
-grid.newpage()
-grid.draw(rbind(ggplotGrob(p1), ggplotGrob(p2), ggplotGrob(p3), size = "first"))
-
+  p3 <- pp + 
+    geom_bar(data = df2, aes(timestamp, rain), fill = brewer.pal(n = 9, name = "Blues")[4], alpha = 0.5, stat="identity") +
+    ylim(0, NA) +
+    ylab("Осадки\n(дождь), мм")
+  
+  # grid.arrange(p1, p2, p3, ncol = 1) # возвращаем ggplot
+  grid.newpage()
+  grid.draw(rbind(ggplotGrob(p1), ggplotGrob(p2), ggplotGrob(p3), size = "first"))
+  
 }
 
 prepare_sesnors_mapdf <- function(input.df, slicetime) {

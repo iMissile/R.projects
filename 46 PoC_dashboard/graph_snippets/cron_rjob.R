@@ -59,7 +59,7 @@ df <- get_weather_df(back_days = 7, forward_days = 3)
 # http://stackoverflow.com/questions/25550711/convert-data-frame-to-json
 df3 <- with(df, {
   data.frame(timestamp = round(as.numeric(timegroup), 0), 
-             timegroup = timegroup,
+             timestamp.human = timegroup,
              rain3h_av = rain3h_av,
              air_temp_past = ifelse(time.pos == "PAST", round(temp, 0), NA),
              air_temp_future = ifelse(time.pos == "FUTURE", round(temp, 0), NA),
@@ -94,6 +94,7 @@ avg.df <- raw.df %>%
   summarise(value.mean = round(mean(value), 0), 
             value.min = round(min(value), 0), 
             value.max = round(max(value), 0)) %>%
+  mutate(timestamp.human = timegroup) %>%
   mutate(timestamp = round(as.numeric(timegroup), 0)) %>%
   ungroup() # очистили группировки
 
@@ -106,6 +107,7 @@ write(x, file = sensorts_filename)
 # формирование временного среза в пространстве по сенсорам ---------------------------------------------------
 sensors.df <- prepare_sesnors_mapdf(raw.df, slicetime = lubridate::now()) %>%
   mutate(timegroup = hgroup.enum(timestamp, time.bin = 1)) %>%
+  mutate(timestamp.human = timestamp) %>%
   mutate(timestamp = round(as.numeric(timegroup), 0))
 
 flog.info("Time-slice data")
