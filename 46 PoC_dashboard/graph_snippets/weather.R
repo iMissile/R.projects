@@ -3,6 +3,7 @@
 library(ggplot2) #load first! (Wickham)
 library(lubridate) #load second!
 library(dplyr)
+library(tidyr)
 library(readr)
 library(jsonlite)
 library(magrittr)
@@ -22,6 +23,100 @@ library(gridExtra) # для grid.arrange()
 #library(rdrop2)
 # library(rgl)
 
+
+# забираем историческую погоду с Sitewhere ==================================================================
+# write(wh_json, file="./export/wh_json.txt")
+getwd()
+data <- fromJSON("./data/sitewhere_history.json")
+df0 <- spread(data, measurementId, entries)
+
+# парсинг с жесткими допущениями ----------------------------------------------------------
+# считаем, что времена измерений разложены по векторам синтетически, а поэтому полностью тождественны для всех записей
+dft <- data.frame(timestamp = df0$humidity[[1]]$measurementDate, 
+                 humidity = df0$humidity[[1]]$value,
+                 temp = df0$temp[[1]]$value,
+                 pressure = df0$pressure[[1]]$value
+                 )
+df <- dft %>%
+  mutate(timestamp = ymd_hms(timestamp),
+  # temp = round(temp - 273.15, 1), # пересчитываем из кельвинов в градусы цельсия
+  pressure = round(pressure * 0.75006375541921, 0), # пересчитываем из гектопаскалей (hPa) в мм рт. столба
+  humidity = round(humidity, 0)
+)
+
+# честный парсинг и объединение ----------------------------------------------------------
+# а теперь считаем, что в каждой отдельной записи данные могут быть разных типов: 
+# по мере развития системы идет модификация существующих и добавление новых параметров
+# собираем первый фрейм и к нему подстегиваем шаг за шагом фреймы со последующими параметрами
+data.list <- lapply(c('humidity', 'temp', 'pressure'),
+            function(x) {
+              d <- distinct(data.frame(
+                # сразу преобразуем в POSIXct, чтобы не занимать место и ускорить процесс
+                # 2016-05-29T09:28:50.000+0300 --- local time-zone (+3), см. https://www.w3.org/TR/NOTE-datetime
+                timestamp = with_tz(ymd_hms(df0[[x]][[1]]$measurementDate), tz = "Europe/Moscow"), 
+                value = df0[[x]][[1]]$value,
+                stringsAsFactors = FALSE
+              )) # сразу уберем дублирующиеся строки
+              names(d)[2] <- x
+              d
+            })
+
+# , tz = "Europe/Moscow"
+# а теперь объединим все фреймы
+# у нас нет никаких гарантий, что временные метки будут идентичны и совпадать по количеству для различных метрик!
+# например, одну из метрик добавили позже
+
+# соберем вектор времен
+# при объединении POSIXct превращается в numeric, как в общий тип. Связано с возможными разными тайм зонами
+df.time <- data.frame(timestamp = unique(unlist(lapply(data.list, 
+                                                       function(x){getElement(x, "timestamp")}))), 
+                      stringsAsFactors = FALSE) %>%
+  mutate(timestamp = as.POSIXct(timestamp, origin='1970-01-01', tz = "Europe/Moscow"))
+
+df.join <- df.time
+for(i in 1:length(data.list))
+{
+  df.join %<>% dplyr::left_join(data.list[[i]], by = "timestamp") #, copy = TRUE)
+}
+
+df.res <- df.join %>%
+  mutate(humidity = round(humidity, 0),
+         # temp = round(temp - 273.15, 1), # пересчитываем из кельвинов в градусы цельсия
+         pressure = round(pressure * 0.75006375541921, 0) # пересчитываем из гектопаскалей (hPa) в мм рт. столба
+  )
+
+object.size(df.res)
+
+stop()
+# Область тестов ---------------------------------------------------------------
+# соберем вектор времен
+# df.join <- data.frame(timestamp = c(unlist(lapply(data.list, function(x){select(x, timestamp)}))), stringsAsFactors = FALSE) # затравка
+# df.join <- data.frame(timestamp = union(lapply(data.list, function(x){select(x, timestamp)})), stringsAsFactors = FALSE) # затравка
+
+l1 <- unlist(list(1, 2, 3))
+l2 <- unlist(list(3, 4, 5))
+ll <- unique(c(l1, l2))
+
+
+df.join <- data.frame(timestamp = character(), stringsAsFactors = FALSE) # затравка
+n <- lapply(data.list, function(x){
+  df.join <<- dplyr::full_join(df.join, x, by = "timestamp")
+  NULL
+})
+
+lapply(data.list, function(x){
+  df.join <<- dplyr::left_join(df.join, x, by = "timestamp")})
+
+n <- lapply(data.list, function(x){
+  df.join <<- dplyr::left_join(df.join, x, by = "timestamp", copy = TRUE)
+  NULL
+})
+
+
+# m <- dplyr::full_join(df.join, data.list, by = "timestamp", copy = TRUE)
+
+
+stop()
 
 url <- "api.openweathermap.org/data/2.5/"   
 MoscowID <- '524901'
