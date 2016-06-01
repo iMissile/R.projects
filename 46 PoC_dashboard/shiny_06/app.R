@@ -172,6 +172,8 @@ server <- function(input, output, session) {
     flog.info(paste0(input$update_btn, ": temp_plot")) # формально используем
     # параметры select передаются как character vector!!!!!!!!
     # plot_github_ts2_data(raw_github_field.df, as.numeric(input$historyDays), as.numeric(input$timeBin))
+    # может быть ситуация, когда нет данных от сенсоров. 
+    # в этом случае попробуем растянуть данные до последней даты, когда видели показания
     timeframe <- get_timeframe(days_back = as.numeric(input$historyDays),
                                days_forward = ifelse(input$sync_graphs, as.numeric(input$predictDays), 0))
     

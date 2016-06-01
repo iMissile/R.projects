@@ -24,6 +24,70 @@ library(curl)
 source("common_funcs.R") # сюда выносим все вычислительные и рисовательные функции
 
 
+# забираем данные по сенсорам в новом формате из репозитория
+temp.df <- try({
+  read_delim(
+    curl("https://github.com/iot-rus/Moscow-Lab/raw/master/result_lab.txt"),
+    delim = ";",
+    quote = "\"",
+    # дата; время; имя; широта; долгота; минимум (0% влажности); максимум (100%); текущие показания
+    col_names = c(
+      "date",
+      "time",
+      "rawname",
+      "type",
+      "lat",
+      "lon",
+      "yl",
+      "xl",
+      "yr",
+      "xr",
+      "voltage",
+      "pin"
+    ),
+    col_types = "Dccc????????",
+    locale = locale("ru", encoding = "windows-1251", tz = "Europe/Moscow"),
+    # таймзону, в принципе, можно установить здесь
+    progress = interactive()
+  ) # http://barryrowlingson.github.io/hadleyverse/#5
+})
+
+problems(temp.df)
+
+# проверим только 1-ый элемент класса, поскльку при разных ответах получается разное кол-во элементов
+if(class(temp.df)[[1]] != "try-error") {
+  # расчитываем необходимые данные
+  df <- temp.df %>%
+    mutate(value = round(yl + (yr-yl)/(xr-xl) * (voltage - xl), 0), type = factor(type)) %>%
+    # откалибруем всплески
+    mutate(work.status = (value >= 0 & value <= 100)) %>%
+    # получим временную метку
+    mutate(timestamp = ymd_hms(paste(date, time), truncated = 3, tz = "Europe/Moscow")) %>%
+    # упростим имя сенсора
+    mutate(label = gsub(".*:", "", rawname, perl = TRUE)) %>%
+    # и разделим на имя и адрес
+    separate(label, c('ipv6', 'name'), sep = '-', remove = TRUE) %>%
+    select(timestamp, name, type, value, work.status, lat, lon, pin) %>%
+    mutate(location = "Moscow Lab") 
+  
+  #flog.info("Sensors data from GitHub recieved. Last records:")
+  #flog.info(capture.output(print(head(arrange(df, desc(timestamp)), n = 4))))
+  
+} else {
+  df <- NA # в противном случае мы сигнализируем о невозможности обновить данные
+  flog.error("GitHub connection error")
+}
+
+
+p1 <- ggplot(df, aes(timestamp, value, colour = name)) +
+  geom_line() +
+  geom_point(shape = 1) +
+  scale_y_sqrt(limits = c(10, 30)) +
+  facet_grid(type ~ .)
+  
+p1
+
+stop()
 # # получаем исторические данные по погоде из репозитория Гарика --------------------------------------------------------
 # # https://cran.r-project.org/web/packages/curl/vignettes/intro.html
 # req <- curl_fetch_memory("https://raw.githubusercontent.com/iot-rus/Moscow-Lab/master/weather.txt")

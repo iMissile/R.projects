@@ -222,7 +222,7 @@ load_field_data <- function() {
 }
 
 load_github_field_data <- function() {
-  # подгружаем данные по сенсорам
+  # подгружаем данные по сенсорам. Это было в старом формате.
   #x <- read.csv( curl("https://github.com/iot-rus/Moscow-Lab/raw/master/result_moisture.txt") )
   temp.df <- try({
     read_delim(
@@ -247,7 +247,8 @@ load_github_field_data <- function() {
   })
   
   
-  if(class(temp.df) != "try-error") {
+  # проверим только 1-ый элемент класса, поскльку при разных ответах получается разное кол-во элементов
+  if(class(temp.df)[[1]] != "try-error") {
     # расчитываем необходимые данные
     df <- temp.df %>%
       mutate(value = round(100 / (calibration_100 - calibration_0) * (voltage - calibration_0), 0)) %>%
@@ -267,6 +268,7 @@ load_github_field_data <- function() {
     df <- NA # в противном случае мы сигнализируем о невозможности обновить данные
     flog.error("GitHub connection error")
   }
+
   df
 }
 
