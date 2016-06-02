@@ -101,10 +101,10 @@ p2 <- ggplot(avg.df, aes(x = timegroup, y = value.mean)) +
   # scale_colour_solarized("blue") +
   # theme(legend.position=c(0.5, .2)) +
   theme(legend.position = "top") +
-  guides(color = guide_legend(override.aes = list(fill = NA))) + # убрали заливку
-  # см. stackoverflow.com/questions/21066077/remove-fill-around-legend-key-in-ggplot
   theme(axis.text.x = element_text(angle = 0, hjust = 1, vjust = 0.5)) +
-  theme(axis.text.y = element_text(angle = 0))
+  theme(axis.text.y = element_text(angle = 0)) +
+  # убрали заливку, см. stackoverflow.com/questions/21066077/remove-fill-around-legend-key-in-ggplot
+  guides(color = guide_legend(override.aes = list(fill = NA)))
 
 benchplot(p2)
 p2

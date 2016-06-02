@@ -52,7 +52,7 @@ eval(parse("../common_funcs.R", encoding="UTF-8"))
 
 # ================ первичная загрузка данных =========================
 raw_field.df <- load_field_data()
-raw_github_field.df <- load_github_field_data()
+raw_github_field.df <- load_github_field2_data()
 # raw_weather.df <- load_weather_data()
 raw_weather.df <- get_weather_df()
 
@@ -82,18 +82,18 @@ ui <- fluidPage(theme = shinytheme("united"), titlePanel("Контроль вл�
                       "historyDays",
                       "Глубина истории (дни)",
                       choices = c(1, 3, 7),
-                      selected = 7
+                      selected = 3
                     ),
                     selectInput(
                       "predictDays",
                       "Горизонт прогноза (дни)",
                       choices = c(1, 2, 3, 5),
-                      selected = 3
+                      selected = 2
                     ),
                     selectInput(
                       "timeBin",
                       "Период группировки (часы)",
-                      choices = c(1, 2, 3, 4, 6, 12),
+                      choices = c(0.5, 1, 2, 3, 4, 6, 12),
                       selected = 1
                     ),
                     actionButton("logdata_btn", "Сброс данных в лог"),
@@ -149,7 +149,7 @@ server <- function(input, output, session) {
     raw_weather.df <<- get_weather_df()
 
     # берем лабораторные данные с github
-    df <- load_github_field_data()
+    df <- load_github_field2_data()
     if (!is.na(df)) { raw_github_field.df <<- df }    
     
     # принудительно меняем 
@@ -174,12 +174,13 @@ server <- function(input, output, session) {
     # plot_github_ts2_data(raw_github_field.df, as.numeric(input$historyDays), as.numeric(input$timeBin))
     # может быть ситуация, когда нет данных от сенсоров. 
     # в этом случае попробуем растянуть данные до последней даты, когда видели показания
+    # вперед ставим не 0, иначе округление будет до нижней даты, т.е. до 0:00 текущего дня
     timeframe <- get_timeframe(days_back = as.numeric(input$historyDays),
-                               days_forward = ifelse(input$sync_graphs, as.numeric(input$predictDays), 0))
+                               days_forward = ifelse(input$sync_graphs, as.numeric(input$predictDays), 1)) 
     
     flog.info(paste0("sensorts_plot timeframe: ", capture.output(str(timeframe))))
     # на выходе должен получиться ggplot!!!
-    plot_github_ts3_data(raw_github_field.df, timeframe, as.numeric(input$timeBin))
+    plot_github_ts4_data(raw_github_field.df, timeframe, as.numeric(input$timeBin))
   })
 
   output$weather_plot <- renderPlot({
@@ -206,7 +207,7 @@ server <- function(input, output, session) {
   
   output$data_tbl <- DT::renderDataTable({
     df <- raw_github_field.df %>% 
-      select(-lon, -lat, -location) %>% 
+      select(name, voltage, work.status, timestamp) %>% 
       arrange(desc(timestamp))
     # изменим значения на русский
     df$work.status <- ifelse(df$work.status, "Ок", "Неисправен")
