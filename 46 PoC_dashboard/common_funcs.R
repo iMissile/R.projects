@@ -272,6 +272,81 @@ load_github_field_data <- function() {
   df
 }
 
+load_github_field2_data <- function() {
+  # забираем данные по сенсорам в новом формате из репозитория
+  temp.df <- try({
+    read_delim(
+      curl("https://github.com/iot-rus/Moscow-Lab/raw/master/result_lab.txt"),
+      delim = ";",
+      quote = "\"",
+      # дата; время; имя; широта; долгота; минимум (0% влажности); максимум (100%); текущие показания
+      col_names = c(
+        "date",
+        "time",
+        "rawname",
+        "type",
+        "lat",
+        "lon",
+        "yl",
+        "xl",
+        "yr",
+        "xr",
+        "voltage",
+        "pin"
+      ),
+      col_types = "Dccc????????",
+      locale = locale("ru", encoding = "windows-1251", tz = "Europe/Moscow"),
+      # таймзону, в принципе, можно установить здесь
+      progress = interactive()
+    ) # http://barryrowlingson.github.io/hadleyverse/#5
+  })
+  
+  problems(temp.df)
+  
+  # проверим только 1-ый элемент класса, поскльку при разных ответах получается разное кол-во элементов
+  if(class(temp.df)[[1]] != "try-error") {
+    # расчитываем необходимые данные
+    df <- temp.df %>%
+      mutate(value = round(yl + (yr-yl)/(xr-xl) * (voltage - xl), 0), type = factor(type)) %>%
+      # получим временную метку
+      mutate(timestamp = ymd_hms(paste(date, time), truncated = 3, tz = "Europe/Moscow")) %>%
+      # упростим имя сенсора
+      mutate(label = gsub(".*:", "", rawname, perl = TRUE)) %>%
+      # и разделим на имя и адрес
+      separate(label, c('ipv6', 'name'), sep = '-', remove = TRUE) %>%
+      select(timestamp, name, type, value, voltage, lat, lon, pin) %>%
+      mutate(location = "Moscow Lab") 
+    
+    flog.info("Sensors data from GitHub recieved. Last records:")
+    flog.info(capture.output(print(head(arrange(df, desc(timestamp)), n = 4))))
+
+    # или даже так
+    levs <- list(step = c(0, 2000, 2270, 2330, 2390, 2450, 3000) * 1000, 
+                 category = c('WET++', 'WET+', 'WET', 'NORM', 'DRY', 'DRY+', 'DRY++'))
+    
+    df <- df %>%
+      # откалибруем всплески
+      mutate(work.status = (type == 'MOISTURE' & 
+                              voltage >= levs$step[2] & 
+                              voltage <= levs$step[length(levs$step)])) %>%
+      # и вернем для влажности в value редуцированный вольтаж
+      mutate(value  = ifelse(type == 'MOISTURE', voltage/1000, value))
+
+    df$level <- NA
+    for (i in 1:(length(levs$step) - 1)){
+      print(paste0("i = ", i, " ", levs$category[i]))
+      df$level[df$type == 'MOISTURE' & 
+                 df$voltage > levs$step[i] &
+                 df$voltage <= levs$step[i+1]] <- levs$category[i]
+    }
+  } else {
+    df <- NA # в противном случае мы сигнализируем о невозможности обновить данные
+    flog.error("GitHub connection error")
+  }
+  
+  df
+}
+
 load_weather_data <- function() {
   ifile <- ".././data/appdata_weather.csv"
   

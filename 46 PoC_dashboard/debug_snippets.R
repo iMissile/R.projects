@@ -4,6 +4,7 @@ library(ggplot2) #load first! (Wickham)
 library(ggdendro) # для пустой темы
 library(lubridate) #load second!
 library(dplyr)
+library(tidyr)
 library(readr)
 library(jsonlite)
 library(magrittr)
@@ -23,7 +24,7 @@ library(curl)
 
 source("common_funcs.R") # сюда выносим все вычислительные и рисовательные функции
 
-
+if(FALSE){
 # забираем данные по сенсорам в новом формате из репозитория
 temp.df <- try({
   read_delim(
@@ -67,18 +68,48 @@ if(class(temp.df)[[1]] != "try-error") {
     mutate(label = gsub(".*:", "", rawname, perl = TRUE)) %>%
     # и разделим на имя и адрес
     separate(label, c('ipv6', 'name'), sep = '-', remove = TRUE) %>%
-    select(timestamp, name, type, value, work.status, lat, lon, pin) %>%
+    select(timestamp, name, type, value, voltage, work.status, lat, lon, pin) %>%
     mutate(location = "Moscow Lab") 
   
   #flog.info("Sensors data from GitHub recieved. Last records:")
   #flog.info(capture.output(print(head(arrange(df, desc(timestamp)), n = 4))))
+
+  # откатегоризируем значения вольтажа для сенсора влажности
+  # df$level <- NA
+  # df <- df %>%
+  #   mutate(level = ifelse(type == 'MOISTURE' & voltage > 2450000, "DRY+", NA))
+  # 
+  # # или так
+  # df <- within(df, {
+  #      level <- NA
+  #      level[type == 'MOISTURE' & voltage > 2450000] <- "DRY+"
+  #    })  
+    
+  # или даже так
+  levs <- list(step = c(0, 1000, 2270, 2330, 2390, 2450, 4000) * 1000, 
+            category = c('WET++', 'WET+', 'WET', 'NORM', 'DRY', 'DRY+', 'DRY++'))
   
+  # отсечем весь шлак
+  df <- df %>%
+    filter(voltage >= levs$step[3] & voltage <= levs$step[-2])
+  
+  df$level <- NA
+  for (i in 1:(length(levs$step) - 1)){
+    print(paste0("i = ", i, " ", levs$category[i]))
+    df$level[df$type == 'MOISTURE' & 
+               df$voltage > levs$step[i] &
+               df$voltage <= levs$step[i+1]] <- levs$category[i]
+  }
 } else {
   df <- NA # в противном случае мы сигнализируем о невозможности обновить данные
   flog.error("GitHub connection error")
 }
 
+}
 
+df <- load_github_field2_data()
+
+# выведем сырые данные по влажности и температуре
 p1 <- ggplot(df, aes(timestamp, value, colour = name)) +
   geom_line() +
   geom_point(shape = 1) +
@@ -86,6 +117,15 @@ p1 <- ggplot(df, aes(timestamp, value, colour = name)) +
   facet_grid(type ~ .)
   
 p1
+
+
+p2 <- ggplot(df %>% filter(type == 'MOISTURE'), aes(timestamp, voltage, colour = name)) +
+  geom_line() +
+  geom_point(shape = 1)
+
+p2
+
+
 
 stop()
 # # получаем исторические данные по погоде из репозитория Гарика --------------------------------------------------------
