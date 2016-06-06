@@ -179,7 +179,7 @@ server <- function(input, output, session) {
     # в этом случае попробуем растянуть данные до последней даты, когда видели показания
     # вперед ставим не 0, иначе округление будет до нижней даты, т.е. до 0:00 текущего дня
     timeframe <- get_timeframe(days_back = as.numeric(input$historyDays),
-                               days_forward = ifelse(input$sync_graphs, as.numeric(input$predictDays), 1)) 
+                               days_forward = ifelse(input$sync_graphs, as.numeric(input$predictDays), 0)) 
     
     flog.info(paste0("sensorts_plot timeframe: ", capture.output(str(timeframe))))
     # на выходе должен получиться ggplot!!!

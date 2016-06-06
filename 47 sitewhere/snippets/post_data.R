@@ -18,12 +18,31 @@ library(gtable)
 library(grid) # для grid.newpage()
 library(gridExtra) # для grid.arrange()
 
+
+user_name = 'admin'
+user_pass = 'password'
+base_url = paste0('http://', user_name, ':', user_pass, '@10.0.0.207:28081/sitewhere/api/')
+t_token = 'sitewhere1234567890'
+
+d <- toJSON(list(var1 = 34, var2 = c('rr', 'mm')), pretty = TRUE, auto_unbox = TRUE)
+
+url <- paste0(base_url, "mt/assets/categories/fs-locations/assets/harry-dirt-pot/property/soil_moisture_ts?tenantAuthToken=", 
+              t_token)
+body <- list(d)
+r <- PUT(url, body = d, encode = "json")
+
+
+stop()
+
 req <- curl_fetch_memory("http://admin:password@10.0.0.207:28081/sitewhere/api/assets/categories/fs-locations/assets?tenantAuthToken=sitewhere1234567890")
 # wrecs <- rawToChar(req$content)
 data <- fromJSON(rawToChar(req$content))
 
 
 # про POST() см. тут: https://cran.r-project.org/web/packages/httr/vignettes/quickstart.html
+
+
+
 
 d <- toJSON(list(var1 = 34, var2 = c('rr', 'mm')), pretty = TRUE, auto_unbox = TRUE)
 url <- "http://admin:password@10.0.0.207:28081/sitewhere/api/assets/categories/fs-locations/locations/harry-dirt-pot?tenantAuthToken=sitewhere1234567890"

@@ -29,14 +29,15 @@ sensorts_filename <- "./output/real_sensor_ts.json"
 sensorslice_filename <- "./output/real_sensor_slice.json"
 rain_filename <- "./output/rain.json"
 
-source("common_funcs.R") # сюда выносим все вычислительные и рисовательные функции
-
 # инициализация ----------------------------------------------
 flog.appender(appender.file(log_filename))
 flog.threshold(TRACE)
 flog.info("Job started")
 flog.info("Working directory: %s", getwd())
 flog.info("Processing started")
+
+source("../46 PoC_dashboard/common_funcs.R") # сюда выносим все вычислительные и рисовательные функции
+
 
 # запрос и формирование данных по осадкам (прошлое и прогноз) =====================================
 weather.df <- prepare_raw_weather_data()
@@ -48,7 +49,7 @@ dfw2 <- calc_rain_per_date(weather.df)
 flog.info("Rain history & forecast")
 flog.info(capture.output(print(dfw2)))
 
-# сгеренируем json с погодой под требования Паши ---------------------------------------------------
+# сгенерируем json с погодой под требования Паши ---------------------------------------------------
 # http://arxiv.org/pdf/1403.2805v1.pdf  |   http://arxiv.org/abs/1403.2805
 x <- jsonlite::toJSON(list(results = dfw2), pretty = TRUE)
 write(x, file = rain_filename)
@@ -70,7 +71,7 @@ df3 <- with(df, {
 flog.info("Weather data")
 flog.info(capture.output(summary(df3)))
 
-# сгеренируем json с погодой под требования Паши ---------------------------------------------------
+# сгенерируем json с погодой под требования Паши ---------------------------------------------------
 # http://arxiv.org/pdf/1403.2805v1.pdf  |   http://arxiv.org/abs/1403.2805
 x <- jsonlite::toJSON(list(results = df3), pretty = TRUE)
 write(x, file = weather_filename)
@@ -78,6 +79,9 @@ write(x, file = weather_filename)
 # запрос и формирование данных по данным сенсоров ==============================================
 raw.df <- load_github_field_data()
 # if (!is.na(df)) { raw.df <- df}
+#     name      lat      lon value work.status           timestamp   location
+#    (chr)    (dbl)    (dbl) (dbl)       (lgl)              (time)      (chr)
+browser()
 
 # формирование временного ряда по сенсорам ---------------------------------------------------
 # проведем усреднение по временным группам, если измерения проводились несколько раз в течение этого времени

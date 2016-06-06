@@ -4,7 +4,8 @@ get_timeframe <- function(days_back = 7, days_forward = 3){
   # то полагаем что он есть и он равен базовому горизонту
   days_formard <- ifelse(is.na(days_forward), 3, days_forward)
   min_lim <- ceiling_date(now() - days(days_back), unit = "day")
-  max_lim <- floor_date(now() + days(days_forward), unit = "day")
+  # поскольку будущее округляем вниз, то надо добавить еще сутки (+1)
+  max_lim <- floor_date(now() + days(days_forward + 1), unit = "day") 
   timeframe <- c(min_lim, max_lim)
   
   timeframe
@@ -57,7 +58,7 @@ hgroup.enum0 <- function(date, time.bin = 4){
   floor_date(tick_time, unit = "day") + hours(n * time.bin)
 }
 
-hgroup.enum <- function(date, time.bin = 4){
+hgroup.enum1 <- function(date, time.bin = 4){
   # привязываем все измерения, которые попали в промежуток [0, t] к точке измерения. 
   # точки измерения могут быть кратны 1, 2, 3, 4, 6, 12 часам, определяется time.bin
   # отсчет измерений идет с 0:00
@@ -65,6 +66,22 @@ hgroup.enum <- function(date, time.bin = 4){
   n <- floor(hour(tick_time) / time.bin)
   floor_date(tick_time, unit = "day") + hours(n * time.bin)
 }
+
+hgroup.enum <- function(date, time.bin = 4){
+  # привязываем все измерения, которые попали в промежуток [0, t] к точке измерения. 
+  # точки измерения могут быть кратны 1, 2, 3, 4, 6, 12 часам, определяется time.bin
+  # отсчет измерений идет с 0:00
+  
+  # поправка для лаборатории. для группировки меньше часа допускается указывать числа меньше 1
+  # 0.5 -- раз в полчаса.0.25 -- раз в 15 минут
+  
+  tick_time <- date
+  if (time.bin < 1 & !(time.bin %in% c(0.25, 0.5))) time.bin = 1
+  n <- floor((hour(tick_time)*60 + minute(tick_time))/ (time.bin * 60))
+  floor_date(tick_time, unit = "day") + minutes(n * time.bin *60)
+}
+
+
 
 prepare_raw_weather_data <- function() {
   # получаем исторические данные по погоде из репозитория Гарика --------------------------------------------------------
@@ -340,7 +357,7 @@ load_github_field2_data <- function() {
     flog.info(capture.output(print(head(arrange(df, desc(timestamp)), n = 4))))
 
     # или даже так
-    levs <- list(step = c(0, 1500, 2270, 2330, 2390, 2450, 3000) * 1000, 
+    levs <- list(step = c(0, 1700, 2270, 2330, 2390, 2450, 3000) * 1000, 
                  category = c('WET++', 'WET+', 'WET', 'NORM', 'DRY', 'DRY+', 'DRY++'))
     
     df <- df %>%
@@ -496,7 +513,7 @@ plot_github_ts4_data <- function(df, timeframe, tbin = 4, expand_y = FALSE) {
   plot_palette <- brewer.pal(n = 5, name = "Blues")
   plot_palette <- wes_palette(name = "Moonrise2") # https://github.com/karthik/wesanderson
   
-  levs <- list(step = c(1500, 2210, 2270, 2330, 2390, 2450, 2510), 
+  levs <- list(step = c(1700, 2210, 2270, 2330, 2390, 2450, 2510), 
                category = c('WET++', 'WET+', 'WET', 'NORM', 'DRY', 'DRY+', ''))
   if(!expand_y){
     # рисуем график только по DRY+ -- WET+ значениям
