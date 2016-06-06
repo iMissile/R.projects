@@ -26,3 +26,4 @@ vignettes/*.pdf
 *.json
 46 PoC_dashboard/export/wh_json.txt
 46 PoC_dashboard/.RData
+*.df

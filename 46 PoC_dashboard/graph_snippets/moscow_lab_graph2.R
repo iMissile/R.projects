@@ -3,6 +3,7 @@
 library(ggplot2) #load first! (Wickham)
 library(lubridate) #load second!
 library(dplyr)
+library(tidyr)
 library(readr)
 library(jsonlite)
 library(magrittr)
@@ -51,8 +52,8 @@ avg.df <- raw.df %>%
 plot_palette <- brewer.pal(n = 5, name = "Blues")
 plot_palette <- wes_palette(name="Moonrise2") # https://github.com/karthik/wesanderson
 
-levs <- list(step = c(2210, 2270, 2330, 2390, 2450, 2510), 
-             category = c('WET+', 'WET', 'NORM', 'DRY', 'DRY+', ''))
+levs <- list(step = c(1700, 2210, 2270, 2330, 2390, 2450, 2510), 
+             category = c('WET++', 'WET+', 'WET', 'NORM', 'DRY', 'DRY+', ''))
 df.label <- (data.frame(x = min(avg.df$timegroup), y = levs$step+30, text = levs$category))
 
 # -----------------------------------------------------------
@@ -89,7 +90,7 @@ p2 <- ggplot(avg.df, aes(x = timegroup, y = value.mean)) +
   # geom_point(data = raw.df %>% filter(!work.status), aes(x = timegroup, y = value), 
   #            size = 3, shape = 13, stroke = 1.1, colour = 'red') +
   
-  theme_igray() +
+  #theme_igray() +
   geom_label(data = df.label, aes(x = x, y = y, label = text)) +
   # scale_colour_tableau("colorblind10", name = "Влажность\nпочвы") +
   # scale_color_brewer(palette = "Set2", name = "Влажность\nпочвы") +
@@ -101,7 +102,7 @@ p2 <- ggplot(avg.df, aes(x = timegroup, y = value.mean)) +
   # scale_colour_solarized("blue") +
   # theme(legend.position=c(0.5, .2)) +
   theme(legend.position = "top") +
-  theme(axis.text.x = element_text(angle = 0, hjust = 1, vjust = 0.5)) +
+  theme(axis.text.x = element_text(angle = 0, hjust = 0.5, vjust = 0.5)) +
   theme(axis.text.y = element_text(angle = 0)) +
   # убрали заливку, см. stackoverflow.com/questions/21066077/remove-fill-around-legend-key-in-ggplot
   guides(color = guide_legend(override.aes = list(fill = NA)))

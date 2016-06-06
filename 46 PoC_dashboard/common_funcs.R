@@ -69,7 +69,26 @@ hgroup.enum <- function(date, time.bin = 4){
 prepare_raw_weather_data <- function() {
   # получаем исторические данные по погоде из репозитория Гарика --------------------------------------------------------
   # https://cran.r-project.org/web/packages/curl/vignettes/intro.html
-  req <- curl_fetch_memory("https://raw.githubusercontent.com/iot-rus/Moscow-Lab/master/weather.txt")
+  req <- try({
+    curl_fetch_memory("https://raw.githubusercontent.com/iot-rus/Moscow-Lab/master/weather.txt")
+    # status_code == 200
+    # class(try-error)
+  })
+  
+  # проверим только 1-ый элемент класса, поскльку при разных ответах получается разное кол-во элементов
+  if(class(req)[[1]] == "try-error" || req$status_code != 200) {
+    flog.info(paste0("Error in prepare_raw_weather:", class(req)))
+    # создадим фейковый ответ, структуру ответа задаем ручками :((, 
+    # ее нужно будет каждый раз корректировать при изменениях структуры данных
+    # фиктивная структура по типу weather.df
+    r <- structure(list(temp = numeric(), pressure = numeric(), himidity = numeric(),
+                        timestamp = as.POSIXct(), rain3h = numeric(), human_time = as.POSIXct(),
+                        timegroup = as.POSIXct(), time.pos = character()), class = "data.frame")
+    return(r)
+  }
+  
+  # ответ есть, и он корректен. В этом случае осуществляем пребразование 
+  
   wrecs <- rawToChar(req$content) # weather history
   # wh_json <- gsub('\\\"', "'", txt, perl = TRUE) 
   # заменим концы строк на , и добавим шапочку и окончание для формирования семантически правильного json
@@ -135,7 +154,7 @@ prepare_raw_weather_data <- function() {
   
   # разметим данные на прошлое и будущее. будем использовать для цветовой группировки
   weather.df['time.pos'] <- ifelse(weather.df$timestamp < now(), "PAST", "FUTURE")
-  
+
   weather.df
 }
 
@@ -321,7 +340,7 @@ load_github_field2_data <- function() {
     flog.info(capture.output(print(head(arrange(df, desc(timestamp)), n = 4))))
 
     # или даже так
-    levs <- list(step = c(0, 2000, 2270, 2330, 2390, 2450, 3000) * 1000, 
+    levs <- list(step = c(0, 1500, 2270, 2330, 2390, 2450, 3000) * 1000, 
                  category = c('WET++', 'WET+', 'WET', 'NORM', 'DRY', 'DRY+', 'DRY++'))
     
     df <- df %>%
@@ -450,7 +469,7 @@ plot_github_ts3_data <- function(df, timeframe, tbin = 4) {
   p # возвращаем ggplot
 }
 
-plot_github_ts4_data <- function(df, timeframe, tbin = 4) {
+plot_github_ts4_data <- function(df, timeframe, tbin = 4, expand_y = FALSE) {
   # рисуем новый вид графика после проведения калибровочных экспериментов
   # timeframe -- [POSIXct min, POSIXct max]
   
@@ -477,9 +496,14 @@ plot_github_ts4_data <- function(df, timeframe, tbin = 4) {
   plot_palette <- brewer.pal(n = 5, name = "Blues")
   plot_palette <- wes_palette(name = "Moonrise2") # https://github.com/karthik/wesanderson
   
-levs <- list(step = c(2210, 2270, 2330, 2390, 2450, 2510), 
-             category = c('WET+', 'WET', 'NORM', 'DRY', 'DRY+', ''))
-df.label <- (data.frame(x = timeframe[1], y = levs$step+30, text = levs$category))
+  levs <- list(step = c(1500, 2210, 2270, 2330, 2390, 2450, 2510), 
+               category = c('WET++', 'WET+', 'WET', 'NORM', 'DRY', 'DRY+', ''))
+  if(!expand_y){
+    # рисуем график только по DRY+ -- WET+ значениям
+    levs <- list(step = levs$step[-1], category = levs$category[-1])
+    
+  }
+  df.label <- (data.frame(x = timeframe[1], y = levs$step+30, text = levs$category))
 
   # http://www.cookbook-r.com/Graphs/Shapes_and_line_types/
   p <- ggplot(avg.df, aes(x = timegroup, y = value.mean)) +
@@ -511,7 +535,7 @@ df.label <- (data.frame(x = timeframe[1], y = levs$step+30, text = levs$category
     geom_vline(xintercept = as.numeric(now()), linetype = "dotted", color = "yellowgreen", lwd = 1.1) +
     scale_x_datetime(labels = date_format("%d.%m", tz = "Europe/Moscow"),
                      breaks = date_breaks("1 days"), 
-                     #minor_breaks = date_breaks("6 hours"),
+                     minor_breaks = date_breaks("12 hours"),
                      limits = lims) +
     
     # minor_breaks = date_breaks('1 hour')
@@ -522,7 +546,7 @@ df.label <- (data.frame(x = timeframe[1], y = levs$step+30, text = levs$category
     #            size = 3, shape = 13, stroke = 1.1, colour = 'red') +
     
     theme_igray() +
-  geom_label(data = df.label, aes(x = x, y = y, label = text)) +
+    geom_label(data = df.label, aes(x = x, y = y, label = text)) +
     # scale_colour_tableau("colorblind10", name = "Влажность\nпочвы") +
     # scale_color_brewer(palette = "Set2", name = "Влажность\nпочвы") +
     # ylim(0, 100) +

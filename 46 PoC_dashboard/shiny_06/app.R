@@ -78,6 +78,9 @@ ui <- fluidPage(theme = shinytheme("united"), titlePanel("Контроль вл�
                     checkboxInput(inputId = "sync_graphs",
                                   label = strong("Синхронизация на графиках оси X"),
                                   value = TRUE),
+                    checkboxInput(inputId = "expand_y",
+                                  label = strong("Расширить ось Y"),
+                                  value = FALSE),
                     selectInput(
                       "historyDays",
                       "Глубина истории (дни)",
@@ -180,7 +183,7 @@ server <- function(input, output, session) {
     
     flog.info(paste0("sensorts_plot timeframe: ", capture.output(str(timeframe))))
     # на выходе должен получиться ggplot!!!
-    plot_github_ts4_data(raw_github_field.df, timeframe, as.numeric(input$timeBin))
+    plot_github_ts4_data(raw_github_field.df, timeframe, as.numeric(input$timeBin), expand_y = input$expand_y)
   })
 
   output$weather_plot <- renderPlot({
@@ -191,9 +194,13 @@ server <- function(input, output, session) {
     #    (time)    (dbl)    (dbl)    (dbl)         (dbl)    (dbl)    (dbl)              (time)
     #plot_weather_data(raw_weather.df, as.numeric(input$historyDays))
     w.df <- prepare_raw_weather_data()
-    rain.df <- calc_rain_per_date(w.df)
-    flog.info("Rain calculation")
-    flog.info(capture.output(print(rain.df)))    
+    if(is.null(w.df)){
+      flog.info("Error in rain recalulation")
+    } else {
+      rain.df <- calc_rain_per_date(w.df)
+      flog.info("Rain calculation")
+      flog.info(capture.output(print(rain.df)))    
+    }
    
     saveRDS(rain.df, "rain.df")
     
@@ -207,14 +214,15 @@ server <- function(input, output, session) {
   
   output$data_tbl <- DT::renderDataTable({
     df <- raw_github_field.df %>% 
-      select(name, voltage, work.status, timestamp) %>% 
+      filter(type == 'MOISTURE') %>%
+      select(name, voltage, work.status, timestamp, type) %>% 
       arrange(desc(timestamp))
     # изменим значения на русский
     df$work.status <- ifelse(df$work.status, "Ок", "Неисправен")
     
     DT::datatable(df,
                   # colnames = c('время' = 'timestamp'),
-                  colnames = c('# сенсора', '%', 'статус', 'время'), # https://rstudio.github.io/DT/, п.2.4
+                  colnames = c('# сенсора', 'V', 'статус', 'время', 'тип'), # https://rstudio.github.io/DT/, п.2.4
                   options = list(lengthChange = FALSE, pageLength = 6)) %>%
       formatDate('timestamp', method = "toLocaleString") # см. https://rstudio.github.io/DT/functions.html, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#Conversion_getter 
     })
