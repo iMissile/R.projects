@@ -17,7 +17,9 @@ library(grid) # для grid.newpage()
 library(gridExtra) # для grid.arrange()
 
 
-
+drange <- c(2210, 2270, 2330, 2390, 2450, 2510)
+levs <- list(low = head(drange, -1), up = tail(drange, -1), 
+             category = c('WET+', 'WET', 'NORM', 'DRY', 'DRY+'))
 
 stop()
 
