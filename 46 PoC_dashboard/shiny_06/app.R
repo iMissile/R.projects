@@ -77,15 +77,15 @@ ui <- fluidPage(theme = shinytheme("united"), titlePanel("Контроль вл�
                     strong("-------- Debug Zone --------"),
                     checkboxInput(inputId = "sync_graphs",
                                   label = strong("Синхронизация на графиках оси X"),
-                                  value = TRUE),
+                                  value = FALSE),
                     checkboxInput(inputId = "expand_y",
                                   label = strong("Расширить ось Y"),
                                   value = FALSE),
                     selectInput(
                       "historyDays",
                       "Глубина истории (дни)",
-                      choices = c(1, 3, 7),
-                      selected = 3
+                      choices = c(0, 1, 3, 7),
+                      selected = 0
                     ),
                     selectInput(
                       "predictDays",

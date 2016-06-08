@@ -1,0 +1,4 @@
+cd /etc/shiny-server/ 
+ls -a
+restart shiny-server
+exit
