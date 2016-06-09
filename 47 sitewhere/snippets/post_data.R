@@ -24,12 +24,23 @@ user_pass = 'password'
 base_url = paste0('http://', user_name, ':', user_pass, '@10.0.0.207:28081/sitewhere/api/')
 t_token = 'sitewhere1234567890'
 
+
+# http://10.0.0.207:28081/sitewhere/api/mt/assets/modules/fs-locations/assets/harry-dirt-pot/assignments/?siteToken=c08a662e-9bbb-4193-a17f-96e0c760e1c3&tenantAuthToken=sitewhere1234567890
+# магическая строка для получения измерений по assignment
+
+url <- paste0(base_url, "mt/assets/modules/fs-locations/assets/harry-dirt-pot/assignments/?siteToken=c08a662e-9bbb-4193-a17f-96e0c760e1c3&tenantAuthToken=", 
+              t_token)
+req <- curl_fetch_memory(url)
+write(rawToChar(req$content), file="./temp/resp.txt")
+data <- fromJSON(rawToChar(req$content))
+# ищем assignments с sensor_type = soil_moisture
+stop()
+
 d <- toJSON(list(var1 = 34, var2 = c('rr', 'mm')), pretty = TRUE, auto_unbox = TRUE)
 
 url <- paste0(base_url, "mt/assets/categories/fs-locations/assets/harry-dirt-pot/property/soil_moisture_ts?tenantAuthToken=", 
               t_token)
-body <- list(d)
-r <- PUT(url, body = d, encode = "json")
+resp <- curl_fetch_memory(url)
 
 
 stop()
@@ -40,8 +51,6 @@ data <- fromJSON(rawToChar(req$content))
 
 
 # про POST() см. тут: https://cran.r-project.org/web/packages/httr/vignettes/quickstart.html
-
-
 
 
 d <- toJSON(list(var1 = 34, var2 = c('rr', 'mm')), pretty = TRUE, auto_unbox = TRUE)

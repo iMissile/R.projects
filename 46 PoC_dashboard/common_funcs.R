@@ -490,12 +490,25 @@ plot_github_ts4_data <- function(df, timeframe, tbin = 4, expand_y = FALSE) {
   # рисуем новый вид графика после проведения калибровочных экспериментов
   # timeframe -- [POSIXct min, POSIXct max]
   
-  # фильтруем данные. сгруппируем по временным интервалам
-  # и удалим все данные с NA. Из-за неполных данных возникают всякие косяки
+  # Полагаем, что у нас всегда ненулевой горизонт прогноза
+  # т.о., если выбрано отсутствие синхронизации, то правая граница диапазона находится в конце текущего дня
+  force_rtime <- ifelse(difftime(timeframe[2], now(), unit = "min") > 24 * 60, FALSE, TRUE) 
+
+  # Удалим все данные с NA. Из-за неполных данных возникают всякие косяки
   # [filter for complete cases in data.frame using dplyr (case-wise deletion)](http://stackoverflow.com/questions/22353633/filter-for-complete-cases-in-data-frame-using-dplyr-case-wise-deletion)
+  # И сгруппируем по временным интервалам
   raw.df <- df %>%
     filter(complete.cases(.)) %>%
-    mutate(timegroup = hgroup.enum(timestamp, time.bin = tbin)) %>%
+    mutate(timegroup = hgroup.enum(timestamp, time.bin = tbin))
+    
+  # если нет синхронизации, то подгоним правый край до максимальной даты измерения
+  if (force_rtime) timeframe[2] <- max(raw.df$timegroup)
+  
+  flog.info(paste0("plot_github_ts4: force = ", force_rtime, 
+                   " timeframe: [", timeframe[1], ", ", timeframe[2], "]"))
+  
+  # фильтруем данные
+  raw.df <- raw.df %>%
     filter(timegroup >= timeframe[1]) %>%
     filter(timegroup <= timeframe[2])
   
@@ -549,11 +562,22 @@ plot_github_ts4_data <- function(df, timeframe, tbin = 4, expand_y = FALSE) {
     # scale_x_datetime(labels = date_format(format = "%d.%m%n%H:%M", tz = "Europe/Moscow"),
     #                  breaks = date_breaks('4 hour')) +
     # текщуее время отобразим
-    geom_vline(xintercept = as.numeric(now()), linetype = "dotted", color = "yellowgreen", lwd = 1.1) +
-    scale_x_datetime(labels = date_format("%d.%m", tz = "Europe/Moscow"),
-                     breaks = date_breaks("1 days"), 
-                     minor_breaks = date_breaks("12 hours"),
-                     limits = lims) +
+    geom_vline(xintercept = as.numeric(now()), linetype = "dotted", color = "yellowgreen", lwd = 1.1)
+    
+    
+  # в зависимости от диапазона отображения меняем параметры надписей оси x
+  if (force_rtime) {
+    p <- p +
+      scale_x_datetime(labels = date_format("%H:%M", tz = "Europe/Moscow"),
+                       breaks = date_breaks("1 hour"), 
+                       limits = lims)
+  } else {
+    p <- p +
+      scale_x_datetime(labels = date_format("%d.%m", tz = "Europe/Moscow"),
+                       breaks = date_breaks("1 days"), 
+                       minor_breaks = date_breaks("6 hours"),
+                       limits = lims)
+  }
     
     # minor_breaks = date_breaks('1 hour')
     # добавляем нерабочие сенсоры
@@ -561,7 +585,7 @@ plot_github_ts4_data <- function(df, timeframe, tbin = 4, expand_y = FALSE) {
     #            size = 3, shape = 21, stroke = 0, colour = 'red', fill = 'yellow') +
     # geom_point(data = raw.df %>% filter(!work.status), aes(x = timegroup, y = value),
     #            size = 3, shape = 13, stroke = 1.1, colour = 'red') +
-    
+  p <- p +    
     theme_igray() +
     geom_label(data = df.label, aes(x = x, y = y, label = text)) +
     # scale_colour_tableau("colorblind10", name = "Влажность\nпочвы") +
@@ -846,7 +870,7 @@ plot_cweather <- function() {
     d <- data.frame(
       # timestamp = now(),
       timestamp = as.POSIXct(r$dt, origin='1970-01-01'),
-      temp = round(r$main$temp - 273.15, 1), # пересчитываем из кельвинов в градусы цельсия
+      temp = round(r$main$temp - 273.15, 0), # пересчитываем из кельвинов в градусы цельсия
       pressure = round(r$main$pressure * 0.75006375541921, 0), # пересчитываем из гектопаскалей (hPa) в мм рт. столба
       humidity = round(r$main$humidity, 0)
       # precipitation = r$main$precipitation
