@@ -52,9 +52,14 @@ avg.df <- raw.df %>%
 plot_palette <- brewer.pal(n = 5, name = "Blues")
 plot_palette <- wes_palette(name="Moonrise2") # https://github.com/karthik/wesanderson
 
-levs <- list(step = c(1700, 2210, 2270, 2330, 2390, 2450, 2510), 
-             category = c('WET++', 'WET+', 'WET', 'NORM', 'DRY', 'DRY+', ''))
-df.label <- (data.frame(x = min(avg.df$timegroup), y = levs$step+30, text = levs$category))
+# levs <- list(step = c(1700, 2210, 2270, 2330, 2390, 2450, 2510), 
+#              category = c('WET++', 'WET+', 'WET', 'NORM', 'DRY', 'DRY+', ''))
+
+levs <- get_moisture_levels()
+# метки ставим ровно посерединке, расстояние высчитываем динамически
+df.label <- data.frame(x = min(avg.df$timegroup),
+                       y = head(levs$category, -1) + diff(levs$category)/2, # посчитали разницу, уравновесили -1 элементом 
+                       text = levs$labels)
 
 # -----------------------------------------------------------
 # http://www.cookbook-r.com/Graphs/Shapes_and_line_types/
@@ -70,7 +75,8 @@ p2 <- ggplot(avg.df, aes(x = timegroup, y = value.mean)) +
   # рисуем разрешенный диапазон
   
   # geom_ribbon(aes(x = timegroup, ymin = 70, ymax = 90), linetype = 'blank', fill = "olivedrab3", alpha = 0.4) +
-  geom_ribbon(aes(ymin = levs$step[4], ymax = levs$step[3]), fill = "mediumaquamarine", alpha = 0.1) +
+  geom_ribbon(aes(ymin = levs$category[levs$labels == 'NORM'], ymax = levs$category[levs$labels == 'DRY']), 
+              fill = "mediumaquamarine", alpha = 0.1) +
   geom_ribbon(
     aes(ymin = value.mean - value.sd, ymax = value.mean + value.sd, fill = name),
     alpha = 0.3
@@ -79,7 +85,7 @@ p2 <- ggplot(avg.df, aes(x = timegroup, y = value.mean)) +
   # точки сырых данных
   # geom_point(data = raw.df, aes(x = timestamp, y = value, colour = name), shape = 1, size = 2) +
   geom_point(aes(colour = name), shape = 19, size = 3) + # усредненные точки
-  geom_hline(yintercept = levs$step, lwd = 1, linetype = 'dashed') +
+  geom_hline(yintercept = levs$category, lwd = 1, linetype = 'dashed') +
   scale_x_datetime(labels = date_format(format = "%d.%m", tz = "Europe/Moscow"),
                    breaks = date_breaks('12 hour') 
                    # minor_breaks = date_breaks('1 hour')
@@ -95,9 +101,9 @@ p2 <- ggplot(avg.df, aes(x = timegroup, y = value.mean)) +
   # scale_colour_tableau("colorblind10", name = "Влажность\nпочвы") +
   # scale_color_brewer(palette = "Set2", name = "Влажность\nпочвы") +
   # scale_y_reverse(limits = c(head(levs$step, 1), tail(levs$step, 1))) +
-  scale_y_reverse(limits = c(tail(levs$step, 1), head(levs$step, 1))) +
+  scale_y_reverse(limits = c(tail(levs$category, 1), head(levs$category, 1))) +
   xlab("Время и дата измерения") +
-  ylab("Влажность почвы, %") +
+  ylab("Влажность почвы") +
   # theme_solarized() +
   # scale_colour_solarized("blue") +
   # theme(legend.position=c(0.5, .2)) +

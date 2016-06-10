@@ -182,7 +182,7 @@ temp.df <- try({
       "lon",
       "calibration_0",
       "calibration_100",
-      "voltage"
+      "measurement"
     ),
     locale = locale("ru", encoding = "windows-1251", tz = "Europe/Moscow"),
     # таймзону, в принципе, можно установить здесь
@@ -194,12 +194,12 @@ temp.df <- try({
 if(class(temp.df) != "try-error") {
   # расчитываем необходимые данные
   raw.df <- temp.df %>%
-    mutate(value = 100 / (calibration_100 - calibration_0) * (voltage - calibration_0)) %>%
+    mutate(value = 100 / (calibration_100 - calibration_0) * (measurement - calibration_0)) %>%
     # откалибруем всплески
     mutate(work.status = (value >= 0 & value <= 100)) %>%
     # получим временную метку
     mutate(timestamp = ymd_hm(paste(date, time), tz = "Europe/Moscow")) %>%
-    select(-calibration_0, -calibration_100, -voltage)
+    select(-calibration_0, -calibration_100, -measurement)
 }
 # в противном случае мы просто оставляем данные неизменными
 

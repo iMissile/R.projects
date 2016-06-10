@@ -33,6 +33,7 @@ library(akima)
 library(curl)
 library(httr)
 library(jsonlite)
+library(arules)
 library(futile.logger)
 
 # library(rgl)
@@ -215,7 +216,7 @@ server <- function(input, output, session) {
   output$data_tbl <- DT::renderDataTable({
     df <- raw_github_field.df %>% 
       filter(type == 'MOISTURE') %>%
-      select(name, voltage, work.status, timestamp, type) %>% 
+      select(name, measurement, work.status, timestamp, type) %>% 
       arrange(desc(timestamp))
     # изменим значения на русский
     df$work.status <- ifelse(df$work.status, "Ок", "Неисправен")

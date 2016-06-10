@@ -17,12 +17,19 @@ library(gtable)
 library(grid) # для grid.newpage()
 library(gridExtra) # для grid.arrange()
 library(curl)
+library(arules)
 # library(KernSmooth)
 #library(akima)
 #library(rdrop2)
 # library(rgl)
+library(futile.logger)
 
 source("common_funcs.R") # сюда выносим все вычислительные и рисовательные функции
+
+# трехэтапная процедура загрузки файла временных рядов
+# 1. загрузка сырого файла и парсинг
+# 2. постпроцессинг общих параметров
+# 3. построцессинг специфических параметров
 
 if(FALSE){
 # забираем данные по сенсорам в новом формате из репозитория
@@ -43,7 +50,7 @@ temp.df <- try({
       "xl",
       "yr",
       "xr",
-      "voltage",
+      "measurement",
       "pin"
     ),
     col_types = "Dccc????????",
@@ -59,7 +66,8 @@ problems(temp.df)
 if(class(temp.df)[[1]] != "try-error") {
   # расчитываем необходимые данные
   df <- temp.df %>%
-    mutate(value = round(yl + (yr-yl)/(xr-xl) * (voltage - xl), 0), type = factor(type)) %>%
+    # линейная нормализация
+    mutate(value = yl + (yr-yl)/(xr-xl) * (measurement - xl), type = factor(type)) %>%
     # откалибруем всплески
     mutate(work.status = (value >= 0 & value <= 100)) %>%
     # получим временную метку
@@ -68,8 +76,16 @@ if(class(temp.df)[[1]] != "try-error") {
     mutate(label = gsub(".*:", "", rawname, perl = TRUE)) %>%
     # и разделим на имя и адрес
     separate(label, c('ipv6', 'name'), sep = '-', remove = TRUE) %>%
-    select(timestamp, name, type, value, voltage, work.status, lat, lon, pin) %>%
+    select(timestamp, name, type, value, measurement, work.status, lat, lon, pin) %>%
     mutate(location = "Moscow Lab") 
+  
+
+  # 2. постпроцессинг для разных типов датчиков  
+  
+  # пересчитываем value для датчиков влажности
+  df %<>%
+    mutate(value = NA) %>%
+    mutate(value = ifelse(type == 'MOISTURE', measurement / 33000, value))
   
   #flog.info("Sensors data from GitHub recieved. Last records:")
   #flog.info(capture.output(print(head(arrange(df, desc(timestamp)), n = 4))))
@@ -77,28 +93,53 @@ if(class(temp.df)[[1]] != "try-error") {
   # откатегоризируем значения вольтажа для сенсора влажности
   # df$level <- NA
   # df <- df %>%
-  #   mutate(level = ifelse(type == 'MOISTURE' & voltage > 2450000, "DRY+", NA))
+  #   mutate(level = ifelse(type == 'MOISTURE' & measurement > 2450000, "DRY+", NA))
   # 
   # # или так
   # df <- within(df, {
   #      level <- NA
-  #      level[type == 'MOISTURE' & voltage > 2450000] <- "DRY+"
+  #      level[type == 'MOISTURE' & measurement > 2450000] <- "DRY+"
   #    })  
-    
-  # или даже так
-  levs <- list(step = c(0, 1000, 2270, 2330, 2390, 2450, 4000) * 1000, 
-            category = c('WET++', 'WET+', 'WET', 'NORM', 'DRY', 'DRY+', 'DRY++'))
   
+  # или даже так
+  # levs <- list(step = c(0, 1000, 2270, 2330, 2390, 2450, 4000) * 1000, 
+  #          category = c('WET++', 'WET+', 'WET', 'NORM', 'DRY', 'DRY+', 'DRY++'))
+
+  # 3. частный построцессинг  
+  # постпроцессинг для датчиков влажности
+  levs <- get_moisture_levels()
+  # заменяем на 'промышленную' категоризацию, валидную только для датчиков влажности
+  # пробегаемся по всему вектору значений, а потом делаем выборочное присваивание
+  # level = discretize(value, method = "fixed", categories = levs$category, labels = levs$labels)
+  
+  # проверка на логику работы присвоений, правый вектор присваивается последовательно
+  # is.even <- function(x) x %% 2 == 0 
+  # n <- list(n = c(1, 2, 3, 4, 5, 6))
+  # n$m[is.even(n$n)] <- c(12, 22, 32, 42, 52, 62)
+  
+  
+  # пропускаем через категоризатор вектор измерений для датчиков влажности и в этом же порядке выборочно присваиваем в исходную структуру
+  # через dplyr это будет достаточно косо: https://github.com/hadley/dplyr/issues/425
+  # marker <- discretize(df$value[df$type == 'MOISTURE'], method = "fixed", categories = levs$category, labels = levs$labels)
+  
+  # если колонки с категориями не было создано, то мы ее инициализируем
+  if(!('m' %in% names(df))) df$m <- NA
+  df %<>%
+    # считаем для всех, переносим потом только для тех, кого надо
+    # превращаем в character, иначе после переноса factor теряется, остаются только целые числа
+    mutate(marker = as.character(discretize(value, method = "fixed", categories = levs$category, labels = levs$labels))) %>%
+    mutate(m = ifelse(type == 'MOISTURE', marker, m))
+             
   # отсечем весь шлак
-  df <- df %>%
-    filter(voltage >= levs$step[3] & voltage <= levs$step[-2])
+  #df <- df %>%
+  #  filter(measurement >= levs$step[3] & measurement <= levs$step[-2])
   
   df$level <- NA
-  for (i in 1:(length(levs$step) - 1)){
+  for (i in 1:(length(levs$category) - 1)){
     print(paste0("i = ", i, " ", levs$category[i]))
     df$level[df$type == 'MOISTURE' & 
-               df$voltage > levs$step[i] &
-               df$voltage <= levs$step[i+1]] <- levs$category[i]
+               df$measurement/33000 > levs$category[i] &
+               df$measurement/33000 <= levs$category[i+1]] <- levs$labels[i]
   }
 } else {
   df <- NA # в противном случае мы сигнализируем о невозможности обновить данные
@@ -108,6 +149,8 @@ if(class(temp.df)[[1]] != "try-error") {
 }
 
 df <- load_github_field2_data()
+
+browser()
 
 # выведем сырые данные по влажности и температуре
 p1 <- ggplot(df, aes(timestamp, value, colour = name)) +
@@ -119,7 +162,7 @@ p1 <- ggplot(df, aes(timestamp, value, colour = name)) +
 p1
 
 
-p2 <- ggplot(df %>% filter(type == 'MOISTURE'), aes(timestamp, voltage, colour = name)) +
+p2 <- ggplot(df %>% filter(type == 'MOISTURE'), aes(timestamp, measurement, colour = name)) +
   geom_line() +
   geom_point(shape = 1)
 
@@ -286,7 +329,7 @@ temp.df <- try({
       "lon",
       "calibration_0",
       "calibration_100",
-      "voltage"
+      "measurement"
     ),
     locale = locale("ru", encoding = "windows-1251", tz = "Europe/Moscow"),
     # таймзону, в принципе, можно установить здесь
@@ -298,12 +341,12 @@ temp.df <- try({
 if(class(temp.df) != "try-error") {
   # расчитываем необходимые данные
   raw.df <- temp.df %>%
-    mutate(value = 100 / (calibration_100 - calibration_0) * (voltage - calibration_0)) %>%
+    mutate(value = 100 / (calibration_100 - calibration_0) * (measurement - calibration_0)) %>%
     # откалибруем всплески
     mutate(work.status = (value >= 0 & value <= 100)) %>%
     # получим временную метку
     mutate(timestamp = ymd_hm(paste(date, time), tz = "Europe/Moscow")) %>%
-    select(-calibration_0, -calibration_100, -voltage)
+    select(-calibration_0, -calibration_100, -measurement)
 }
 # в противном случае мы просто оставляем данные неизменными
 

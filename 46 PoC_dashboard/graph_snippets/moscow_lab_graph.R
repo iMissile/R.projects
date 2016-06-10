@@ -83,7 +83,7 @@ load_github_field_data <- function() {
         "lon",
         "calibration_0",
         "calibration_100",
-        "voltage"
+        "measurement"
       ),
       locale = locale("ru", encoding = "windows-1251", tz = "Europe/Moscow"),
       # таймзону, в принципе, можно установить здесь
@@ -95,7 +95,7 @@ load_github_field_data <- function() {
   if(class(temp.df) != "try-error") {
     # расчитываем необходимые данные
     df <- temp.df %>%
-      mutate(value = round(100 / (calibration_100 - calibration_0) * (voltage - calibration_0), 0)) %>%
+      mutate(value = round(100 / (calibration_100 - calibration_0) * (measurement - calibration_0), 0)) %>%
       # откалибруем всплески
       mutate(work.status = (value >= 0 & value <= 100)) %>%
       # получим временную метку
@@ -103,7 +103,7 @@ load_github_field_data <- function() {
       # упростим имя сенсора
       mutate(name = gsub(".*:", "", name, perl = TRUE)) %>%
       mutate(location = "Moscow Lab") %>%
-      select(-calibration_0, -calibration_100, -voltage, -date, -time)
+      select(-calibration_0, -calibration_100, -measurement, -date, -time)
   } else {
     df <- NA # в противном случае мы сигнализируем о невозможности обновить данные
     }

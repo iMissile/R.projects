@@ -1,4 +1,19 @@
 
+max_moisture_norm <- function() {
+  3300000
+  1000
+  } # нормировочный коэффициент для датчика влажности
+
+get_moisture_levels <- function() {
+  # определяем категории value, приведенных к диапазону [0; 100] с допущением 3.3 вольта в максимуме
+  # в терминах этой же нормировки на максимально возможные 3.3 вольта
+  levels <- list(category = c(2180, 2210, 2270, 2330, 2390, 2450, 2510) * 1000 / max_moisture_norm(),
+                 labels = c('WET++', 'WET+', 'WET', 'NORM', 'DRY', 'DRY+'))
+  # возвращаем асинхронные списки: граница, именование 
+  # порядок менять крайне не рекомендуется -- порядок следования явно используется в других функциях
+  levels
+}
+
 get_timeframe <- function(days_back = 7, days_forward = 3){
   # если по каким-либо причинам наверху не определились с прогнозом (NA), 
   # то полагаем что он есть и он равен базовому горизонту
@@ -274,7 +289,7 @@ load_github_field_data <- function() {
         "lon",
         "calibration_0",
         "calibration_100",
-        "voltage"
+        "measurement"
       ),
       locale = locale("ru", encoding = "windows-1251", tz = "Europe/Moscow"),
       # таймзону, в принципе, можно установить здесь
@@ -287,7 +302,7 @@ load_github_field_data <- function() {
   if(class(temp.df)[[1]] != "try-error") {
     # расчитываем необходимые данные
     df <- temp.df %>%
-      mutate(value = round(100 / (calibration_100 - calibration_0) * (voltage - calibration_0), 0)) %>%
+      mutate(value = round(100 / (calibration_100 - calibration_0) * (measurement - calibration_0), 0)) %>%
       # откалибруем всплески
       mutate(work.status = (value >= 0 & value <= 100)) %>%
       # получим временную метку
@@ -295,7 +310,7 @@ load_github_field_data <- function() {
       # упростим имя сенсора
       mutate(name = gsub(".*:", "", name, perl = TRUE)) %>%
       mutate(location = "Moscow Lab") %>%
-      select(-calibration_0, -calibration_100, -voltage, -date, -time)
+      select(-calibration_0, -calibration_100, -measurement, -date, -time)
     
     flog.info("Sensors data from GitHub recieved. Last records:")
     flog.info(capture.output(print(head(arrange(df, desc(timestamp)), n = 4))))
@@ -310,9 +325,31 @@ load_github_field_data <- function() {
 
 load_github_field2_data <- function() {
   # забираем данные по сенсорам в новом формате из репозитория
-  temp.df <- try({
-    read_delim(
-      curl("https://github.com/iot-rus/Moscow-Lab/raw/master/result_lab.txt"),
+  
+  # получаем исторические данные по погоде из репозитория Гарика --------------------------------------------------------
+  # https://cran.r-project.org/web/packages/curl/vignettes/intro.html
+  req <- try({
+    curl_fetch_memory("https://github.com/iot-rus/Moscow-Lab/raw/master/result_lab.txt")
+  })
+  
+  # browser()
+  # проверим только 1-ый элемент класса, поскльку при разных ответах получается разное кол-во элементов
+  if(class(req)[[1]] == "try-error" || req$status_code != 200) {
+    flog.info(paste0("Error in prepare_raw_weather:", class(req)))
+    # создадим фейковый ответ, структуру ответа задаем ручками :((, 
+    # ее нужно будет каждый раз корректировать при изменениях структуры данных
+    # фиктивная структура по типу weather.df
+    r <- structure(list(timestamp = as.POSIXct(), name = character(), type = factor(),
+                        value = numeric(), measurement = numeric(), work.status = logical(),
+                        lat = numeric(), lon = numeric(), pin = integer(),
+                        location = character(), level = character()), class = "data.frame")
+    # в противном случае мы сигнализируем о невозможности обновить данные
+    flog.error("GitHub connection error")
+    return(r)
+  }
+  
+  # ответ есть, и он корректен. В этом случае осуществляем пребразование 
+  temp.df <- read_delim(rawToChar(req$content),
       delim = ";",
       quote = "\"",
       # дата; время; имя; широта; долгота; минимум (0% влажности); максимум (100%); текущие показания
@@ -327,7 +364,7 @@ load_github_field2_data <- function() {
         "xl",
         "yr",
         "xr",
-        "voltage",
+        "measurement",
         "pin"
       ),
       col_types = "Dccc????????",
@@ -335,51 +372,54 @@ load_github_field2_data <- function() {
       # таймзону, в принципе, можно установить здесь
       progress = interactive()
     ) # http://barryrowlingson.github.io/hadleyverse/#5
-  })
-  
+
   problems(temp.df)
   
-  # проверим только 1-ый элемент класса, поскльку при разных ответах получается разное кол-во элементов
-  if(class(temp.df)[[1]] != "try-error") {
-    # расчитываем необходимые данные
-    df <- temp.df %>%
-      mutate(value = round(yl + (yr-yl)/(xr-xl) * (voltage - xl), 0), type = factor(type)) %>%
-      # получим временную метку
-      mutate(timestamp = ymd_hms(paste(date, time), truncated = 3, tz = "Europe/Moscow")) %>%
-      # упростим имя сенсора
-      mutate(label = gsub(".*:", "", rawname, perl = TRUE)) %>%
-      # и разделим на имя и адрес
-      separate(label, c('ipv6', 'name'), sep = '-', remove = TRUE) %>%
-      select(timestamp, name, type, value, voltage, lat, lon, pin) %>%
-      mutate(location = "Moscow Lab") 
-    
-    flog.info("Sensors data from GitHub recieved. Last records:")
-    flog.info(capture.output(print(head(arrange(df, desc(timestamp)), n = 4))))
-
-    # или даже так
-    levs <- list(step = c(0, 1700, 2270, 2330, 2390, 2450, 3000) * 1000, 
-                 category = c('WET++', 'WET+', 'WET', 'NORM', 'DRY', 'DRY+', 'DRY++'))
-    
-    df <- df %>%
-      # откалибруем всплески
-      mutate(work.status = (type == 'MOISTURE' & 
-                              voltage >= levs$step[2] & 
-                              voltage <= levs$step[length(levs$step)])) %>%
-      # и вернем для влажности в value редуцированный вольтаж
-      mutate(value  = ifelse(type == 'MOISTURE', voltage/1000, value))
-
-    df$level <- NA
-    for (i in 1:(length(levs$step) - 1)){
-      # print(paste0("i = ", i, " ", levs$category[i]))
-      df$level[df$type == 'MOISTURE' & 
-                 df$voltage > levs$step[i] &
-                 df$voltage <= levs$step[i+1]] <- levs$category[i]
-    }
-  } else {
-    df <- NA # в противном случае мы сигнализируем о невозможности обновить данные
-    flog.error("GitHub connection error")
-  }
+  # расчитываем необходимые данные
+  df <- temp.df %>%
+    # линейная нормализация
+    mutate(value = yl + (yr-yl)/(xr-xl) * (measurement - xl), type = factor(type)) %>%
+    # получим временную метку
+    mutate(timestamp = ymd_hms(paste(date, time), truncated = 3, tz = "Europe/Moscow")) %>%
+    # упростим имя сенсора
+    mutate(label = gsub(".*:", "", rawname, perl = TRUE)) %>%
+    # и разделим на имя и адрес
+    separate(label, c('ipv6', 'name'), sep = '-', remove = TRUE) %>%
+    select(timestamp, name, type, value, measurement, lat, lon, pin) %>%
+    mutate(location = "Moscow Lab") 
   
+
+  # 2. постпроцессинг для разных типов датчиков  
+  
+  flog.info("Sensors data from GitHub recieved. Last records:")
+  flog.info(capture.output(print(head(arrange(df, desc(timestamp)), n = 4))))
+  
+  # 3. частный построцессинг  
+  # постпроцессинг для датчиков влажности
+  levs <- get_moisture_levels()  
+
+  # пересчитываем value для датчиков влажности
+  df %<>%
+    # пока делаем нормировку к [0, 100] из диапазона 3.3 V грязным хаком
+    mutate(value = ifelse(type == 'MOISTURE', measurement / max_moisture_norm(), value)) %>%
+    # и вернем для влажности в value редуцированный вольтаж
+    # mutate(value  = ifelse(type == 'MOISTURE', measurement / 1000, value))
+    # откалибруем всплески
+    # кстати, надо подумать, возможно, что после перехода к категоризации, мы можем просто отсекать NA
+    mutate(work.status = (type == 'MOISTURE' &
+                            value >= head(levs$category, 1) &
+                            value <= tail(levs$category, 1)))
+
+  # если колонки с категориями не было создано, то мы ее инициализируем
+  if(!('level' %in% names(df))) df$level <- NA
+  df %<>%
+    # считаем для всех, переносим потом только для тех, кого надо
+    # превращаем в character, иначе после переноса factor теряется, остаются только целые числа
+    mutate(marker = as.character(discretize(value, method = "fixed", categories = levs$category, labels = levs$labels))) %>%
+    mutate(level = ifelse(type == 'MOISTURE', marker, level)) %>%
+    select(-marker)
+
+#    browser()
   df
 }
 
@@ -526,14 +566,21 @@ plot_github_ts4_data <- function(df, timeframe, tbin = 4, expand_y = FALSE) {
   plot_palette <- brewer.pal(n = 5, name = "Blues")
   plot_palette <- wes_palette(name = "Moonrise2") # https://github.com/karthik/wesanderson
   
-  levs <- list(step = c(1700, 2210, 2270, 2330, 2390, 2450, 2510), 
-               category = c('WET++', 'WET+', 'WET', 'NORM', 'DRY', 'DRY+', ''))
+  # levs <- list(step = c(1700, 2210, 2270, 2330, 2390, 2450, 2510), 
+  #             category = c('WET++', 'WET+', 'WET', 'NORM', 'DRY', 'DRY+', ''))
+  
+  levs <- get_moisture_levels()
   if(!expand_y){
     # рисуем график только по DRY+ -- WET+ значениям
-    levs <- list(step = levs$step[-1], category = levs$category[-1])
-    
+    # удаляем по первому значению, оно соотв. WET++. Списки несинхронизированные по длине!!
+    levs <- list(category = tail(levs$category, -1), 
+                 labels = tail(levs$labels, -1))
   }
-  df.label <- (data.frame(x = timeframe[1], y = levs$step+30, text = levs$category))
+  
+  # метки ставим ровно посерединке, расстояние высчитываем динамически
+  df.label <- data.frame(x = timeframe[1], 
+                         y = head(levs$category, -1) + diff(levs$category)/2, # посчитали разницу, уравновесили -1 элементом 
+                         text = levs$labels)
 
   # http://www.cookbook-r.com/Graphs/Shapes_and_line_types/
   p <- ggplot(avg.df, aes(x = timegroup, y = value.mean)) +
@@ -548,7 +595,7 @@ plot_github_ts4_data <- function(df, timeframe, tbin = 4, expand_y = FALSE) {
     # рисуем разрешенный диапазон
     # geom_ribbon(aes(x = timegroup, ymin = 70, ymax = 90), linetype = 'blank', 
     #             fill = "olivedrab3", alpha = 0.4) +
-    geom_ribbon(aes(x = timegroup, ymin = levs$step[4], ymax = levs$step[3]), linetype = 'blank', 
+    geom_ribbon(aes(x = timegroup, ymin = levs$category[levs$labels == 'NORM'], ymax = levs$category[levs$labels == 'DRY']), linetype = 'blank', 
                 fill = "olivedrab3", alpha = 0.4) +
     geom_ribbon(
       aes(ymin = value.mean - value.sd, ymax = value.mean + value.sd, fill = name),
@@ -558,7 +605,7 @@ plot_github_ts4_data <- function(df, timeframe, tbin = 4, expand_y = FALSE) {
     # точки сырых данных
     geom_point(data = raw.df, aes(x = timestamp, y = value, colour = name), shape = 1, size = 2) +
     geom_point(aes(colour = name), shape = 19, size = 3) + # усредненные точки
-    geom_hline(yintercept = levs$step, lwd = 1, linetype = 'dashed') +
+    geom_hline(yintercept = levs$category, lwd = 1, linetype = 'dashed') +
     # scale_x_datetime(labels = date_format(format = "%d.%m%n%H:%M", tz = "Europe/Moscow"),
     #                  breaks = date_breaks('4 hour')) +
     # текщуее время отобразим
@@ -592,7 +639,7 @@ plot_github_ts4_data <- function(df, timeframe, tbin = 4, expand_y = FALSE) {
     # scale_color_brewer(palette = "Set2", name = "Влажность\nпочвы") +
     # ylim(0, 100) +
     # scale_y_reverse(limits = c(head(levs$step, 1), tail(levs$step, 1))) +
-    scale_y_reverse(limits = c(tail(levs$step, 1), head(levs$step, 1))) +
+    scale_y_reverse(limits = c(tail(levs$category, 1), head(levs$category, 1))) +
     xlab("Время и дата измерения") +
     ylab("Влажность почвы") +
     # theme_solarized() +

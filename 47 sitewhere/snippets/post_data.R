@@ -141,7 +141,7 @@ ts.raw <- fromJSON(rawToChar(req$content))
 # честный парсинг и объединение ----------------------------------------------------------
 df.join <- get_tsdf_from_SW_json(ts.raw, c('soil_moisture', 'min', 'max'))
 
-object.size(df.res)
+object.size(df.join)
 
 stop()
 
