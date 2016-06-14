@@ -51,11 +51,6 @@ flog.info("PoC dashboard started")
 # http://stackoverflow.com/questions/5031630/how-to-source-r-file-saved-using-utf-8-encoding
 eval(parse("../common_funcs.R", encoding="UTF-8"))
 
-# ================ первичная загрузка данных =========================
-raw_github_field.df <- load_github_field2_data()
-# raw_weather.df <- load_weather_data()
-raw_weather.df <- get_weather_df()
-
 # ================================================================
 ui <- fluidPage(theme = shinytheme("united"), titlePanel("Контроль влажности"),
                 sidebarLayout(
@@ -84,7 +79,7 @@ ui <- fluidPage(theme = shinytheme("united"), titlePanel("Контроль вл�
                     selectInput(
                       "historyDays",
                       "Глубина истории (дни)",
-                      choices = c(0, 1, 3, 7),
+                      choices = c(0, 1, 3, 5, 7),
                       selected = 0
                     ),
                     selectInput(
@@ -109,7 +104,7 @@ ui <- fluidPage(theme = shinytheme("united"), titlePanel("Контроль вл�
                              column(7, plotOutput('temp_plot'))), # , height = "300px"
                     fluidRow(
                              column(5, DT::dataTableOutput('data_tbl1')),
-                             column(7, plotOutput('weather_plot1'))),
+                             column(7, plotOutput('weather_plot'))),
                     width = 10 # обязательно ширины надо взаимно балансировать!!!!
                    )
                 ))
@@ -119,8 +114,15 @@ server <- function(input, output, session) {
   
   # создаем инстанс текущих данных
   # data.frame -- подмножество для анализа и отображения
-  rvars <- reactiveValues(raw_field.df = load_github_field2_data()) 
-  # Anything that calls autoInvalidate will automatically invalidate every 5 seconds.
+  # rvars <- reactiveValues(raw_field.df = load_github_field2_data(),
+  #                         raw_weather.df = prepare_raw_weather_data(),
+  #                         weather.df = get_weather_df(raw_weather.df), 
+  #                         rain.df = calc_rain_per_date(raw_weather.df)) 
+  
+  rvars <- reactiveValues(raw_field.df = NA,
+                          raw_weather.df = NA,
+                          weather.df = NA, 
+                          rain.df = NA)   # Anything that calls autoInvalidate will automatically invalidate every 5 seconds.
   # See:  http://shiny.rstudio.com/reference/shiny/latest/reactiveTimer.html
   # Also: http://rpackages.ianhowson.com/cran/shiny/man/reactiveTimer.html
   autoInvalidate <- reactiveTimer(1000 * 60, session) # раз в минуту
@@ -133,10 +135,10 @@ server <- function(input, output, session) {
     flog.info("Сброс глобальных данных")
     flog.info("rvars$raw_field.df")
     flog.info(capture.output(print(head(arrange(rvars$raw_field.df, desc(timestamp)), n = 10))))
-    flog.info("raw_github_field.df")
-    flog.info(capture.output(print(head(arrange(raw_github_field.df, desc(timestamp)), n = 10))))
-    flog.info("raw_weather.df")
-    flog.info(capture.output(print(head(arrange(raw_weather.df, desc(timestamp)), n = 10))))
+    # flog.info("raw_github_field.df")
+    # flog.info(capture.output(print(head(arrange(raw_github_field.df, desc(timestamp)), n = 10))))
+    flog.info("rvars$weather.df")
+    flog.info(capture.output(print(head(arrange(rvars$weather.df, desc(timestamp)), n = 10))))
   })
   
   observe({
@@ -146,13 +148,20 @@ server <- function(input, output, session) {
     # смотрим, требуется ли обновление данных
     flog.info(paste0("autoInvalidate. ", input$update_btn, " - ", Sys.time()))
 
-    # подгрузим данные
-    # raw_weather.df <<- load_weather_data()
-    raw_weather.df <<- get_weather_df()
+    # подгрузим и посчитаем данные по погоде
+    # и только, если они хороши, то мы их обновляем для отображения
+    temp.df <- prepare_raw_weather_data()
+    # NA[[1]] = NA
+    if (!is.na(temp.df)[[1]]) {
+      rvars$weather.df <- get_weather_df(temp.df)
+      rvars$rain.df <- calc_rain_per_date(temp.df)
+      # saveRDS(rain.df, "rain.df")
+      }
 
     # берем лабораторные данные с github
-    df <- load_github_field2_data()
-    if (!is.na(df)) { rvars$raw_field.df <- df } # и только, если они хороши, то мы их обновляем для отображения
+    temp.df <- load_github_field2_data()
+    # NA[[1]] = NA
+    if (!is.na(temp.df)[[1]]) { rvars$raw_field.df <- temp.df } # и только, если они хороши, то мы их обновляем для отображения
     
     # принудительно меняем 
     # отобразили время последнего обновления
@@ -173,9 +182,10 @@ server <- function(input, output, session) {
     # invalidateLater(5000, session) # обновляем график раз в 5 секунд
     # flog.info(paste0(input$update_btn, ": temp_plot")) # формально используем
     # игнорируем update_btn, используем косвенное обновление, через reactiveValues
-    
+
+    if (is.na(rvars$raw_field.df)[[1]]) rReturn(NULL) # игнорируем первичную инициализацию или ошибки
+        
     # параметры select передаются как character vector!!!!!!!!
-    # plot_github_ts2_data(raw_github_field.df, as.numeric(input$historyDays), as.numeric(input$timeBin))
     # может быть ситуация, когда нет данных от сенсоров. 
     # в этом случае попробуем растянуть данные до последней даты, когда видели показания
     # вперед ставим не 0, иначе округление будет до нижней даты, т.е. до 0:00 текущего дня
@@ -190,31 +200,18 @@ server <- function(input, output, session) {
   output$weather_plot <- renderPlot({
     # на выходе должен получиться ggplot!!!
     # параметры select передаются как character vector!!!!!!!!
-    # raw_weather_df
-    # timestamp temp.min pressure humidity precipitation temp.max     temp           timegroup
-    #    (time)    (dbl)    (dbl)    (dbl)         (dbl)    (dbl)    (dbl)              (time)
-    #plot_weather_data(raw_weather.df, as.numeric(input$historyDays))
-    w.df <- prepare_raw_weather_data()
-    if(is.null(w.df)){
-      flog.info("Error in rain recalulation")
-    } else {
-      rain.df <- calc_rain_per_date(w.df)
-      flog.info("Rain calculation")
-      flog.info(capture.output(print(rain.df)))    
-    }
-   
-    saveRDS(rain.df, "rain.df")
-    
     # browser() 
+    if (is.na(rvars$weather.df)[[1]]) return(NULL) # игнорируем первичную инициализацию или ошибки
+      
     timeframe = get_timeframe(days_back = as.numeric(input$historyDays),
                               days_forward = as.numeric(input$predictDays))
     
     flog.info(paste0("weather_plot timeframe: ", capture.output(str(timeframe))))
-    plot_real_weather2_data(raw_weather.df, rain.df, timeframe)
+    plot_real_weather2_data(rvars$weather.df, rvars$rain.df, timeframe)
   })
   
   output$data_tbl <- DT::renderDataTable({
-    df <- raw_github_field.df %>% 
+    df <- rvars$raw_field.df %>% 
       filter(type == 'MOISTURE') %>%
       select(name, measurement, work.status, timestamp, type) %>% 
       arrange(desc(timestamp))

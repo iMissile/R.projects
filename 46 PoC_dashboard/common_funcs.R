@@ -7,7 +7,7 @@ max_moisture_norm <- function() {
 get_moisture_levels <- function() {
   # определяем категории value, приведенных к диапазону [0; 100] с допущением 3.3 вольта в максимуме
   # в терминах этой же нормировки на максимально возможные 3.3 вольта
-  levels <- list(category = c(2000, 2210, 2270, 2330, 2390, 2450, 2510) * 1000 / max_moisture_norm(),
+  levels <- list(category = c(2100, 2210, 2270, 2330, 2390, 2450, 2510) * 1000 / max_moisture_norm(),
                  labels = c('WET++', 'WET+', 'WET', 'NORM', 'DRY', 'DRY+'))
   # возвращаем асинхронные списки: граница, именование 
   # порядок менять крайне не рекомендуется -- порядок следования явно используется в других функциях
@@ -97,26 +97,25 @@ hgroup.enum <- function(date, time.bin = 4){
 }
 
 
-
 prepare_raw_weather_data <- function() {
   # получаем исторические данные по погоде из репозитория Гарика --------------------------------------------------------
   # https://cran.r-project.org/web/packages/curl/vignettes/intro.html
+  
+  # на выходе либо данные, либо NA в случае ошибки
+  
+  callingFun = as.list(sys.call(-1))[[1]]
+  calledFun = deparse(sys.call()) # as.list(sys.call())[[1]]  
+  
   req <- try({
     curl_fetch_memory("https://raw.githubusercontent.com/iot-rus/Moscow-Lab/master/weather.txt")
-    # status_code == 200
-    # class(try-error)
   })
   
   # проверим только 1-ый элемент класса, поскльку при разных ответах получается разное кол-во элементов
   if(class(req)[[1]] == "try-error" || req$status_code != 200) {
-    flog.info(paste0("Error in prepare_raw_weather:", class(req)))
-    # создадим фейковый ответ, структуру ответа задаем ручками :((, 
-    # ее нужно будет каждый раз корректировать при изменениях структуры данных
-    # фиктивная структура по типу weather.df
-    r <- structure(list(temp = numeric(), pressure = numeric(), himidity = numeric(),
-                        timestamp = as.POSIXct(), rain3h = numeric(), human_time = as.POSIXct(),
-                        timegroup = as.POSIXct(), time.pos = character()), class = "data.frame")
-    return(r)
+    # http://stackoverflow.com/questions/15595478/how-to-get-the-name-of-the-calling-function-inside-the-called-routine
+    flog.error(paste0("Error in ", calledFun, " called from ", callingFun, ". Class(req) = ", class(req)))
+    # в противном случае мы сигнализируем о невозможности обновить данные
+    return(NA)
   }
   
   # ответ есть, и он корректен. В этом случае осуществляем пребразование 
@@ -190,9 +189,10 @@ prepare_raw_weather_data <- function() {
   weather.df
 }
 
-get_weather_df <- function(back_days = 7, forward_days = 3) {
-
-  weather.df <- prepare_raw_weather_data()
+get_weather_df <- function(weather.df, back_days = 7, forward_days = 3) {
+  # для устранения обращений к внешним источникам, теперь на вход 
+  # получаем предварительно скомпанованные предобработанные данные 
+  # weather.df <- prepare_raw_weather_data()
 
   # browser()
   # причешем данные для графика у Паши + проведем усреднение по часовым группам
@@ -222,6 +222,21 @@ get_weather_df <- function(back_days = 7, forward_days = 3) {
 
 calc_rain_per_date <- function(weather.df) {
   # считаем осадки за сутки ------------------------------
+  
+  # weather_df
+  # timestamp temp.min pressure humidity precipitation temp.max     temp           timegroup
+  #    (time)    (dbl)    (dbl)    (dbl)         (dbl)    (dbl)    (dbl)              (time)
+  # w.df <- prepare_raw_weather_data()
+  # if(is.null(w.df)){
+  #   flog.info("Error in rain recalulation")
+  # } else {
+  #   rain.df <- calc_rain_per_date(w.df)
+  
+  # }
+  # 
+  
+  
+  
   # полагаем, что идентичность выпавших осадков с точностью до третьего знака просто означает дублирование показаний!!!!
   dfw0 <- data.frame(timestamp = weather.df$timestamp, rain3h = weather.df$rain3h) %>%
     filter(!is.na(rain3h)) %>% # записи без дождя нас вообще не интересуют
@@ -252,6 +267,9 @@ calc_rain_per_date <- function(weather.df) {
     mutate(timestamp.human = force_tz(with_tz(as.POSIXct(date), tz = "GMT"), tz = "Europe/Moscow")) %>%
     mutate(timestamp = as.numeric(timestamp.human)) %>%
     arrange(date)
+
+  flog.info("Rain calculation")
+  flog.info(capture.output(print(dfw2)))
 
   dfw2
   }
