@@ -52,7 +52,7 @@ eval(parse("../common_funcs.R", encoding="UTF-8"))
 
 # ================ первичная загрузка данных =========================
 raw_field.df <- load_field_data()
-raw_github_field.df <- load_github_field_data()
+# raw_github_field.df <- load_github_field_data()
 # raw_weather.df <- load_weather_data()
 raw_weather.df <- get_weather_df()
 

@@ -52,7 +52,6 @@ flog.info("PoC dashboard started")
 eval(parse("../common_funcs.R", encoding="UTF-8"))
 
 # ================ первичная загрузка данных =========================
-raw_field.df <- load_field_data()
 raw_github_field.df <- load_github_field2_data()
 # raw_weather.df <- load_weather_data()
 raw_weather.df <- get_weather_df()
@@ -106,11 +105,11 @@ ui <- fluidPage(theme = shinytheme("united"), titlePanel("Контроль вл�
                   
                   mainPanel(
                     fluidRow(
-                             column(5, plotOutput('map_plot')), # , height = "300px"
+                             column(5, plotOutput('map_plot1')), # , height = "300px"
                              column(7, plotOutput('temp_plot'))), # , height = "300px"
                     fluidRow(
-                             column(5, DT::dataTableOutput('data_tbl')),
-                             column(7, plotOutput('weather_plot'))),
+                             column(5, DT::dataTableOutput('data_tbl1')),
+                             column(7, plotOutput('weather_plot1'))),
                     width = 10 # обязательно ширины надо взаимно балансировать!!!!
                    )
                 ))
@@ -120,7 +119,7 @@ server <- function(input, output, session) {
   
   # создаем инстанс текущих данных
   # data.frame -- подмножество для анализа и отображения
-  rvars <- reactiveValues() 
+  rvars <- reactiveValues(raw_field.df = load_github_field2_data()) 
   # Anything that calls autoInvalidate will automatically invalidate every 5 seconds.
   # See:  http://shiny.rstudio.com/reference/shiny/latest/reactiveTimer.html
   # Also: http://rpackages.ianhowson.com/cran/shiny/man/reactiveTimer.html
@@ -132,8 +131,8 @@ server <- function(input, output, session) {
   
   observeEvent(input$logdata_btn, {
     flog.info("Сброс глобальных данных")
-    flog.info("raw_field.df")
-    flog.info(capture.output(print(head(arrange(raw_field.df, desc(timestamp)), n = 10))))
+    flog.info("rvars$raw_field.df")
+    flog.info(capture.output(print(head(arrange(rvars$raw_field.df, desc(timestamp)), n = 10))))
     flog.info("raw_github_field.df")
     flog.info(capture.output(print(head(arrange(raw_github_field.df, desc(timestamp)), n = 10))))
     flog.info("raw_weather.df")
@@ -148,13 +147,12 @@ server <- function(input, output, session) {
     flog.info(paste0("autoInvalidate. ", input$update_btn, " - ", Sys.time()))
 
     # подгрузим данные
-    raw_field.df <<- load_field_data()
     # raw_weather.df <<- load_weather_data()
     raw_weather.df <<- get_weather_df()
 
     # берем лабораторные данные с github
     df <- load_github_field2_data()
-    if (!is.na(df)) { raw_github_field.df <<- df }    
+    if (!is.na(df)) { rvars$raw_field.df <- df } # и только, если они хороши, то мы их обновляем для отображения
     
     # принудительно меняем 
     # отобразили время последнего обновления
@@ -173,7 +171,9 @@ server <- function(input, output, session) {
   
   output$temp_plot <- renderPlot({
     # invalidateLater(5000, session) # обновляем график раз в 5 секунд
-    flog.info(paste0(input$update_btn, ": temp_plot")) # формально используем
+    # flog.info(paste0(input$update_btn, ": temp_plot")) # формально используем
+    # игнорируем update_btn, используем косвенное обновление, через reactiveValues
+    
     # параметры select передаются как character vector!!!!!!!!
     # plot_github_ts2_data(raw_github_field.df, as.numeric(input$historyDays), as.numeric(input$timeBin))
     # может быть ситуация, когда нет данных от сенсоров. 
@@ -184,7 +184,7 @@ server <- function(input, output, session) {
     
     flog.info(paste0("sensorts_plot timeframe: ", capture.output(str(timeframe))))
     # на выходе должен получиться ggplot!!!
-    plot_github_ts4_data(raw_github_field.df, timeframe, as.numeric(input$timeBin), expand_y = input$expand_y)
+    plot_github_ts4_data(rvars$raw_field.df, timeframe, as.numeric(input$timeBin), expand_y = input$expand_y)
   })
 
   output$weather_plot <- renderPlot({
@@ -232,8 +232,8 @@ server <- function(input, output, session) {
     
     slicetime <- now()
     #slicetime <- dmy_hm("29.04.2016 5:00", tz = "Europe/Moscow")
-    # input.df <- raw_field.df
-    input.df <- raw_github_field.df
+    # input.df <- raw_field.df.old
+    input.df <- rvars$raw_field.df
     
     sensors.df <- prepare_sesnors_mapdf(input.df, slicetime)
     

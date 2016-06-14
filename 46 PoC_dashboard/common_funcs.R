@@ -7,7 +7,7 @@ max_moisture_norm <- function() {
 get_moisture_levels <- function() {
   # определяем категории value, приведенных к диапазону [0; 100] с допущением 3.3 вольта в максимуме
   # в терминах этой же нормировки на максимально возможные 3.3 вольта
-  levels <- list(category = c(2180, 2210, 2270, 2330, 2390, 2450, 2510) * 1000 / max_moisture_norm(),
+  levels <- list(category = c(2000, 2210, 2270, 2330, 2390, 2450, 2510) * 1000 / max_moisture_norm(),
                  labels = c('WET++', 'WET+', 'WET', 'NORM', 'DRY', 'DRY+'))
   # возвращаем асинхронные списки: граница, именование 
   # порядок менять крайне не рекомендуется -- порядок следования явно используется в других функциях
@@ -325,6 +325,10 @@ load_github_field_data <- function() {
 
 load_github_field2_data <- function() {
   # забираем данные по сенсорам в новом формате из репозитория
+  # на выходе либо данные, либо NA в случае ошибки
+
+  callingFun = as.list(sys.call(-1))[[1]]
+  calledFun = deparse(sys.call()) # as.list(sys.call())[[1]]  
   
   # получаем исторические данные по погоде из репозитория Гарика --------------------------------------------------------
   # https://cran.r-project.org/web/packages/curl/vignettes/intro.html
@@ -335,17 +339,10 @@ load_github_field2_data <- function() {
   # browser()
   # проверим только 1-ый элемент класса, поскльку при разных ответах получается разное кол-во элементов
   if(class(req)[[1]] == "try-error" || req$status_code != 200) {
-    flog.info(paste0("Error in prepare_raw_weather:", class(req)))
-    # создадим фейковый ответ, структуру ответа задаем ручками :((, 
-    # ее нужно будет каждый раз корректировать при изменениях структуры данных
-    # фиктивная структура по типу weather.df
-    r <- structure(list(timestamp = as.POSIXct(), name = character(), type = factor(),
-                        value = numeric(), measurement = numeric(), work.status = logical(),
-                        lat = numeric(), lon = numeric(), pin = integer(),
-                        location = character(), level = character()), class = "data.frame")
+    # http://stackoverflow.com/questions/15595478/how-to-get-the-name-of-the-calling-function-inside-the-called-routine
+    flog.error(paste0("Error in ", calledFun, " called from ", callingFun, ". Class(req) = ", class(req)))
     # в противном случае мы сигнализируем о невозможности обновить данные
-    flog.error("GitHub connection error")
-    return(r)
+    return(NA)
   }
   
   # ответ есть, и он корректен. В этом случае осуществляем пребразование 
@@ -391,7 +388,7 @@ load_github_field2_data <- function() {
 
   # 2. постпроцессинг для разных типов датчиков  
   
-  flog.info("Sensors data from GitHub recieved. Last records:")
+  flog.info(paste0(calledFun, " - sensors data from GitHub recieved. Last records:"))
   flog.info(capture.output(print(head(arrange(df, desc(timestamp)), n = 4))))
   
   # 3. частный построцессинг  
@@ -613,7 +610,8 @@ plot_github_ts4_data <- function(df, timeframe, tbin = 4, expand_y = FALSE) {
     
     
   # в зависимости от диапазона отображения меняем параметры надписей оси x
-  if (force_rtime) {
+  # для суточных берем часовой интервал, для дневных -- сутки
+  if (difftime(timeframe[2], timeframe[1], unit = "min") < 24 * 60) {
     p <- p +
       scale_x_datetime(labels = date_format("%H:%M", tz = "Europe/Moscow"),
                        breaks = date_breaks("1 hour"), 

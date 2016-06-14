@@ -37,5 +37,5 @@ wrecs <- rawToChar(req$content) # weather history
 tmp <- paste0('{"res":[', gsub("\\n", ",\n", wrecs, perl = TRUE), ']}')
 wh_json <- gsub("},\n]}", "}]}", tmp)
 # t <- cat(wh_json)
-# write(wh_json, file="./export/wh_json.txt")
+write(wh_json, file="./export/wh_json.txt")
 data <- fromJSON(wh_json)
