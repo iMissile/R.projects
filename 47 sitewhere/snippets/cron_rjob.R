@@ -10,6 +10,7 @@ library(curl)
 library(httr)
 library(jsonlite)
 library(magrittr)
+library(arules)
 library(futile.logger)
 
 # if (getwd() == "/home/iot-rus") {
@@ -46,14 +47,14 @@ base_url = paste0('http://', user_name, ':', user_pass, '@10.0.0.207:28081/sitew
 t_token = 'sitewhere1234567890'
 
 
-if(FALSE){
+if(TRUE){
 
 # запрос и формирование данных по осадкам (прошлое и прогноз) =====================================
-weather.df <- prepare_raw_weather_data()
+raw_weather.df <- prepare_raw_weather_data()
 
 # d <- dmy_hm("23-12-2015 4:19")
 # str(date(dmy_hm("23-12-2015 4:19")))
-dfw2 <- calc_rain_per_date(weather.df)
+dfw2 <- calc_rain_per_date(raw_weather.df)
 
 flog.info("Rain history & forecast")
 flog.info(capture.output(print(dfw2)))
@@ -64,7 +65,7 @@ x <- jsonlite::toJSON(list(results = dfw2), pretty = TRUE)
 write(x, file = rain_filename)
 
 # запрос и формирование данных по погоде ==========================================================
-df <- get_weather_df(back_days = 7, forward_days = 3)
+df <- get_weather_df(raw_weather.df, back_days = 7, forward_days = 3)
 
 # http://stackoverflow.com/questions/25550711/convert-data-frame-to-json
 df3 <- with(df, {
@@ -138,7 +139,7 @@ flog.info(paste0("Time-series data: SiteWhere PUT response code = ", resp$status
 
 
 # формирование временного среза в пространстве по сенсорам ---------------------------------------------------
-sensors.df <- prepare_sesnors_mapdf(raw.df, slicetime = lubridate::now()) %>%
+sensors.df <- prepare_sensors_mapdf(raw.df, slicetime = lubridate::now()) %>%
   mutate(timegroup = hgroup.enum(timestamp, time.bin = 1)) %>%
   mutate(timestamp.human = timestamp) %>%
   mutate(timestamp = round(as.numeric(timegroup), 0))
