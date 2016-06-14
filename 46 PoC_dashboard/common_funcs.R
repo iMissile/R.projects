@@ -731,7 +731,7 @@ plot_real_weather2_data <- function(weather.df, rain.df, timeframe) {
   
 }
 
-prepare_sesnors_mapdf <- function(input.df, slicetime) {
+prepare_sensors_mapdf <- function(input.df, slicetime) {
   df <- input.df %>%
     filter(timestamp <= slicetime) %>%
     group_by(name) %>%

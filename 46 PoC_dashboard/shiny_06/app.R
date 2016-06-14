@@ -232,7 +232,7 @@ server <- function(input, output, session) {
     # input.df <- raw_field.df.old
     input.df <- rvars$raw_field.df
     
-    sensors.df <- prepare_sesnors_mapdf(input.df, slicetime)
+    sensors.df <- prepare_sensors_mapdf(input.df, slicetime)
     
     flog.info("sensors.df")
     flog.info(capture.output(print(sensors.df)))
