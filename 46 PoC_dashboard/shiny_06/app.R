@@ -114,7 +114,7 @@ server <- function(input, output, session) {
   
   # создаем инстанс текущих данных
   # data.frame -- подмножество для анализа и отображения
-  # rvars <- reactiveValues(raw_field.df = load_github_field2_data(),
+  # rvars <- reactiveValues(raw_field.df = get_github_field2_data(),
   #                         raw_weather.df = prepare_raw_weather_data(),
   #                         weather.df = get_weather_df(raw_weather.df), 
   #                         rain.df = calc_rain_per_date(raw_weather.df)) 
@@ -159,7 +159,7 @@ server <- function(input, output, session) {
       }
 
     # берем лабораторные данные с github
-    temp.df <- load_github_field2_data()
+    temp.df <- get_github_field2_data()
     # NA[[1]] = NA
     if (!is.na(temp.df)[[1]]) { rvars$raw_field.df <- temp.df } # и только, если они хороши, то мы их обновляем для отображения
     

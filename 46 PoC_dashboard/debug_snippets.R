@@ -148,7 +148,7 @@ if(class(temp.df)[[1]] != "try-error") {
 
 }
 
-df <- load_github_field2_data()
+df <- get_github_field2_data()
 
 browser()
 

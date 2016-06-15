@@ -28,7 +28,7 @@ source("common_funcs.R") # сюда выносим все вычислительные и рисовательные функц
 
 # main() ===================================================
 
-df <- load_github_field2_data()
+df <- get_github_field2_data()
 if (!is.na(df)) { raw.df <- df}
 # .Last.value
 

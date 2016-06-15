@@ -18,6 +18,8 @@ library(gtable)
 library(grid) # для grid.newpage()
 library(gridExtra) # для grid.arrange()
 
+source("../46 PoC_dashboard/common_funcs.R") # сюда выносим все вычислительные и рисовательные функции
+
 # параметры для доступа к SiteWhere ------------------------------------------------------------------------
 # вытащили пока наружу
 user_name = 'admin'
@@ -183,10 +185,16 @@ load_SW_field_data <- function(siteToken, moduleId, assetId) {
   df.join
 }
 
+process_SW_field_data(ts.df){
+  # на вход получаем data.frame с временным рядом измерений
+  # проводим постпроцессинг по масштабированию измерений, их категоризации и пр.
+  
+}
+
 get_SW_field_data <- function(siteToken, moduleId, assetId) {
-  df <- load_SW_field_data(siteToken, moduleId, assetId) # получаем данные с SiteWhere
-  df <- process_SW_field_data # обогащаем данные д
-  df
+  df0 <- load_SW_field_data(siteToken, moduleId, assetId) # получаем данные с SiteWhere
+  df1 <- process_SW_field_data(df0) # проводим постпроцессинг данных, добавляем вычисляемые поля
+  df1
 }
 
 # main() --------------------------------------------------
