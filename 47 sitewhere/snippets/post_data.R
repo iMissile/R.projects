@@ -18,11 +18,18 @@ library(gtable)
 library(grid) # для grid.newpage()
 library(gridExtra) # для grid.arrange()
 
+# параметры для доступа к SiteWhere ------------------------------------------------------------------------
+# вытащили пока наружу
+user_name = 'admin'
+user_pass = 'password'
+base_url = paste0('http://', user_name, ':', user_pass, '@10.0.0.207:28081/sitewhere/api/')
+t_token = 'sitewhere1234567890'
+
 
 get_tsdf_from_SW_json <- function(data, c_vars) {
   # честный парсинг временных рядов, полученных из выгрузкой из SiteWhere
   # входные данные (data) должны поступать в следующем формате (value - measurementDate по набору метрик)
-  # наборк колонок\переменных для выборки указывается в виде строкового вектора в переменной c_vars
+  # набор колонок\переменных для выборки указывается в виде строкового вектора в переменной c_vars
   # например, так: c('humidity', 'temp', 'pressure')
   # 'data.frame':	3 obs. of  2 variables:
   # $ measurementId: chr  "min" "max" "soil_moisture"
@@ -77,71 +84,129 @@ get_tsdf_from_SW_json <- function(data, c_vars) {
   df.join
 }
 
-# ------------------------------------------------------------------------
+load_SW_field_data <- function(siteToken, moduleId, assetId) {
+  # ------------------------------------------------------------------------
+  
+  # http://10.0.0.207:28081/sitewhere/api/mt/assets/modules/fs-locations/assets/harry-dirt-pot/assignments/?siteToken=c08a662e-9bbb-4193-a17f-96e0c760e1c3&tenantAuthToken=sitewhere1234567890
+  # магическая строка для получения измерений по assignment
+  
+  # location задан = 'fs-locations', asset тоже задан = 'harry-dirt-pot'.
+  # 1. определяем список связей (assignments) на asset-е,
+  # 2. выбираем те, которые отвечают датчику влажности
+  # 3. достаем временной ряд измерений, соответствующий этому сенсору
+  # 4. обогащаем метаинформацией общего характера (location, lon, lat)
+  
+  url <- paste0(base_url, "mt/assets/modules/", moduleId,
+                "/assets/", assetId, 
+                "/assignments/?siteToken=", siteToken, 
+                "&tenantAuthToken=", t_token)
+  resp <- curl_fetch_memory(url)
+  write(rawToChar(resp$content), file="./temp/resp.txt")
+  data <- fromJSON(rawToChar(resp$content))
+  # ищем assignments с sensor_type = soil_moisture
 
-user_name = 'admin'
-user_pass = 'password'
-base_url = paste0('http://', user_name, ':', user_pass, '@10.0.0.207:28081/sitewhere/api/')
-t_token = 'sitewhere1234567890'
+  a <- data$results$assignment
+  # error: 'names' attribute [9] must be the same length as the vector [1]
+  # http://stackoverflow.com/questions/14153092/meaning-of-ddply-error-names-attribute-9-must-be-the-same-length-as-the-vec
+  # убрали вложенные неименованные списки по необязательным полям
+  b <- select(a, -state, -metadata) # теперь View(b) работает
+  
+  # получаем информацию по всем assignments
+  d <- data$results$specification
+  
+  # d1 <- d %>% select(-metadata, -deviceElementSchema)
+  # d2 <- d$metadata
+  g <- bind_cols(d %>% select(-metadata, -deviceElementSchema), d$metadata)
+  
+  # соберем интересующую таблицу вручную
+  tmp <- data$results
+  m <- data.frame(assetId = tmp$assignment$assetId,
+                  assignment.token = tmp$assignment$token,
+                  deviceId = tmp$device$hardwareId, 
+                  specification.token = tmp$device$specificationToken,
+                  specification.name = tmp$specification$name,
+                  stringsAsFactors = FALSE)
+  
+  tm1 <- tmp$specification$metadata
+  names(tm1) <- paste0("specification.", names(tm1))
+  tm2 <- tmp$device$metadata
+  names(tm2) <- paste0("device.", names(tm2))
+  g <- bind_cols(m, tm1) %>%  bind_cols(tm2)
+  
+  sensors.df <- g %>%
+    filter(specification.sensor_type == 'soil_moisture')
+  
+  # а теперь запрашиваем сам time-series по обнаруженным assignment
+  # http://10.0.0.207:28081/sitewhere/api/assignments/<token>/measurements/series?tenantAuthToken=sitewhere1234567890
+  
+  str(sensors.df)
+  # !!!!!!!!!!!!!!!!!!!!!!! 
+  # место для последующей векторизации, пока что ручками принудительно берем только первый элемент из списка
+  
+  sensor <- head(sensors.df, 1)
+
+  url <- paste0(base_url, "assignments/", sensor$assignment.token, "/measurements/series?tenantAuthToken=", t_token)
+  resp <- curl_fetch_memory(url)
+  write(rawToChar(resp$content), file="./temp/resp2.txt")
+  ts.raw <- fromJSON(rawToChar(resp$content))
+  
+  # честный парсинг и объединение ----------------------------------------------------------
+  df.join <- get_tsdf_from_SW_json(ts.raw, c('soil_moisture', 'min', 'max'))
+  
+  # обогащаем метаинформацией общего характера (location, lon, lat) ------------------------
+  
+  # запросим параметры ассета по заданному id. Заберем оттуда location
+  url <- paste0(base_url, "assets/categories/", moduleId,
+                "/assets/", assetId, 
+                "/?siteToken=", siteToken, 
+                "&tenantAuthToken=", t_token)
+  
+  # через curl возникают проблемы с юникодными данными, решил остановиться на более человеко-ориентированном пакете httr
+  # resp <- curl_fetch_memory(url)
+  # data <- fromJSON(rawToChar(resp$content))
+  resp <- GET(url)
+  asset <- content(resp)
+  
+  # df.join$lon <- asset$longitude
+  # df.join$lat <- asset$latitude
+  # df.join$name <- sensor$deviceId
+  # df.join$location <- asset$name
+  df.join %<>%
+    rename(value = soil_moisture) %>%
+    mutate(name = sensor$deviceId) %>%
+    mutate(lon = asset$longitude) %>%
+    mutate(lat = asset$latitude) %>%
+    # без as.character возникает ошибка "unsupported type for column 'location' (NILSXP, classes = NULL)"
+    mutate(location = as.character(asset$name)) %>% 
+    select(-min, -max)
+  
+  df.join
+}
+
+get_SW_field_data <- function(siteToken, moduleId, assetId) {
+  df <- load_SW_field_data(siteToken, moduleId, assetId) # получаем данные с SiteWhere
+  df <- process_SW_field_data # обогащаем данные д
+  df
+}
+
+# main() --------------------------------------------------
+
+# параметры для запроса TimeSeries ------------------------------------------------------------------------
+# на вход получаем siteToken, location, assetId
+siteToken = 'c08a662e-9bbb-4193-a17f-96e0c760e1c3'
+moduleId = 'fs-locations'
+assetId = 'harry-dirt-pot'
 
 
-# http://10.0.0.207:28081/sitewhere/api/mt/assets/modules/fs-locations/assets/harry-dirt-pot/assignments/?siteToken=c08a662e-9bbb-4193-a17f-96e0c760e1c3&tenantAuthToken=sitewhere1234567890
-# магическая строка для получения измерений по assignment
-
-url <- paste0(base_url, "mt/assets/modules/fs-locations/assets/harry-dirt-pot/assignments/?siteToken=c08a662e-9bbb-4193-a17f-96e0c760e1c3&tenantAuthToken=", 
-              t_token)
-req <- curl_fetch_memory(url)
-write(rawToChar(req$content), file="./temp/resp.txt")
-data <- fromJSON(rawToChar(req$content))
-# ищем assignments с sensor_type = soil_moisture
-
-
-a <- data$results$assignment
-# error: 'names' attribute [9] must be the same length as the vector [1]
-# http://stackoverflow.com/questions/14153092/meaning-of-ddply-error-names-attribute-9-must-be-the-same-length-as-the-vec
-b <- select(a, -state, - metadata) # убрали вложенные неименованные списки по необязательным полям
-# теперь View(b) работает
-
-# получаем информацию по всем assignments
-d <- data$results$specification
-
-
-d1 <- d %>% select(-metadata, -deviceElementSchema)
-d2 <- d$metadata
-g <- bind_cols(d %>% select(-metadata, -deviceElementSchema), d$metadata)
-
-
-# соберем интересующую таблицу вручную
-tmp <- data$results
-m <- data.frame(assetId = tmp$assignment$assetId,
-                assignment.token = tmp$assignment$token,
-                deviceId = tmp$device$hardwareId, 
-                specification.token = tmp$device$specificationToken,
-                specification.name = tmp$specification$name,
-                stringsAsFactors = FALSE)
-
-tm1 <- tmp$specification$metadata
-names(tm1) <- paste0("specification.", names(tm1))
-tm2 <- tmp$device$metadata
-names(tm2) <- paste0("device.", names(tm2))
-g <- bind_cols(m, tm1) %>%  bind_cols(tm2)
-
-sensors <- g %>%
-  filter(specification.sensor_type == 'soil_moisture')
-
-# а теперь запрашиваем сам time-series по обнаруженным assignment
-# http://10.0.0.207:28081/sitewhere/api/assignments/<token>/measurements/series?tenantAuthToken=sitewhere1234567890
-token <- head(sensors$assignment.token, 1)
-
-url <- paste0(base_url, "assignments/", token, "/measurements/series?tenantAuthToken=", t_token)
-req <- curl_fetch_memory(url)
-write(rawToChar(req$content), file="./temp/resp2.txt")
-ts.raw <- fromJSON(rawToChar(req$content))
-
-# честный парсинг и объединение ----------------------------------------------------------
-df.join <- get_tsdf_from_SW_json(ts.raw, c('soil_moisture', 'min', 'max'))
+df.join <- get_SW_field_data(siteToken, moduleId, assetId)
+  
 
 object.size(df.join)
+
+
+stop()
+
+
 
 stop()
 
@@ -173,9 +238,9 @@ resp <- curl_fetch_memory(url)
 
 stop()
 
-req <- curl_fetch_memory("http://admin:password@10.0.0.207:28081/sitewhere/api/assets/categories/fs-locations/assets?tenantAuthToken=sitewhere1234567890")
-# wrecs <- rawToChar(req$content)
-data <- fromJSON(rawToChar(req$content))
+resp <- curl_fetch_memory("http://admin:password@10.0.0.207:28081/sitewhere/api/assets/categories/fs-locations/assets?tenantAuthToken=sitewhere1234567890")
+# wrecs <- rawToChar(resp$content)
+data <- fromJSON(rawToChar(resp$content))
 
 
 # про POST() см. тут: https://cran.r-project.org/web/packages/httr/vignettes/quickstart.html

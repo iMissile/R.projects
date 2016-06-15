@@ -1,0 +1,16 @@
+====================
+API смотрим здесь:
+http://10.0.0.207:28081/sitewhere/
+User:admin
+Password:password
+
+====================
+Заход на сайт здесь
+http://10.0.0.207:28081/sitewhere/admin/devices/mt-sn-soilmoisture-000001.html
+
+Пользователь и пароль те же
+
+
+===============
+Как доступиться к ассету горшок:
+http://10.0.0.207:28081/sitewhere/api/assets/modules/fs-locations/assets/harry-dirt-pot/?siteToken=c08a662e-9bbb-4193-a17f-96e0c760e1c3&tenantAuthToken=sitewhere1234567890
