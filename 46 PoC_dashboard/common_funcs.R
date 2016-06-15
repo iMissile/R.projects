@@ -341,7 +341,7 @@ load_github_field_data <- function() {
   df
 }
 
-load_github_field2_data <- function() {
+get_github_field2_data <- function() {
   # забираем данные по сенсорам в новом формате из репозитория
   # на выходе либо данные, либо NA в случае ошибки
 
@@ -405,7 +405,6 @@ load_github_field2_data <- function() {
   
 
   # 2. постпроцессинг для разных типов датчиков  
-  
   flog.info(paste0(calledFun, " - sensors data from GitHub recieved. Last records:"))
   flog.info(capture.output(print(head(arrange(df, desc(timestamp)), n = 4))))
   

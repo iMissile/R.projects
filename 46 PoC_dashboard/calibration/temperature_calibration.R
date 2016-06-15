@@ -63,7 +63,21 @@ df1 %>% group_by(sensor) %>% do(tidy(lm(temperature ~ value, .)))
 # - intercept - (required) intercept with the y axis of the line (the "b" in "y=ax+b").
 # 2. Использовать функцию [stat_function()](https://kohske.wordpress.com/2010/12/25/draw-function-without-data-in-ggplot2/)
 
-
-fit <- lm(formula = temperature ~ s2, data = df) 
+# http://www.r-tutor.com/elementary-statistics/simple-linear-regression/estimated-simple-regression-equation
+fit <- lm(formula = s3 ~ temperature, data = df) 
 coeffs <- coefficients(fit); coeffs 
+
+newdata <- data.frame(temperature = c(0, 50))
+t <- predict(fit, newdata)
+t
 # tidy(fit)
+
+
+# посмотрим занятые объемы памяти
+# http://isomorphism.es/post/92559575719/size-of-each-object-in-rs-workspace
+# for (obj in ls()) { message(obj); print(object.size(get(obj)), units='auto') }
+
+mem.df <- data.frame(obj = ls(), stringsAsFactors = FALSE) %>% 
+  mutate(size = unlist(lapply(obj, function(x) {object.size(get(x))}))) %>% 
+  arrange(desc(size))
+
