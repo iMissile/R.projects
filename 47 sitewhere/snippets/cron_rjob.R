@@ -1,17 +1,18 @@
 rm(list=ls()) # очистим все переменные
 
-library(ggplot2) #load first! (Wickham)
-library(lubridate) #load second!
-library(dplyr)
-library(tidyr)
-library(readr)
-library(reshape2)
-library(curl)
-library(httr)
-library(jsonlite)
-library(magrittr)
-library(arules)
-library(futile.logger)
+library(deployrUtils)
+deployrPackage("ggplot2") #load first! (Wickham)
+deployrPackage("lubridate") #load second!
+deployrPackage("dplyr")
+deployrPackage("tidyr")
+deployrPackage("readr")
+deployrPackage("reshape2")
+deployrPackage("curl")
+deployrPackage("httr")
+deployrPackage("jsonlite")
+deployrPackage("magrittr")
+deployrPackage("arules")
+deployrPackage("futile.logger")
 
 # if (getwd() == "/home/iot-rus") {
 #   # запущен на сервере
@@ -93,7 +94,7 @@ write(x, file = weather_filename)
 #     name      lat      lon value work.status           timestamp   location
 #    (chr)    (dbl)    (dbl) (dbl)       (lgl)              (time)      (chr)
 
-raw.df <- load_github_field2_data()
+raw.df <- get_github_field2_data()
 
 
 # формирование временного ряда по сенсорам ---------------------------------------------------
@@ -125,10 +126,11 @@ flog.info("Time-series data: file")
 flog.info(capture.output(head(avg.df, n = 4)))
 
 # подготовим диапазоны
-drange <- c(2210, 2270, 2330, 2390, 2450, 2510)/3300 # нормировка на милливольты
+moist_levs <- get_moisture_levels()
 # чтобы получить по строчкам, я собрал не в список, а в data.frame
-levs <- data.frame(low = head(drange, -1), up = tail(drange, -1), 
-             name = c('WET+', 'WET', 'NORM', 'DRY', 'DRY+'))
+# / 3000 -- нормировка на милливольты
+levs <- data.frame(low = head(moist_levs$category/3300, -1), up = tail(moist_levs$category/3300 , -1), 
+                   name = moist_levs$labels)
 
 jdata <- jsonlite::toJSON(list(soil_moisture = list(levels = levs, ts = avg.df)), pretty = TRUE)
 write(jdata, file = sensorts_filename)

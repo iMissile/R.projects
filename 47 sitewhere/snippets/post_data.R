@@ -18,6 +18,8 @@ library(gtable)
 library(grid) # для grid.newpage()
 library(gridExtra) # для grid.arrange()
 library(arules)
+library(iterators)
+library(foreach)
 library(futile.logger)
 
 source("../46 PoC_dashboard/common_funcs.R") # сюда выносим все вычислительные и рисовательные функции
@@ -139,26 +141,37 @@ load_SW_field_data <- function(siteToken, moduleId, assetId) {
   
   sensors.df <- g %>%
     filter(specification.sensor_type == 'soil_moisture')
-  
+
   # а теперь запрашиваем сам time-series по обнаруженным assignment
   # http://10.0.0.207:28081/sitewhere/api/assignments/<token>/measurements/series?tenantAuthToken=sitewhere1234567890
-  
-  str(sensors.df)
-  # !!!!!!!!!!!!!!!!!!!!!!! 
-  # место для последующей векторизации, пока что ручками принудительно берем только первый элемент из списка
-  
-  sensor <- head(sensors.df, 1)
 
-  url <- paste0(base_url, "assignments/", sensor$assignment.token, "/measurements/series?tenantAuthToken=", t_token)
-  resp <- curl_fetch_memory(url)
-  write(rawToChar(resp$content), file="./temp/resp2.txt")
-  ts.raw <- fromJSON(rawToChar(resp$content))
-  
-  # честный парсинг и объединение ----------------------------------------------------------
-  df.join <- get_tsdf_from_SW_json(ts.raw, c('soil_moisture', 'min', 'max'))
-  
-  # обогащаем метаинформацией общего характера (location, lon, lat) ------------------------
-  
+  ## эмуляция данных для эксперимента с foreach за пределами этого кода
+  # s0 <- sensors.df; s0$assetId <- "new sensor"; s0$deviceId <- "mt-sn-soilmoisture-000002"
+  # s.df <<- sensors.df %>% bind_rows(s0) # сэмулировали "как бы" две записи
+
+
+  # str(sensors.df)
+  # !!!!!!!!!!!!!!!!!!!!!!! 
+  # потенциальная точка для последующей векторизации
+  # но четкой уверенности нет, посольку обработка сложная, на выходе получается data.frame с обогащенными временными рядами
+  # пробегаемся по строчкам data.frame
+  # http://stackoverflow.com/questions/1699046/for-each-row-in-an-r-dataframe
+  df.join <- foreach(it = iter(s.df, by='row'), .combine = rbind) %dopar% {
+    # делаем итерацию по каждому сенсору
+    # cat("----\n"); str(it);
+    url <- paste0(base_url, "assignments/", it$assignment.token, "/measurements/series?tenantAuthToken=", t_token)
+    resp <- curl_fetch_memory(url)
+    ts.raw <- fromJSON(rawToChar(resp$content)) # парсит контент отличным от "resp2 <- GET(url)" образом
+    # честный парсинг и объединение ----------------------------------------------------------
+    df <- get_tsdf_from_SW_json(ts.raw, c('soil_moisture', 'min', 'max'))
+    # обогащаем метаинформацией частного характера
+    df$name = it$deviceId
+    
+    df
+  }
+
+  # обогащаем метаинформацией общего характера c общего родительского объекта (location, lon, lat) ------------------------
+
   # запросим параметры ассета по заданному id. Заберем оттуда location
   url <- paste0(base_url, "assets/categories/", moduleId,
                 "/assets/", assetId, 
@@ -170,15 +183,10 @@ load_SW_field_data <- function(siteToken, moduleId, assetId) {
   # data <- fromJSON(rawToChar(resp$content))
   resp <- GET(url)
   asset <- content(resp)
-  
-  # df.join$lon <- asset$longitude
-  # df.join$lat <- asset$latitude
-  # df.join$name <- sensor$deviceId
-  # df.join$location <- asset$name
+
   df.join %<>%
     rename(value = soil_moisture) %>%
     mutate(measurement = value) %>%
-    mutate(name = sensor$deviceId) %>%
     mutate(lon = asset$longitude) %>%
     mutate(lat = asset$latitude) %>%
     mutate(type = 'MOISTURE') %>%
@@ -189,41 +197,9 @@ load_SW_field_data <- function(siteToken, moduleId, assetId) {
   df.join
 }
 
-process_SW_field_data <- function(df){
-  # на вход получаем data.frame с временным рядом измерений
-  # проводим постпроцессинг по масштабированию измерений, их категоризации и пр.
-
-  # 3. частный построцессинг  
-  # датчики влажности
-  levs <- get_moisture_levels()  
-  
-  # пересчитываем value для датчиков влажности
-  df %<>%
-    # пока делаем нормировку к [0, 100] из диапазона 3.3 V грязным хаком
-    mutate(value = ifelse(type == 'MOISTURE', measurement / max_moisture_norm(), value)) %>%
-    # и вернем для влажности в value редуцированный вольтаж
-    # mutate(value  = ifelse(type == 'MOISTURE', measurement / 1000, value))
-    # откалибруем всплески
-    # кстати, надо подумать, возможно, что после перехода к категоризации, мы можем просто отсекать NA
-    mutate(work.status = (type == 'MOISTURE' &
-                            value >= head(levs$category, 1) &
-                            value <= tail(levs$category, 1)))
-  
-  # если колонки с категориями не было создано, то мы ее инициализируем
-  if(!('level' %in% names(df))) df$level <- NA
-  df %<>%
-    # считаем для всех, переносим потом только для тех, кого надо
-    # превращаем в character, иначе после переноса factor теряется, остаются только целые числа
-    mutate(marker = as.character(discretize(value, method = "fixed", categories = levs$category, labels = levs$labels))) %>%
-    mutate(level = ifelse(type == 'MOISTURE', marker, level)) %>%
-    select(-marker)
-  
-  df
-}
-
 get_SW_field_data <- function(siteToken, moduleId, assetId) {
   df0 <- load_SW_field_data(siteToken, moduleId, assetId) # получаем данные с SiteWhere
-  df1 <- process_SW_field_data(df0) # проводим постпроцессинг данных, добавляем вычисляемые поля
+  df1 <- postprocess_ts_field_data(df0) # проводим постпроцессинг данных, добавляем вычисляемые поля
   df1
 }
 
@@ -236,27 +212,19 @@ moduleId = 'fs-locations'
 assetId = 'harry-dirt-pot'
 
 
-
 github.df <- get_github_field2_data() # считываем прототип того, что хотим получить 
 sw.df <- get_SW_field_data(siteToken, moduleId, assetId)
 
-join.df = left_join(github.df, sw.df, by = "timestamp")
+join.df = inner_join(github.df %>% select(-name, -type, -lon, -lat, -pin, -location), 
+                     sw.df %>% select(-name, -lon, -lat, -location), by = "timestamp")
 
 # сделаем объединенный data.frame для визуальной сверки результатов
 
-
-
 # посмотрим занятые объемы памяти
-# http://isomorphism.es/post/92559575719/size-of-each-object-in-rs-workspace
-# for (obj in ls()) { message(obj); print(object.size(get(obj)), units='auto') }
-
 mem.df <- data.frame(obj = ls(), stringsAsFactors = FALSE) %>% 
-  mutate(size = unlist(lapply(obj, function(x) {object.size(get(x))}))) %>% 
-  arrange(desc(size))
-
-
-## object.size(c(github.df, sw.df, join.df))
-
+  mutate(size_in_kb = unlist(lapply(obj, function(x) {round(object.size(get(x)) / 1024, 1)}))) %>% 
+  arrange(desc(size_in_kb))
+print(paste0("Total size = ", round(sum(mem.df$size_in_kb)/1024, 1), "Mb"))
 
 stop()
 
@@ -311,3 +279,30 @@ url <- "api.openweathermap.org/data/2.5/"
 MoscowID <- '524901'
 APPID <- '19deaa2837b6ae0e41e4a140329a1809'
 resp <- GET(paste0(url, "weather?id=", MoscowID, "&APPID=", APPID))
+
+stop()
+
+# http://stackoverflow.com/questions/1699046/for-each-row-in-an-r-dataframe
+# пробегаемся по строчкам data.frame
+s.df
+d <- data.frame(x=1:10, y=rnorm(10))
+# s <- foreach(m = iter(d, by='row'), .combine=rbind) %dopar% {str(m); cat("----"); m}
+
+
+stop()
+
+# пробегаемся по строчкам data.frame
+# http://stackoverflow.com/questions/1699046/for-each-row-in-an-r-dataframe
+res <- foreach(it = iter(s.df, by='row'), .combine = rbind) %dopar% {
+  # делаем итерацию по каждому сенсору
+  cat("----\n"); str(it);
+  url <- paste0(base_url, "assignments/", it$assignment.token, "/measurements/series?tenantAuthToken=", t_token)
+  resp <- curl_fetch_memory(url)
+  ts.raw <- fromJSON(rawToChar(resp$content)) # парсит контент отличным от "resp2 <- GET(url)" образом
+  df.join <- get_tsdf_from_SW_json(ts.raw, c('soil_moisture', 'min', 'max'))
+  df.join$name = it$deviceId
+  
+  df.join
+  }
+
+

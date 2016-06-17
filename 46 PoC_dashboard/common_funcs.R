@@ -1,3 +1,15 @@
+get_objects_size <- function() {
+  # посмотрим занятые объемы памяти
+  # http://isomorphism.es/post/92559575719/size-of-each-object-in-rs-workspace
+  # for (obj in ls()) { message(obj); print(object.size(get(obj)), units='auto') }
+  
+  # тут, почему-то, не работает
+  mem.df <- data.frame(obj = ls(), stringsAsFactors = FALSE) %>% 
+    mutate(size = unlist(lapply(obj, function(x) {object.size(get(x))}))) %>% 
+    arrange(desc(size))
+  
+  mem.df
+}
 
 max_moisture_norm <- function() {
   3300000
@@ -341,6 +353,39 @@ load_github_field_data <- function() {
   df
 }
 
+postprocess_ts_field_data <- function(df){
+  # на вход получаем data.frame с временным рядом измерений
+  # проводим постпроцессинг по масштабированию измерений, их категоризации и пр.
+  
+  # 3. частный построцессинг  
+  # датчики влажности
+  levs <- get_moisture_levels()  
+  
+  # browser()
+  # пересчитываем value для датчиков влажности
+  df %<>%
+    # пока делаем нормировку к [0, 100] из диапазона 3.3 V грязным хаком
+    mutate(value = ifelse(type == 'MOISTURE', measurement / max_moisture_norm(), value)) %>%
+    # и вернем для влажности в value редуцированный вольтаж
+    # mutate(value  = ifelse(type == 'MOISTURE', measurement / 1000, value))
+    # откалибруем всплески
+    # кстати, надо подумать, возможно, что после перехода к категоризации, мы можем просто отсекать NA
+    mutate(work.status = (type == 'MOISTURE' &
+                            value >= head(levs$category, 1) &
+                            value <= tail(levs$category, 1)))
+  
+  # если колонки с категориями не было создано, то мы ее инициализируем
+  if(!('level' %in% names(df))) df$level <- NA
+  df %<>%
+    # считаем для всех, переносим потом только для тех, кого надо
+    # превращаем в character, иначе после переноса factor теряется, остаются только целые числа
+    mutate(marker = as.character(discretize(value, method = "fixed", categories = levs$category, labels = levs$labels))) %>%
+    mutate(level = ifelse(type == 'MOISTURE', marker, level)) %>%
+    select(-marker)
+  
+  df
+}
+
 get_github_field2_data <- function() {
   # забираем данные по сенсорам в новом формате из репозитория
   # на выходе либо данные, либо NA в случае ошибки
@@ -410,28 +455,8 @@ get_github_field2_data <- function() {
   
   # 3. частный построцессинг  
   # постпроцессинг для датчиков влажности
-  levs <- get_moisture_levels()  
-
-  # пересчитываем value для датчиков влажности
-  df %<>%
-    # пока делаем нормировку к [0, 100] из диапазона 3.3 V грязным хаком
-    mutate(value = ifelse(type == 'MOISTURE', measurement / max_moisture_norm(), value)) %>%
-    # и вернем для влажности в value редуцированный вольтаж
-    # mutate(value  = ifelse(type == 'MOISTURE', measurement / 1000, value))
-    # откалибруем всплески
-    # кстати, надо подумать, возможно, что после перехода к категоризации, мы можем просто отсекать NA
-    mutate(work.status = (type == 'MOISTURE' &
-                            value >= head(levs$category, 1) &
-                            value <= tail(levs$category, 1)))
-
-  # если колонки с категориями не было создано, то мы ее инициализируем
-  if(!('level' %in% names(df))) df$level <- NA
-  df %<>%
-    # считаем для всех, переносим потом только для тех, кого надо
-    # превращаем в character, иначе после переноса factor теряется, остаются только целые числа
-    mutate(marker = as.character(discretize(value, method = "fixed", categories = levs$category, labels = levs$labels))) %>%
-    mutate(level = ifelse(type == 'MOISTURE', marker, level)) %>%
-    select(-marker)
+  
+  df %<>% postprocess_ts_field_data()
 
 #    browser()
   df
