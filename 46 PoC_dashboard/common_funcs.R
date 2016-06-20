@@ -118,21 +118,25 @@ prepare_raw_weather_data <- function() {
   callingFun = as.list(sys.call(-1))[[1]]
   calledFun = deparse(sys.call()) # as.list(sys.call())[[1]]  
   
-  req <- try({
+  resp <- try({
     curl_fetch_memory("https://raw.githubusercontent.com/iot-rus/Moscow-Lab/master/weather.txt")
   })
   
+  # дебажный вывод 
+  flog.debug(paste0("Debug info in ", calledFun, " called from ", callingFun, 
+                    ". Class(req) = ", class(resp), ". Status_code = ", resp$status_code))
+  
   # проверим только 1-ый элемент класса, поскльку при разных ответах получается разное кол-во элементов
-  if(class(req)[[1]] == "try-error" || req$status_code != 200) {
+  if(class(resp)[[1]] == "try-error" || resp$status_code != 200) {
     # http://stackoverflow.com/questions/15595478/how-to-get-the-name-of-the-calling-function-inside-the-called-routine
-    flog.error(paste0("Error in ", calledFun, " called from ", callingFun, ". Class(req) = ", class(req)))
+    flog.error(paste0("Error in ", calledFun, " called from ", callingFun, ". Class(req) = ", class(resp)))
     # в противном случае мы сигнализируем о невозможности обновить данные
     return(NA)
   }
   
   # ответ есть, и он корректен. В этом случае осуществляем пребразование 
   
-  wrecs <- rawToChar(req$content) # weather history
+  wrecs <- rawToChar(resp$content) # weather history
   # wh_json <- gsub('\\\"', "'", txt, perl = TRUE) 
   # заменим концы строк на , и добавим шапочку и окончание для формирования семантически правильного json
   # последнюю ',' надо удалить, может такое встретиться (перевод строки)
@@ -168,6 +172,11 @@ prepare_raw_weather_data <- function() {
     r <- content(resp)
   }
   
+  # дебажный вывод 
+  flog.debug(paste0("Forecast debug info in ", calledFun, " called from ", callingFun, ". Class(req) = ", class(resp)))
+  flog.debug(capture.output(print(resp)))
+
+
   # получаем погодные данные
   m <- r$list
   ll <- lapply(m, function(x){ 

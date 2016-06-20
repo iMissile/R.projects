@@ -26,6 +26,12 @@ deployrPackage("futile.logger")
 # }
 
 # запуск скрипта из рабочей директории, так настраиваем cron
+# создаем выходные директории, если они не существуют
+if (!dir.exists('./log')) dir.create('./log')
+if (!dir.exists('./output')) dir.create('./output')
+
+# если такое проворачивать на DeployR, то не будет выходных файлов доступно через API
+
 log_filename <- "./log/iot.log"
 weather_filename <- "./output/real_weather.json"
 sensorts_filename <- "./output/real_sensor_ts.json"
