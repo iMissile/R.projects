@@ -49,7 +49,7 @@ flog.info("PoC dashboard started")
 # это вместо source
 # How to source() .R file saved using UTF-8 encoding?
 # http://stackoverflow.com/questions/5031630/how-to-source-r-file-saved-using-utf-8-encoding
-eval(parse("../common_funcs.R", encoding="UTF-8"))
+eval(parse("../common_funcs.R", encoding = "UTF-8"))
 
 # ================================================================
 ui <- fluidPage(theme = shinytheme("united"), titlePanel("Контроль орошения полей"),

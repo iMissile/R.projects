@@ -21,10 +21,15 @@ library(curl)
 #library(akima)
 #library(rdrop2)
 #library(rgl)
+library(arules)
 library(futile.logger)
 
 
-source("common_funcs.R") # сюда выносим все вычислительные и рисовательные функции
+# source("common_funcs.R", encoding = 'UTF-8') 
+# это вместо source
+# How to source() .R file saved using UTF-8 encoding?
+# http://stackoverflow.com/questions/5031630/how-to-source-r-file-saved-using-utf-8-encoding
+eval(parse("common_funcs.R", encoding = "UTF-8")) # сюда выносим все вычислительные и рисовательные функции
 
 # main() ===================================================
 
@@ -32,6 +37,17 @@ df <- get_github_field2_data()
 if (!is.na(df)) { raw.df <- df}
 # .Last.value
 
+06.06 - 18.06
+
+p2 <- plot_github_ts4_data(df, get_timeframe(days_back = 15, days_forward = 0), 
+                           tbin = 0.5, expand_y = TRUE)
+
+benchplot(p2)
+p2
+
+stop()
+
+# выше заменили использованием функции
 # проведем усреднение по временным группам, если измерения проводились несколько раз в течение этого времени
 # усредняем только по рабочим датчикам
 
@@ -76,7 +92,7 @@ p2 <- ggplot(avg.df, aes(x = timegroup, y = value.mean)) +
   
   # geom_ribbon(aes(x = timegroup, ymin = 70, ymax = 90), linetype = 'blank', fill = "olivedrab3", alpha = 0.4) +
   geom_ribbon(aes(ymin = levs$category[levs$labels == 'NORM'], ymax = levs$category[levs$labels == 'DRY']), 
-              fill = "mediumaquamarine", alpha = 0.1) +
+              linetype = 'blank', fill = "olivedrab3", alpha = 0.4) +
   geom_ribbon(
     aes(ymin = value.mean - value.sd, ymax = value.mean + value.sd, fill = name),
     alpha = 0.3
@@ -108,8 +124,8 @@ p2 <- ggplot(avg.df, aes(x = timegroup, y = value.mean)) +
   # scale_colour_solarized("blue") +
   # theme(legend.position=c(0.5, .2)) +
   theme(legend.position = "top") +
-  theme(axis.text.x = element_text(angle = 0, hjust = 0.5, vjust = 0.5)) +
-  theme(axis.text.y = element_text(angle = 0)) +
+  # theme(axis.text.x = element_text(angle = 0, hjust = 0.5, vjust = 0.5)) +
+  # theme(axis.text.y = element_text(angle = 0)) +
   # убрали заливку, см. stackoverflow.com/questions/21066077/remove-fill-around-legend-key-in-ggplot
   guides(color = guide_legend(override.aes = list(fill = NA)))
 

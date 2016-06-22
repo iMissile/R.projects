@@ -63,7 +63,6 @@ df1 <- df %>%
 pp.base <- ggplot(df1, aes(x = harm, y = angle, colour = value, fill = value, size = value)) +
   # geom_point(size = 4, shape = 21, alpha = 0.6) +
   guides(size = FALSE) + # загасим легенду
-  scale_size_continuous(range = c(2, 4)) + # управляем диапазоном размера точек
   geom_point(shape = 21, alpha = 0.6) +
   scale_colour_gradientn(colours = rev(brewer.pal(9,"Spectral")), guide = FALSE) +
   scale_fill_gradientn(colours = rev(brewer.pal(9,"Spectral")), 
@@ -76,15 +75,17 @@ pp.base <- ggplot(df1, aes(x = harm, y = angle, colour = value, fill = value, si
   theme_bw()
 
 pp0 <- pp.base + 
+  scale_size_continuous(range = c(1.5, 4.5)) + # управляем диапазоном размера точек
   scale_x_continuous(breaks = pretty_breaks(n = 20))
   
 pp <- pp.base +
+  scale_size_continuous(range = c(0.5, 3)) + # управляем диапазоном размера точек
   facet_wrap( ~ marker, scales="free", ncol = 5)
 
 pp
 
 # сохраним
-ggsave("_ilya_common.jpg", plot = pp0, width = 30, height = 15, units = 'cm', dpi = 300)
-ggsave("_ilya_facet.jpg", plot = pp, width = 30, height = 15, units = 'cm', dpi = 300)
+ggsave("_ilya_common.jpg", plot = pp0, width = 30, height = 15, units = 'cm', dpi = 600)
+ggsave("_ilya_facet.jpg", plot = pp, width = 30, height = 15, units = 'cm', dpi = 600)
 
 # dev.off()

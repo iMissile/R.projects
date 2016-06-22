@@ -650,22 +650,21 @@ plot_github_ts4_data <- function(df, timeframe, tbin = 4, expand_y = FALSE) {
     
     #scale_fill_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
     # рисуем разрешенный диапазон
-    # geom_ribbon(aes(x = timegroup, ymin = 70, ymax = 90), linetype = 'blank', 
-    #             fill = "olivedrab3", alpha = 0.4) +
+    # geom_ribbon(aes(x = timegroup, ymin = 70, ymax = 90), linetype = 'blank', fill = "olivedrab3", alpha = 0.4) +
     geom_ribbon(aes(x = timegroup, ymin = levs$category[levs$labels == 'NORM'], ymax = levs$category[levs$labels == 'DRY']), linetype = 'blank', 
                 fill = "olivedrab3", alpha = 0.4) +
     geom_ribbon(
       aes(ymin = value.mean - value.sd, ymax = value.mean + value.sd, fill = name),
       alpha = 0.3
     ) +
-    geom_line(aes(colour = name), lwd = 1.2) +
+    geom_line(aes(colour = name), alpha = 0.3, lwd = 1.2) +
     # точки сырых данных
     geom_point(data = raw.df, aes(x = timestamp, y = value, colour = name), shape = 1, size = 2) +
-    geom_point(aes(colour = name), shape = 19, size = 3) + # усредненные точки
+    geom_point(aes(colour = name), alpha = 0.1, shape = 19, size = 3) + # усредненные точки
     geom_hline(yintercept = levs$category, lwd = 1, linetype = 'dashed') +
     # scale_x_datetime(labels = date_format(format = "%d.%m%n%H:%M", tz = "Europe/Moscow"),
     #                  breaks = date_breaks('4 hour')) +
-    # текщуее время отобразим
+    # текущуее время отобразим
     geom_vline(xintercept = as.numeric(now()), linetype = "dotted", color = "yellowgreen", lwd = 1.1)
     
     
