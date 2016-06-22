@@ -124,12 +124,12 @@ prepare_raw_weather_data <- function() {
   
   # дебажный вывод 
   flog.debug(paste0("Debug info in ", calledFun, " called from ", callingFun, 
-                    ". Class(req) = ", class(resp), ". Status_code = ", resp$status_code))
+                    ". Class(resp) = ", class(resp), ". Status_code = ", resp$status_code))
   
   # проверим только 1-ый элемент класса, поскльку при разных ответах получается разное кол-во элементов
   if(class(resp)[[1]] == "try-error" || resp$status_code != 200) {
     # http://stackoverflow.com/questions/15595478/how-to-get-the-name-of-the-calling-function-inside-the-called-routine
-    flog.error(paste0("Error in ", calledFun, " called from ", callingFun, ". Class(req) = ", class(resp)))
+    flog.error(paste0("Error in ", calledFun, " called from ", callingFun, ". Class(resp) = ", class(resp)))
     # в противном случае мы сигнализируем о невозможности обновить данные
     return(NA)
   }
@@ -167,13 +167,22 @@ prepare_raw_weather_data <- function() {
   APPID <- '19deaa2837b6ae0e41e4a140329a1809'
   # reqstring <- paste0(url, "weather?id=", MoscowID, "&APPID=", APPID)
   reqstring <- paste0(url, "forecast?id=", MoscowID, "&APPID=", APPID) 
-  resp <- GET(reqstring)
-  if(status_code(resp) == 200){
-    r <- content(resp)
-  }
+  resp <-  try({
+    GET(reqstring)
+  })
   
+  # проверим только 1-ый элемент класса, поскльку при разных ответах получается разное кол-во элементов
+  if(class(resp)[[1]] == "try-error" || resp$status_code != 200) {
+    # http://stackoverflow.com/questions/15595478/how-to-get-the-name-of-the-calling-function-inside-the-called-routine
+    flog.error(paste0("api.openweathermap error in ", calledFun, " called from ", callingFun, ". Class(resp) = ", class(resp)))
+    # в противном случае мы сигнализируем о невозможности обновить данные
+    return(NA)
+  }  
+
+  r <- content(resp)
+
   # дебажный вывод 
-  flog.debug(paste0("Forecast debug info in ", calledFun, " called from ", callingFun, ". Class(req) = ", class(resp)))
+  flog.debug(paste0("Forecast in ", calledFun, " called from ", callingFun, ". Class(resp) = ", class(resp)))
   flog.debug(capture.output(print(resp)))
 
 
@@ -404,21 +413,21 @@ get_github_field2_data <- function() {
   
   # получаем исторические данные по погоде из репозитория Гарика --------------------------------------------------------
   # https://cran.r-project.org/web/packages/curl/vignettes/intro.html
-  req <- try({
+  resp <- try({
     curl_fetch_memory("https://github.com/iot-rus/Moscow-Lab/raw/master/result_lab.txt")
   })
   
   # browser()
   # проверим только 1-ый элемент класса, поскльку при разных ответах получается разное кол-во элементов
-  if(class(req)[[1]] == "try-error" || req$status_code != 200) {
+  if(class(resp)[[1]] == "try-error" || resp$status_code != 200) {
     # http://stackoverflow.com/questions/15595478/how-to-get-the-name-of-the-calling-function-inside-the-called-routine
-    flog.error(paste0("Error in ", calledFun, " called from ", callingFun, ". Class(req) = ", class(req)))
+    flog.error(paste0("Error in ", calledFun, " called from ", callingFun, ". Class(resp) = ", class(resp)))
     # в противном случае мы сигнализируем о невозможности обновить данные
     return(NA)
   }
   
   # ответ есть, и он корректен. В этом случае осуществляем пребразование 
-  temp.df <- read_delim(rawToChar(req$content),
+  temp.df <- read_delim(rawToChar(resp$content),
       delim = ";",
       quote = "\"",
       # дата; время; имя; широта; долгота; минимум (0% влажности); максимум (100%); текущие показания

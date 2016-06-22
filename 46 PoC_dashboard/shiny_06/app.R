@@ -52,7 +52,7 @@ flog.info("PoC dashboard started")
 eval(parse("../common_funcs.R", encoding="UTF-8"))
 
 # ================================================================
-ui <- fluidPage(theme = shinytheme("united"), titlePanel("Контроль влажности"),
+ui <- fluidPage(theme = shinytheme("united"), titlePanel("Контроль орошения полей"),
                 sidebarLayout(
                   sidebarPanel(
                     radioButtons(
