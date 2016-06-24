@@ -16,19 +16,18 @@ library(foreach)
 # снимем лимиты времени, чтобы избежать ошибки "In is.gtable(x) : reached elapsed time limit"
 setTimeLimit(cpu = Inf, elapsed = Inf, transient = FALSE) 
 
-n_ampl <- 1 # номер оси по которой смотрим амплитуду [1, 2]
 # импорт данных
 getwd()
 # зависимость величины амплитуды от угла (0.02 k+0.01 при к от 0 до 78).
 angles <- seq(from = 0.01, to = 1.57, by = 0.02)
 
-read_data <- function(angle, n_ampl){
-  #cat(n_ampl)
-  read_delim(paste0("./ampl/ampl", n_ampl, "(angle=", angle, ").csv"), delim = ";", quote = "\"",
+read_data <- function(angle){
+  #cat(n_intens)
+  read_delim(paste0("./intens/int(angle=", angle, ").csv"), delim = ";", quote = "\"",
              # гармоника; угол; значение
              col_names = c(
                "harm",
-               "ampl"
+               "intens"
              ),
              col_types = "dd",
              locale = locale("ru", encoding = "windows-1251", tz = "Europe/Moscow"), # таймзону, в принципе, можно установить здесь
@@ -44,12 +43,12 @@ read_data <- function(angle, n_ampl){
 # http://stackoverflow.com/questions/1699046/for-each-row-in-an-r-dataframe
 if(TRUE){
   df <- foreach(it = iter(angles), .combine = rbind) %dopar% {
-  # cat("----\n"); str(it);
-  temp.df <- read_data(it, n_ampl)
-  problems(temp.df)
-  temp.df$angle = it
-  
-  temp.df
+    # cat("----\n"); str(it);
+    temp.df <- read_data(it)
+    problems(temp.df)
+    temp.df$angle = it
+    
+    temp.df
   }
 }
 
@@ -74,8 +73,9 @@ df1 <- df %>%
                              labels = levs$labels)) %>%
   #mutate(submarker = as.factor(round(harm) %% 4)) %>% # сделаем для раскраски цветовые маркеры внутри групп
   # а теперь ограничим только тремя группами (1-3, 4-7, 8-11)
-  filter(harm < 12) %>%
-  filter(ampl > 8) %>% # почистили мусор внизу
+  filter(harm >= 4 & harm <= 19) %>% # при пересчете гармоник возникает дребезг округления
+  mutate(intens = intens/max(intens)) %>%
+  filter(intens > 0.07) %>% # почистили мусор внизу
   arrange(marker, angle)
 
 # http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/
@@ -84,7 +84,7 @@ plot_palette <- brewer.pal(n = 11, name = "Set3")
 plot_palette <- colorRampPalette(brewer.pal(9, "Set1"))
 
 # общий график
-pp.base <- ggplot(df1, aes(x = angle, y = ampl, colour = as.factor(round_harm))) +
+pp.base <- ggplot(df1, aes(x = angle, y = intens, colour = as.factor(round_harm))) +
   # guides(colour = FALSE) + # загасим легенду
   # geom_point( shape = 21, alpha = 0.6) +
   # geom_point(size = 1, shape = 21, alpha = 0.6) +
@@ -93,26 +93,28 @@ pp.base <- ggplot(df1, aes(x = angle, y = ampl, colour = as.factor(round_harm)))
   # scale_colour_gradientn(colours = rev(brewer.pal(11, "Spectral")), guide = TRUE) +
   # scale_colour_manual(values = plot_palette) +
   # http://novyden.blogspot.ru/2013/09/how-to-expand-color-palette-with-ggplot.html
-  scale_colour_manual(values = colorRampPalette(brewer.pal(9, "Set1"))(12),
+  scale_colour_manual(values = colorRampPalette(brewer.pal(9, "Set1"))(16),
                       name = "# гармоники")+
   # geom_line(lwd = 0.5) +
   scale_x_continuous(breaks = c(0, pi/4, pi/2), 
                      labels = c("0", expression(paste(pi, "/4")), expression(paste(pi, "/2")))) +  
   xlab(expression(paste(alpha))) +
-  ylab("Амплитуда") + 
+  ylab("Интенсивность") + 
   theme_bw()
 
 pp <- pp.base +
   facet_wrap( ~ marker, scales="free", ncol = 5)
-
+  #facet_wrap( ~ marker, scales="fixed", ncol = 5)
 
 pp
 
-ggsave(paste0("_ilya_ampl", n_ampl, "_facet.jpg"), plot = pp, width = 30, height = 15, units = 'cm', dpi = 300)
+ggsave(paste0("_ilya_intens_facet.jpg"), plot = pp, width = 30, height = 15, units = 'cm', dpi = 300)
+
+stop()
 
 write.table(
   df1,
-  file = paste0("_ilya_ampl", n_ampl, "_joined.csv"),
+  file = "_ilya_intens_joined.csv",
   sep = ",",
   row.names = FALSE,
   qmethod = "double"
