@@ -2,6 +2,7 @@
 
 
 library(dplyr)
+library(tidyr)
 # From http://stackoverflow.com/questions/1181060
 stocks <- data_frame(
   time = as.Date('2009-01-01') + 0:9,
