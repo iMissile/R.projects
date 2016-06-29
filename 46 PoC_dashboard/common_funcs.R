@@ -122,20 +122,21 @@ prepare_raw_weather_data <- function() {
     curl_fetch_memory("https://raw.githubusercontent.com/iot-rus/Moscow-Lab/master/weather.txt")
   })
   
-  # дебажный вывод 
-  flog.debug(paste0("Debug info in ", calledFun, " called from ", callingFun, 
-                    ". Class(resp) = ", class(resp), ". Status_code = ", resp$status_code))
-  
   # проверим только 1-ый элемент класса, поскльку при разных ответах получается разное кол-во элементов
   if(class(resp)[[1]] == "try-error" || resp$status_code != 200) {
     # http://stackoverflow.com/questions/15595478/how-to-get-the-name-of-the-calling-function-inside-the-called-routine
     flog.error(paste0("Error in ", calledFun, " called from ", callingFun, ". Class(resp) = ", class(resp)))
+    flog.error(paste0("resp = ", resp))
     # в противном случае мы сигнализируем о невозможности обновить данные
     return(NA)
   }
   
-  # ответ есть, и он корректен. В этом случае осуществляем пребразование 
+  # дебажный вывод 
+  flog.debug(paste0("Debug info in ", calledFun, " called from ", callingFun, 
+                    ". Class(resp) = ", class(resp), ". Status_code = ", resp$status_code))
+  flog.debug(capture.output(str(resp)))
   
+  # ответ есть, и он корректен. В этом случае осуществляем пребразование 
   wrecs <- rawToChar(resp$content) # weather history
   # wh_json <- gsub('\\\"', "'", txt, perl = TRUE) 
   # заменим концы строк на , и добавим шапочку и окончание для формирования семантически правильного json
@@ -171,6 +172,8 @@ prepare_raw_weather_data <- function() {
     GET(reqstring)
   })
   
+  flog.debug("Calling api.openweathermap.org")
+                    
   # проверим только 1-ый элемент класса, поскльку при разных ответах получается разное кол-во элементов
   if(class(resp)[[1]] == "try-error" || resp$status_code != 200) {
     # http://stackoverflow.com/questions/15595478/how-to-get-the-name-of-the-calling-function-inside-the-called-routine
@@ -639,6 +642,14 @@ plot_github_ts4_data <- function(df, timeframe, tbin = 4, expand_y = FALSE) {
                          y = head(levs$category, -1) + diff(levs$category)/2, # посчитали разницу, уравновесили -1 элементом 
                          text = levs$labels)
 
+  # flog.debug("ts_plot: avg.df перед ggplot")
+  # 
+  if (nrow(avg.df) == 0) {
+    text <- "Empty avg.df in ts_plot"
+    flog.error(text)
+    warning(text)
+  }
+  
   # http://www.cookbook-r.com/Graphs/Shapes_and_line_types/
   p <- ggplot(avg.df, aes(x = timegroup, y = value.mean)) +
     # http://www.sthda.com/english/wiki/ggplot2-colors-how-to-change-colors-automatically-and-manually
@@ -707,7 +718,8 @@ plot_github_ts4_data <- function(df, timeframe, tbin = 4, expand_y = FALSE) {
     # theme(axis.text.y = element_text(angle = 0)) +
     # убрали заливку, см. stackoverflow.com/questions/21066077/remove-fill-around-legend-key-in-ggplot
     guides(color = guide_legend(override.aes = list(fill = NA)))
-  
+
+  flog.info("Return from plot_github_ts4")
   p # возвращаем ggplot
 }
 

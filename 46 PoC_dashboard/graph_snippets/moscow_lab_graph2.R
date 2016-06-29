@@ -23,6 +23,7 @@ library(curl)
 #library(rgl)
 library(arules)
 library(futile.logger)
+library(plotly)
 
 
 # source("common_funcs.R", encoding = 'UTF-8') 
@@ -39,11 +40,30 @@ if (!is.na(df)) { raw.df <- df}
 
 06.06 - 18.06
 
-p2 <- plot_github_ts4_data(df, get_timeframe(days_back = 15, days_forward = 0), 
-                           tbin = 0.5, expand_y = TRUE)
+timeframe <- get_timeframe(days_back = 17, days_forward = 0)
+p2 <- plot_github_ts4_data(df, timeframe, tbin = 0.5, expand_y = TRUE)
 
 benchplot(p2)
 p2
+
+
+# пробуем преобразовать и опубликовать на plotly, смотрим, насколько это совместимо -------
+
+# поскольку geom_label пока не реализован, вручную подготовим метки
+levs <- get_moisture_levels()
+# метки ставим ровно посерединке, расстояние высчитываем динамически
+df.label <- data.frame(x = timeframe[1], 
+                       y = head(levs$category, -1) + diff(levs$category)/2, # посчитали разницу, уравновесили -1 элементом 
+                       text = levs$labels)
+
+a <- list(x = df.label$x[[1]], y = df.label$y[[1]], text = "label", showarrow = TRUE)
+
+gg <- ggplotly(p2) %>%
+  layout(title = "Median duration of unemployment (in weeks)", showlegend = FALSE)# %>%
+  # layout(annotations = a)
+
+gg
+
 
 stop()
 
