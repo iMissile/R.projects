@@ -23,6 +23,7 @@ library(curl)
 #library(rgl)
 library(arules)
 library(futile.logger)
+library(plotly)
 
 
 # source("common_funcs.R", encoding = 'UTF-8') 
@@ -46,7 +47,58 @@ benchplot(p2)
 p2
 
 
+# пробуем преобразовать и опубликовать на plotly, смотрим, насколько это совместимо -------
 
+# поскольку geom_label пока не реализован, вручную подготовим метки
+levs <- get_moisture_levels()
+# метки ставим ровно посерединке, рассто€ние высчитываем динамически
+df.label <- data.frame(x = timeframe[1], 
+                       y = head(levs$category, -1) + diff(levs$category)/2, # посчитали разницу, уравновесили -1 элементом 
+                       text = levs$labels)
+
+a <- list(x = df.label$x, y = df.label$y, text = df.label$text, showarrow = TRUE)
+a <- list(x = as.numeric(df.label$x), y = -df.label$y, text = as.character(df.label$text), showarrow = TRUE)
+
+# gg <- ggplotly(p2) %>%
+gg <- plotly_build(p2) %>%
+  layout(title = "Median duration of unemployment (in weeks)", showlegend = FALSE) %>%
+  # layout(annotations = NULL) %>%
+  layout(annotations = list(a))
+
+gg
+
+stop()
+# list(annotation = a) дает ошибку 
+# "Error in FUN(X[[i]], ...) : 'options' must be a fully named list, or have no names (NULL)"
+# Ќе совсем €сно, почему. Ќо plotly_build(p2)$layout$annotations существет и туда засунута легенда
+# если сделать так:   layout(annotations = NULL) %>% layout(annotations = a), то все проходит
+
+df2 <- data.frame(x = as.numeric(df.label$x), y = -df.label$y, text = as.character(df.label$text), showarrow = TRUE, stringsAsFactors = FALSE)
+am <- split(df2, 1:nrow(df2))
+a <- lapply(am, as.list)
+
+g0 <- ggplotly(p2)
+g1 <- plotly_build(p2)
+
+gla <- g1$layout
+
+g2 <- plotly_build(p2) %>%
+  layout(title = "Median duration of unemployment (in weeks)", showlegend = TRUE) %>%
+  layout(annotations = NULL)
+
+g2 <- plotly_build(p2)
+g2$layout$annotations <- a
+
+g2
+
+
+# g2 <- plotly_build(p2) %>%
+#   layout(annotations = a)
+
+gla <- g2$layout$annotations
+
+
+g2
 stop()
 
 # выше заменили использованием функции
