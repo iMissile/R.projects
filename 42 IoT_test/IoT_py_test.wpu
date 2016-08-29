@@ -337,7 +337,7 @@ guimgr.overall-gui-state = {'windowing-policy': 'combined-window',
                                 'sel-line-start': 699,
                                 'selection_end': 699,
                                 'selection_start': 699})],
-        'has-focus': True,
+        'has-focus': False,
         'locked': False},
         [loc('file:C:/Program Files (x86)/Wing IDE 5.1/resources/doc/en/TOC.idx'),
          loc('main.py')]),
@@ -356,7 +356,7 @@ guimgr.overall-gui-state = {'windowing-policy': 'combined-window',
         'window-alloc': (0,
                          -1,
                          1900,
-                         1045)}]}
+                         1008)}]}
 guimgr.recent-documents = [loc('main.py')]
 guimgr.visual-state = {loc('file:C:/Program Files (x86)/Wing IDE 5.1/resources/builtin-pi-files/2.7/__builtin__.pi'): {'a'\
         'ttrib-starts': [('string',

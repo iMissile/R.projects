@@ -118,6 +118,9 @@ server <- function(input, output, session) {
   #                         raw_weather.df = prepare_raw_weather_data(),
   #                         weather.df = get_weather_df(raw_weather.df), 
   #                         rain.df = calc_rain_per_date(raw_weather.df)) 
+  # по-хорошему, надо reactive values использовать немного по другому
+  # см. https://cdn.rawgit.com/jcheng5/user2016-tutorial-shiny/master/slides.html Слайд с 1-м упражнением
+  # Takeaway: Prefer using reactive expressions to model calculations, over using observers to set (reactive) variables.
   
   rvars <- reactiveValues(raw_field.df = NA,
                           raw_weather.df = NA,
