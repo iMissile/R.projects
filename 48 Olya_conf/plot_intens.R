@@ -84,22 +84,27 @@ plot_palette <- brewer.pal(n = 11, name = "Set3")
 plot_palette <- colorRampPalette(brewer.pal(9, "Set1"))
 
 # общий график
-pp.base <- ggplot(df1, aes(x = angle, y = intens, colour = as.factor(round_harm))) +
+# pp.base <- ggplot(df1, aes(x = angle, y = intens, colour = as.factor(round_harm))) +
+pp.base <- ggplot(df1, aes(x = angle, y = intens, shape = as.factor(round_harm))) +
   # guides(colour = FALSE) + # загасим легенду
   # geom_point( shape = 21, alpha = 0.6) +
   # geom_point(size = 1, shape = 21, alpha = 0.6) +
-  geom_point(size = 2, shape = 16, alpha = 1) + # закрашенный кружок
+  ### geom_point(size = 2, shape = 16, alpha = 1) + # закрашенный кружок
+  geom_point(size = 2, alpha = 1) +
   # geom_text_repel(aes(label = harm)) +
   # scale_colour_gradientn(colours = rev(brewer.pal(11, "Spectral")), guide = TRUE) +
   # scale_colour_manual(values = plot_palette) +
   # http://novyden.blogspot.ru/2013/09/how-to-expand-color-palette-with-ggplot.html
-  scale_colour_manual(values = colorRampPalette(brewer.pal(9, "Set1"))(16),
-                      name = "# гармоники")+
+  scale_colour_manual(values = colorRampPalette(brewer.pal(9, "Set1"))(16), name = "# гармоники") +
+  # http://stackoverflow.com/questions/26218002/r-manually-set-shape-by-factor
+  # http://www.cookbook-r.com/Graphs/Shapes_and_line_types/
+  scale_shape_manual(values = rep(c(1, 19, 6, 4), 4), name = "Harmonic #") +
   # geom_line(lwd = 0.5) +
   scale_x_continuous(breaks = c(0, pi/4, pi/2), 
                      labels = c("0", expression(paste(pi, "/4")), expression(paste(pi, "/2")))) +  
   xlab(expression(paste(alpha))) +
   ylab("Интенсивность") + 
+  ylab("Intensity") +
   theme_bw()
 
 pp <- pp.base +
