@@ -64,18 +64,23 @@ pp.base <- ggplot(df1, aes(x = harm, y = angle, colour = value, fill = value, si
   # geom_point(size = 4, shape = 21, alpha = 0.6) +
   guides(size = FALSE) + # загасим легенду
   geom_point(shape = 21, alpha = 0.6) +
-  scale_colour_gradientn(colours = rev(brewer.pal(9,"Spectral")), guide = FALSE) +
-  scale_fill_gradientn(colours = rev(brewer.pal(9,"Spectral")), 
+  # scale_colour_gradientn(colours = rev(brewer.pal(9, "Spectral")), guide = FALSE) +
+  # scale_fill_gradientn(colours = rev(brewer.pal(9, "Spectral")), 
+  #                     guide="colorbar", name = "") +
+  scale_colour_gradientn(colours = brewer.pal(9, "Greys"), guide = FALSE) +
+  scale_fill_gradientn(colours = brewer.pal(9, "Greys"), # "Spectral" 
                        guide="colorbar", name = "") +
   scale_y_continuous(breaks = c(0, pi/4, pi/2), 
                      labels = c("0", expression(paste(pi, "/4")), expression(paste(pi, "/2")))) +
   geom_hline(yintercept = pi/4, lwd = 0.8, color = "Black", linetype = 'dashed') +
   xlab("Гармоника") + 
-  ylab(expression(paste(alpha, ", рад "))) +
+  xlab("Harmonic") +
+  ylab(expression(paste(alpha, ", rad"))) +
   theme_bw()
 
 pp0 <- pp.base + 
-  scale_size_continuous(range = c(1.5, 4.5)) + # управляем диапазоном размера точек
+  # scale_size_continuous(range = c(1.5, 4.5)) + # управляем диапазоном размера точек
+  scale_size_continuous(range = c(0.2, 5)) + # управляем диапазоном размера точек
   scale_x_continuous(breaks = pretty_breaks(n = 20))
   
 pp <- pp.base +
