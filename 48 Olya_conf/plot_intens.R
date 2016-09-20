@@ -34,8 +34,6 @@ read_data <- function(angle){
              progress = interactive()
   ) # http://barryrowlingson.github.io/hadleyverse/#5
 }
-# http://brianmannmath.github.io/blog/2014/01/20/using-lapply-to-import-files-to-r/
-# df <- lapply(angles, read_data)
 
 # http://brianmannmath.github.io/blog/2014/01/20/using-lapply-to-import-files-to-r/
 # df <- lapply(angles, read_data)

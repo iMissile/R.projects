@@ -10,6 +10,8 @@ library(RColorBrewer)
 library(arules)
 library(iterators)
 library(foreach)
+library(doParallel) # http://blog.aicry.com/r-parallel-computing-in-5-minutes/
+library(tibble)
 
 
 # импорт данных
@@ -30,11 +32,17 @@ read_data <- function(n){
   ) # http://barryrowlingson.github.io/hadleyverse/#5
 }
 
+# упоминание 2014 года: http://www.vesnam.com/Rblog/existing-code-parallelization-yes-or-no/
+registerDoParallel(cores = (detectCores() - 1)) # http://blog.aicry.com/r-parallel-computing-in-5-minutes/
+# registerDoParallel(cores = 1)
+getDoParWorkers()
+
 # http://brianmannmath.github.io/blog/2014/01/20/using-lapply-to-import-files-to-r/
 # df <- lapply(angles, read_data)
 # пробегаемся по строчкам data.frame
 # http://stackoverflow.com/questions/1699046/for-each-row-in-an-r-dataframe
-df <- foreach(it = iter(angles), .combine = rbind) %dopar% {
+# df <- foreach(it = iter(angles), .combine = rbind) %do% { # %dopar% { # %dopar% -- запуск параллельного процессинга
+df <- foreach(it = iter(angles), .combine = rbind, .packages='readr') %dopar% { # %dopar% -- запуск параллельного процессинга
   # cat("----\n"); str(it);
   temp.df <- read_data(it)
   problems(temp.df)  
