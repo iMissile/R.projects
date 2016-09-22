@@ -1,6 +1,7 @@
 library(dplyr)
 library(tidyr)
 library(magrittr)
+library(purrr)
 library(stringr)
 library(tibble)
 library(iterators)
@@ -74,28 +75,34 @@ getDoParWorkers()
 
 t <- as_tibble(all.terms)
 all.terms2 <- t %>%
-  mutate(l = nchar(value), thread = ntile(l, n = cores)) %>%
-  select(-l) %>%
+  # mutate(l = str_length(value), thread = ntile(l, n = cores)) %>%
+  # select(-l) %>%
+  mutate(thread = row_number() %% cores) %>%
   group_by(thread) %>% 
   nest()
 
 system.time(res <-
-              foreach(it = iter(all.terms2$data), .combine = 'c') %dopar% {
+              foreach(it = iter(all.terms2$data), .combine = 'c', .packages = 'stringr') %dopar% {
                 temp.val <- it$value;
-                # temp.val <- paste(it$value, collapse = '\n');
+                # temp.val <- stringr::str_c(it$value, collapse = ';');
                 # если так схлопываем, то потом надо достать с помощью
-                # stringr::str_extract_all(tempval, "[^\n]+\n")
-                cat("----\n"); str(it);
-                for (i in 1:nrow(dict)) {
-                  temp.val <-
-                    gsub(
-                      pattern = paste0("\\b", dict$terms.from[i], "\\b", collapse = ""),
-                      replacement = dict$terms.to[i],
-                      x = temp.val,
-                      ignore.case = T,
-                      fixed = F
-                    )
-                }
-                cat("====\n"); str(temp.val);
+                # stringr::str_extract_all(temp.val, "[^;]+")
+                
+                matches <- purrr::map(dict$terms.from, ~ str_c("\\b", ., "\\b", collapse = ""))
+                names(matches) <- purrr::map(dict$terms.to, ~ str_c("\\b", ., "\\b", collapse = ""))
+                temp.val <- str_replace_all(temp.val, matches) # https://cran.r-project.org/web/packages/stringr/vignettes/stringr.html
+                # cat("----\n"); str(temp.val);
+                
+                # cat("----\n"); str(it);
+                # for (i in 1:nrow(dict)) {
+                #   temp.val <-
+                #     gsub(
+                #       pattern = paste0("\\b", dict$terms.from[i], "\\b", collapse = ""),
+                #       replacement = dict$terms.to[i],
+                #       x = temp.val,
+                #       ignore.case = T,
+                #       fixed = F
+                #     )
+                # }
                 temp.val
               })
