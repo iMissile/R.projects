@@ -84,9 +84,7 @@ all.terms2 <- t %>%
 system.time(res <-
               foreach(it = iter(all.terms2$data), .combine = 'c', .packages = 'stringr') %dopar% {
                 temp.val <- it$value;
-                # temp.val <- stringr::str_c(it$value, collapse = ';');
-                # если так схлопываем, то потом надо достать с помощью
-                # stringr::str_extract_all(temp.val, "[^;]+")
+                temp.val <- stringr::str_c(it$value, collapse = ';');
                 
                 matches <- purrr::map(dict$terms.from, ~ str_c("\\b", ., "\\b", collapse = ""))
                 names(matches) <- purrr::map(dict$terms.to, ~ str_c("\\b", ., "\\b", collapse = ""))
@@ -104,5 +102,9 @@ system.time(res <-
                 #       fixed = F
                 #     )
                 # }
+                
                 temp.val
+                
+                # если схлопываем, то потом надо достать с помощью, получаем ускорение еще ~ в 1.5 раза
+                stringr::str_extract_all(temp.val, "[^;]+")
               })
