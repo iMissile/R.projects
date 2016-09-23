@@ -81,13 +81,13 @@ all.terms2 <- t %>%
   group_by(thread) %>% 
   nest()
 
+matches <- purrr::map(dict$terms.from, ~ str_c("\\b", ., "\\b", collapse = ""))
+names(matches) <- purrr::map(dict$terms.to, ~ str_c("\\b", ., "\\b", collapse = ""))
+
 system.time(res <-
               foreach(it = iter(all.terms2$data), .combine = 'c', .packages = 'stringr') %dopar% {
                 temp.val <- it$value;
                 temp.val <- stringr::str_c(it$value, collapse = ';');
-                
-                matches <- purrr::map(dict$terms.from, ~ str_c("\\b", ., "\\b", collapse = ""))
-                names(matches) <- purrr::map(dict$terms.to, ~ str_c("\\b", ., "\\b", collapse = ""))
                 temp.val <- str_replace_all(temp.val, matches) # https://cran.r-project.org/web/packages/stringr/vignettes/stringr.html
                 # cat("----\n"); str(temp.val);
                 
