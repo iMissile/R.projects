@@ -1,23 +1,35 @@
-# library(readr) #Hadley Wickham, http://blog.rstudio.org/2015/04/09/readr-0-1-0/
-library(readxl) # https://github.com/hadley/readxl
+library(readr) #Hadley Wickham, http://blog.rstudio.org/2015/04/09/readr-0-1-0/
+# library(readxl) # https://github.com/hadley/readxl
 library(dplyr)
 library(magrittr)
 library(ggplot2) #load first! (Wickham)
 #library(lubridate) #load second!
 #library(scales)
 #library(forecast)
-#library(stringr)
+library(stringr)
 #library(RColorBrewer)
 #library(wesanderson) # https://github.com/karthik/wesanderson
 #library(broom)
 
 # readxl - http://poldham.github.io/reading-writing-excel-files-R/
+# rawdata <- read_excel("./src/tv_sample.xlsx", sheet = 1, col_names = TRUE, col_types =)
 
-rawdata <- read_excel("./src/tv_sample.xlsx", sheet = 1, col_names = TRUE, col_types =)
+raw_tv.df <- read_delim('./data/tv.csv', delim = ";", quote = "\"",
+           # гармоника; угол; значение
+           col_names = TRUE,
+           # c(
+           #   "town",
+           #   "local_date",
+           #   "local_time",
+           #   "tv_company",
+           #   "channel"
+           # ),
+           col_types = str_c(rep('c', 18), collapse = ''),
+           locale = locale("ru", encoding = "windows-1251", tz = "Europe/Moscow"), # таймзону, в принципе, можно установить здесь
+           progress = interactive()
+) # http://barryrowlingson.github.io/hadleyverse/#5
 
-# рушится на данных билайна
-# read_csv crashes R session on particular .csv file #175
-problems(rawdata)
+problems(raw_tv.df)
 
 stop()
 df <- dplyr::rename(rawdata, y = X63) # %>% filter(is.na(y))
