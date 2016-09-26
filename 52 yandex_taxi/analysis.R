@@ -4,7 +4,7 @@ library(dplyr)
 library(magrittr)
 library(ggplot2) #load first! (Wickham)
 library(lubridate) #load second!
-#library(scales)
+library(scales)
 #library(forecast)
 library(stringr)
 library(purrr)
@@ -12,6 +12,8 @@ library(tibble)
 #library(RColorBrewer)
 #library(wesanderson) # https://github.com/karthik/wesanderson
 #library(broom)
+
+source("funcs.R") # сюда выносим все вычислительные и рисовательные функции
 
 # readxl - http://poldham.github.io/reading-writing-excel-files-R/
 # rawdata <- read_excel("./src/tv_sample.xlsx", sheet = 1, col_names = TRUE, col_types =)
@@ -45,14 +47,14 @@ raw_tv.df <- read_delim(
 
 raw_installs.df <- read_delim(
   './data/installs.csv', delim = ";", quote = "\"",
-  col_types = 'ccc',
+  col_types = 'cci',
   locale = locale("ru", encoding = "windows-1251", tz = "Europe/Moscow"), # таймзону, в принципе, можно установить здесь
   progress = interactive()
 )
 
 raw_visits.df <- read_delim(
   './data/visits.csv', delim = ";", quote = "\"",
-  col_types = 'ccccc',
+  col_types = 'cciii',
   locale = locale("ru", encoding = "windows-1251", tz = "Europe/Moscow"), # таймзону, в принципе, можно установить здесь
   progress = interactive()
 )
@@ -81,16 +83,32 @@ raw_visits.df %<>%
 
 #  select(city, local_time, local_date, timestamp)
 
+# ===== попробуем взглянуть на данные
+s_date <- dmy_hm("25.01.2015 0:0", tz="Europe/Moscow")
+e_date <- s_date + days(3)
+
+subdata <- raw_installs.df %>%
+  filter(city == 'Пермь') %>%
+  filter(timestamp > s_date & timestamp < e_date) %>%
+  mutate(timegroup = hgroup.enum(timestamp, time.bin = 0.5)) %>%
+  # суммируем все инсталляции
+  group_by(timegroup) %>%
+  summarise(inst = sum(installations))
+
+subdata
+
+
+gp <- ggplot(subdata, aes(x = timegroup, y = inst)) +
+  geom_point(size=2, shape=21) + # produce scatterplot
+  geom_line(lwd = 1) +
+  scale_x_datetime(labels = date_format_tz("%d.%m %H:%M", tz="Europe/Moscow"), 
+                   breaks = date_breaks("4 hours"), 
+                   minor_breaks = date_breaks("30 mins")) + 
+  theme_bw()
+gp
+
+
+# получается гребенка, надо усреднить
 
 stop()
 
-df <- dplyr::rename(rawdata, y = X63) # %>% filter(is.na(y))
-dplyr:::changes(df, rawdata)
-
-# задачи
-# 1. выбор колонок, которые имеют тип character. При этом объект может быть не data.frame а tbl_df
-# 2. преобразование строки в шестнадцатиричном виде в число
-# 3. вывод количества уникальных данных по каждому столбцу
-
-# How do I get the classes of all columns in a data frame?
-# http://stackoverflow.com/questions/10661159/how-do-i-get-the-classes-of-all-columns-in-a-data-frame
