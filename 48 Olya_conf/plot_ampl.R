@@ -106,7 +106,7 @@ pp <- pp.base +
 
 pp
 
-ggsave(paste0("_ilya_ampl", n_ampl, "_facet.jpg"), plot = pp, width = 30, height = 15, units = 'cm', dpi = 300)
+ggsave(paste0("_ilya_ampl", n_ampl, "_facet.png"), plot = pp, width = 30, height = 15, units = 'cm', dpi = 300)
 
 write.table(
   df1,

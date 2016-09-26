@@ -111,7 +111,7 @@ pp <- pp.base +
 
 pp
 
-ggsave(paste0("_ilya_intens_facet.jpg"), plot = pp, width = 30, height = 15, units = 'cm', dpi = 300)
+ggsave(paste0("_ilya_intens_facet.png"), plot = pp, width = 30, height = 15, units = 'cm', dpi = 300)
 
 stop()
 

@@ -16,12 +16,21 @@ library(tibble)
 # readxl - http://poldham.github.io/reading-writing-excel-files-R/
 # rawdata <- read_excel("./src/tv_sample.xlsx", sheet = 1, col_names = TRUE, col_types =)
 
+# проверим, как распознаются даты с явным указанием таймзон
+dmy_hms('19.01.2015 17:52:51Z+00', truncated = 3, tz = 'Europe/Moscow')
+
 # определяем timezone
 # http://stackoverflow.com/questions/36300381/dplyr-mutate-with-function-call-returning-incorrect-value
 # http://unicode.org/repos/cldr/trunk/common/supplemental/windowsZones.xml
 get_tz <- function(m) {
   case_when(m == 'Москва' ~ 'Europe/Moscow',
             m == 'Пермь' ~ 'Asia/Yekaterinburg')
+}
+
+# так мы обходим то, что dmy не принимает tz в виде вектора
+get_tz_offset <- function(m) {
+  case_when(m == 'Москва' ~ '+03',
+            m == 'Пермь' ~ '+05')
 }
 
 # http://barryrowlingson.github.io/hadleyverse/#5
@@ -33,13 +42,6 @@ raw_tv.df <- read_delim(
   locale = locale("ru", encoding = "windows-1251", tz = "Europe/Moscow"), # таймзону, в принципе, можно установить здесь
   progress = interactive()
 )
-
-t <- raw_tv.df %>%
-  mutate(timestamp = dmy_hms(str_c(local_date, local_time, sep = ' '), truncated = 3, tz = get_tz(city)))
-
-# сложность в том, что dmy не принимает tz в виде вектора
-
-stop()
 
 raw_installs.df <- read_delim(
   './data/installs.csv', delim = ";", quote = "\"",
@@ -68,12 +70,20 @@ t1 <- map(raw_tv.df, unique) # or length
 t2 <- map(raw_installs.df, unique)
 t3 <- map(raw_visits.df, unique)
 
+# ===== приведем время в порядок, можно подумать насчет устранения copy-paste
+raw_tv.df %<>%
+  mutate(timestamp = dmy_hms(str_c(local_date, local_time, 'Z', get_tz_offset(city), sep = ' '), 
+                             truncated = 3, tz = 'Europe/Moscow')) 
+raw_installs.df %<>%
+  mutate(timestamp = dmy_hms(moscow_time, truncated = 3, tz = 'Europe/Moscow')) 
+raw_visits.df %<>%
+  mutate(timestamp = dmy_hms(moscow_time, truncated = 3, tz = 'Europe/Moscow'))
 
-# преобразуем время
-
+#  select(city, local_time, local_date, timestamp)
 
 
 stop()
+
 df <- dplyr::rename(rawdata, y = X63) # %>% filter(is.na(y))
 dplyr:::changes(df, rawdata)
 
