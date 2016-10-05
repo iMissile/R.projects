@@ -195,6 +195,28 @@ hgroup.enum <- function(date){
   hour(date) * 100 + floor(minute(date) / 15)
 }
 
+sum_per_day <- function (df) {
+  # вычисл€ем суточный интеграл дл€ каждой записи, чтобы потом иметь возможность исключени€
+  # даже по фрагментарным данным дней с выбросами
+  # интегрирование методом трапеций
+  # считаем, что измерений достаточно, чтобы посчитать интеграл y(x) методом трапеций
+  # https://chemicalstatistician.wordpress.com/2013/12/14/conceptual-foundations-and-illustrative-examples-of-trapezoidal-integration-in-r/
+  # http://stackoverflow.com/questions/24813599/finding-area-under-the-curve-auc-in-r-by-trapezoidal-rule
+  # http://svitsrv25.epfl.ch/R-doc/library/caTools/html/trapz.html
+  df0 <- df %>%
+    group_by(date) %>%
+    # интеграл методом трапеций по суткам, trapz из пакета caTools
+    # также считаем среднюю загрузку по дню дл€ последующего расчета отношени€
+    summarise(
+      integr = trapz(timestamp, value),
+      # вообще-то, так считать среднее неверно. мы же не уверены, что весь поток данных получен. ѕравильно интеграл на врем€ делить
+      # mean = mean(value),
+      mean_value = integr/(24*60) #!!!!! ’от€ нормировка на константу ничего не мен€ет!!
+    )
+
+  df0
+}
+
 precalc_df <- function () {
   # вычисл€ем суточный интеграл дл€ каждой записи, чтобы потом иметь возможность исключени€
   # даже по фрагментарным данным дней с выбросами
@@ -260,7 +282,7 @@ generate.discrete <- function(df) {
   # timestamp = POSIXct
   # value
   
-  # по хорошему, тут надо использовать фукнциональный подход..., но это тестова€ функци€
+  # по хорошему, тут надо использовать функциональный подход..., но это тестова€ функци€
   # а теперь попробуем сделать интерпол€цию по 15-ти минутным промежуткам
   # http://stackoverflow.com/questions/16011790/add-missing-xts-zoo-data-with-linear-interpolation-in-r
   # http://www.noamross.net/blog/2014/2/10/using-times-and-dates-in-r---presentation-code.html
@@ -285,11 +307,9 @@ generate.discrete <- function(df) {
   # Use Function time() to return all dates corresponding to a series index(z) or equivalently
   # Use Function coredata() to return all values corresponding to a series index(z) or equivalently
   r.dev <- runif(length(v_seq), 0.99, 1.01) # добавл€ем небольшой случайный разброс
-  testdata <-
-    dplyr::data_frame(
-      timestamp = tseq,
-      value = coredata(v_seq) * r.dev 
-    )
   
-  testdata
+  tibble(
+    timestamp = tseq,
+    value = coredata(v_seq) * r.dev
+    )
 }

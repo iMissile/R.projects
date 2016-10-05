@@ -1,9 +1,10 @@
 rm(list=ls()) # очистим все переменные
-
 # R & Github little_tricks    https://github.com/bdemeshev/em301/wiki/little_tricks
 
 #library(plyr)
+#library(tidyverse)
 library(dplyr)
+library(tidyr)
 library(magrittr)
 library(ggplot2) #load first! (Wickham)
 library(lubridate) #load second!
@@ -15,6 +16,8 @@ library(wesanderson) # https://github.com/karthik/wesanderson
 library(microbenchmark)
 library(reshape2)
 library(readr) #Hadley Wickham, http://blog.rstudio.org/2015/04/09/readr-0-1-0/
+library(purrr)
+library(tibble)
 library(xts)
 library(zoo)
 library(caTools)
@@ -26,17 +29,11 @@ library(broom)
 
 options(warn = 2)
 
-# flog.appender(appender.file('iot-dashboard.log'))
+flog.appender(appender.file('baseline.log'))
 # flog.threshold(TRACE)
-
-# остатки от logging
-# basicConfig()
-# addHandler(writeToFile, logger="", file="adaptiveB.log")
-
 
 source("funcs.R") # загружаем определения функций, http://adv-r.had.co.nz/Functions.html
 # R Performance. http://adv-r.had.co.nz/Performance.html
-
 
 # согласно модели мы хотим получить среднесуточную загрузку и среднечасовую загрузку (раньше хотели) для
 # последующего построения модели (25 регрессий)
@@ -56,48 +53,68 @@ if (!file.exists(objdata.filename)){
   rawdata <- read_csv(rawdata.filename) # http://barryrowlingson.github.io/hadleyverse/#5
   problems(rawdata)
   
-  # удаляем ненужную колонку delta_time
-  
   # проводим постпроцессинг колонок
   # колонка delta_time -- артефакт выгрузки из eHealth, промежуток времени между измерениями
-  rawdata$timestamp <-
-    dmy_hms(rawdata$timestamp, truncated = 3, tz = "Europe/Moscow") #допустима неполнота входных данных
-  
   s_date <- ymd("2015-04-01", tz = "Europe/Moscow")
   e_date <- s_date + days(60)
-  # выкидываем колонку "delta_time" (от eHealth)
-  subdata <- dplyr::select(rawdata, -delta_time) %>%
-    dplyr::filter(s_date < timestamp & timestamp < e_date)
-  
-  # выбираем значения для анализа
-  subdata <- mutate(subdata, value = bandwidth_in)
-  # а теперь нашпигуем 5-ти минутными интервалами для проверки алгоритма
-  subdata <- generate.discrete(subdata)
-  
+
+  t.df <- rawdata %>%
+    mutate(timestamp = dmy_hms(rawdata$timestamp, truncated = 3, tz = "Europe/Moscow")) %>% #допустима неполнота входных данных
+    filter(s_date < timestamp & timestamp < e_date) %>%
+    tidyr::gather(`bandwidth_in`, `bandwidth_out`, key = "direction", value = "value") %>% # https://github.com/hadley/tidyr/issues/231
+    select(timestamp, direction, value)
+
+  # выбираем данные для анализа
+  # для проверки алгоритма шпигуем синтетикой в виде 5-ти минутных интервалов 
+  df0 <- generate.discrete(t.df %>% filter(direction == "bandwidth_in"))
+
   # для просмотра в табличном виде загрубим данные по дням
   # http://stackoverflow.com/questions/18503177/r-apply-function-on-specific-dataframe-columns
   # round_date -- округляет в обе стороны, не очень подходит, нам надо округлять вниз.
   # + сделаем раскладку по часовым интервалам
   # http://stackoverflow.com/questions/10705328/extract-hours-and-seconds-from-posixct-for-plotting-purposes-in-r
   # using lubridate::hour and lubridate::minute
-  subdata["date"] <- lapply(subdata["timestamp"], function(x) floor_date(x, "day"))
-  subdata["nwday"] <- lapply(subdata["timestamp"], function(x) wday(x))  # для названий дней недели: label=TRUE
-  #subdata["hgroup"] <- lapply(subdata["timestamp"], function(x) lubridate::hour(x))
-  subdata["hgroup"] <- lapply(subdata["timestamp"], hgroup.enum)
-  subdata["baseline"] <- as.numeric(NA) #NA
   
-  subdata <- mutate(subdata, textdate = format(date, format = "%d.%m (%a)"))
-  subdata$textdate <- as.factor(subdata$textdate)
-  
-  # делаем предвычисления по интегральным параметрам
-  # из функции получаем распределение интегралов по дням
-  df_integr <- precalc_df()
+  df1 <- df0 %>%
+    mutate(date = floor_date(.$timestamp, "day")) %>%
+    mutate(textdate = as.factor(format(date, format = "%d.%m (%a)"))) %>%
+    mutate(nwday = wday(.$timestamp)) %>%
+    mutate(hgroup = hgroup.enum(.$timestamp)) %>%
+    mutate(baseline = NA_real_)
+
+    # subdata$textdate <- as.factor(subdata$textdate)
+
+    # расчитываем посуточное распределение интегралов
+  integr.df <- sum_per_day(df1)
+  # и накатываем в исходные данные
+  subdata <- df1 %>%
+    left_join(integr.df, by = "date")
   
   # сохраняем объект
   saveRDS(subdata, objdata.filename) #, compress = FALSE, ascii = TRUE)
 } else {
   subdata <- readRDS(objdata.filename)
 }
+
+
+# а здесь попробуем поработать с randomForest
+library(randomForest)
+
+# берем для обучения произвольное подмножество
+train <- dplyr::sample_frac(subdata, 0.7, replace = FALSE) # replace = TRUE -- позволяет делать дублирующиеся выборки. = FALSE -- нет
+# все остальное используем для тестирования
+test <- dplyr::anti_join(subdata, train)
+
+# для повторяемости результата
+set.seed(123)
+
+
+
+
+
+stop()
+
+
 
 if(FALSE){
   # --- реконструкцию делаем на подмножестве, попробуем отловить ошибки)
@@ -321,8 +338,16 @@ print("Reconstructing baseline")
 # sampledata <- dplyr::sample_frac(subdata, 0.2, replace = FALSE) #20%
 sampledata <- subdata
 
-system.time(baseline.val <- lapply(sampledata$timestamp, reconstruct.point))
+# system.time(baseline.val <- lapply(sampledata$timestamp, reconstruct.point))
+# так было
+# пользователь      система       прошло 
+#        37.87        14.73        53.18 
 # получается ~ 60мс на точку
+
+system.time(baseline.val <- purrr::map(sampledata$timestamp, reconstruct.point))
+# так стало
+# пользователь      система       прошло 
+#        37.55        14.92        52.89
 
 sampledata$baseline <- as.numeric(baseline.val)
 # вот пока не поставил принудительно as.numeric (хотя везде внутри так и стояло, melt работать отказывался)
