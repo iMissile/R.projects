@@ -9,7 +9,7 @@ library(ggplot2) #load first! (Wickham)
 library(lubridate) #load second!
 library(scales)
 #library(forecast)
-#library(stringr)
+library(stringr)
 library(RColorBrewer)
 library(wesanderson) # https://github.com/karthik/wesanderson
 library(microbenchmark)
@@ -20,14 +20,18 @@ library(zoo)
 library(caTools)
 # library(xlsx) # :( rJava - ошибка: No CurrentVersion entry in Software/JavaSoft registry! Try re-installing Java and make sure R and Java have matching architectures
 library(jsonlite)
-library(logging)
+#library(logging)
+library(futile.logger) # ушли с logging
 library(broom)
 
 options(warn = 2)
 
+# flog.appender(appender.file('iot-dashboard.log'))
+# flog.threshold(TRACE)
 
-basicConfig()
-addHandler(writeToFile, logger="", file="adaptiveB.log")
+# остатки от logging
+# basicConfig()
+# addHandler(writeToFile, logger="", file="adaptiveB.log")
 
 
 source("funcs.R") # загружаем определения функций, http://adv-r.had.co.nz/Functions.html
@@ -47,7 +51,8 @@ objdata.filename = "subdata.rds"
 
 if (!file.exists(objdata.filename)){
   # файла не существует, проводим расчеты по сырым данным и сохранение фрейма в файл
-  loginfo('loading file %s', rawdata.filename)
+  # loginfo('loading file %s', rawdata.filename)
+  flog.info(str_c("loading file ", rawdata.filename))
   rawdata <- read_csv(rawdata.filename) # http://barryrowlingson.github.io/hadleyverse/#5
   problems(rawdata)
   
@@ -140,7 +145,7 @@ ptm <- proc.time()
 # с учетом того, что значения изменяются от 0 до десятков, анализировать дисперсию смысла большого нет. 
 # мы итак знаем, что там будут большие колебания.
 
-loginfo('regression analysis started')
+flog.info("Regression analysis started")
 
 regr_hdata <- NULL 
 days.fit <- NULL # список посуточных регрессионных кривых
@@ -168,7 +173,8 @@ for (prognosis.nwday in 1:7) # день недели на который мы будем расчитывать прогн
   # тут нужно ставить вилку на проверку
   # определяем, а достаточно ли данных для построения регрессии?
   r.depth <- dim(df7)[1]
-  loginfo("День недели - %s. Количество дат для суточной регрессии - %s", wdnames[prognosis.nwday], r.depth)
+  flog.info(str_c("День недели - ", wdnames[prognosis.nwday], 
+                  ". Количество дат для суточной регрессии - ",  r.depth))
   
   # удаление переменных
   # http://stackoverflow.com/questions/21677923/how-to-remove-selected-r-variables-without-having-to-type-their-names
@@ -217,7 +223,7 @@ for (prognosis.nwday in 1:7) # день недели на который мы будем расчитывать прогн
   regr_hdata <- rbind(regr_hdata, regr_day) # https://stat.ethz.ch/pipermail/r-help/2006-June/107734.html
 }
 
-loginfo('regression analysis finished')
+flog.info("Regression analysis finished")
 
 # Stop the clock
 proc.time() - ptm
