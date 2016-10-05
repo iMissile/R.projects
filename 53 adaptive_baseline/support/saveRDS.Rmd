@@ -1,0 +1,201 @@
+---
+title: "Effect of compression type and file complexity on saveRDS size and speed"
+author: "David Robinson"
+date: "April 20, 2015"
+output: html_document
+---
+
+```{r echo = FALSE}
+knitr::opts_chunk$set(cache = TRUE, message = FALSE)
+```
+
+(This analysis was inspired by [this experiment by Hadley Wickham](http://rpubs.com/hadley/saveRDS). The `roundtrip` function comes from that experiment).
+
+The values we're measuring in this simulation are:
+
+* `size` The file size in MB
+* `save` The time in seconds to save an RDS file
+* `load` The time in seconds to load an RDS file
+
+The parameters we'll vary in this simulation are
+
+* `type`: The type of file connection: `file`, `bzfile`, `gzfile`, `xzfile`
+* `level`: The amount of compression to apply (for `bzfile`, `gzfile`, `xzfile`)
+* `complexity`: an approximation of the amount of complexity, as opposed to redundancy, in the dataset.
+
+A dataset is generated for a specific complexity with the line:
+
+    data.frame(x = sample(10 ^ complexity, 1e5, replace = TRUE))
+
+Thus, `10 ^ complexity` determines approximately the number of unique values in the dataset. When the complexity is 0, the dataset contains simply a vector of 1s, which makes it easy to compress. When the complexity is 6, almost all values in the dataset are unique.
+
+We set up functions for the simulation.
+
+```{r setup}
+roundtrip <- function(df, con_fun, ...) {
+  test <- tempfile()
+  con <- con_fun(test, ...)
+  on.exit(close(con))
+
+  save <- system.time(saveRDS(df, con))[[3]]
+  load <- system.time(x <- readRDS(test))[[3]]
+  size <- file.info(test)$size / (1024) ^ 2
+
+  data_frame(save, load, size)
+}
+
+test_compression <- function(complexity, type, level = 1, ...) {
+    df <- data.frame(x = sample(10 ^ complexity, 1e5, replace = TRUE))
+    con_fun <- get(type)
+    if (type != "file") {
+        roundtrip(df, con_fun, compression = level)
+    } else {
+        roundtrip(df, con_fun)
+    }
+}
+```
+
+We perform a factorial combination of our complexity, type, and compression level parameters, performing three replications for each.
+
+```{r simulate}
+library(dplyr)
+
+set.seed(04-20-2015)
+
+# factorial combination of parameters
+params <- expand.grid(complexity = 0:6,
+                      type = c("file", "gzfile", "bzfile", "xzfile"),
+                      level = c(1, 6, 9),
+                      replicate = 1:3,
+                      stringsAsFactors = FALSE)
+
+times <- params %>%
+    group_by_(.dots = names(params)) %>%
+    do(do.call(test_compression, .)) %>%
+    ungroup()
+```
+
+We take the average of loading time, saving time, and size within each group of replicates. (We could also construct confidence intervals). 
+
+```{r averages, dependson = "simulate"}
+averaged <- times %>%
+    group_by(complexity, type, level) %>%
+    select(-replicate) %>%
+    summarise_each(funs(mean))
+```
+
+```{r, dependson = "averages"}
+library(ggplot2)
+
+base <- averaged %>% ggplot(aes(complexity, color = type)) +
+  geom_point(size = 4) +
+  geom_line(size = 1)
+```
+
+As expected, the data complexity has an enormous effect on the file size.
+
+```{r dependson = "averages"}
+base + aes(y = size) + facet_wrap(~ level)
+```
+
+It also has an effect, of approximately an order of magnitude, on the time required to save and load these files.
+
+```{r dependson = "averages"}
+base + aes(y = save) + scale_y_log10() + facet_wrap(~ level)
+base + aes(y = load) + scale_y_log10() + facet_wrap(~ level)
+```
+
+It is difficult to see any effect of compression level.
+
+### Example Datasets
+
+We might be more interested in how well compression works in a typical datasets rather than contrived simulations. For a general idea of a "typical" dataset, we can look at how well compression works for datasets that come with R, such as `mtcars`.
+
+We look at all the datasets that are built-in or in the ggplot2 package.
+
+```{r}
+all_datasets <- data(package = c("datasets", "ggplot2"))
+datasets <- as.data.frame(all_datasets$results, stringsAsFactors = FALSE) %>%
+    select(package = Package, dataset = Item) %>%
+    filter(!grepl(" ", dataset))
+```
+
+(We disregard datasets that contain multiple objects since they are too much trouble to work with). For each dataset, we try each compression method (skipping compression level). I approach this using broom's `inflate()` function.
+
+```{r dataset_times}
+test_compression_data <- function(dataset, type, ...) {
+    df <- get(dataset)
+    con_fun <- get(type)
+    roundtrip(df, con_fun)
+}
+
+library(broom)
+
+dataset_times <- datasets %>%
+    inflate(type = c("file", "gzfile", "bzfile", "xzfile")) %>%
+    group_by(package, dataset, type) %>%
+    do(do.call(test_compression_data, .))
+```
+
+We can then examine the compression efficiency for each dataset, by comparing the compressed file size to the traditional file size.
+
+```{r size_compare, dependson = "dataset_times"}
+size_compare <- dataset_times %>%
+    group_by(package, dataset) %>%
+    mutate(uncompressed = size[type == "file"]) %>%
+    rename(compressed = size) %>%
+    filter(type != "file")
+
+ggplot(size_compare, aes(uncompressed, compressed, color = type)) +
+    geom_point() +
+    geom_text(aes(label = dataset), size = 4, hjust = 1, vjust = 1) +
+    scale_x_log10() +
+    scale_y_log10() +
+    geom_abline(color = "red") +
+    xlab("Uncompressed (MB)") +
+    ylab("Compressed (MB)")
+```
+
+As expected, using compression saves disk space, but the amount depends on the complexity of the dataset. We can get a sense of the compression efficiency with the ratio of the compressed file size to the full file size:
+
+```{r plot_size_compare, dependson = "size_compare"}
+p <- ggplot(size_compare, aes(compressed / uncompressed)) +
+    geom_histogram(binwidth = .05) +
+    facet_grid(type ~ .)
+
+average_ratio <- size_compare %>%
+    group_by(type) %>%
+    summarize(average = mean(compressed / uncompressed))
+
+p + geom_vline(aes(xintercept = average), data = average_ratio, color = "red", lty = 2)
+```
+
+The compression ratios on the real data ranged from 5\% (very compressed) to 95\% (barely compressed), but averaged about 40% in each compression method.
+
+Finally, let's see whether some compression methods systematically outperform others:
+
+```{r}
+library(tidyr)
+ratios <- size_compare %>%
+    mutate(ratio = compressed / uncompressed) %>%
+    select(type, ratio) %>%
+    spread(type, ratio)
+
+base <- ggplot(ratios) + geom_point() +
+    geom_abline(color = "red") +
+    geom_smooth(method = "lm")
+    
+g1 <- base + aes(bzfile, gzfile)
+g2 <- base + aes(bzfile, xzfile)
+g3 <- base + aes(gzfile, xzfile)
+
+library(gridExtra)
+grid.arrange(g1, g2, g3, nrow = 2)
+```
+
+Generally, it looks like "bzfile" is not quite as effective as the "gzfile" or "xzfile" connections for the datasets that are more complex. However, it does slightly outperform "gzfile" in high-compression cases.
+
+To-do:
+
+* compare compression times, not just size, on real datasets
+* more replicates, and a linear model to determine what has an effect on size/speed

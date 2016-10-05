@@ -88,7 +88,7 @@ pp.base <- ggplot(df1, aes(x = angle, y = intens, shape = as.factor(round_harm))
   # geom_point( shape = 21, alpha = 0.6) +
   # geom_point(size = 1, shape = 21, alpha = 0.6) +
   ### geom_point(size = 2, shape = 16, alpha = 1) + # закрашенный кружок
-  geom_point(size = 2, alpha = 1) +
+  geom_point(size = 3, alpha = 1) +
   # geom_text_repel(aes(label = harm)) +
   # scale_colour_gradientn(colours = rev(brewer.pal(11, "Spectral")), guide = TRUE) +
   # scale_colour_manual(values = plot_palette) +
@@ -103,7 +103,9 @@ pp.base <- ggplot(df1, aes(x = angle, y = intens, shape = as.factor(round_harm))
   xlab(expression(paste(alpha))) +
   ylab("Интенсивность") + 
   ylab("Intensity") +
-  theme_bw()
+  theme_bw() +
+  theme(text = element_text(size = rel(5))) +
+  theme(legend.text = element_text(size = rel(5)), legend.key.size = unit(0.7, "cm"))
 
 pp <- pp.base +
   facet_wrap( ~ marker, scales="free", ncol = 5)
