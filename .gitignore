@@ -35,3 +35,4 @@ vignettes/*.pdf
 _phjs/1.js
 53 adaptive_baseline/demo.html
 *.rds
+53 adaptive_baseline/subdata.rds
