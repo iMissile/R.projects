@@ -1,4 +1,4 @@
-rm(list=ls()) # очистим все переменные
+# rm(list=ls()) # очистим все переменные
 # R & Github little_tricks    https://github.com/bdemeshev/em301/wiki/little_tricks
 
 #library(plyr)
@@ -75,11 +75,25 @@ if (!file.exists(objdata.filename)){
   # http://stackoverflow.com/questions/10705328/extract-hours-and-seconds-from-posixct-for-plotting-purposes-in-r
   # using lubridate::hour and lubridate::minute
   
+set.wheight <- function(x) {
+  case_when(x < 5 ~ 0,
+            x < 10 ~ 1,
+            x < 20 ~ 2,
+            x < 40 ~ 3,
+            x >= 40 ~ 4)
+    }
+  
   df1 <- df0 %>%
-    mutate(date = floor_date(.$timestamp, "day")) %>%
+    mutate(date = floor_date(timestamp, "day")) %>%
     mutate(textdate = as.factor(format(date, format = "%d.%m (%a)"))) %>%
-    mutate(nwday = wday(.$timestamp)) %>%
-    mutate(hgroup = hgroup.enum(.$timestamp)) %>%
+    mutate(nwday = wday(timestamp)) %>%
+    mutate(joined_wday = ifelse(nwday == 3 | nwday == 5, 4, nwday)) %>% # считаем, что вторник-четверг потенциально похожи
+    mutate(hgroup = hgroup.enum(timestamp)) %>%
+    mutate(ticks = time.ticks.enum(timestamp)) %>%
+    # mutate(weight = set.wheight(value)) %>% # вес значения. нам важнее подгонять под высокие значения
+    # mutate(weight = round(value/20)) %>% # вес значения. нам важнее подгонять под высокие значения
+    mutate(weight = log10(value + 1e-5)) %>% # вес значения. нам важнее подгонять под высокие значения
+    mutate(weight = ifelse(weight < log10(5), 0, weight)) %>% # весь дребезг снизу подожмем
     mutate(baseline = NA_real_)
 
     # subdata$textdate <- as.factor(subdata$textdate)
@@ -88,7 +102,8 @@ if (!file.exists(objdata.filename)){
   integr.df <- sum_per_day(df1)
   # и накатываем в исходные данные
   subdata <- df1 %>%
-    left_join(integr.df, by = "date")
+    left_join(integr.df, by = "date") %>%
+    mutate(ratio = value / mean_value) # оцениваем поведение, поэтому моделируем процентный вклад в час
   
   # сохраняем объект
   saveRDS(subdata, objdata.filename) #, compress = FALSE, ascii = TRUE)
@@ -96,21 +111,97 @@ if (!file.exists(objdata.filename)){
   subdata <- readRDS(objdata.filename)
 }
 
+# сразу посчитаем выборку 'subdata.f(iltered)', исключающую аномальные по интегралу даты
+# имеем статистику по дням недели. 1 - воскресенье, 7 - суббота
+days.stat <- subdata %>%
+  group_by(nwday) %>%
+  summarise(mean = mean(integr), sd = sd(integr)) %>%
+  mutate(i_min = mean - 1.7 * sd) %>%
+  mutate(i_max = mean + 1.7 * sd) %>%
+  select(-mean, -sd) %>%
+  arrange(nwday)
+
+# сливаем данные и фильтруем
+slicedata <- subdata %>%
+  left_join(days.stat, by = "nwday") %>%
+  filter(integr >= i_min & integr <= i_max)
+
+# ===============================
 
 # а здесь попробуем поработать с randomForest
 library(randomForest)
 
 # берем для обучения произвольное подмножество
-train <- dplyr::sample_frac(subdata, 0.7, replace = FALSE) # replace = TRUE -- позволяет делать дублирующиеся выборки. = FALSE -- нет
+train <- dplyr::sample_frac(slicedata, 0.7, replace = FALSE) # replace = TRUE -- позволяет делать дублирующиеся выборки. = FALSE -- нет
 # все остальное используем для тестирования
-test <- dplyr::anti_join(subdata, train)
+test <- dplyr::anti_join(slicedata, train)
+
+# === для временных рядов это не очень хорошо, когда перемешивается прошлое и будущее
+# надо делить по времени, но при этом, неплохо бы делить не только по времени, но и учитывать количество измерений
+dt <- max(slicedata$timestamp) - min(slicedata$timestamp)
+check_time = min(slicedata$timestamp) + 0.7*dt
+
+train <- dplyr::filter(slicedata, timestamp <= check_time)
+# все остальное используем для тестирования
+test <- dplyr::anti_join(slicedata, train)
+
 
 # для повторяемости результата
 set.seed(123)
 
+# создаем randomfForest с 1000 деревьями
+rf <- randomForest(ratio ~ joined_wday + nwday + ticks + weight, data = train, importance = TRUE, ntree = 1000)
+
+# How many trees are needed to reach the minimum error estimate? 
+# This is a simple problem; it appears that about 100 trees would be enough.
+which.min(rf$mse)
+# Plot rf to see the estimated error as a function of the number of trees
+# (not running it here)
+# plot(rf)
+
+# посмотрим на 1-ое дерево в лесу: http://bdemeshev.github.io/r_cycle/cycle_files/22_forest.html
+tree1 <- getTree(rf, 1, labelVar = TRUE)
+head(as_tibble(tree1))
+
+# Using the importance()  function to calculate the importance of each variable
+imp <- as.data.frame(sort(importance(rf)[,1], decreasing = TRUE), optional = T)
+names(imp) <- "% Inc MSE"
+imp
+
+# As usual, predict and evaluate on the test set
+test.pred.forest <- predict(rf, test)
+RMSE.forest <- sqrt(mean((test.pred.forest - test$value)^2))
+RMSE.forest
+
+MAE.forest <- mean(abs(test.pred.forest - test$value))
+MAE.forest
+
+# === попробуем теперь отобразить реальный и прогнозный графики
+
+test <- subdata
+test$baseline <- predict(rf, test)
+
+test.df <- test %>%
+  select(-value) %>%
+  tidyr::gather(`ratio`, `baseline`, key = "type", value = "value")
+
+predict.date <- dmy_hm("01.04.2015 0:30", tz = "Europe/Moscow")
+day_raw_plot(predict.date+weeks(3)-days(9), data = test %>% mutate(value = ratio))
 
 
-
+gp <- ggplot(data = test.df, aes(x = timestamp, y = value, color = type)) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+  geom_point(size = 4, fill = "white", shape = 21, na.rm = TRUE) +    # White fill
+  geom_line(size = 1, na.rm = TRUE) +
+  # scale_color_manual(values = wes_palette("Moonrise2")) +
+  # дельта в 3 часа при выводе на суточном графике
+  # http://stackoverflow.com/questions/10339618/what-is-the-appropriate-timezone-argument-syntax-for-scale-datetime-in-ggplot
+  #    scale_x_datetime(labels = date_format_tz("%H:%M", tz="Europe/Moscow"), breaks = date_breaks("1 hours"), minor_breaks = date_breaks("30 mins")) +
+  scale_x_datetime(labels = date_format_tz("%d-%m-%Y %H:%M", tz="Europe/Moscow"), breaks = date_breaks("4 hours"), minor_breaks = date_breaks("30 mins")) +
+  labs(x="Дата", y="Interface load, %")
+# %d.%m (%a)  
+gp
 
 stop()
 

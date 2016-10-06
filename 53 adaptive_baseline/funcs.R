@@ -195,6 +195,10 @@ hgroup.enum <- function(date){
   hour(date) * 100 + floor(minute(date) / 15)
 }
 
+time.ticks.enum <- function(date){
+  hour(date)*60*60 + minute(date)*60 + second(date)
+}
+
 sum_per_day <- function (df) {
   # вычисл€ем суточный интеграл дл€ каждой записи, чтобы потом иметь возможность исключени€
   # даже по фрагментарным данным дней с выбросами
