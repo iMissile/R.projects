@@ -1,4 +1,5 @@
 # генерируем тестовые файлы для отладки интерфейса
+# fig10
 #library(tidyr)
 library(ggplot2) #load first! (Wickham)
 library(ggdendro) # для пустой темы

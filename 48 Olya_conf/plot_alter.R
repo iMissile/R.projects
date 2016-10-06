@@ -1,4 +1,5 @@
 # генерируем тестовые файлы для отладки интерфейса
+# fig8
 #library(tidyr)
 library(ggplot2) #load first! (Wickham)
 library(ggdendro) # для пустой темы
@@ -13,6 +14,8 @@ library(foreach)
 library(doParallel) # http://blog.aicry.com/r-parallel-computing-in-5-minutes/
 library(tibble)
 
+# снимем лимиты времени, чтобы избежать ошибки "In is.gtable(x) : reached elapsed time limit"
+setTimeLimit(cpu = Inf, elapsed = Inf, transient = FALSE)
 
 # импорт данных
 getwd()
@@ -68,6 +71,8 @@ df1 <- df %>%
   arrange(value)
 
 # общий график
+# http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/
+# http://docs.ggplot2.org/current/scale_brewer.html
 pp.base <- ggplot(df1, aes(x = harm, y = angle, colour = value, fill = value, size = value)) +
   # geom_point(size = 4, shape = 21, alpha = 0.6) +
   guides(size = FALSE) + # загасим легенду
