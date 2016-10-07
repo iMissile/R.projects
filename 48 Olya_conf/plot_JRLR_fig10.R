@@ -1,20 +1,23 @@
-library(ggplot2) #load first! (Wickham)
-library(ggdendro) # для пустой темы
-library(lubridate) #load second!
+library(ggplot2)
+library(ggdendro)
+library(lubridate)
 library(ggrepel)
 library(dplyr)
 library(readr)
+library(purrr)
 library(scales)
 library(colorRamps)
 library(RColorBrewer)
 library(arules)
 library(iterators)
 library(foreach)
+library(doParallel)
+library(tibble)
 
-setTimeLimit(cpu = Inf, elapsed = Inf, transient = FALSE) 
+setTimeLimit(cpu = Inf, elapsed = Inf, transient = FALSE)
 
 getwd()
-angles <- seq(from = 0.01, to = 1.57, by = 0.02)
+angles <- seq(from = 0.01, to = pi/2, by = 0.02)
 
 read_data <- function(angle){
   #cat(n_intens)
@@ -30,15 +33,16 @@ read_data <- function(angle){
   )
 }
 
-if(TRUE){
-  df <- foreach(it = iter(angles), .combine = rbind) %dopar% {
+registerDoParallel(cores = (detectCores() - 1))
+getDoParWorkers()
+
+df <- foreach(it = iter(angles), .combine = rbind, .packages='readr') %dopar% {
     temp.df <- read_data(it)
     problems(temp.df)
     temp.df$angle = it
     
     temp.df
   }
-}
 
 df <- df %>% filter(complete.cases(.)) %>%
   mutate(submarker = as.factor(harm %% 4)) %>% 
@@ -80,4 +84,4 @@ pp <- pp.base +
 
 pp
 
-ggsave(paste0("fig10.png"), plot = pp, width = 30, height = 15, units = 'cm', dpi = 200)
+ggsave("fig10.png", plot = pp, width = 30, height = 15, units = 'cm', dpi = 200)

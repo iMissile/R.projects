@@ -1,10 +1,12 @@
 library(ggplot2)
 library(ggdendro)
 library(lubridate)
+library(ggrepel)
 library(dplyr)
 library(readr)
 library(purrr)
 library(scales)
+library(colorRamps)
 library(RColorBrewer)
 library(arules)
 library(iterators)
@@ -49,8 +51,8 @@ levs$labels <- paste0(head(ceiling(levs$categories), -1), ' - ', tail(floor(levs
 
 df1 <- df %>%
   mutate(s = value) %>%
-  mutate(marker = discretize(harm, method = "fixed", 
-                             categories = levs$categories, 
+  mutate(marker = discretize(harm, method = "fixed",
+                             categories = levs$categories,
                              labels = levs$labels)) %>%
   filter(harm < 10000) %>%
   arrange(value)

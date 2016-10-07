@@ -1,0 +1,122 @@
+---
+title: "Расчет и подготовка картинок для статьи в JRLR" 
+output: html_notebook
+---
+
+```{r echo = FALSE, message = FALSE, warning = FALSE, results = "hide"}
+# ```{r}
+Sys.setlocale("LC_CTYPE", "English")
+library(ggplot2)
+library(ggdendro)
+library(lubridate)
+library(dplyr)
+library(readr)
+library(purrr)
+library(scales)
+library(RColorBrewer)
+library(arules)
+library(iterators)
+library(foreach)
+library(doParallel)
+library(tibble)
+
+setTimeLimit(cpu = Inf, elapsed = Inf, transient = FALSE)
+
+getwd()
+angles <- seq(from = 0.01, to = pi/2, by = 0.02)
+registerDoParallel(cores = (detectCores() - 1))
+getDoParWorkers()
+
+# враппер для загрузки и препроцесинга данных 
+get_raw_data <- function(fname) {
+  df <- 
+    foreach(it = iter(angles), .combine = rbind, .packages='readr') %do% {
+      # browser()
+      temp.df <- do.call(fname, list(it))
+      problems(temp.df)
+      temp.df$angle = it
+      temp.df
+    }
+  
+  df1 <- df %>% 
+    filter(complete.cases(.)) %>%
+    mutate(source_harm = harm) %>%
+    mutate(harm = harm / (2 * pi * 10))
+
+  levs <- list(categories = seq(from = 0, to = max(df1$harm), length.out = 11))
+  levs$labels <- paste0(head(ceiling(levs$categories), -1), ' - ', tail(floor(levs$categories), -1))
+    
+  df2 <- df1 %>%
+    mutate(s = value) %>%
+    mutate(marker = discretize(harm, method = "fixed", categories = levs$categories, labels = levs$labels)) 
+  df2
+}
+
+# настройка палитры
+palette <- brewer.pal(9, "Greys") # "Spectral"
+cpalette <- brewer.pal(11, "Spectral")[c(10, 2)]
+
+```
+
+## Рисунок fig8
+Считываем данные 
+```{r  echo = FALSE}
+
+read_alter <- function(n){
+  read_delim(paste0("./alter/finellalter(angle=", n, ").csv"), delim = ";", quote = "\"",
+             # гармоника; угол; значение
+             col_names = c(
+               "harm",
+               "angle",
+               "value"
+             ),
+             col_types = "ddd",
+             locale = locale("ru", encoding = "windows-1251", tz = "Europe/Moscow"),
+             progress = interactive())
+}
+
+alter.df <- get_raw_data(read_alter) %>%
+  # и сразу почистили мусор
+  filter(harm < 10000) %>%
+  arrange(value)
+
+head(alter.df)
+```
+
+```{r  echo = FALSE}
+# готовим основу для графиков
+cpalette <- brewer.pal(9, "Greys") # "Spectral"
+cpalette <- brewer.pal(11, "Spectral")[c(10, 2)]
+
+pp.alter.base <- ggplot(alter.df, aes(x = harm, y = angle, colour = value, fill = value, size = value)) +
+  guides(size = FALSE) + # загасим легенду
+  geom_point(shape = 21, alpha = 0.4) + # 0.6 для цвета
+  scale_colour_gradientn(colours = cpalette, guide = FALSE) +
+  scale_fill_gradientn(colours = cpalette,  
+                       guide="colorbar", name = "") +
+  geom_hline(yintercept = pi/4, lwd = 0.8, color = "Black", linetype = 'dashed') +
+  xlab("Harmonic") +
+  ylab(expression(paste(alpha, ", rad"))) +
+  theme_bw()
+```
+
+Все данные на одном графике
+
+```{r  echo = FALSE}
+pp.alter.base + 
+  scale_size_continuous(range = c(1.5, 4.5)) + # управляем диапазоном размера точек
+  scale_x_continuous(breaks = pretty_breaks(n = 20))
+```
+
+Разбиение по подграфикам, шрифты подогнаны для вывода в файл
+
+```{r  echo = FALSE}
+
+pp8 <- pp.alter.base +
+  scale_size_continuous(range = c(0.2, 4.5)) + # управляем диапазоном размера точек
+  theme(text = element_text(size = rel(5))) +
+  theme(legend.text = element_text(size = rel(5)), legend.key.size = unit(2, "cm")) +
+  facet_wrap( ~ marker, scales="free", ncol = 5)
+
+pp8
+```
