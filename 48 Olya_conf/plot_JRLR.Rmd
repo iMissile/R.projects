@@ -40,14 +40,13 @@ get_raw_data <- function(fname) {
   
   df1 <- df %>% 
     filter(complete.cases(.)) %>%
-    mutate(source_harm = harm) %>%
+    mutate(harm.src = harm) %>%
     mutate(harm = harm / (2 * pi * 10))
 
   levs <- list(categories = seq(from = 0, to = max(df1$harm), length.out = 11))
   levs$labels <- paste0(head(ceiling(levs$categories), -1), ' - ', tail(floor(levs$categories), -1))
     
   df2 <- df1 %>%
-    mutate(s = value) %>%
     mutate(marker = discretize(harm, method = "fixed", categories = levs$categories, labels = levs$labels)) 
   df2
 }
@@ -58,7 +57,7 @@ cpalette <- brewer.pal(11, "Spectral")[c(10, 2)]
 
 ```
 
-## Рисунок fig8
+## Рисунок fig8 (alter)
 Считываем данные 
 ```{r  echo = FALSE}
 
@@ -119,4 +118,60 @@ pp8 <- pp.alter.base +
   facet_wrap( ~ marker, scales="free", ncol = 5)
 
 pp8
+```
+
+## Рисунок fig10 (intens)
+Считываем данные 
+```{r  echo = FALSE}
+
+read_intens <- function(angle){
+  read_delim(paste0("./intens/int(angle=", angle, ").csv"), delim = ";", quote = "\"",
+             # гармоника; интенсивность
+             col_names = c(
+               "harm",
+               "value"
+             ),
+             col_types = "dd",
+             locale = locale("ru", encoding = "windows-1251", tz = "Europe/Moscow"),
+             progress = interactive())
+}
+
+intens.df <- get_raw_data(read_intens) %>%
+  # и сразу почистили мусор
+  mutate(submarker = as.factor(harm.src %% 4)) %>% 
+  mutate(harm.round = round(harm, 0)) %>%  
+  mutate(intens = value/max(value)) %>%
+  filter(harm >= 4 & harm <= 19) %>%
+  filter(intens > 0.07) %>%
+  arrange(marker, angle)
+
+
+head(intens.df)
+```
+```{r  echo = FALSE}
+# готовим основу для графиков
+#cpalette <- brewer.pal(9, "Greys") # "Spectral"
+#cpalette <- brewer.pal(11, "Spectral")[c(10, 2)]
+#plot_palette <- brewer.pal(n = 11, name = "Set3")
+#plot_palette <- colorRampPalette(brewer.pal(9, "Set1"))
+
+pp.intens.base <- ggplot(intens.df, aes(x = angle, y = intens, shape = as.factor(harm.round))) +
+  geom_point(size = 3, alpha = 1) +
+  scale_colour_manual(values = colorRampPalette(brewer.pal(9, "Set1"))(16), name = "# гармоники") +
+  scale_shape_manual(values = rep(c(1, 19, 6, 4), 4), name = "Harmonic #") +
+  scale_x_continuous(breaks = c(0, pi/4, pi/2), 
+                     labels = c("0", expression(paste(pi, "/4")), expression(paste(pi, "/2")))) +  
+  xlab(expression(paste(alpha))) +
+  ylab("Интенсивность") + 
+  ylab("Intensity") +
+  theme_bw() +
+  theme(text = element_text(size = rel(5.5))) +
+  theme(legend.text = element_text(size = rel(5)), legend.key.size = unit(0.7, "cm"))
+```
+
+Все данные на одном графике
+
+```{r  echo = FALSE}
+pp.intens.base + 
+  facet_wrap( ~ marker, scales="free", ncol = 5)
 ```

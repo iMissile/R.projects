@@ -178,7 +178,7 @@ MAE.forest
 
 # === попробуем теперь отобразить реальный и прогнозный графики
 
-test <- subdata
+#test <- subdata
 test$baseline <- predict(rf, test)
 
 test.df <- test %>%
