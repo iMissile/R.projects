@@ -3,10 +3,14 @@ library(lubridate)
 library(tidyr)
 library(magrittr)
 library(purrr)
+library(stringi)
 library(stringr)
 library(tibble)
 library(readxl)
 library(zoo)
+# а здесь попробуем поработать с randomForest
+library(randomForest)
+
 
 datafile <- "./data1/2016.xlsx"
 # хак по считыванию типов колонок
@@ -42,13 +46,62 @@ names.df <- tibble(name_c2 = tidyr::gather(df0[1, ], key = name, value = v)$v,
 
 # если name_c3 = NA, то результат объединения строк также будет NA, нас это не очень устраивает
 
-# df1 <- df0 %>% select(one_of("Смена")) %>% mutate(n = row_number())
-df1 <- df0 %>% filter(row_number() > 6)
-# пропускаем первые 6 строк (заголовки и служебный хлам)
-names(df1) <- names.df$name.fix
+df1 <- df0
+repl.df <- frame_data(
+  ~pattern, ~replacement,
+  "Формующая часть: Угол напорного ящика", "angle_in",
+  "Формующая часть: Разница скорости струи/сетки", "speed_diff_in",
+  "Формующая часть: Открытие щели напорного ящика", "slot_in",
+  "Формующая часть: Давление на напорном ящике", "pressure_in",
+  "Поток: Концентрация при размоле", "concentration_in",
+  "Производительность", "performance_out",
+  "Вес м2", "weight_out",
+  "Артикул", "mark_out"
+)
+names(df1) <- stri_replace_all_fixed(names.df$name.fix,
+                                     pattern = repl.df$pattern,
+                                     replacement = repl.df$replacement,
+                                     vectorize_all = FALSE)
 
-write.table(df1, file = "names.csv", sep = ",", col.names = NA, qmethod = "double")
 
+
+
+# Все равно кривые имена, дубли
+names.df %>% 
+  group_by(name.fix) %>% 
+  filter(n()>1)
+
+df1 %<>% repair_names(prefix = "repaired_", sep = "")
+
+
+# выбираем только интересующие колонки
+df2 <- df1 %>% select(one_of("Формующая часть: Угол напорного ящика", 
+                             "Формующая часть: Разница скорости струи/сетки",
+                             "Формующая часть: Открытие щели напорного ящика",
+                             "Формующая часть: Давление на напорном ящике",
+                             "Поток: Концентрация при размоле",
+                             "Производительность", # выход
+                             "Вес м2", # выход
+                             "Артикул"
+                             )) %>%
+  # rename(angle = Формующая часть: Угол напорного ящика) %>%
+  filter(row_number() > 6) %>% # удаляем весь верхний шлак
+  filter(complete.cases(.)) # удаляем строки, содержащие пустые данные
+  
+
+
+
+write.table(names.df$name.fix, file = "names.csv", sep = ",", col.names = NA, qmethod = "double")
+
+
+# =============== попробуем натянуть random forest
+# берем для обучения произвольное подмножество
+train <- dplyr::sample_frac(slicedata, 0.7, replace = FALSE) # replace = TRUE -- позволяет делать дублирующиеся выборки. = FALSE -- нет
+# все остальное используем для тестирования
+test <- dplyr::anti_join(slicedata, train)
+
+
+stop()
 
 # удаляем строки, содержащие пустые данные
 df1 <- df0 %>% filter(complete.cases(.))

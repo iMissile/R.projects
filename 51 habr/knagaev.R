@@ -43,3 +43,29 @@ attr(mod$model, "terms")
 features2 <- attributes(mod$model)
 features2
 attributes(features2$terms)$predvars
+
+
+# ============================== Задачи из книги
+library(purrr)
+library(magrittr)
+
+x <- sample(100)
+sd <- 0
+for (i in seq_along(x)) {
+  sd <- sd + (x[i] - mean(x)) ^ 2
+}
+
+# =============
+# вторая так?
+sqrt(foreach(n = x, .combine = `+`) %do%
+{
+  (n - mean(x)) ^ 2
+} / (length(x) - 1))
+
+sample(100) 
+
+x <- seq(1:100)
+sum(unlist(x %>% purrr::map(~(.x - mean(x))^2)))
+
+
+sum((x-mean(x))^2)
