@@ -99,11 +99,10 @@ df <- foreach(it = iter(sheets), .combine = rbind, .packages='readxl') %do% {
   temp.df
 }
 
-df2 <- get_month_data(datafile, "январь")
-
-
 # write.table(names.df$name.fix, file = "names.csv", sep = ",", col.names = NA, qmethod = "double")
 
+
+plot(df %>% dplyr::select(-mark_out, -month))
 
 # =============== попробуем нат€нуть random forest
 
@@ -157,7 +156,7 @@ MAE.forest
 # ==== отобразим графически данные предсказани€
 # http://theanalyticalminds.blogspot.ru/2015/04/part-4a-modelling-predicting-amount-of.html
 test$predicted <- predict(rf, test)
-test %<>% mutate(err = (predicted-value)/value)
+test %<>% mutate(err = abs((predicted-value)/value))
 
 gp <- ggplot(data = test, aes(x = value, y = predicted)) +
   theme_bw() +
