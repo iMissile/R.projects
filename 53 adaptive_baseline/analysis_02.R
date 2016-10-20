@@ -129,6 +129,7 @@ slicedata <- subdata %>%
 # ===============================
 
 # а здесь попробуем поработать с randomForest
+# http://theanalyticalminds.blogspot.ru/2015/04/part-4a-modelling-predicting-amount-of.html
 library(randomForest)
 
 # берем для обучения произвольное подмножество
