@@ -43,7 +43,7 @@ stop()
 
 # --------------------------------------------------------------------------------------------------------
 req <- try({
-  curl_fetch_memory("1https://raw.githubusercontent.com/iot-rus/Moscow-Lab/master/weather.txt")
+  curl_fetch_memory("https://raw.githubusercontent.com/iot-rus/Moscow-Lab/master/weather.txt")
   # status_code == 200
   # class(try-error)
 })
