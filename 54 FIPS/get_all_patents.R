@@ -53,9 +53,9 @@ req_str1 <- "http://www1.fips.ru/wps/portal/!ut/p/c5/jY7LDoIwFES_hS-4l2dhWYhpC4h
 req_str2 <- "&selectedDBs=RUPATABRU%3BRUPATAP%3BRUPAT_NEW%3BRUPMAB%3BRUPM_NEW%3BIMPIN&fromUserId=514"
 
 all_docs <-
-  foreach(n = iter(0:74), .packages = 'futile.logger', .combine = rbind) %do% {
+  foreach(n = iter(0:0), .packages = 'futile.logger', .combine = rbind) %do% {
     url <- str_c(req_str1, n, req_str2, collapse = "")
-    resp <- try(curl_fetch_memory(url))
+    # resp <- try(curl_fetch_memory(url))
     # переходим на httr: https://cran.r-project.org/web/packages/httr/vignettes/quickstart.html
     # обработку exception пока не проводим
     resp <- GET(url)
@@ -81,12 +81,16 @@ all_docs <-
     dvDatePubl <- getAttr(m, "dvDatePubl")
     dvTitle <- getAttr(m, "dvTitle")
     
+    # выцепляем идентификатор документа
+    docID <- html_nodes(m, xpath="//a[@class='hitListRow']") %>% html_attr("id")
+    
     # browser()
     elem <- tibble(
-      dvIndex = as.numeric(dvIndex),
-      dvNumDoc = dvNumDoc,
-      dvDatePubl = dvDatePubl,
-      dvTitle = dvTitle
+      dvIndex=as.numeric(dvIndex),
+      dvNumDoc=dvNumDoc,
+      dvDatePubl=dvDatePubl,
+      docID=docID, 
+      dvTitle=dvTitle
     )
     # Encoding(dvTitle)
     
@@ -101,3 +105,23 @@ stop()
 
 m <- iconv(dvTitle, from="UTF8", to="windows-1251")
 j3 <- stri_encode(j, from="UTF-8", to="cp1251")
+
+# достаем идентификаторы документов
+id <- html_nodes(m, xpath="//a[@class='hitListRow']") %>% html_attr("id")
+# сама заявка доступна потом по такому url:
+# http://www1.fips.ru/wps/portal/IPS_Ru#docNumber=13&docId=dae8d132a3b82a6abef5bab3de50c234
+url <- paste0("http://www1.fips.ru/wps/portal/IPS_Ru#docNumber=13&docId=", id[[1]])
+resp <- GET(url)
+cc <- content(resp, "text")
+str(content(resp, "text"), nchar.max=5000)
+write(cc, "resp.txt", append=FALSE)
+
+# лезем через Selenium
+remDrv <- remoteDriver()
+remDrv$open()
+remDr <- remoteDriver(remoteServerAddr = "localhost", port = 5555, browserName = "internet explorer")
+remDr <- remoteDriver(remoteServerAddr = "localhost", port = 9515, browserName = "chrome")
+remDr <- remoteDriver(browserName = "internet explorer")
+remDr <- remoteDriver(browserName = "chrome")
+remDr$open()
+

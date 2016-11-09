@@ -121,6 +121,8 @@ foreach(input=rep(common_log_name, nworkers),
 
 flog.info("-- parallel writing")
 
+tracemem(nested_z_obj)
+
 res_time <- system.time(
   out <- foreach(it=iter(nested_z_obj$data), 
                  .packages=c('readr', 'futile.logger', 'dplyr')) %dopar% {
