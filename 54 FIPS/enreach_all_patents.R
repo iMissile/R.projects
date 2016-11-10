@@ -65,9 +65,10 @@ all_docs <-
     # переходим на httr: https://cran.r-project.org/web/packages/httr/vignettes/quickstart.html
     # обработку exception пока не проводим
     resp <- GET(ur1)
+    resp_status <- resp$status_code
     
     # проводим обработку контента
-    flog.info(paste0("Parsing documentId = ", n, " HTTP Status Code = ", resp$status_code))
+    flog.info(paste0("Parsing documentId = ", n, " HTTP Status Code = ", resp_status))
     
     htext <- fromJSON(content(resp, "text"))
     # browser()
@@ -81,30 +82,61 @@ all_docs <-
     # browser()
     
     
-    # выцепляем Патентообладателя
+    # выцепляем Заявителя и Патентообладателя
     # IPR <- html_nodes(m, xpath="//*[@id='bibl']/p[2]/b") %>% html_text()
     tmp <- html_nodes(m, xpath="//*[@id='bibl']") %>% html_text()
-    IPR <- stri_match_first_regex(tmp, "\\(73\\) Патентообладатель\\(и\\):(.+?)\r\n")[[2]]
+    applicant <- stri_match_first_regex(tmp, "\\(72\\) Автор\\(ы\\):(.+?)\r\n")[[2]]
+    owner <- stri_match_first_regex(tmp, "\\(73\\) Патентообладатель\\(и\\):(.+?)\r\n")[[2]]
     # browser()
-    flog.info(paste0("Патентообладатель = ", IPR))
-    # browser()
+    flog.info(paste0("Заявитель = ", applicant))
+    flog.info(paste0("Патентообладатель = ", owner))
     
-    # browser()
+    
+    # выцепляем заявку
+    tmp <- html_nodes(m, xpath="//*[@id='bib']") %>% html_text()
+    claim_n <- stri_match_first_regex(tmp, "\\(21\\)\\(22\\) Заявка: ?(.+?)\r\n")[[2]]
+    pub_date <- stri_match_first_regex(tmp, "\\(45\\) Опубликовано:\\s*([.0-9]+)")[[2]]
+    flog.info(paste0("Заявка = ", claim_n))
+    flog.info(paste0("Дата публикации = ", pub_date))
+    #browser()
+    
+    # выцепляем классификационный индекс
+    cindex <- html_nodes(m, xpath="//*[@class='i']") %>% html_text() %>% paste0(collapse="; ")
+    flog.info(paste0("Классификационный индекс(ы) = ", cindex))
+    
+    # выцепляем статус
+    tmp <- html_nodes(m, xpath="//*[@id='StatusR']/text()[1]") %>% html_text()
+    status <- stri_replace_all_regex(tmp, "\\s+", " ")
+    flog.info(paste0("Статус патента = ", status))
+
+    # выцепляем страну
+    tmp <- html_nodes(m, xpath="//*[@id='td1']") %>% html_text()
+    country <- stri_replace_all_regex(tmp, "\\s+", " ")
+    flog.info(paste0("Страна = ", country))
+            
     elem <- tibble(
-      IPR=IPR
+      resp_status=resp_status,
+      country=country,
+      applicant=applicant,
+      owner=owner,
+      claim_n=claim_n,
+      pub_date=pub_date,
+      status=status,
+      cindex=cindex
     )
-    # Encoding(dvTitle)
-    
+
     elem
   }
 
 
-write_csv(all_docs, "out_enreach2.csv", append=FALSE)
+write_excel_csv(all_docs, "out_enreach2.csv", append=FALSE)
 flog.info("Output file enreached")
 
 stop()
 # сниппеты
-stri_match_first_regex(IPR, "\\(73\\) Патентообладатель\\(и\\):(.+?)\r\n")
+stri_match_first_regex(tmp, "\\(73\\) Патентообладатель\\(и\\):(.+?)\r\n")
+
+html_nodes(m, xpath="//*[@class='i']") %>% html_text()
 
 
 stop()
