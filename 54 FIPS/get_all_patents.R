@@ -54,11 +54,18 @@ flog.info("============= Parsing started ===============")
 # http://www.jsoneditoronline.org/
 # http://codebeautify.org/jsonviewer
 
+# категория МПК = G05B (3738 документов на 11.11.2016)
 req_str1 <- "http://www1.fips.ru/wps/portal/!ut/p/c5/jY7LDoIwFES_hS-4l2dhWYhpC4hgYhA2pCENYngYVBZ-vbByJTqznJyZgRIWD3JuG_lox0F2cIbSqYSgKY-Yjij2LlIvC0Pqu8h2-pIXThUwyi0SI7LkGKCwfMvgzDdQmP_Q-EUUf9D5-nZ7fc03-hM-9goKKMhn55AQD2lsRzpPXJN5NuSTuo_PqVaQ1bK-qFjNqktlo-DWn854JS9KNe0NbQg1dw!!/?beanMethod=doRestoreQuery&queryId=2737608&doSearch=true&pageNumber="
 req_str2 <- "&selectedDBs=RUPATABRU%3BRUPATAP%3BRUPAT_NEW%3BRUPMAB%3BRUPM_NEW%3BIMPIN&fromUserId=514"
 
+# категория МПК = G06Q (2538 документов на 11.11.2016)
+req_str1 <- "http://www1.fips.ru/wps/portal/!ut/p/c5/jY7LDoIwFES_hS-4l2dhWYhpC4hgYhA2pCENYngYVBZ-vbByJTqznJyZgRIWD3JuG_lox0F2cIbSqYSgKY-Yjij2LlIvC0Pqu8h2-pIXThUwyi0SI7LkGKCwfMvgzDdQmP_Q-EUUf9D5-nZ7fc03-hM-9goKKMhn55AQD2lsRzpPXJN5NuSTuo_PqVaQ1bK-qFjNqktlo-DWn854JS9KNe0NbQg1dw!!/?beanMethod=doRestoreQuery&queryId=2772556&doSearch=true&pageNumber="
+req_str2 <- "&selectedDBs=RUPATABRU%3BRUPATAP%3BRUPAT_NEW%3BRUPMAB%3BRUPM_NEW%3BIMPIN&fromUserId=514"
+
+
+# пробегаемся по страницам, начиная с 0 и до n-1
 all_patents <-
-  foreach(n = iter(0:74), .packages = 'futile.logger', .combine = rbind) %do% {
+  foreach(n = iter(0:50), .packages = 'futile.logger', .combine = rbind) %do% {
     ur1 <- str_c(req_str1, n, req_str2, collapse = "")
     # browser()
     # resp <- try(curl_fetch_memory(url))

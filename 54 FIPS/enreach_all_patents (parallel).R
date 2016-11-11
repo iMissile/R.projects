@@ -27,7 +27,7 @@ common_log_name <- "FIPS.log"
 # загружаем ранее собранный список патентов
 # patents <- read_csv("patents_list_test.csv")
 patents <- read_csv("patents_list.csv")
-output_fname <- "out_enreach.csv"
+output_fname <- "patents_full_G06Q.csv"
   
   
 
@@ -35,9 +35,14 @@ output_fname <- "out_enreach.csv"
 enreach_patent <- function(docID) {
   
   # формируем url запроса
+  # категория МПК = G05B
   req_str1 <- "http://www1.fips.ru/wps/portal/!ut/p/c5/jY7LDoIwFES_hS-4l2dhWYhpC4hgYhA2pCENYngYVBZ-vbByJTqznJyZgRIWD3JuG_lox0F2cIbSqYSgKY-Yjij2LlIvC0Pqu8h2-pIXThUwyi0SI7LkGKCwfMvgzDdQmP_Q-EUUf9D5-nZ7fc03-hM-9goKKMhn55AQD2lsRzpPXJN5NuSTuo_PqVaQ1bK-qFjNqktlo-DWn854JS9KNe0NbQg1dw!!/?beanMethod=getDocument&queryId=2760601&documId="
   req_str2 <- "&checkBoxes=&fromUserId=514"
 
+  # категория МПК = G06Q
+  req_str1 <- "http://www1.fips.ru/wps/portal/!ut/p/c5/jY7LDoIwFES_hS-4l2dhWYhpC4hgYhA2pCENYngYVBZ-vbByJTqznJyZgRIWD3JuG_lox0F2cIbSqYSgKY-Yjij2LlIvC0Pqu8h2-pIXThUwyi0SI7LkGKCwfMvgzDdQmP_Q-EUUf9D5-nZ7fc03-hM-9goKKMhn55AQD2lsRzpPXJN5NuSTuo_PqVaQ1bK-qFjNqktlo-DWn854JS9KNe0NbQg1dw!!/?beanMethod=getDocument&queryId=2772556&documId="
+  req_str2 <- "&checkBoxes=&fromUserId=514"
+  
   ur1 <- str_c(req_str1, docID, req_str2, collapse = "")
   # browser()
   # resp <- try(curl_fetch_memory(url))
@@ -146,16 +151,15 @@ loginit <- function(logfile) flog.appender(appender.file(logfile))
 foreach(input=rep(common_log_name, nworkers),
         .packages='futile.logger') %dopar% loginit(input)
 
-# готовим выборки для потоков
-patents %<>%
-  mutate(thread = row_number() %% nworkers) %>%
-  mutate(workerID = thread)
+# --- готовим выборки для потоков
+# patents %<>%
+#   mutate(thread = row_number() %% nworkers) %>%
+#   mutate(workerID = thread)
 
 # nested_patents <- patents
 #   select(thread, docID) %>%
 #   group_by(thread) %>%
 #   nest()
-
 
 descriptions <-
     foreach(docID=iter(patents$docID), 
