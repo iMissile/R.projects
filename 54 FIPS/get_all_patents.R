@@ -22,6 +22,9 @@ library(microbenchmark)
 library(futile.logger)
 
 
+common_log_name <- "FIPS.log"
+output_fname <- "patents_list.csv"
+
 # ==== functions definition
 getAttr <- function(text, attrName) {
   res <- html_nodes(text, xpath=paste0("//div[@class='", attrName, "']")) %>% 
@@ -38,7 +41,7 @@ getAttr <- function(text, attrName) {
 }
 
 # ======
-flog.appender(appender.file("FIPS.log"))
+flog.appender(appender.file(common_log_name))
 flog.threshold(TRACE)
 flog.info("============= Parsing started ===============")
 
@@ -103,7 +106,7 @@ all_patents <-
   }
 
 
-write_csv(all_patents, "patents_list.csv", append=FALSE)
+write_csv(all_patents, output_fname, append=FALSE)
 flog.info("Output file generated")
 
 stop()

@@ -118,14 +118,18 @@ descriptions <-
     flog.info(paste0("Классификационный индекс(ы) = ", cindex)) # немного почистим мусор
     
     # выцепляем статус
+#    browser()
+    
     tmp <- html_nodes(m, xpath="//*[@id='StatusR']/text()[1]") %>% html_text()
-    status <- stri_replace_all_regex(tmp, "\\s+", " ")
-    flog.info(paste0("Статус патента = ", status))
+    tmp2 <- stri_replace_all_regex(tmp, "\\s+", " ")
+    claim_status <- ifelse(identical(tmp2, character(0)), NA_character_, tmp2)
+    flog.info(paste0("Статус патента = <", claim_status, ">"))
 
     # выцепляем страну
     tmp <- html_nodes(m, xpath="//*[@id='td1']") %>% html_text()
     country <- stri_replace_all_regex(tmp, "\\s+", " ")
     flog.info(paste0("Страна = ", country))
+    # browser()
             
     elem <- tibble(
       docID=n,
@@ -135,9 +139,12 @@ descriptions <-
       owner=owner,
       claim_n=claim_n,
       pub_date=pub_date,
-      status=status,
+      claim_status=claim_status,
       cindex=cindex
     )
+    
+    flog.info(capture.output(print(elem)))
+    # browser()
 
     elem
   }
@@ -156,7 +163,7 @@ postclean <- function(x){
 descriptions <- purrr::dmap_at(descriptions, c("cindex", "applicant", "country", "status"), postclean)
 
 # теперь склеим с загруженными документами. Лучше это сделать по полю, чем простым слиянием колонок
-res <-  left_join(patents, descriptions, by="docID")
+res <- left_join(patents, descriptions, by="docID")
 write_excel_csv(res, "out_enreach2.csv", append=FALSE)
 flog.info("Output file enreached")
 
