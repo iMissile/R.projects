@@ -7,6 +7,7 @@ library(tibble)
 library(readr)
 library(stringi)
 library(stringr)
+library(purrr)
 library(jsonlite)
 library(magrittr)
 library(curl)
@@ -22,30 +23,19 @@ library(RSelenium)
 library(microbenchmark)
 library(futile.logger)
 
+common_log_name <- "FIPS.log"
 
 # ==== functions definition
-getAttr <- function(text, attrName) {
-  res <- html_nodes(text, xpath=paste0("//div[@class='", attrName, "']")) %>% 
-    magrittr::extract(-1) %>% # magrittr::extract(-1), удалили первую строку, там заголовок таблицы
-    # magrittr provides a series of aliases which can be more pleasant to use when composing chains using the %>% operator
-    html_text() # взяли сам атрибут
-  # browser()
-  # j <- res[[1]]
-  # stri_encode(j, from="UTF-8", to="windows-1251", to_raw = FALSE)
-  # browser()
-  # iconv(from = "UTF8", to = "windows-1251")
-  # m %>% html_nodes('div')
-  res
-}
 
 # ======
-flog.appender(appender.file("FIPS.log"))
+flog.appender(appender.file(common_log_name))
 flog.threshold(TRACE)
 flog.info("============= Enreachment started ===============")
 
 
 # загружаем ранее собранный список патентов
-all_patents <- read_csv("patents_list_test.csv")
+# patents <- read_csv("patents_list_test.csv")
+patents <- read_csv("patents_list.csv")
 
 # магический url для считывания первой страницы документа из скачанного ранее списка с МПК = G05B взята из дебага в браузере и выглядит следующим образом:
 # http://www1.fips.ru/wps/portal/!ut/p/c5/jY7LDoIwFES_hS-4l2dhWYhpC4hgYhA2pCENYngYVBZ-vbByJTqznJyZgRIWD3JuG_lox0F2cIbSqYSgKY-Yjij2LlIvC0Pqu8h2-pIXThUwyi0SI7LkGKCwfMvgzDdQmP_Q-EUUf9D5-nZ7fc03-hM-9goKKMhn55AQD2lsRzpPXJN5NuSTuo_PqVaQ1bK-qFjNqktlo-DWn854JS9KNe0NbQg1dw!!/?beanMethod=getDocument&queryId=2760601&documId=6b45832227654a2686e278babf036537&checkBoxes=&fromUserId=514
@@ -57,8 +47,29 @@ all_patents <- read_csv("patents_list_test.csv")
 req_str1 <- "http://www1.fips.ru/wps/portal/!ut/p/c5/jY7LDoIwFES_hS-4l2dhWYhpC4hgYhA2pCENYngYVBZ-vbByJTqznJyZgRIWD3JuG_lox0F2cIbSqYSgKY-Yjij2LlIvC0Pqu8h2-pIXThUwyi0SI7LkGKCwfMvgzDdQmP_Q-EUUf9D5-nZ7fc03-hM-9goKKMhn55AQD2lsRzpPXJN5NuSTuo_PqVaQ1bK-qFjNqktlo-DWn854JS9KNe0NbQg1dw!!/?beanMethod=getDocument&queryId=2760601&documId="
 req_str2 <- "&checkBoxes=&fromUserId=514"
 
-all_docs <-
-  foreach(n=iter(all_patents$docID), .packages='futile.logger', .combine=rbind) %do% {
+# # подготовка к параллельному запуску
+# nworkers <- detectCores() - 1
+# registerDoParallel(nworkers)
+# getDoParWorkers()
+# 
+# # регистрируем отдельный логгер на исполнителя
+# # http://stackoverflow.com/questions/38828344/how-to-log-when-using-foreach-print-or-futile-logger
+# loginit <- function(logfile) flog.appender(appender.file(logfile))
+# foreach(input=rep(common_log_name, nworkers), 
+#         .packages='futile.logger') %dopar% loginit(input)
+# 
+# # готовим выборки для потоков
+# nested_patents <- patents %>%
+#   mutate(thread = row_number() %% nworkers) %>%
+#   mutate(workerID = thread) %>%
+#   select(thread, docID) %>%
+#   group_by(thread) %>%
+#   nest()
+
+
+descriptions <-
+  foreach(n=iter(patents$docID), .packages='futile.logger', .combine=rbind) %do% {
+  #foreach(n=iter(nested_patents$data), .packages=c('futile.logger', 'stringr', 'jsonlite', 'magrittr', 'curl', 'httr'), .combine=rbind) %dopar% {
     ur1 <- str_c(req_str1, n, req_str2, collapse = "")
     # browser()
     # resp <- try(curl_fetch_memory(url))
@@ -101,8 +112,10 @@ all_docs <-
     #browser()
     
     # выцепляем классификационный индекс
-    cindex <- html_nodes(m, xpath="//*[@class='i']") %>% html_text() %>% paste0(collapse="; ")
-    flog.info(paste0("Классификационный индекс(ы) = ", cindex))
+    cindex <- html_nodes(m, xpath="//*[@class='i']") %>% 
+      html_text() %>% 
+      paste0(collapse="; ")
+    flog.info(paste0("Классификационный индекс(ы) = ", cindex)) # немного почистим мусор
     
     # выцепляем статус
     tmp <- html_nodes(m, xpath="//*[@id='StatusR']/text()[1]") %>% html_text()
@@ -115,6 +128,7 @@ all_docs <-
     flog.info(paste0("Страна = ", country))
             
     elem <- tibble(
+      docID=n,
       resp_status=resp_status,
       country=country,
       applicant=applicant,
@@ -128,8 +142,22 @@ all_docs <-
     elem
   }
 
+postclean <- function(x){
+  x %>% stri_replace_all_regex("\\s+;", ";") %>%
+    stri_replace_all_regex("^\\s+", "") %>%
+    stri_replace_all_regex("\\s+$", "") %>%
+    stri_replace_all_regex(",\\([^\\s]\\)", ", \\1") %>%
+    stri_replace_all_regex(",(?!\\s)", ", ") %>%
+    stri_replace_all_regex("(РОССИЙСКАЯ ФЕДЕРАЦИЯ)\\s", "$1; ")
 
-write_excel_csv(all_docs, "out_enreach2.csv", append=FALSE)
+}
+  
+# почистм регулярными выражениями
+descriptions <- purrr::dmap_at(descriptions, c("cindex", "applicant", "country", "status"), postclean)
+
+# теперь склеим с загруженными документами. Лучше это сделать по полю, чем простым слиянием колонок
+res <-  left_join(patents, descriptions, by="docID")
+write_excel_csv(res, "out_enreach2.csv", append=FALSE)
 flog.info("Output file enreached")
 
 stop()
@@ -137,6 +165,12 @@ stop()
 stri_match_first_regex(tmp, "\\(73\\) Патентообладатель\\(и\\):(.+?)\r\n")
 
 html_nodes(m, xpath="//*[@class='i']") %>% html_text()
+
+stri_replace_all_regex("РУД Джейсон Гарольд (US),НОРДЛУНД Кристофер Итан (US)",
+                       ",(?!\\s)", ", ")
+
+stri_replace_all_regex(" РОССИЙСКАЯ ФЕДЕРАЦИЯ ФЕДЕРАЛЬНАЯ СЛУЖБА ПО ИНТЕЛЛЕКТУАЛЬНОЙ СОБСТВЕННОСТИ, ПАТЕНТАМ И ТОВАРНЫМ ЗНАКАМ ",
+                       "(РОССИЙСКАЯ ФЕДЕРАЦИЯ)\\s", "$1; ")
 
 
 stop()

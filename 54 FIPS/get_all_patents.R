@@ -55,7 +55,7 @@ req_str1 <- "http://www1.fips.ru/wps/portal/!ut/p/c5/jY7LDoIwFES_hS-4l2dhWYhpC4h
 req_str2 <- "&selectedDBs=RUPATABRU%3BRUPATAP%3BRUPAT_NEW%3BRUPMAB%3BRUPM_NEW%3BIMPIN&fromUserId=514"
 
 all_patents <-
-  foreach(n = iter(0:0), .packages = 'futile.logger', .combine = rbind) %do% {
+  foreach(n = iter(0:74), .packages = 'futile.logger', .combine = rbind) %do% {
     ur1 <- str_c(req_str1, n, req_str2, collapse = "")
     # browser()
     # resp <- try(curl_fetch_memory(url))
