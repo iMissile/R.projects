@@ -81,10 +81,15 @@ req_str4 <- "&selectedDBs=RUPATABRU%3BRUPATAP%3BRUPAT_NEW%3BRUPMAB%3BRUPM_NEW%3B
 req_str2 <- "2789999"
 req_str4 <- "&selectedDBs=RUPATABRU%3BRUPATAP%3BRUPAT_NEW%3BRUPMAB%3BRUPM_NEW%3BIMPIN&fromUserId=514"
 
+# категория МПК = G06F3/00 or G06F13/00 or G06F12/00 or G06F5/00 or G06F9/00 or G06F11/00 or G06F21/00
+# (3045 документов на 14.11.2016, стр. 1-61)
+req_str2 <- "2790898"
+req_str4 <- "&selectedDBs=RUPATABRU%3BRUPATAP%3BRUPAT_NEW%3BRUPMAB%3BRUPM_NEW%3BIMPIN&fromUserId=514"
+
 
 # пробегаемся по страницам, начиная с 0 и до n-1
 all_patents <-
-  foreach(n = iter(0:48), .packages = 'futile.logger', .combine = rbind) %do% {
+  foreach(n = iter(0:60), .packages = 'futile.logger', .combine = rbind) %do% {
     ur1 <- str_c(req_str1, req_str2, req_str3, n, req_str4, collapse = "")
     # browser()
     # resp <- try(curl_fetch_memory(url))

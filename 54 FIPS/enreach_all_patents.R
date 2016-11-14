@@ -159,7 +159,7 @@ postclean <- function(x){
 
 }
   
-# почистм регул€рными выражени€ми
+# почистим регул€рными выражени€ми
 descriptions <- purrr::dmap_at(descriptions, c("cindex", "applicant", "country", "status"), postclean)
 
 # теперь склеим с загруженными документами. Ћучше это сделать по полю, чем простым сли€нием колонок

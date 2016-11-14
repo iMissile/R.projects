@@ -27,7 +27,7 @@ common_log_name <- "FIPS.log"
 # загружаем ранее собранный список патентов
 # patents <- read_csv("patents_list_test.csv")
 patents <- read_csv("patents_list.csv")
-output_fname <- "patents_full_H03M.csv"
+output_fname <- "patents_ext_G06F.csv"
   
   
 
@@ -51,6 +51,10 @@ enreach_patent <- function(docID) {
   req_str2 <- "2788648"
   # категория МПК = H03M (2436 документов на 14.11.2016, стр. 1-49)
   req_str2 <- "2789999"
+  # категория МПК = G06F3/00 or G06F13/00 or G06F12/00 or G06F5/00 or G06F9/00 or G06F11/00 or G06F21/00
+  # (3045 документов на 14.11.2016, стр. 1-61)
+  req_str2 <- "2790898"
+  
   
   
   ur1 <- str_c(req_str1, req_str2, req_str3, docID, req_str4, collapse = "")
