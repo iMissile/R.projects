@@ -54,19 +54,38 @@ flog.info("============= Parsing started ===============")
 # http://www.jsoneditoronline.org/
 # http://codebeautify.org/jsonviewer
 
+req_str1 <- "http://www1.fips.ru/wps/portal/!ut/p/c5/jY7LDoIwFES_hS-4l2dhWYhpC4hgYhA2pCENYngYVBZ-vbByJTqznJyZgRIWD3JuG_lox0F2cIbSqYSgKY-Yjij2LlIvC0Pqu8h2-pIXThUwyi0SI7LkGKCwfMvgzDdQmP_Q-EUUf9D5-nZ7fc03-hM-9goKKMhn55AQD2lsRzpPXJN5NuSTuo_PqVaQ1bK-qFjNqktlo-DWn854JS9KNe0NbQg1dw!!/?beanMethod=doRestoreQuery&queryId="
+req_str3 <- "&doSearch=true&pageNumber="
+
 # категория МПК = G05B (3738 документов на 11.11.2016)
-req_str1 <- "http://www1.fips.ru/wps/portal/!ut/p/c5/jY7LDoIwFES_hS-4l2dhWYhpC4hgYhA2pCENYngYVBZ-vbByJTqznJyZgRIWD3JuG_lox0F2cIbSqYSgKY-Yjij2LlIvC0Pqu8h2-pIXThUwyi0SI7LkGKCwfMvgzDdQmP_Q-EUUf9D5-nZ7fc03-hM-9goKKMhn55AQD2lsRzpPXJN5NuSTuo_PqVaQ1bK-qFjNqktlo-DWn854JS9KNe0NbQg1dw!!/?beanMethod=doRestoreQuery&queryId=2737608&doSearch=true&pageNumber="
-req_str2 <- "&selectedDBs=RUPATABRU%3BRUPATAP%3BRUPAT_NEW%3BRUPMAB%3BRUPM_NEW%3BIMPIN&fromUserId=514"
+req_str2 <- "2737608"
+req_str4 <- "&selectedDBs=RUPATABRU%3BRUPATAP%3BRUPAT_NEW%3BRUPMAB%3BRUPM_NEW%3BIMPIN&fromUserId=514"
 
 # категория МПК = G06Q (2538 документов на 11.11.2016)
-req_str1 <- "http://www1.fips.ru/wps/portal/!ut/p/c5/jY7LDoIwFES_hS-4l2dhWYhpC4hgYhA2pCENYngYVBZ-vbByJTqznJyZgRIWD3JuG_lox0F2cIbSqYSgKY-Yjij2LlIvC0Pqu8h2-pIXThUwyi0SI7LkGKCwfMvgzDdQmP_Q-EUUf9D5-nZ7fc03-hM-9goKKMhn55AQD2lsRzpPXJN5NuSTuo_PqVaQ1bK-qFjNqktlo-DWn854JS9KNe0NbQg1dw!!/?beanMethod=doRestoreQuery&queryId=2772556&doSearch=true&pageNumber="
-req_str2 <- "&selectedDBs=RUPATABRU%3BRUPATAP%3BRUPAT_NEW%3BRUPMAB%3BRUPM_NEW%3BIMPIN&fromUserId=514"
+req_str2 <- "2772556"
+req_str4 <- "&selectedDBs=RUPATABRU%3BRUPATAP%3BRUPAT_NEW%3BRUPMAB%3BRUPM_NEW%3BIMPIN&fromUserId=514"
+
+# категория МПК = H04W (2933 документов на 14.11.2016, стр. 1-59), без рефератов росссийских изобретений
+req_str2 <- "2786932"
+req_str4 <- "&selectedDBs=RUPATAP%3BRUPAT_NEW%3BRUPMAB%3BRUPM_NEW%3BIMPIN&fromUserId=514"
+
+# категория МПК = H04W (3032 документов на 14.11.2016, стр. 1-61), только рефераты росссийских изобретений
+req_str2 <- "2787104"
+req_str4 <- "&selectedDBs=RUPATABRU&fromUserId=514"
+
+# категория МПК = G06K (3690 документов на 14.11.2016, стр. 1-74)
+req_str2 <- "2788648"
+req_str4 <- "&selectedDBs=RUPATABRU%3BRUPATAP%3BRUPAT_NEW%3BRUPMAB%3BRUPM_NEW%3BIMPIN&fromUserId=514"
+
+# категория МПК = H03M (2436 документов на 14.11.2016, стр. 1-49)
+req_str2 <- "2789999"
+req_str4 <- "&selectedDBs=RUPATABRU%3BRUPATAP%3BRUPAT_NEW%3BRUPMAB%3BRUPM_NEW%3BIMPIN&fromUserId=514"
 
 
 # пробегаемся по страницам, начиная с 0 и до n-1
 all_patents <-
-  foreach(n = iter(0:50), .packages = 'futile.logger', .combine = rbind) %do% {
-    ur1 <- str_c(req_str1, n, req_str2, collapse = "")
+  foreach(n = iter(0:48), .packages = 'futile.logger', .combine = rbind) %do% {
+    ur1 <- str_c(req_str1, req_str2, req_str3, n, req_str4, collapse = "")
     # browser()
     # resp <- try(curl_fetch_memory(url))
     # переходим на httr: https://cran.r-project.org/web/packages/httr/vignettes/quickstart.html

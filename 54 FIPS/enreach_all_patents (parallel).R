@@ -27,7 +27,7 @@ common_log_name <- "FIPS.log"
 # загружаем ранее собранный список патентов
 # patents <- read_csv("patents_list_test.csv")
 patents <- read_csv("patents_list.csv")
-output_fname <- "patents_full_G06Q.csv"
+output_fname <- "patents_full_H03M.csv"
   
   
 
@@ -35,15 +35,25 @@ output_fname <- "patents_full_G06Q.csv"
 enreach_patent <- function(docID) {
   
   # формируем url запроса
-  # категория МПК = G05B
-  req_str1 <- "http://www1.fips.ru/wps/portal/!ut/p/c5/jY7LDoIwFES_hS-4l2dhWYhpC4hgYhA2pCENYngYVBZ-vbByJTqznJyZgRIWD3JuG_lox0F2cIbSqYSgKY-Yjij2LlIvC0Pqu8h2-pIXThUwyi0SI7LkGKCwfMvgzDdQmP_Q-EUUf9D5-nZ7fc03-hM-9goKKMhn55AQD2lsRzpPXJN5NuSTuo_PqVaQ1bK-qFjNqktlo-DWn854JS9KNe0NbQg1dw!!/?beanMethod=getDocument&queryId=2760601&documId="
-  req_str2 <- "&checkBoxes=&fromUserId=514"
-
-  # категория МПК = G06Q
-  req_str1 <- "http://www1.fips.ru/wps/portal/!ut/p/c5/jY7LDoIwFES_hS-4l2dhWYhpC4hgYhA2pCENYngYVBZ-vbByJTqznJyZgRIWD3JuG_lox0F2cIbSqYSgKY-Yjij2LlIvC0Pqu8h2-pIXThUwyi0SI7LkGKCwfMvgzDdQmP_Q-EUUf9D5-nZ7fc03-hM-9goKKMhn55AQD2lsRzpPXJN5NuSTuo_PqVaQ1bK-qFjNqktlo-DWn854JS9KNe0NbQg1dw!!/?beanMethod=getDocument&queryId=2772556&documId="
-  req_str2 <- "&checkBoxes=&fromUserId=514"
+  req_str1 <- "http://www1.fips.ru/wps/portal/!ut/p/c5/jY7LDoIwFES_hS-4l2dhWYhpC4hgYhA2pCENYngYVBZ-vbByJTqznJyZgRIWD3JuG_lox0F2cIbSqYSgKY-Yjij2LlIvC0Pqu8h2-pIXThUwyi0SI7LkGKCwfMvgzDdQmP_Q-EUUf9D5-nZ7fc03-hM-9goKKMhn55AQD2lsRzpPXJN5NuSTuo_PqVaQ1bK-qFjNqktlo-DWn854JS9KNe0NbQg1dw!!/?beanMethod=getDocument&queryId="
+  req_str3 <- "&documId="
+  req_str4 <- "&checkBoxes=&fromUserId=514"
   
-  ur1 <- str_c(req_str1, docID, req_str2, collapse = "")
+  # категория МПК = G05B
+  req_str2 <- "2760601"
+  # категория МПК = G06Q
+  req_str2 <- "2772556"
+  # категория МПК = H04W (2933 документов на 14.11.2016, стр. 1-59), без рефератов росссийских изобретений
+  req_str2 <- "2787248"
+  # категория МПК = H04W (3032 документов на 14.11.2016, стр. 1-61), только рефераты росссийских изобретений
+  req_str2 <- "2787104"
+  # категория МПК = G06K (3690 документов на 14.11.2016, стр. 1-74)
+  req_str2 <- "2788648"
+  # категория МПК = H03M (2436 документов на 14.11.2016, стр. 1-49)
+  req_str2 <- "2789999"
+  
+  
+  ur1 <- str_c(req_str1, req_str2, req_str3, docID, req_str4, collapse = "")
   # browser()
   # resp <- try(curl_fetch_memory(url))
   # переходим на httr: https://cran.r-project.org/web/packages/httr/vignettes/quickstart.html
