@@ -12,21 +12,21 @@ library(iterators)
 library(foreach)
 library(doParallel)
 library(zoo)
-# а здесь попробуем поработать с randomForest
-library(randomForest)
 
 
-datafile <- "./data1/2016.xlsx"
+datafile <- "./data/отчет с детализацией по ОКС (056-2000815, 022-2000791, 051-2002476).xlsx"
 
-get_month_data <- function(filename, sheetname = "") {
+getOksData <- function(filename, sheetname = "") {
   # хак по считыванию типов колонок
-  col_types <- readxl:::xlsx_col_types(datafile)
+  col_types <- readxl:::xlsx_col_types(filename)
   
   #col_types <- rep("text", length(col_types))
   raw <- read_excel(filename,
                    sheet = sheetname,
                    col_types = col_types) #, skip = 1)
-  
+
+  return(raw)
+    
   # имеем проблему, колонки с NA вместо имени
   # можно писать в одно преобразование, но специально разбил на шаги
   # трансформируем колонки
@@ -89,74 +89,18 @@ get_month_data <- function(filename, sheetname = "") {
   df2
 }
 
-# соберем все страницы вместе
-sheets <- c("Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", 
-            "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь")
 
-df <- foreach(it = iter(sheets), .combine = rbind, .packages='readxl') %do% {
-  temp.df <- get_month_data(datafile, it) %>% mutate(month = it)
-
-  temp.df
-}
+# df <- foreach(it = iter(sheets), .combine = rbind, .packages='readxl') %do% {
+#   temp.df <- get_month_data(datafile, it) %>% mutate(month = it)
+# 
+#   temp.df
+# }
 
 # write.table(names.df$name.fix, file = "names.csv", sep = ",", col.names = NA, qmethod = "double")
 
 
 plot(df %>% dplyr::select(-mark_out, -month))
 
-# =============== попробуем натянуть random forest
-
-# sample_frac разворачивает chr факторы обратно в chr, поэтому принудительно сделаем словарь типов арткикулов
-mark.dictionary <- tibble(mark_out = levels(as.factor(slicedata$mark_out))) %>% mutate(mark = row_number())
-
-slicedata <- df %>% 
-  select(-month) %>% # месяц для прогнозирования неважен
-  distinct() %>% # уберем идентичные строчки
-  left_join(mark.dictionary, by = "mark_out") %>%
-  # mutate_each(funs(as.factor), mark_out) %>%
-  mutate(value = weight_out)
-
-summary(slicedata)
-
-# берем для обучения произвольное подмножество
-train <- dplyr::sample_frac(slicedata, 0.7, replace = FALSE) # replace = TRUE -- позволяет делать дублирующиеся выборки. = FALSE -- нет
-# все остальное используем для тестирования
-test <- dplyr::anti_join(slicedata, train)
-
-# для повторяемости результата
-set.seed(123)
-
-# создаем randomfForest с 1000 деревьями
-rf <- randomForest(value ~ pressure_in + speed_diff_in + slot_in + angle_in + concentration_in + mark, 
-                   data = train, importance = TRUE, ntree = 1000)
-
-# How many trees are needed to reach the minimum error estimate? 
-# This is a simple problem; it appears that about 100 trees would be enough.
-which.min(rf$mse)
-# Plot rf to see the estimated error as a function of the number of trees
-plot(rf)
-
-# посмотрим на 1-ое дерево в лесу: http://bdemeshev.github.io/r_cycle/cycle_files/22_forest.html
-# tree1 <- getTree(rf, 1, labelVar = TRUE)
-# head(as_tibble(tree1))
-
-# Using the importance()  function to calculate the importance of each variable
-imp <- as.data.frame(sort(importance(rf)[,1], decreasing = TRUE), optional = T)
-names(imp) <- "% Inc MSE"
-imp
-
-# As usual, predict and evaluate on the test set
-test.pred.forest <- predict(rf, test)
-RMSE.forest <- sqrt(mean((test.pred.forest - test$value)^2))
-RMSE.forest
-
-MAE.forest <- mean(abs(test.pred.forest - test$value))
-MAE.forest
-
-# ==== отобразим графически данные предсказания
-# http://theanalyticalminds.blogspot.ru/2015/04/part-4a-modelling-predicting-amount-of.html
-test$predicted <- predict(rf, test)
-test %<>% mutate(err = abs((predicted-value)/value))
 
 gp <- ggplot(data = test, aes(x = value, y = predicted)) +
   theme_bw() +
