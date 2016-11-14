@@ -14,7 +14,7 @@ library(doParallel)
 library(zoo)
 
 
-datafile <- "./data/отчет с детализацией по ОКС (056-2000815, 022-2000791, 051-2002476).xlsx"
+data_filename <- "./data/отчет с детализацией по ОКС (056-2000815, 022-2000791, 051-2002476).xlsx"
 
 getOksData <- function(filename, sheetname = "") {
   # хак по считыванию типов колонок
@@ -22,18 +22,19 @@ getOksData <- function(filename, sheetname = "") {
   
   #col_types <- rep("text", length(col_types))
   raw <- read_excel(filename,
-                   sheet = sheetname,
-                   col_types = col_types) #, skip = 1)
+                   col_types=col_types,
+                   col_names=FALSE, 
+                   skip = 1) # в первой строке просто написано "Отчетная форма"
 
-  return(raw)
-    
   # имеем проблему, колонки с NA вместо имени
   # можно писать в одно преобразование, но специально разбил на шаги
   # трансформируем колонки
   df0 <- raw %>%
     repair_names(prefix = "repaired_", sep = "")
   
-  # названия колонок размазаны по строкам 2-3. 2-ая -- группирующая, 3-я -- детализирующая
+  # теперь вручную сформируем названия колонок
+  # названия колонок размазаны по строкам 1-3. 
+  # 1-ая -- группирующая, 2-я -- детализирующая, 3-я -- единица измерения (в начале таблицы там имена колонок)
   # Надо их слить и переименовать колонки, причем приоритет имеет строка 3, как уточняющая
   #name_c2 <- tidyr::gather(df0[1, ], key = name, value = name_c2) # 1-ая колонка ушла в имена
   #name_c3 <- tidyr::gather(df0[2, ], key = name, value = name_c3) # 1-ая колонка ушла в имена
@@ -41,16 +42,24 @@ getOksData <- function(filename, sheetname = "") {
   # различные виды join не подойдут, поскольку мы хотим оставить все строки вне зависимости от результата
   # сливать по именам опасно, вдруг есть дубли
   # names.df <- dplyr::full_join(name_c2, name_c3, by = "name")
-  names.df <- tibble(name_c2 = tidyr::gather(df0[1, ], key = name, value = v)$v,
-                     name_c3 = tidyr::gather(df0[2, ], key = name, value = v)$v) %>%
+  names_df <- tibble(name_c1=tidyr::gather(df0[1, ], key=name, value=v)$v,
+                     name_c2=tidyr::gather(df0[2, ], key=name, value=v)$v,
+                     name_c3=tidyr::gather(df0[3, ], key=name, value=v)$v) %>%
     # http://www.markhneedham.com/blog/2015/06/28/r-dplyr-update-rows-with-earlierprevious-rows-values/
-    mutate(name_c2 = na.locf(name_c2)) %>%
-    mutate(name.fix = ifelse(is.na(name_c3), name_c2, str_c(name_c2, name_c3, sep = ": "))) %>%
-    mutate(name.fix = str_replace_all(name.fix, "\r", " ")) %>% # перевод строки
-    mutate(name.fix = str_replace_all(name.fix, "\n", " ")) %>% # перевод строки
-    mutate(name.fix = str_replace_all(name.fix, "  ", " "))
+   mutate(name_c1_ext=na.locf(name_c1, na.rm=FALSE)) %>% # в начале таблицы заголовки полей идут с 3-го уровня
+   mutate(name_c2_ext=na.locf(name_c2, na.rm=FALSE))
+  browser()
   
-  # если name_c3 = NA, то результат объединения строк также будет NA, нас это не очень устраивает
+  t <- names_df %>% 
+    mutate(name.fix=str_c(str_replace_na(name_c1_ext, ""), # заменяем NA на "", см хелп на str_c
+                          str_replace_na(name_c2_ext, ""), 
+                          str_replace_na(name_c3, ""), sep = ":: ")) %>%
+    mutate(name.fix=str_replace_all(name.fix, "\\r|\\n", " ")) %>% # перевод строки
+    mutate(name.fix=str_replace_all(name.fix, "\\s+", " ")) %>% # дубли пробелов
+    mutate(name.fix=str_replace_all(name.fix, "^(:: )+|(:: )+$", "")) # NA строк в начале или конце
+  
+  dput(t$name.fix)
+  write(t$name.fix, "name.fix", append=FALSE)
   
   df1 <- df0
   repl.df <- frame_data(
@@ -96,6 +105,9 @@ getOksData <- function(filename, sheetname = "") {
 #   temp.df
 # }
 
+df <- getOksData(data_filename)
+
+stop()
 # write.table(names.df$name.fix, file = "names.csv", sep = ",", col.names = NA, qmethod = "double")
 
 
