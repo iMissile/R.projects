@@ -80,12 +80,15 @@ getOksData <- function(filename, sheetname = "") {
   df2 <- df1 %>% select(oip_full, date, pd_cost, smp_cost, plant_cost) %>%
     #filter(row_number() > 6) %>% # удаляем весь верхний шлак
     # filter(complete.cases(.)) %>% # удаляем строки, содержащие пустые данные
+    # выделяем только проектные строчки, автоматом отсекаем все заголовки и пр.
+    # http://stackoverflow.com/questions/22850026/filtering-row-which-contains-a-certain-string-using-dplyr
+    filter(str_detect(oip_full, '\\d{3}-\\d{7}\\.\\d{4}')) %>% # 022-2000791.0250
+    separate(oip_full, into=c("oip", "sub_oip"), sep="[.]", remove=FALSE) %>%
     mutate(year=year(dmy(date, quiet=TRUE))) %>% # кривые даты превратились в NA, их и заменим
-    replace_na(list(pd_cost='0', smp_cost='0', plant_cost='0', year=0)) %>%
-    distinct() %>% # уберем идентичные строчки
+    replace_na(list(pd_cost='0', smp_cost='0', plant_cost='0', year=2015)) %>%
     #http://stackoverflow.com/questions/27027347/mutate-each-summarise-each-in-dplyr-how-do-i-select-certain-columns-and-give
-    #mutate_each(funs(as.numeric), pd_cost, smp_cost, plant_cost)
-  mutate_each(funs(as.numeric), smp_cost)
+    mutate_each(funs(as.numeric), pd_cost, smp_cost, plant_cost) %>%
+    distinct() # уберем идентичные строчки
 
   df2
 }
@@ -99,29 +102,22 @@ getOksData <- function(filename, sheetname = "") {
 
 df <- getOksData(data_filename)
 
-df1 <- df %>%
-  # http://stackoverflow.com/questions/22850026/filtering-row-which-contains-a-certain-string-using-dplyr
-  filter(str_detect(oip_full, '\\d{3}-\\d{7}\\.\\d{4}')) %>% # 022-2000791.0250
-  separate(oip_full, into=c("oip", "sub_oip"), sep="[.]", remove=FALSE)
+m <- df$date
 
-df_out <- df1 %>%
+df_out <- df %>%
   group_by(year) %>%
-  summarise(num=n(), pd=sum(pd_cost), smp=sum(smp_cost), plant=sum(plant_cost))
+  summarise(num=n(), pd=sum(pd_cost), smp=sum(smp_cost), plant=sum(plant_cost)) %>%
+  gather(key=type, value=cost, -year) # превратили в long для отрисовки
 
+# plot(df %>% dplyr::select(-mark_out, -month))
 
-stop()
-# write.table(names.df$name.fix, file = "names.csv", sep = ",", col.names = NA, qmethod = "double")
-
-
-plot(df %>% dplyr::select(-mark_out, -month))
-
-
-gp <- ggplot(data = test, aes(x = value, y = predicted)) +
+gp <- ggplot(data = df_out, aes(x=year, y=cost, fill=type)) +
   theme_bw() +
   # theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
-  geom_point(size = 3, fill = "yellow", shape = 21, na.rm = TRUE) +    # White fill
-  geom_abline(intercept = 0, slope = 1, colour = "red") +
-  labs(x = "Значение", y = "Прогноз")
+  geom_bar(stat="identity", position="dodge") #  +
+  #geom_point(size = 3, fill = "yellow", shape = 21, na.rm = TRUE) +    # White fill
+  #geom_abline(intercept = 0, slope = 1, colour = "red") +
+  # labs(x = "Год", y = "Цена, руб")
 
 gp
 
