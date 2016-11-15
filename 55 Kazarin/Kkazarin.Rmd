@@ -1,11 +1,53 @@
 ---
-title: "Konstantin Kazarin"
-output: html_notebook
+title: "R Notebook"
+output:
+  html_notebook: default
+  html_document:
+    theme: null
 ---
 
 
-```{r echo=FALSE}
+```{r, echo=FALSE}
 # http://rmarkdown.rstudio.com/r_notebooks.html
+library(dplyr)
+library(lubridate)
+library(ggplot2)
+library(tidyr)
+library(magrittr)
+library(purrr)
+library(stringi)
+library(stringr)
+library(tibble)
+library(readxl)
+library(iterators)
+library(foreach)
+library(doParallel)
+library(zoo)
+library(grid) # для grid.newpage()
+library(gridExtra) # для grid.arrange()
+library(RColorBrewer)
+library(rmarkdown)
+```
+
+```{r}
+source("common_funcs.R")
+
+# файл с исходными данными
+data_filename <- "./data/отчет с детализацией по ОКС (056-2000815, 022-2000791, 051-2002476).xlsx"
+df <- getOksData(data_filename)
+
+df_gp <- df %>%
+  group_by(year) %>%
+  summarise(num=n(), pd=sum(pd_cost), smp=sum(smp_cost), plant=sum(plant_cost))
+```
+
+Загруженный набор данных
+```{r}
+df_gp
+```
+
+```{r, echo=TRUE}
+str(df)
 ```
 
 This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
