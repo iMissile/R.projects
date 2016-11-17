@@ -2,13 +2,11 @@
 title: "R Notebook"
 output:
   html_notebook: default
-  html_document:
-    theme: null
 ---
 
 
-```{r, echo=FALSE}
-# http://rmarkdown.rstudio.com/r_notebooks.html
+```{r echo=FALSE, message=FALSE}
+# 
 library(dplyr)
 library(lubridate)
 library(ggplot2)
@@ -23,41 +21,67 @@ library(iterators)
 library(foreach)
 library(doParallel)
 library(zoo)
-library(grid) # ��� grid.newpage()
-library(gridExtra) # ��� grid.arrange()
+library(grid) # для grid.newpage()
+library(gridExtra) # для grid.arrange()
 library(RColorBrewer)
 library(rmarkdown)
+library(xtable)
 ```
 
 ```{r}
 source("common_funcs.R")
 
-# ���� � ��������� �������
-data_filename <- "./data/����� � ������������ �� ��� (056-2000815, 022-2000791, 051-2002476).xlsx"
-df <- getOksData(data_filename)
+# файл с исходными данными
+data_filename <- "./data/отчет с детализацией по ОКС (056-2000815, 022-2000791, 051-2002476).xlsx"
 
+df <- getOksData(data_filename)
 df_gp <- df %>%
   group_by(year) %>%
   summarise(num=n(), pd=sum(pd_cost), smp=sum(smp_cost), plant=sum(plant_cost))
+xlims <- c(min(df_gp$year)-1, max(df_gp$year)+1)
 ```
 
-����������� ����� ������
+Загруженный набор данных, диапазон годов: `r xlims`
 ```{r}
+# print(xtable(df_gp), type="html")
 df_gp
+
+# knitr::kable(df_gp)
 ```
-
-```{r, echo=TRUE}
-str(df)
-```
-
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
-
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
 
 ```{r}
-plot(cars)
+# -- Затраты на ОКС по годам
+df_gp1 <- df_gp %>%
+  select(-num) %>%
+  gather(key=type, value=cost, -year) # превратили в long для отрисовки
+
+
+gp1 <- ggplot(data = df_gp1, aes(x=year, y=cost, fill=type)) +
+  theme_bw() +
+  # theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+  scale_fill_brewer(palette="Set1", direction=1, guide=guide_legend()) +
+  geom_bar(stat="identity", position="dodge") +
+  theme(legend.position="top") +
+  #geom_point(size = 3, fill = "yellow", shape = 21, na.rm = TRUE) +    # White fill
+  #geom_abline(intercept = 0, slope = 1, colour = "red") +
+  scale_x_continuous(limits=xlims, breaks=seq(xlims[[1]], xlims[[2]], 1)) +
+  #scale_x_continuous(breaks=seq(xlims[[1]], xlims[[2]], 1)) +
+  #coord_cartesian(xlim=xlims) +
+  labs(x="Год", y="Сметная стоимость\n по ПД, руб.")
+gp1
 ```
 
-Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+```{r}
+# -- количество ОКС по годам
+df_gp2 <- df_gp %>%
+  select(year, num)
 
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+gp2 <- ggplot(data = df_gp2, aes(x=year, y=num)) +
+  theme_bw() +
+  geom_point(size=3, fill="yellow", shape=21, na.rm=TRUE) +    # White fill
+  geom_line(colour="blue") +
+  scale_x_continuous(limits=xlims, breaks=seq(xlims[[1]], xlims[[2]], 1)) +
+  labs(x="Год", y="Количество ОКС, ед.")
+gp2
+```
+
