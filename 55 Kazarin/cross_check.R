@@ -35,7 +35,7 @@ rep2 <- loadReportsType2("./data-verification/Отчет (отчет №2) 022, 056.xlsx")
 rep3 <- loadReportsType3("./data-verification/")
 rep1 <- loadReportsType1("./data-verification/")
 
-# -- Проверка 'Перечень ОИП которых нет в отчете №X'
+# ---- Проверка 'Перечень ОИП которых нет в отчете №X' ----
 subrep1 <- rep1 %>%
   select(grp_1) %>%
   filter(str_detect(grp_1, '\\d{3}-\\d{7}$')) %>% # Только родительские ОИП
@@ -48,7 +48,48 @@ subrep2 <- rep2 %>%
 
 check_1 <- anti_join(subrep2, subrep1, by="oip") %>% arrange(oip)
 
-# -- Проверка 'Перечень ОИП с разными наименованиями'
+# ---- Проверка 'Перечень ОИП с разными наименованиями' ----
+# Осуществляется проверка отчета №1, что творится в отчете №2 -- неважно
+subrep1 <- rep1 %>%
+  select(grp_1, grp_2) %>%
+  rename(oip=grp_1, name=grp_2) %>%
+  mutate(joint = str_c(oip, name, sep=" ")) %>%
+  filter(str_detect(oip, '\\d{3}-\\d{7}$')) # Только родительские ОИП
+
+subrep2 <- rep2 %>%
+  select(col_A, col_B) %>%
+  rename(oip=col_A, name=col_B) %>%
+  mutate(joint = str_c(oip, name, sep=" ")) %>%
+  filter(str_detect(oip, '\\d{3}-\\d{7}$')) # Только родительские ОИП
+
+check_2 <- dplyr::anti_join(subrep1, subrep2, by="joint")
+
+# или лучше даже так:
+#check_2 <- dplyr::left_join(subrep1, subrep2, by="joint")
+
+# ---- Проверка 'Перечень ОИП с различной стоимостью с указанием относительной разницы' ----
+# Осуществляется проверка отчета №1, что творится в отчете №2 -- неважно
+subrep1 <- rep1 %>%
+  select(grp_1, grp_2, grp_7, grp_23) %>%
+  rename(oip=grp_1, name=grp_2, cost_1=grp_7) %>%
+  filter(str_detect(oip, '\\d{3}-\\d{7}$')) %>% # Только родительские ОИП
+  filter(!stri_detect_regex(grp_23, "(отсутствует.*решение|решение.*отсутствует)", case_insensitive=TRUE))
+
+subrep2 <- rep2 %>%
+  select(col_A, col_B, col_K) %>%
+  rename(oip=col_A, name=col_B, cost_2=col_K) %>%
+  filter(str_detect(oip, '\\d{3}-\\d{7}$')) # Только родительские ОИП
+  
+check_3 <- subrep1 %>%
+  left_join(subrep2, by="oip") %>%
+  mutate(delta=as.numeric(cost_1)-as.numeric(cost_2)) %>%
+  arrange(desc(delta))
+
+stop()
+# =========================================
+
+# ---- Проверка 'Перечень ОИП с разными наименованиями' ----
+# Осуществляется проверка отчета №1, что творится в отчете №2 -- неважно
 subrep1 <- rep1 %>%
   select(grp_1, grp_2) %>%
   rename(oip=grp_1, name=grp_2) %>%
@@ -60,7 +101,6 @@ subrep2 <- rep2 %>%
   filter(str_detect(oip, '\\d{3}-\\d{7}$')) # Только родительские ОИП
 
 check_2 <- dplyr::setdiff(subrep1, subrep2)
-stop()
 
 
 subrep1 <- rep1 %>%
@@ -100,3 +140,9 @@ fname <- file_names[[1]]
 raw <- read_excel(fname)
 col_types <- readxl:::xlsx_col_types(fname)
 col_types <- readxl:::xlsx_col_types("./data-verification/022 - Отчет о см. ст. по ОКС (Отчет №3).xlsx")
+
+
+str <- "Отсутствует вавы решение ;3"
+str <- "решение Отсутствует вавы ;3"
+
+flag <- stri_detect_regex(str, "(отсутствует.*решение|решение.*отсутствует)", case_insensitive=TRUE)

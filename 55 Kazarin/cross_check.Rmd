@@ -60,11 +60,43 @@ check_1 <- anti_join(subrep2, subrep1, by="oip") %>% arrange(oip)
 check_1
 ```
 ## Отчет #2: Перечень ОИП с разными наименованиями
+Осуществляется проверка отчета №1, что творится в отчете №2 -- неважно
 ```{r}
-check_2 <- rep1 %>%
+subrep1 <- rep1 %>%
   select(grp_1, grp_2) %>%
-  group_by(grp_1, grp_2) %>%
-  summarise(records=n()) %>%
-  filter(records>1)
+  rename(oip=grp_1, name=grp_2) %>%
+  mutate(joint = str_c(oip, name, sep=" ")) %>%
+  filter(str_detect(oip, '\\d{3}-\\d{7}$')) # Только родительские ОИП
+
+subrep2 <- rep2 %>%
+  select(col_A, col_B) %>%
+  rename(oip=col_A, name=col_B) %>%
+  mutate(joint = str_c(oip, name, sep=" ")) %>%
+  filter(str_detect(oip, '\\d{3}-\\d{7}$')) # Только родительские ОИП
+
+check_2 <- dplyr::anti_join(subrep1, subrep2, by="joint")
+
+check_2
+```
+## Отчет #3: Перечень ОИП с различной стоимостью с указанием относительной разницы
+```{r}
+subrep1 <- rep1 %>%
+  select(grp_1, grp_2, grp_7, grp_23) %>%
+  rename(oip=grp_1, name=grp_2, cost_1=grp_7) %>%
+  filter(str_detect(oip, "\\d{3}-\\d{7}$")) %>% # Только родительские ОИП
+  filter(!stri_detect_regex(grp_23, "(отсутствует.*решение|решение.*отсутствует)", case_insensitive=TRUE))
+
+subrep2 <- rep2 %>%
+  select(col_A, col_B, col_K) %>%
+  rename(oip=col_A, name=col_B, cost_2=col_K) %>%
+  filter(str_detect(oip, '\\d{3}-\\d{7}$')) # Только родительские ОИП
+  
+check_3 <- subrep1 %>%
+  left_join(subrep2, by="oip") %>%
+  mutate(delta=as.numeric(cost_1)-as.numeric(cost_2)) %>%
+  arrange(desc(delta)) %>%
+  select(delta, everything())
+
+check_3
 ```
 
