@@ -45,17 +45,17 @@ rep1 <- loadReportsType1("./data-verification/")
 
 ## Отчет #1: Перечень ОИП которых нет в отчете №1
 ```{r}
-oip1 <- rep1 %>%
+subrep1 <- rep1 %>%
   filter(str_detect(grp_1, '\\d{3}-\\d{7}$')) %>% # Только родительские ОИП
   select(grp_1) %>%
   rename(oip=grp_1)
 
-oip2 <- rep2 %>%
+subrep2 <- rep2 %>%
   filter(str_detect(col_A, '\\d{3}-\\d{7}$')) %>% # Только родительские ОИП
   select(col_A) %>%
   rename(oip=col_A)
 
-check_1 <- anti_join(oip2, oip1, by="oip") %>% arrange(oip)
+check_1 <- anti_join(subrep2, subrep1, by="oip") %>% arrange(oip)
 
 check_1
 ```

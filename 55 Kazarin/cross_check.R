@@ -36,17 +36,49 @@ rep3 <- loadReportsType3("./data-verification/")
 rep1 <- loadReportsType1("./data-verification/")
 
 # -- Проверка 'Перечень ОИП которых нет в отчете №X'
-oip1 <- rep1 %>%
-  filter(str_detect(grp_1, '\\d{3}-\\d{7}$')) %>% # Только родительские ОИП
+subrep1 <- rep1 %>%
   select(grp_1) %>%
+  filter(str_detect(grp_1, '\\d{3}-\\d{7}$')) %>% # Только родительские ОИП
   rename(oip=grp_1)
 
-oip2 <- rep2 %>%
-  filter(str_detect(col_A, '\\d{3}-\\d{7}$')) %>% # Только родительские ОИП
+subrep2 <- rep2 %>%
   select(col_A) %>%
+  filter(str_detect(col_A, '\\d{3}-\\d{7}$')) %>% # Только родительские ОИП
   rename(oip=col_A)
 
-check_1 <- anti_join(oip2, oip1, by="oip") %>% arrange(oip)
+check_1 <- anti_join(subrep2, subrep1, by="oip") %>% arrange(oip)
+
+# -- Проверка 'Перечень ОИП с разными наименованиями'
+subrep1 <- rep1 %>%
+  select(grp_1, grp_2) %>%
+  rename(oip=grp_1, name=grp_2) %>%
+  filter(str_detect(oip, '\\d{3}-\\d{7}$')) # Только родительские ОИП
+
+subrep2 <- rep2 %>%
+  select(col_A, col_B) %>%
+  rename(oip=col_A, name=col_B) %>%
+  filter(str_detect(oip, '\\d{3}-\\d{7}$')) # Только родительские ОИП
+
+check_2 <- dplyr::setdiff(subrep1, subrep2)
+stop()
+
+
+subrep1 <- rep1 %>%
+  select(grp_1, grp_2) %>%
+  filter(str_detect(grp_1, '\\d{3}-\\d{7}$')) %>% # Только родительские ОИП
+  mutate(joint = str_c(grp_1, grp_2, sep=" ")) %>%
+  rename(oip=grp_1)
+
+subrep2 <- rep2 %>%
+  select(col_A, col_B) %>%
+  filter(str_detect(col_A, '\\d{3}-\\d{7}$')) %>% # Только родительские ОИП
+  mutate(joint = str_c(col_A, col_B, sep=" ")) %>%
+  rename(oip=col_A)
+
+check_2 <- anti_join(subrep2, subrep1, by="oip") %>% arrange(oip)
+
+stop()
+
 
 # -- Проверка 'Перечень ОИП с разными наименованиями'
 
