@@ -1,3 +1,9 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 library(dplyr)
 library(lubridate)
 library(ggplot2)
@@ -34,8 +40,11 @@ flog.info("============= Parsing started ===============")
 rep2 <- loadReportsType2("./data-verification/Отчет (отчет №2) 022, 056.xlsx")
 rep3 <- loadReportsType3("./data-verification/")
 rep1 <- loadReportsType1("./data-verification/")
+```
+# Проверка отчета в разрезе ОИП (отчет №1)
 
-# -- Проверка 'Перечень ОИП которых нет в отчете №X'
+## Отчет #1: Перечень ОИП которых нет в отчете №1
+```{r}
 oip1 <- rep1 %>%
   filter(str_detect(grp_1, '\\d{3}-\\d{7}$')) %>% # Только родительские ОИП
   select(grp_1) %>%
@@ -48,23 +57,14 @@ oip2 <- rep2 %>%
 
 check_1 <- anti_join(oip2, oip1, by="oip") %>% arrange(oip)
 
-# -- Проверка 'Перечень ОИП с разными наименованиями'
-
+check_1
+```
+## Отчет #2: Перечень ОИП с разными наименованиями
+```{r}
 check_2 <- rep1 %>%
   select(grp_1, grp_2) %>%
   group_by(grp_1, grp_2) %>%
   summarise(records=n()) %>%
   filter(records>1)
+```
 
-stop()
-# dir(path="./data-verification/", pattern="*№3*.xl*", full.names=TRUE)
-# dir(path="./data-verification/", pattern="^(?!~).*№\\s*3", full.names=TRUE)
-# stri_match_all_regex(basename_matches, pattern='^.*/(?!\\~)[^/]*?\\.xl.*$')
-
-file_names <- getExcelFileList("./data-verification/", pattern="*№\\s*3")
-write(file_names, file="test.txt")
-fname <- stri_enc_toutf8(file_names[[1]])
-fname <- file_names[[1]]
-raw <- read_excel(fname)
-col_types <- readxl:::xlsx_col_types(fname)
-col_types <- readxl:::xlsx_col_types("./data-verification/022 - Отчет о см. ст. по ОКС (Отчет №3).xlsx")

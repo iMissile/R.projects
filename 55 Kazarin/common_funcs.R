@@ -75,3 +75,95 @@ getOksData <- function(filename, sheetname = "") {
   
   df2
 }
+
+getExcelColName <- function (n) {
+  m <- n - 1
+  if_else(m < 26, LETTERS[m + 1], paste0(LETTERS[as.integer(m / 26)], LETTERS[as.integer(m %%26 ) + 1]))
+}
+
+getExcelFileList <- function(path=".", pattern="") {
+  basename_matches <- dir(path, pattern, full.names=TRUE)
+  basename_matches
+  # пропускаем локи открытого файла
+  partial_matches <- stri_match_all_regex(basename_matches, pattern='^.*/(?!\\~)[^/]*?\\.xl.*$') # тут list
+  full_matches <- na.omit(unlist(partial_matches))
+  # для корректной работы надо потом прогнать path <- readxl:::check_file(path) !!!!
+  
+  # stri_encode(full_matches, to=stri_enc_get())
+  # full_matches <- partial_matches[!sapply(partial_matches, function(x) all(is.na(x)))] # удаляем NA
+  #str(full_matches)
+}
+
+loadExcelReportList <- function(file_list) {
+  # хелпер для отчетов 1 и 3
+  # browser()
+  ret <-
+    foreach(fname = iter(file_list),
+            .packages = 'futile.logger',
+            .combine = rbind) %do% {
+              flog.info(paste0("Parsing report file: ", fname))
+              
+              # адресацию ведем по именам колонок, как в Excel, поэтому ручные названия все дропаем
+              # хак по считыванию типов колонок
+              raw <- read_excel(fname, col_names=FALSE)
+              flog.info(paste0("Columns = ", ncol(raw)))
+              
+              # col_types <- readxl:::xlsx_col_types(fname)
+              col_types <- rep("text", ncol(raw))
+              col_names <- str_c("grp_", seq_along(col_types))
+              
+              raw <- read_excel(fname,
+                                col_types = col_types,
+                                col_names = col_names,
+                                skip = 0) # в первой строке просто написано "Отчетная форма"
+              
+              # выбираем только те строки в которых есть упоминание про ОИП
+              ret <- raw %>%
+                # filter(str_detect(oip_full, '\\d{3}-\\d{7}\\.\\d{4}')) %>% # 022-2000791.0250
+                mutate(fname = fname)
+            }
+}
+
+loadReportsType1 <- function(path){
+  # отчет в разрезе ОИП (отчет №1); 022-2016-03кв; несколько файлов эксель
+  file_list <- getExcelFileList(path, pattern="*№\\s*1")
+  flog.info(paste0("Report #1 file list: ", file_list))
+  
+  raw <- loadExcelReportList(file_list)
+  raw %>% filter(str_detect(grp_1, '\\d{3}-\\d{7}')) # 022-2000791
+}
+
+loadReportsType2 <- function(fname){
+  # выгрузка из САП (отчет №2); отчет с детализацией по ОКС; один файл эксель
+  flog.info(paste0("Parsing report #2 file: ", fname))
+  
+  # адресацию ведем по именам колонок, как в Excel, поэтому ручные названия все дропаем
+  # хак по считыванию типов колонок
+  raw <- read_excel(fname)
+  
+  # col_types <- readxl:::xlsx_col_types(fname)
+  col_types <- rep("text", ncol(raw))
+  col_names <- str_c("col_", getExcelColName(seq_along(col_types)))
+  flog.info(paste0("Columns = ", ncol(raw)))
+  
+  raw <- read_excel(fname,
+                    col_types=col_types,
+                    col_names=col_names, 
+                    skip = 0) # в первой строке просто написано "Отчетная форма"
+  
+  # выбираем только те строки в которых есть упоминание про ОИП
+  ret <- raw %>%
+    # filter(str_detect(oip_full, '\\d{3}-\\d{7}\\.\\d{4}')) %>% # 022-2000791.0250
+    filter(str_detect(col_A, '\\d{3}-\\d{7}')) # 022-2000791
+  
+}
+
+loadReportsType3 <- function(path){
+  # отчет в разрезе ОКС (отчет №3); отчет о СС ИПР; несколько файлов эксель
+  file_list <- getExcelFileList(path, pattern="*№\\s*3")
+  flog.info(paste0("Report #3 file list: ", file_list))
+  
+  raw <- loadExcelReportList(file_list)
+  raw %>% filter(str_detect(grp_1, '\\d{3}-\\d{7}')) # 022-2000791
+}
+
