@@ -1,5 +1,5 @@
 library(rJava)
-library( ReporteRs )
+library(ReporteRs)
 
 # Creation of mydoc, a mydocx object
 mydoc <- docx( )
