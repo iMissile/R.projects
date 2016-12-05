@@ -1,0 +1,12 @@
+Ну да. И в приложении
+  output$downloadData <- downloadHandler(
+    filename = function() {
+      paste("data-", Sys.Date(), ".docx", sep="")
+    },
+    content = function(file) {
+      writeDoc(doc, file)
+    }
+  )
+это в server.R
+А в ui.R
+downloadButton("downloadData", "Сформировать отчёт в формате docx", class = "btn-primary")
