@@ -1,7 +1,10 @@
 getOksData <- function(filename, sheetname = "") {
+
   # хак по считыванию типов колонок
-  col_types <- readxl:::xlsx_col_types(filename)
-  col_types <- rep("text", length(col_types))
+  raw <- read_excel(filename)
+  col_types <- rep("text", ncol(raw))
+  # col_types <- readxl:::xlsx_col_types(filename)
+  # col_types <- rep("text", length(col_types))
   
   #col_types <- rep("text", length(col_types))
   raw <- read_excel(filename,

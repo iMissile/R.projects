@@ -18,20 +18,23 @@ library(randomForest)
 
 datafile <- "./data1/2016.xlsx"
 
-get_month_data <- function(filename, sheetname = "") {
+get_month_data <- function(filename, sheetname="") {
   # хак по считыванию типов колонок
-  col_types <- readxl:::xlsx_col_types(datafile)
-  
-  #col_types <- rep("text", length(col_types))
+  tmp <- read_excel(filename, col_names=FALSE, sheet=sheetname)
+  browser()
+  col_types <- rep("text", ncol(tmp))
+
   raw <- read_excel(filename,
-                   sheet = sheetname,
-                   col_types = col_types) #, skip = 1)
+                   sheet=sheetname,
+                   col_names=FALSE,
+                   col_types=col_types) #, skip = 1)
+  browser()
   
   # имеем проблему, колонки с NA вместо имени
   # можно писать в одно преобразование, но специально разбил на шаги
   # трансформируем колонки
   df0 <- raw %>%
-    repair_names(prefix = "repaired_", sep = "")
+    repair_names(prefix="repaired_", sep="")
   
   # названи€ колонок размазаны по строкам 2-3. 2-а€ -- группирующа€, 3-€ -- детализирующа€
   # Ќадо их слить и переименовать колонки, причем приоритет имеет строка 3, как уточн€юща€
@@ -41,11 +44,11 @@ get_month_data <- function(filename, sheetname = "") {
   # различные виды join не подойдут, поскольку мы хотим оставить все строки вне зависимости от результата
   # сливать по именам опасно, вдруг есть дубли
   # names.df <- dplyr::full_join(name_c2, name_c3, by = "name")
-  names.df <- tibble(name_c2 = tidyr::gather(df0[1, ], key = name, value = v)$v,
-                     name_c3 = tidyr::gather(df0[2, ], key = name, value = v)$v) %>%
+  names.df <- tibble(name_c2=tidyr::gather(df0[1, ], key=name, value=v)$v,
+                     name_c3=tidyr::gather(df0[2, ], key=name, value=v)$v) %>%
     # http://www.markhneedham.com/blog/2015/06/28/r-dplyr-update-rows-with-earlierprevious-rows-values/
     mutate(name_c2 = na.locf(name_c2)) %>%
-    mutate(name.fix = ifelse(is.na(name_c3), name_c2, str_c(name_c2, name_c3, sep = ": "))) %>%
+    mutate(name.fix = ifelse(is.na(name_c3), name_c2, str_c(name_c2, name_c3, sep=": "))) %>%
     mutate(name.fix = str_replace_all(name.fix, "\r", " ")) %>% # перевод строки
     mutate(name.fix = str_replace_all(name.fix, "\n", " ")) %>% # перевод строки
     mutate(name.fix = str_replace_all(name.fix, "  ", " "))
@@ -89,12 +92,24 @@ get_month_data <- function(filename, sheetname = "") {
   df2
 }
 
+# тест загрузки
+tmp <- read_excel(datafile, col_names=FALSE, sheet="январь")
+browser()
+ctypes <- rep("text", ncol(tmp)+4)
+#ctypes <- readxl:::xlsx_col_types(datafile)
+raw <- read_excel(datafile,
+                  sheet="январь",
+                  col_names=FALSE,
+                  col_types=ctypes) #, skip = 1)
+
+browser()
+
 # соберем все страницы вместе
 sheets <- c("январь", "‘евраль", "ћарт", "јпрель", "ћай", "»юнь", 
             "»юль", "јвгуст", "—ент€брь", "ќкт€брь", "Ќо€брь", "ƒекабрь")
 
-df <- foreach(it = iter(sheets), .combine = rbind, .packages='readxl') %do% {
-  temp.df <- get_month_data(datafile, it) %>% mutate(month = it)
+df <- foreach(it=iter(sheets), .combine=rbind, .packages='readxl') %do% {
+  temp.df <- get_month_data(datafile, it) %>% mutate(month=it)
 
   temp.df
 }
@@ -107,7 +122,7 @@ plot(df %>% dplyr::select(-mark_out, -month))
 # =============== попробуем нат€нуть random forest
 
 # sample_frac разворачивает chr факторы обратно в chr, поэтому принудительно сделаем словарь типов арткикулов
-mark.dictionary <- tibble(mark_out = levels(as.factor(slicedata$mark_out))) %>% mutate(mark = row_number())
+mark.dictionary <- tibble(mark_out = levels(as.factor(df$mark_out))) %>% mutate(mark = row_number())
 
 slicedata <- df %>% 
   select(-month) %>% # мес€ц дл€ прогнозировани€ неважен
