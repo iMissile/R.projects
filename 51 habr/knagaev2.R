@@ -69,6 +69,25 @@ as.Date(34519, origin = "1904-01-01") # 1998-07-05
 
 stop()
 
+
+# =========== ”пражнение 5.2.4 пункт 1.3 from r4ds
+# Find all flights were operated by United, American, or Delta
+
+library(nycflights13)
+library(tidyverse)
+library(stringr)
+
+head(flights)
+
+carrier_list <- airlines %>%
+  filter(str_detect(name, '^United|^American|^Delta')) %>%
+  '[['('carrier')
+
+
+f1 <- flights %>%
+  filter(str_detect(carrier, str_c(carrier_list, collapse='|')))
+stop()
+
 # самый простой вариант
 # d <- purrr::map(c(20090122, 20090123, 34890), pd)
 # df2$priority_date <- purrr::map(c(20090122, 20090123, 34890), pd)
