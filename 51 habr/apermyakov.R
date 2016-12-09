@@ -20,15 +20,16 @@ datafile <- "./data1/2016.xlsx"
 
 get_month_data <- function(filename, sheetname="") {
   # хак по считыванию типов колонок
-  tmp <- read_excel(filename, col_names=FALSE, sheet=sheetname)
-  browser()
-  col_types <- rep("text", ncol(tmp))
+  ctypes <- readxl:::xlsx_col_types(filename) # не очень красиво, работает дл€ xlsx
+  ctypes <- rep("text", length(ctypes))
+  #tmp <- read_excel(filename, col_names=FALSE, sheet=sheetname)
+  #browser()
+  #ctypes <- rep("text", ncol(tmp))
 
   raw <- read_excel(filename,
                    sheet=sheetname,
-                   col_names=FALSE,
-                   col_types=col_types) #, skip = 1)
-  browser()
+                   col_names=TRUE,
+                   col_types=ctypes) #, skip = 1)
   
   # имеем проблему, колонки с NA вместо имени
   # можно писать в одно преобразование, но специально разбил на шаги
@@ -92,17 +93,17 @@ get_month_data <- function(filename, sheetname="") {
   df2
 }
 
-# тест загрузки
-tmp <- read_excel(datafile, col_names=FALSE, sheet="январь")
-browser()
-ctypes <- rep("text", ncol(tmp)+4)
-#ctypes <- readxl:::xlsx_col_types(datafile)
-raw <- read_excel(datafile,
-                  sheet="январь",
-                  col_names=FALSE,
-                  col_types=ctypes) #, skip = 1)
-
-browser()
+# # тест загрузки
+# tmp <- read_excel(datafile, col_names=FALSE, sheet="январь")
+# browser()
+# ctypes <- rep("text", ncol(tmp)+4)
+# #ctypes <- readxl:::xlsx_col_types(datafile)
+# raw <- read_excel(datafile,
+#                   sheet="январь",
+#                   col_names=FALSE,
+#                   col_types=ctypes) #, skip = 1)
+# 
+# browser()
 
 # соберем все страницы вместе
 sheets <- c("январь", "‘евраль", "ћарт", "јпрель", "ћай", "»юнь", 
