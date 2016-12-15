@@ -1,0 +1,137 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+rm(list=ls()) # очистим все переменные
+#library(tidyverse)
+library(tibble)
+library(dplyr)
+library(forcats)
+library(ggplot2)
+library(ggnetwork) # https://cran.r-project.org/web/packages/ggnetwork/vignettes/ggnetwork.html
+library(sna)
+library(igraph)
+library(intergraph) # http://mbojan.github.io/intergraph/
+#library(magrittr)
+
+```
+
+# Example 1
+
+Создадим объект network по инструкции из ggnetwork: [Let’s define a small random graph to illustrate each component of ggnetwork](https://cran.r-project.org/web/packages/ggnetwork/vignettes/ggnetwork.html#minimal-example)
+```{r}
+n <- network(rgraph(10, tprob = 0.2), directed = FALSE)
+g <- asIgraph(n) # convert to 'igraph'
+```
+
+А теперь создадим с помощью удобного ручного синтаксиса `igraph`.
+
+In directed graphs, edges will be created [only](http://igraph.org/r/doc/graph_from_literal.html) if the edge operator includes a arrow head (‘+’).
+```{r}
+g <- graph_from_literal(A-+B-+C, D-+A, C+-E-+D, E-+B)
+V(g) # Vertex sequence
+E(g) # Edge sequence
+net <- asNetwork(g)
+g <- g %>% add_layout_(on_grid())
+# plot(g, layout=layout_on_grid(g))
+plot(g)
+plot(g, layout=layout_as_star(g))
+```
+
+
+Открытым остается вопрос размещения узлов сети. Пакеты `ggnetwork` и `igraph` обладают различными возможностями. И, конечно же, остается возможность ручного размещения узлов. В пакете `igraph` можно получить координаты размещения узлов по интересуемому алгоритму и потом их использовать для ручного обновления в объекте `network` при отрисовке сетки средствами `ggplot`.
+```{r}
+# Store coordinates for the layout in lo
+lo <- layout_on_grid(g) # lo is a matrix of coordinates
+colnames(lo) <- c("x_subst", "y_subst")
+coord <- as_tibble(lo)
+coord$vertex.names <- V(g)$name
+# достанем имена узлов, они должны быть уникальными! (ну мы так и генерировали, по другому не получается)
+# позже слияние будем проводить по именам
+coord
+
+```
+
+
+We now add a categorical edge attribute called "type", which is set to either "x", "y" or "z", and a continuous vertex attribute called  "day", which is set to either 1, 2 or 3.
+
+Для управления размещением вершин в объекте `network` применяется функция [`gplot.layout`](http://www.rdocumentation.org/packages/sna/functions/gplot.layout).
+Упоминание про это есть в описании пакета `ggnetwork`, секция [Main building blocks](https://cran.r-project.org/web/packages/ggnetwork/vignettes/ggnetwork.html#more-building-blocks)
+```{r}
+e <- network.edgecount(net)
+network::set.edge.attribute(net, "type", sample(letters[24:26], e, replace=TRUE))
+network::set.edge.attribute(net, "day", sample(1:3, e, replace = TRUE))
+m <- ggnetwork(net)#  %>% mutate(l=as.character(vertex.names))
+```
+На самом деле получается немного кривой `data.frame`, поскольку в колонки помещается матрица nx1, а после этого `dplyr` не работает. Проверим класс каждой колонки в полученном `data.frame`
+
+In future you can check your dataframe with this to identify the class of each variable: `sapply(your_df_here, class)`
+```{r}
+sapply(m, class)
+
+
+#  # превращаем в character, иначе после переноса factor теряется, остаются только целые числа
+#library(magrittr)
+# library(purrr)
+# m %>% mutate(l=as.character(vertex.names))
+# m2 <- purrr::map(m, c('x', 'y', 'xend', 'yend'), as.vector)
+as.vector(m$x)
+
+# вариант преобразования №1
+library(magrittr)
+cols = c('x', 'y')
+# df[,cols] %<>% lapply(function(x) as.numeric(as.character(x))
+m2 <- m
+m2[ ,cols] %<>% lapply(function(x) as.vector(x))
+
+# вариант преобразования №2
+m3 <- m %>%
+  purrr::dmap_at(c('x', 'y', 'xend', 'yend'), as.numeric) %>% 
+  purrr::dmap_at(c('vertex.names'), as.character)
+m3
+
+```
+Заменим расстановку узлов из пакета 'network', на другие (ручные или полученные, например, в пакете `igraph`).
+И отрисуем.
+
+Есть ли нюанс в приведении к квадрату (0, 0) - (1, 1)?
+```{r}
+m4 <- m3 %>%
+  left_join(coord, by="vertex.names") %>%
+  mutate(x_subst2 = rescale(x_subst, to=c(0, 1))) %>%
+  mutate(y_subst2 = rescale(y_subst, to=c(0, 1)))
+
+ggplot(m3, aes(x=x, y=y, xend=xend, yend=yend)) +
+  geom_edges(aes(linetype=type, color=type, lwd=type), curvature = 0.1) +
+  geom_nodelabel(aes(label=vertex.names),
+                 fontface="bold") +
+  theme_blank()
+```
+
+```{r}
+class(net)
+n <- ggnetwork(net, layout = "circle")
+
+# просто тупо подменим на ручной layout
+gplot.layout.circle(net, layout.par)
+# !! из анализа github понял, что можно в качестве layout матрицу подсовывать!!
+n <- ggnetwork(net, layout=lo)
+
+ggplot(n, aes(x = x, y = y, xend = xend, yend = yend)) +
+  geom_edges(aes(linetype=type, color=type, lwd=type)) +
+  geom_nodelabel(aes(label=vertex.names),
+                 fontface="bold") +
+  theme_blank()
+```
+
+
+```{r}
+library(scales)
+kk <- c(1, 3, 5, 6)
+rescale(kk, to=c(0, 1))
+# Alternatively:
+# scale(x,center=min(x),scale=diff(range(x)))
+```
+
