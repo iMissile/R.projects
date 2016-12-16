@@ -34,7 +34,12 @@ In directed graphs, edges will be created [only](http://igraph.org/r/doc/graph_f
 g <- graph_from_literal(A-+B-+C, D-+A, C+-E-+D, E-+B)
 V(g) # Vertex sequence
 E(g) # Edge sequence
-net <- asNetwork(g)
+```
+
+Создадим необходимые атрибуты с помощью пакета `igraph`. Он функционально много мощнее.
+
+igraph::set_vertex_attribute(g, "ip_addr", stringr::str_c("192.168.1.", sample(1:254, s, replace=FALSE))) # or %v%
+```{r}
 g <- g %>% add_layout_(on_grid())
 # plot(g, layout=layout_on_grid(g))
 plot(g)
@@ -61,12 +66,13 @@ We now add a categorical edge attribute called "type", which is set to either "x
 Для управления размещением вершин в объекте `network` применяется функция [`gplot.layout`](http://www.rdocumentation.org/packages/sna/functions/gplot.layout).
 Упоминание про это есть в описании пакета `ggnetwork`, секция [Main building blocks](https://cran.r-project.org/web/packages/ggnetwork/vignettes/ggnetwork.html#more-building-blocks)
 ```{r}
+net <- intergraph::asNetwork(g) # сетку мы построили выше с помощью пакета `igraph`
 e <- network.edgecount(net)
 network::set.edge.attribute(net, "type", sample(letters[24:26], e, replace=TRUE))
 network::set.edge.attribute(net, "day", sample(1:3, e, replace = TRUE))
 s <- network.size(net)
 s
-network::set.vertex.attribute(net, "ip_addr", stringr::str_c("192.168.1.", sample(1:254, s, replace=FALSE)))            # or %v% Letter the vertices
+network::set.vertex.attribute(net, "ip_addr", stringr::str_c("192.168.1.", sample(1:254, s, replace=FALSE))) # or %v% Letter the vertices
 m <- ggnetwork(net)#  %>% mutate(l=as.character(vertex.names))
 ```
 На самом деле получается немного кривой `data.frame`, поскольку в колонки помещается матрица nx1, а после этого `dplyr` не работает. Проверим класс каждой колонки в полученном `data.frame`
@@ -97,6 +103,14 @@ m3 <- m %>%
 m3
 
 ```
+Некоторые эксперименты по анализу сети. Изучение показало, что `igraph` функционально гораздо богаче
+```{r}
+network::get.edges(net, 1)
+network::get.dyads.eids(net, 2, 3)
+```
+
+
+
 Заменим расстановку узлов из пакета 'network', на другие (ручные или полученные, например, в пакете `igraph`).
 И отрисуем.
 
