@@ -5,7 +5,7 @@ output: html_notebook
 
 ```{r}
 rm(list=ls()) # очистим все переменные
-#library(tidyverse)
+library(tidyverse)
 library(tibble)
 library(dplyr)
 library(forcats)
@@ -14,6 +14,7 @@ library(igraph)
 library(intergraph) # http://mbojan.github.io/intergraph/
 library(scales)
 library(ggplot2)
+# library(ggpmisc)
 library(ggnetwork) # https://cran.r-project.org/web/packages/ggnetwork/vignettes/ggnetwork.html
 #library(magrittr)
 
@@ -40,6 +41,7 @@ E(g) # Edge sequence
 
 ```{r}
 # прошлись по вершинам
+set.seed(123)
 g <- igraph::set_vertex_attr(g, "ip_addr", # "label"
                              value=stringr::str_c("192.168.1.", sample(1:254, vcount(g), replace=FALSE)))
 # прошлись по гран€м
@@ -100,14 +102,15 @@ network::set.edge.attribute(net, "day", sample(1:3, e, replace = TRUE))
 s <- network.size(net)
 s
 network::set.vertex.attribute(net, "ip_addr_network", stringr::str_c("192.168.1.", sample(1:254, s, replace=FALSE))) # or %v% Letter the vertices
-m <- ggnetwork(net)#  %>% mutate(l=as.character(vertex.names))
+
 ```
 Ќа самом деле получаетс€ немного кривой `data.frame`, поскольку в колонки помещаетс€ матрица nx1, а после этого `dplyr` не работает. ѕроверим класс каждой колонки в полученном `data.frame`
 
 In future you can check your dataframe with this to identify the class of each variable: `sapply(your_df_here, class)`
 ```{r}
-sapply(m, class)
+m <- ggnetwork(net)#  %>% mutate(l=as.character(vertex.names))
 
+sapply(m, class)
 
 #  # превращаем в character, иначе после переноса factor тер€етс€, остаютс€ только целые числа
 #library(magrittr)
@@ -167,19 +170,25 @@ n <- ggnetwork(net, layout=lo)
 
 # не рисует метки на гран€х, если подсовывать объект, преобразованный функцией ggnetwork!
 # может из-за того, что там не вектора, а массивы 1 x n?
-g <- g %>% add_layout_(on_grid())
+g <- g %>% add_layout_(on_grid(), overwrite=TRUE)
+sapply(n, class)
+m3 <- n %>%
+  purrr::dmap_at(c('x', 'y', 'xend', 'yend'), as.numeric) %>% 
+  purrr::dmap_at(c('vertex.names', 'ip_addr'), as.character)
+
 gp <-
-  ggplot(g, aes(x=x, y=y, xend=xend, yend=yend)) +
+  ggplot(n, aes(x=x, y=y, xend=xend, yend=yend)) +
   # geom_edges(aes(linetype=type, color=type, lwd=type)) +
   geom_edges(aes(linetype=type), color="grey75", lwd=1.2)+ #  , curvature = 0.1) +
   geom_nodes(color="gold", size=8) +
   # geom_nodelabel(aes(label=vertex.names), fontface="bold") +
   # geom_nodelabel_repel(aes(color=ip_addr, label=vertex.names), fontface = "bold", box.padding=unit(2, "lines")) +
-  geom_nodelabel_repel(aes(label=ip_addr), fontface = "bold", box.padding=unit(2, "lines"), 
-                       segment.colour="red", segment.size=1) +
-  #geom_edgetext_repel(aes(label=type), color="white", fill="grey25",
-  #                    box.padding = unit(1, "lines")) +
-  geom_edgetext(aes(label=type), color="white", fill="blue") +
+  geom_nodelabel_repel(aes(label=ip_addr), fontface = "bold", box.padding=unit(2, "lines"),                        segment.colour="red", segment.size=0.5, size=3) +
+  geom_edgetext_repel(aes(label=volume), color="white", fill="grey25",
+                      box.padding=unit(1, "lines"), size=2) +
+  # geom_nodelabel(aes(label=ip_addr, color=volume), fill="blue", show.legend=TRUE) +
+  # stat_debug_group() +
+  
   theme_blank() +
   # theme_minimal() +
   theme(axis.text = element_blank(),
@@ -193,10 +202,22 @@ gp
 # http://blog.revolutionanalytics.com/2009/01/10-tips-for-making-your-r-graphics-look-their-best.html
 # http://gforge.se/2013/02/exporting-nice-plots-in-r/ (см. отдельно UPDATE и "lines and text anti-aliased - not fills/polygons")
 png(filename="plot_w_cairo.png", type="cairo", #pointsize=24, 
-    units="cm", height=10, width=15, res=300, antialias="default")
+    units="cm", height=10, width=20, res=150, pointsize=8, antialias="default")
 gp
 dev.off()
 ```
+ћетки на вершинах почему-то не заработали после преобразовани€ ggnetwork. ѕопробуем погл€деть, почему.
+√л€жу [исходник](https://github.com/briatte/ggnetwork/blob/master/R/geom-edges.R) функций
+и [тут](https://github.com/briatte/ggnetwork/blob/master/R/geom-nodes.R)
+```{r}
+
+data <- subset(n, !(x == xend & y == yend))
+data$x = (data$x + data$xend) / 2
+data$y = (data$y + data$yend) / 2
+unique(subset(data, select = c(-xend, -yend)))
+
+```
+
 
 
 ```{r}
