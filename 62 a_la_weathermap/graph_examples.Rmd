@@ -9,12 +9,12 @@ rm(list=ls()) # очистим все переменные
 library(tibble)
 library(dplyr)
 library(forcats)
-library(ggplot2)
-library(ggnetwork) # https://cran.r-project.org/web/packages/ggnetwork/vignettes/ggnetwork.html
 library(sna)
 library(igraph)
 library(intergraph) # http://mbojan.github.io/intergraph/
 library(scales)
+library(ggplot2)
+library(ggnetwork) # https://cran.r-project.org/web/packages/ggnetwork/vignettes/ggnetwork.html
 #library(magrittr)
 
 ```
@@ -43,9 +43,11 @@ E(g) # Edge sequence
 g <- igraph::set_vertex_attr(g, "ip_addr", # "label"
                              value=stringr::str_c("192.168.1.", sample(1:254, vcount(g), replace=FALSE)))
 # прошлись по гран€м
-val <- stringr::str_c("UP = ", sample(1:10, ecount(g), replace=FALSE), "ћбит/с\n", 
-                      "DOWN = ", sample(1:100, ecount(g), replace=FALSE), "ћбит/с")
+val <- stringr::str_c("UP = ", sample(1:10, ecount(g), replace=FALSE), " ћбит/с\n", 
+                      "DOWN = ", sample(1:100, ecount(g), replace=FALSE), " ћбит/с")
 g <- igraph::set_edge_attr(g, "volume", value=val)
+g <- igraph::set_edge_attr(g, "type", value=sample(letters[24:26], ecount(g), replace=TRUE))
+
 
 
 g <- g %>% add_layout_(on_grid())
@@ -154,6 +156,7 @@ ggplot(m3, aes(x=x, y=y, xend=xend, yend=yend)) +
 ```
 
 ```{r}
+net <- intergraph::asNetwork(g) # пересоберем сетку, как это сделали выше
 class(net)
 n <- ggnetwork(net, layout = "circle")
 
@@ -162,16 +165,23 @@ gplot.layout.circle(net, layout.par)
 # !! из анализа github пон€л, что можно в качестве layout матрицу подсовывать!!
 n <- ggnetwork(net, layout=lo)
 
+# не рисует метки на гран€х, если подсовывать объект, преобразованный функцией ggnetwork!
+# может из-за того, что там не вектора, а массивы 1 x n?
+g <- g %>% add_layout_(on_grid())
 gp <-
-  ggplot(n, aes(x=x, y=y, xend=xend, yend=yend)) +
+  ggplot(g, aes(x=x, y=y, xend=xend, yend=yend)) +
   # geom_edges(aes(linetype=type, color=type, lwd=type)) +
-  geom_edges(aes(linetype=type), color="grey75", lwd=1.2, curvature = 0.1) +
-  geom_nodes(color="gold", size = 8) +
+  geom_edges(aes(linetype=type), color="grey75", lwd=1.2)+ #  , curvature = 0.1) +
+  geom_nodes(color="gold", size=8) +
   # geom_nodelabel(aes(label=vertex.names), fontface="bold") +
   # geom_nodelabel_repel(aes(color=ip_addr, label=vertex.names), fontface = "bold", box.padding=unit(2, "lines")) +
-  geom_nodelabel_repel(aes(label=ip_addr), fontface = "bold", box.padding=unit(2, "lines"), segment.colour="red", segment.size=1) +
-  # theme_blank()
-  theme_minimal() +
+  geom_nodelabel_repel(aes(label=ip_addr), fontface = "bold", box.padding=unit(2, "lines"), 
+                       segment.colour="red", segment.size=1) +
+  #geom_edgetext_repel(aes(label=type), color="white", fill="grey25",
+  #                    box.padding = unit(1, "lines")) +
+  geom_edgetext(aes(label=type), color="white", fill="blue") +
+  theme_blank() +
+  # theme_minimal() +
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         panel.background = element_rect(fill = "grey25"),
