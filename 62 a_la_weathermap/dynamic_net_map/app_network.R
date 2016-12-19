@@ -7,6 +7,7 @@ library(scales)
 library(ggplot2)
 # library(ggpmisc)
 library(ggnetwork)
+library(Cairo)
 library(shiny)
 library(futile.logger)
 
@@ -147,7 +148,7 @@ server <- function(input, output, session) {
       
       
       png(filename=outfile, type="cairo", #pointsize=24, 
-          units="cm", height=10, width=20, res=150, pointsize=8, antialias="default")
+          units="px", height=height, width=width, res=72, pointsize=12, antialias="default")
       print(gp)
       dev.off()
       flog.info("Image rendered")
