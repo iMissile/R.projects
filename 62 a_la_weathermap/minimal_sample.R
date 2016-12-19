@@ -66,7 +66,7 @@ my_geom_edgetext <- function(mapping = NULL, data = NULL,
 # в ggnetwork функции geom_nodelabel и geom_edgetext почти идентичны
 # первая размещает все метки, а вторая -- нет
 # отличия в stat = StatNodes и stat = StatMidEdges
-g <- graph_from_literal(A-+B-+C, D-+A, C+-E-+D, E-+B)
+g <- graph_from_literal(A--B--C, D--A, C--E--D, E--B)
 set.seed(123)
 g <- igraph::set_vertex_attr(g, "ip_addr", # "label"
                              value=stringr::str_c("192.168.1.", sample(1:254, vcount(g), replace=FALSE)))
@@ -74,6 +74,12 @@ g <- igraph::set_vertex_attr(g, "ip_addr", # "label"
 val <- stringr::str_c("UP = ", sample(1:10, ecount(g), replace=FALSE))
 g <- igraph::set_edge_attr(g, "volume", value=val)
 g <- igraph::set_edge_attr(g, "type", value=sample(letters[24:26], ecount(g), replace=TRUE))
+# заменим ручками метку на конкретной грани
+eid <- get.edge.ids(g, c("B", "E"), directed=FALSE, error=FALSE, multi=FALSE)
+g <- igraph::set_edge_attr(g, "volume", index=eid, value="Manual")
+# аналогичное присваивание, cv http://igraph.org/r/doc/igraph-vs-attributes.html
+E(g)[eid]$volume <- "Hand-made"
+
 plot(g, layout=layout_on_grid(g))
 
 
@@ -94,12 +100,12 @@ gp <-
   geom_nodes(color="gold", size=8) +
   # geom_nodelabel(aes(label=vertex.names), fontface="bold") +
   # geom_nodelabel_repel(aes(color=ip_addr, label=vertex.names), fontface = "bold", box.padding=unit(2, "lines")) +
-  # geom_nodelabel_repel(aes(label=ip_addr), fontface = "bold", box.padding=unit(2, "lines"), 
-  #                      segment.colour="red", segment.size=1) +
+  geom_nodelabel_repel(aes(label=vertex.names), fontface = "bold", box.padding=unit(2, "lines"), 
+                      segment.colour="red", segment.size=1) +
   geom_edgetext_repel(aes(label=volume), color="white", fill="grey25",
                       box.padding = unit(1, "lines")) +
   # geom_edgetext(aes(label=ip_addr, color=volume), fill="green", show.legend=TRUE) +
-  geom_nodelabel(aes(label=ip_addr, color=volume), fill="blue", show.legend=TRUE) +
+  # geom_nodelabel(aes(label=ip_addr, color=volume), fill="blue", show.legend=TRUE) +
   # stat_debug_group() +
   
   theme_blank() +

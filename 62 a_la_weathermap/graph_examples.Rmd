@@ -32,7 +32,8 @@ g <- asIgraph(n) # convert to 'igraph'
 
 In directed graphs, edges will be created [only](http://igraph.org/r/doc/graph_from_literal.html) if the edge operator includes a arrow head (‘+’).
 ```{r}
-g <- graph_from_literal(A-+B-+C, D-+A, C+-E-+D, E-+B)
+g <- graph_from_literal(A-+B-+C, D-+A, C+-E-+D, E-+B, B+--+F)
+g <- graph_from_literal(A--B--C, D--A, C--E--D, E--B, B--F)
 V(g) # Vertex sequence
 E(g) # Edge sequence
 ```
@@ -144,7 +145,7 @@ network::get.dyads.eids(net, 2, 3)
 Заменим расстановку узлов из пакета 'network', на другие (ручные или полученные, например, в пакете `igraph`).
 И отрисуем.
 
-Есть ли нюанс в приведении к квадрату (0, 0) - (1, 1)?
+Есть ли нюанс в приведении к квадрату (0, 0) - (1, 1)? После экспериментов оказалось, что нет
 ```{r}
 m4 <- m3 %>%
   left_join(coord, by="vertex.names") %>%
@@ -179,12 +180,13 @@ m3 <- n %>%
 gp <-
   ggplot(n, aes(x=x, y=y, xend=xend, yend=yend)) +
   # geom_edges(aes(linetype=type, color=type, lwd=type)) +
-  geom_edges(aes(linetype=type), color="grey75", lwd=1.2)+ #  , curvature = 0.1) +
+  geom_edges(aes(linetype=type, color=volume), lwd=1.2)+ #  , curvature = 0.1) +
   geom_nodes(color="gold", size=8) +
   # geom_nodelabel(aes(label=vertex.names), fontface="bold") +
   # geom_nodelabel_repel(aes(color=ip_addr, label=vertex.names), fontface = "bold", box.padding=unit(2, "lines")) +
-  geom_nodelabel_repel(aes(label=ip_addr), fontface = "bold", box.padding=unit(2, "lines"),                        segment.colour="red", segment.size=0.5, size=3) +
-  geom_edgetext_repel(aes(label=volume), color="white", fill="grey25",
+  geom_nodelabel_repel(aes(label=ip_addr), fontface = "bold", box.padding=unit(2, "lines"), 
+                       segment.colour="red", segment.size=0.5, size=3) +
+  geom_edgetext_repel(aes(label=volume, color=volume), fill="grey25",
                       box.padding=unit(1, "lines"), size=2) +
   # geom_nodelabel(aes(label=ip_addr, color=volume), fill="blue", show.legend=TRUE) +
   # stat_debug_group() +
