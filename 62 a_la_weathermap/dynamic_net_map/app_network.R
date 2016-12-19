@@ -49,7 +49,7 @@ ui <- fluidPage(
            ),
     column(width = 5,
            # А здесь мы нарисуем отрендеренный вручную график
-           plotOutput("plot_render", height = 350,
+           imageOutput("image_render", height = 350
            )
     )
     
@@ -111,36 +111,6 @@ server <- function(input, output) {
     }
   })
 
-  output$plot_render <- renderPlot({
-    if (input$plot_type == "base") {
-      plot(mtcars$wt, mtcars$mpg)
-    } else if (input$plot_type == "ggplot2") {
-      gp <- ggplot(net, aes(x=x, y=y, xend=xend, yend=yend)) +
-        # geom_edges(aes(linetype=type, color=type, lwd=type)) +
-        geom_edges(aes(linetype=type), color="grey75", lwd=1.2)+ #  , curvature = 0.1) +
-        geom_nodes(color="gold", size=8) +
-        # geom_nodelabel(aes(label=vertex.names), fontface="bold") +
-        # geom_nodelabel_repel(aes(color=ip_addr, label=vertex.names), fontface = "bold", box.padding=unit(2, "lines")) +
-        geom_nodelabel_repel(aes(label=ip_addr), fontface = "bold", box.padding=unit(2, "lines"), 
-                             segment.colour="red", segment.size=1) +
-        geom_edgetext_repel(aes(label=volume), color="white", fill="grey25",
-                            box.padding = unit(1, "lines")) +
-        theme_blank() +
-        theme(axis.text = element_blank(),
-              axis.title = element_blank(),
-              panel.background = element_rect(fill = "grey25"),
-              panel.grid = element_blank())
-      
-      # сохраним в файл, разбираемся с антиалайзингом
-      # http://blog.revolutionanalytics.com/2009/01/10-tips-for-making-your-r-graphics-look-their-best.html
-      # http://gforge.se/2013/02/exporting-nice-plots-in-r/ (см. отдельно UPDATE и "lines and text anti-aliased - not fills/polygons")
-      png(filename="plot_w_cairo.png", type="cairo", #pointsize=24, 
-          units="cm", height=10, width=20, res=150, pointsize=8, antialias="default")
-      gp
-      dev.off()
-    }
-  })
-  
     
   output$click_info <- renderPrint({
     cat("input$plot_click:\n")
@@ -155,8 +125,12 @@ server <- function(input, output) {
     str(input$plot_dblclick)
   })
   output$brush_info <- renderPrint({
-    cat("input$plot_brush:\n")
-    str(input$plot_brush)
+    # cat("input$plot_brush:\n")
+    # str(input$plot_brush)
+    # Get width and height of image output
+    #w  <- session$clientData#$output_image_render_width
+    #h <- session$clientData#$output_image_render_height
+    #str(w, h)      
   })
 
   output$data_info <- renderPrint({
