@@ -1,10 +1,13 @@
 ---
 title: "R Notebook"
-output: html_notebook
+output:
+  html_notebook: default
+  pdf_document:
+    keep_tex: yes
 ---
 
 ```{r}
-rm(list=ls()) # очистим все переменные
+rm(list=ls()) # РѕС‡РёСЃС‚РёРј РІСЃРµ РїРµСЂРµРјРµРЅРЅС‹Рµ
 library(tidyverse)
 library(tibble)
 library(dplyr)
@@ -22,15 +25,15 @@ library(ggnetwork) # https://cran.r-project.org/web/packages/ggnetwork/vignettes
 
 # Example 1
 
-Создадим объект network по инструкции из ggnetwork: [Let’s define a small random graph to illustrate each component of ggnetwork](https://cran.r-project.org/web/packages/ggnetwork/vignettes/ggnetwork.html#minimal-example)
+РЎРѕР·РґР°РґРёРј РѕР±СЉРµРєС‚ network РїРѕ РёРЅСЃС‚СЂСѓРєС†РёРё РёР· ggnetwork: [LetвЂ™s define a small random graph to illustrate each component of ggnetwork](https://cran.r-project.org/web/packages/ggnetwork/vignettes/ggnetwork.html#minimal-example)
 ```{r}
 n <- network(rgraph(10, tprob = 0.2), directed = FALSE)
 g <- asIgraph(n) # convert to 'igraph'
 ```
 
-А теперь создадим с помощью удобного ручного синтаксиса `igraph`.
+Рђ С‚РµРїРµСЂСЊ СЃРѕР·РґР°РґРёРј СЃ РїРѕРјРѕС‰СЊСЋ СѓРґРѕР±РЅРѕРіРѕ СЂСѓС‡РЅРѕРіРѕ СЃРёРЅС‚Р°РєСЃРёСЃР° `igraph`.
 
-In directed graphs, edges will be created [only](http://igraph.org/r/doc/graph_from_literal.html) if the edge operator includes a arrow head (‘+’).
+In directed graphs, edges will be created [only](http://igraph.org/r/doc/graph_from_literal.html) if the edge operator includes a arrow head (вЂ+вЂ™).
 ```{r}
 g <- graph_from_literal(A-+B-+C, D-+A, C+-E-+D, E-+B, B+--+F)
 g <- graph_from_literal(A--B--C, D--A, C--E--D, E--B, B--F)
@@ -38,16 +41,16 @@ V(g) # Vertex sequence
 E(g) # Edge sequence
 ```
 
-Создадим необходимые атрибуты с помощью пакета `igraph`. Он функционально много мощнее.
+РЎРѕР·РґР°РґРёРј РЅРµРѕР±С…РѕРґРёРјС‹Рµ Р°С‚СЂРёР±СѓС‚С‹ СЃ РїРѕРјРѕС‰СЊСЋ РїР°РєРµС‚Р° `igraph`. РћРЅ С„СѓРЅРєС†РёРѕРЅР°Р»СЊРЅРѕ РјРЅРѕРіРѕ РјРѕС‰РЅРµРµ.
 
 ```{r}
-# прошлись по вершинам
+# РїСЂРѕС€Р»РёСЃСЊ РїРѕ РІРµСЂС€РёРЅР°Рј
 set.seed(123)
 g <- igraph::set_vertex_attr(g, "ip_addr", # "label"
                              value=stringr::str_c("192.168.1.", sample(1:254, vcount(g), replace=FALSE)))
-# прошлись по граням
-val <- stringr::str_c("UP = ", sample(1:10, ecount(g), replace=FALSE), " Мбит/с\n", 
-                      "DOWN = ", sample(1:100, ecount(g), replace=FALSE), " Мбит/с")
+# РїСЂРѕС€Р»РёСЃСЊ РїРѕ РіСЂР°РЅСЏРј
+val <- stringr::str_c("UP = ", sample(1:10, ecount(g), replace=FALSE), " РњР±РёС‚/СЃ\n", 
+                      "DOWN = ", sample(1:100, ecount(g), replace=FALSE), " РњР±РёС‚/СЃ")
 g <- igraph::set_edge_attr(g, "volume", value=val)
 g <- igraph::set_edge_attr(g, "type", value=sample(letters[24:26], ecount(g), replace=TRUE))
 
@@ -58,18 +61,18 @@ g <- g %>% add_layout_(on_grid())
 plot(g)
 plot(g, layout=layout_as_star(g))
 ```
-Попробуем вычленить необходимые грани, соединяющие заданные узлы.
-Схема такая:
+РџРѕРїСЂРѕР±СѓРµРј РІС‹С‡Р»РµРЅРёС‚СЊ РЅРµРѕР±С…РѕРґРёРјС‹Рµ РіСЂР°РЅРё, СЃРѕРµРґРёРЅСЏСЋС‰РёРµ Р·Р°РґР°РЅРЅС‹Рµ СѓР·Р»С‹.
+РЎС…РµРјР° С‚Р°РєР°СЏ:
 
-1. По атрибуту вершины ищем индекс.
-1. По двум индексам ищем грань.
-1. Меняем атрибут для этой грани.
+1. РџРѕ Р°С‚СЂРёР±СѓС‚Сѓ РІРµСЂС€РёРЅС‹ РёС‰РµРј РёРЅРґРµРєСЃ.
+1. РџРѕ РґРІСѓРј РёРЅРґРµРєСЃР°Рј РёС‰РµРј РіСЂР°РЅСЊ.
+1. РњРµРЅСЏРµРј Р°С‚СЂРёР±СѓС‚ РґР»СЏ СЌС‚РѕР№ РіСЂР°РЅРё.
 ```{r}
 # http://igraph.org/r/doc/igraph-es-indexing.html
-E(g)[2%--%5] # получаем грань между вершинами с заданными индексами
+E(g)[2%--%5] # РїРѕР»СѓС‡Р°РµРј РіСЂР°РЅСЊ РјРµР¶РґСѓ РІРµСЂС€РёРЅР°РјРё СЃ Р·Р°РґР°РЅРЅС‹РјРё РёРЅРґРµРєСЃР°РјРё
 # Find the edges in an igraph graph that have the specified end points.
 get.edge.ids(g, c(2, 5), directed=FALSE, error=FALSE, multi=FALSE)
-# то же самое, но через имя вершин
+# С‚Рѕ Р¶Рµ СЃР°РјРѕРµ, РЅРѕ С‡РµСЂРµР· РёРјСЏ РІРµСЂС€РёРЅ
 get.edge.ids(g, c("B", "E"), directed=FALSE, error=FALSE, multi=FALSE)
 
 E(g)[from(1), to(2)]
@@ -77,15 +80,15 @@ as_adjacency_matrix(g)
 ```
 
 
-Открытым остается вопрос размещения узлов сети. Пакеты `ggnetwork` и `igraph` обладают различными возможностями. И, конечно же, остается возможность ручного размещения узлов. В пакете `igraph` можно получить координаты размещения узлов по интересуемому алгоритму и потом их использовать для ручного обновления в объекте `network` при отрисовке сетки средствами `ggplot`.
+РћС‚РєСЂС‹С‚С‹Рј РѕСЃС‚Р°РµС‚СЃСЏ РІРѕРїСЂРѕСЃ СЂР°Р·РјРµС‰РµРЅРёСЏ СѓР·Р»РѕРІ СЃРµС‚Рё. РџР°РєРµС‚С‹ `ggnetwork` Рё `igraph` РѕР±Р»Р°РґР°СЋС‚ СЂР°Р·Р»РёС‡РЅС‹РјРё РІРѕР·РјРѕР¶РЅРѕСЃС‚СЏРјРё. Р, РєРѕРЅРµС‡РЅРѕ Р¶Рµ, РѕСЃС‚Р°РµС‚СЃСЏ РІРѕР·РјРѕР¶РЅРѕСЃС‚СЊ СЂСѓС‡РЅРѕРіРѕ СЂР°Р·РјРµС‰РµРЅРёСЏ СѓР·Р»РѕРІ. Р’ РїР°РєРµС‚Рµ `igraph` РјРѕР¶РЅРѕ РїРѕР»СѓС‡РёС‚СЊ РєРѕРѕСЂРґРёРЅР°С‚С‹ СЂР°Р·РјРµС‰РµРЅРёСЏ СѓР·Р»РѕРІ РїРѕ РёРЅС‚РµСЂРµСЃСѓРµРјРѕРјСѓ Р°Р»РіРѕСЂРёС‚РјСѓ Рё РїРѕС‚РѕРј РёС… РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ РґР»СЏ СЂСѓС‡РЅРѕРіРѕ РѕР±РЅРѕРІР»РµРЅРёСЏ РІ РѕР±СЉРµРєС‚Рµ `network` РїСЂРё РѕС‚СЂРёСЃРѕРІРєРµ СЃРµС‚РєРё СЃСЂРµРґСЃС‚РІР°РјРё `ggplot`.
 ```{r}
 # Store coordinates for the layout in lo
 lo <- layout_on_grid(g) # lo is a matrix of coordinates
 colnames(lo) <- c("x_subst", "y_subst")
 coord <- as_tibble(lo)
 coord$vertex.names <- V(g)$name
-# достанем имена узлов, они должны быть уникальными! (ну мы так и генерировали, по другому не получается)
-# позже слияние будем проводить по именам
+# РґРѕСЃС‚Р°РЅРµРј РёРјРµРЅР° СѓР·Р»РѕРІ, РѕРЅРё РґРѕР»Р¶РЅС‹ Р±С‹С‚СЊ СѓРЅРёРєР°Р»СЊРЅС‹РјРё! (РЅСѓ РјС‹ С‚Р°Рє Рё РіРµРЅРµСЂРёСЂРѕРІР°Р»Рё, РїРѕ РґСЂСѓРіРѕРјСѓ РЅРµ РїРѕР»СѓС‡Р°РµС‚СЃСЏ)
+# РїРѕР·Р¶Рµ СЃР»РёСЏРЅРёРµ Р±СѓРґРµРј РїСЂРѕРІРѕРґРёС‚СЊ РїРѕ РёРјРµРЅР°Рј
 coord
 
 ```
@@ -93,10 +96,10 @@ coord
 
 We now add a categorical edge attribute called "type", which is set to either "x", "y" or "z", and a continuous vertex attribute called  "day", which is set to either 1, 2 or 3.
 
-Для управления размещением вершин в объекте `network` применяется функция [`gplot.layout`](http://www.rdocumentation.org/packages/sna/functions/gplot.layout).
-Упоминание про это есть в описании пакета `ggnetwork`, секция [Main building blocks](https://cran.r-project.org/web/packages/ggnetwork/vignettes/ggnetwork.html#more-building-blocks)
+Р”Р»СЏ СѓРїСЂР°РІР»РµРЅРёСЏ СЂР°Р·РјРµС‰РµРЅРёРµРј РІРµСЂС€РёРЅ РІ РѕР±СЉРµРєС‚Рµ `network` РїСЂРёРјРµРЅСЏРµС‚СЃСЏ С„СѓРЅРєС†РёСЏ [`gplot.layout`](http://www.rdocumentation.org/packages/sna/functions/gplot.layout).
+РЈРїРѕРјРёРЅР°РЅРёРµ РїСЂРѕ СЌС‚Рѕ РµСЃС‚СЊ РІ РѕРїРёСЃР°РЅРёРё РїР°РєРµС‚Р° `ggnetwork`, СЃРµРєС†РёСЏ [Main building blocks](https://cran.r-project.org/web/packages/ggnetwork/vignettes/ggnetwork.html#more-building-blocks)
 ```{r}
-net <- intergraph::asNetwork(g) # сетку мы построили выше с помощью пакета `igraph`
+net <- intergraph::asNetwork(g) # СЃРµС‚РєСѓ РјС‹ РїРѕСЃС‚СЂРѕРёР»Рё РІС‹С€Рµ СЃ РїРѕРјРѕС‰СЊСЋ РїР°РєРµС‚Р° `igraph`
 e <- network.edgecount(net)
 network::set.edge.attribute(net, "type", sample(letters[24:26], e, replace=TRUE))
 network::set.edge.attribute(net, "day", sample(1:3, e, replace = TRUE))
@@ -105,7 +108,7 @@ s
 network::set.vertex.attribute(net, "ip_addr_network", stringr::str_c("192.168.1.", sample(1:254, s, replace=FALSE))) # or %v% Letter the vertices
 
 ```
-На самом деле получается немного кривой `data.frame`, поскольку в колонки помещается матрица nx1, а после этого `dplyr` не работает. Проверим класс каждой колонки в полученном `data.frame`
+РќР° СЃР°РјРѕРј РґРµР»Рµ РїРѕР»СѓС‡Р°РµС‚СЃСЏ РЅРµРјРЅРѕРіРѕ РєСЂРёРІРѕР№ `data.frame`, РїРѕСЃРєРѕР»СЊРєСѓ РІ РєРѕР»РѕРЅРєРё РїРѕРјРµС‰Р°РµС‚СЃСЏ РјР°С‚СЂРёС†Р° nx1, Р° РїРѕСЃР»Рµ СЌС‚РѕРіРѕ `dplyr` РЅРµ СЂР°Р±РѕС‚Р°РµС‚. РџСЂРѕРІРµСЂРёРј РєР»Р°СЃСЃ РєР°Р¶РґРѕР№ РєРѕР»РѕРЅРєРё РІ РїРѕР»СѓС‡РµРЅРЅРѕРј `data.frame`
 
 In future you can check your dataframe with this to identify the class of each variable: `sapply(your_df_here, class)`
 ```{r}
@@ -113,28 +116,28 @@ m <- ggnetwork(net)#  %>% mutate(l=as.character(vertex.names))
 
 sapply(m, class)
 
-#  # превращаем в character, иначе после переноса factor теряется, остаются только целые числа
+#  # РїСЂРµРІСЂР°С‰Р°РµРј РІ character, РёРЅР°С‡Рµ РїРѕСЃР»Рµ РїРµСЂРµРЅРѕСЃР° factor С‚РµСЂСЏРµС‚СЃСЏ, РѕСЃС‚Р°СЋС‚СЃСЏ С‚РѕР»СЊРєРѕ С†РµР»С‹Рµ С‡РёСЃР»Р°
 #library(magrittr)
 # library(purrr)
 # m %>% mutate(l=as.character(vertex.names))
 # m2 <- purrr::map(m, c('x', 'y', 'xend', 'yend'), as.vector)
 as.vector(m$x)
 
-# вариант преобразования №1
+# РІР°СЂРёР°РЅС‚ РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёСЏ в„–1
 library(magrittr)
 cols = c('x', 'y')
 # df[,cols] %<>% lapply(function(x) as.numeric(as.character(x))
 m2 <- m
 m2[ ,cols] %<>% lapply(function(x) as.vector(x))
 
-# вариант преобразования №2
+# РІР°СЂРёР°РЅС‚ РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёСЏ в„–2
 m3 <- m %>%
   purrr::dmap_at(c('x', 'y', 'xend', 'yend'), as.numeric) %>% 
   purrr::dmap_at(c('vertex.names'), as.character)
 m3
 
 ```
-Некоторые эксперименты по анализу сети. Изучение показало, что `igraph` функционально гораздо богаче
+РќРµРєРѕС‚РѕСЂС‹Рµ СЌРєСЃРїРµСЂРёРјРµРЅС‚С‹ РїРѕ Р°РЅР°Р»РёР·Сѓ СЃРµС‚Рё. РР·СѓС‡РµРЅРёРµ РїРѕРєР°Р·Р°Р»Рѕ, С‡С‚Рѕ `igraph` С„СѓРЅРєС†РёРѕРЅР°Р»СЊРЅРѕ РіРѕСЂР°Р·РґРѕ Р±РѕРіР°С‡Рµ
 ```{r}
 network::get.edges(net, 1)
 network::get.dyads.eids(net, 2, 3)
@@ -142,10 +145,10 @@ network::get.dyads.eids(net, 2, 3)
 
 
 
-Заменим расстановку узлов из пакета 'network', на другие (ручные или полученные, например, в пакете `igraph`).
-И отрисуем.
+Р—Р°РјРµРЅРёРј СЂР°СЃСЃС‚Р°РЅРѕРІРєСѓ СѓР·Р»РѕРІ РёР· РїР°РєРµС‚Р° 'network', РЅР° РґСЂСѓРіРёРµ (СЂСѓС‡РЅС‹Рµ РёР»Рё РїРѕР»СѓС‡РµРЅРЅС‹Рµ, РЅР°РїСЂРёРјРµСЂ, РІ РїР°РєРµС‚Рµ `igraph`).
+Р РѕС‚СЂРёСЃСѓРµРј.
 
-Есть ли нюанс в приведении к квадрату (0, 0) - (1, 1)? После экспериментов оказалось, что нет
+Р•СЃС‚СЊ Р»Рё РЅСЋР°РЅСЃ РІ РїСЂРёРІРµРґРµРЅРёРё Рє РєРІР°РґСЂР°С‚Сѓ (0, 0) - (1, 1)? РџРѕСЃР»Рµ СЌРєСЃРїРµСЂРёРјРµРЅС‚РѕРІ РѕРєР°Р·Р°Р»РѕСЃСЊ, С‡С‚Рѕ РЅРµС‚
 ```{r}
 m4 <- m3 %>%
   left_join(coord, by="vertex.names") %>%
@@ -160,17 +163,17 @@ ggplot(m3, aes(x=x, y=y, xend=xend, yend=yend)) +
 ```
 
 ```{r}
-net <- intergraph::asNetwork(g) # пересоберем сетку, как это сделали выше
+net <- intergraph::asNetwork(g) # РїРµСЂРµСЃРѕР±РµСЂРµРј СЃРµС‚РєСѓ, РєР°Рє СЌС‚Рѕ СЃРґРµР»Р°Р»Рё РІС‹С€Рµ
 class(net)
 n <- ggnetwork(net, layout = "circle")
 
-# просто тупо подменим на ручной layout
+# РїСЂРѕСЃС‚Рѕ С‚СѓРїРѕ РїРѕРґРјРµРЅРёРј РЅР° СЂСѓС‡РЅРѕР№ layout
 gplot.layout.circle(net, layout.par)
-# !! из анализа github понял, что можно в качестве layout матрицу подсовывать!!
+# !! РёР· Р°РЅР°Р»РёР·Р° github РїРѕРЅСЏР», С‡С‚Рѕ РјРѕР¶РЅРѕ РІ РєР°С‡РµСЃС‚РІРµ layout РјР°С‚СЂРёС†Сѓ РїРѕРґСЃРѕРІС‹РІР°С‚СЊ!!
 n <- ggnetwork(net, layout=lo)
 
-# не рисует метки на гранях, если подсовывать объект, преобразованный функцией ggnetwork!
-# может из-за того, что там не вектора, а массивы 1 x n?
+# РЅРµ СЂРёСЃСѓРµС‚ РјРµС‚РєРё РЅР° РіСЂР°РЅСЏС…, РµСЃР»Рё РїРѕРґСЃРѕРІС‹РІР°С‚СЊ РѕР±СЉРµРєС‚, РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРЅС‹Р№ С„СѓРЅРєС†РёРµР№ ggnetwork!
+# РјРѕР¶РµС‚ РёР·-Р·Р° С‚РѕРіРѕ, С‡С‚Рѕ С‚Р°Рј РЅРµ РІРµРєС‚РѕСЂР°, Р° РјР°СЃСЃРёРІС‹ 1 x n?
 g <- g %>% add_layout_(on_grid(), overwrite=TRUE)
 sapply(n, class)
 m3 <- n %>%
@@ -200,17 +203,17 @@ gp <-
 
 gp
 
-# сохраним в файл, разбираемся с антиалайзингом
+# СЃРѕС…СЂР°РЅРёРј РІ С„Р°Р№Р», СЂР°Р·Р±РёСЂР°РµРјСЃСЏ СЃ Р°РЅС‚РёР°Р»Р°Р№Р·РёРЅРіРѕРј
 # http://blog.revolutionanalytics.com/2009/01/10-tips-for-making-your-r-graphics-look-their-best.html
-# http://gforge.se/2013/02/exporting-nice-plots-in-r/ (см. отдельно UPDATE и "lines and text anti-aliased - not fills/polygons")
+# http://gforge.se/2013/02/exporting-nice-plots-in-r/ (СЃРј. РѕС‚РґРµР»СЊРЅРѕ UPDATE Рё "lines and text anti-aliased - not fills/polygons")
 png(filename="plot_w_cairo.png", type="cairo", #pointsize=24, 
     units="cm", height=10, width=20, res=150, pointsize=8, antialias="default")
 gp
 dev.off()
 ```
-Метки на вершинах почему-то не заработали после преобразования ggnetwork. Попробуем поглядеть, почему.
-Гляжу [исходник](https://github.com/briatte/ggnetwork/blob/master/R/geom-edges.R) функций
-и [тут](https://github.com/briatte/ggnetwork/blob/master/R/geom-nodes.R)
+РњРµС‚РєРё РЅР° РІРµСЂС€РёРЅР°С… РїРѕС‡РµРјСѓ-С‚Рѕ РЅРµ Р·Р°СЂР°Р±РѕС‚Р°Р»Рё РїРѕСЃР»Рµ РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёСЏ ggnetwork. РџРѕРїСЂРѕР±СѓРµРј РїРѕРіР»СЏРґРµС‚СЊ, РїРѕС‡РµРјСѓ.
+Р“Р»СЏР¶Сѓ [РёСЃС…РѕРґРЅРёРє](https://github.com/briatte/ggnetwork/blob/master/R/geom-edges.R) С„СѓРЅРєС†РёР№
+Рё [С‚СѓС‚](https://github.com/briatte/ggnetwork/blob/master/R/geom-nodes.R)
 ```{r}
 
 data <- subset(n, !(x == xend & y == yend))
