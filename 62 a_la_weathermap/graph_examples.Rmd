@@ -1,9 +1,15 @@
 ---
 title: "R Notebook"
 output:
-  html_notebook: default
   pdf_document:
     keep_tex: yes
+    latex_engine: pdflatex
+  html_notebook: default
+header-includes:
+- \usepackage[T2A]{fontenc}
+- \usepackage[utf8]{inputenc}
+- \usepackage[russian]{babel}
+- \usepackage{pscyr}
 ---
 
 ```{r}
