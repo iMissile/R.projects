@@ -1,15 +1,29 @@
 ---
 title: "ru-tex-pdf"
 author: "ishutov"
-date: '9 ������ 2017 � '
-output: pdf_document
+date: '9 января 2017 г '
+output:
+  pdf_document_xelatex:
+    keep_tex: yes
+    latex_engine: xelatex
+    header-includes:
+      - \usepackage[T2A]{fontenc}
+      - \usepackage[utf8]{inputenc}
+      - \usepackage[russian]{babel}
+      - \usepackage{fontspec}
+      - \setmainfont{Cambria}
 ---
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+# http://qa.piterdata.ninja/p/1742/
+library(latex2exp)
+library(ggplot2)
 ```
 
 ## R Markdown
+Это R Markdown документ.
 
 This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
@@ -23,8 +37,22 @@ summary(cars)
 
 You can also embed plots, for example:
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r pressure1, echo=FALSE, dev="cairo_pdf"}
+plot(pressure,
+     # xlab=TeX("Температура, $C^\\degree$"), 
+     # ylab="Давление, Па")
+     xlab="Температура, C", 
+     ylab="Pressure")
+
+```
+```{r pressure2, echo=FALSE, dev="cairo_pdf"}
+ggplot(pressure, aes(x=temperature, y=pressure)) +
+     geom_line(lwd = 1.2) +
+     # xlab=TeX("Температура, $C^\\degree$"), 
+     # ylab="Давление, Па")
+     xlab("Температура, C") +
+     ylab("Pressure")
+
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
