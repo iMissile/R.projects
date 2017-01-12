@@ -12,6 +12,7 @@ header-includes:
   - \usepackage[utf8]{inputenc}
   - \usepackage[russian]{babel}
   - \usepackage{pscyr}
+  - \usepackage{cmap}
 ---
 
 <!---
@@ -50,6 +51,7 @@ knitr::opts_chunk$set(dev='cairo_pdf') # решили проблему с ген
 # http://qa.piterdata.ninja/p/1742/
 library(latex2exp)
 library(ggplot2)
+library(printr)
 ```
 
 ## R Markdown
