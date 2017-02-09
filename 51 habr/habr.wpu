@@ -413,8 +413,8 @@ guimgr.overall-gui-state = {'windowing-policy': 'combined-window',
                  'splits': 2,
                  'tab_location': 'left',
                  'user_data': {}},
-        'window-alloc': (8,
-                         30,
+        'window-alloc': (16,
+                         61,
                          1900,
                          1008)}]}
 guimgr.recent-documents = [loc('excel_convert.py')]
