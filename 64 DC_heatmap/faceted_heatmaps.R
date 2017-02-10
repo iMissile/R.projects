@@ -5,7 +5,10 @@ library(countrycode) # turn country codes into pretty names
 library(scales)      # pairs nicely with ggplot2 for plot label formatting
 library(gridExtra)   # a helper for arranging individual ggplot objects
 library(ggthemes)    # has a clean theme for ggplot2
-# library(viridis)     # best. color. palette. evar.
+library(viridis)     # best. color. palette. evar.
+library(RColorBrewer)# best. color. palette. evar.
+
+# см. https://rpubs.com/omicsdata/faceted_heatmap
 
 attacks <- read_csv("./data/eventlog.csv", col_types="ccc", progress=interactive()) %>%
   slice(1:20)
@@ -29,14 +32,24 @@ group_by(tz) %>%
 }
 
 # рабочее решение отсюда: https://github.com/rstudio/rstudio-conf/tree/master/2017/List_Columns-Jenny_Bryan
-attacks3 <- attacks %>% 
+attacks <- attacks %>% 
   mutate(rt=map(.$timestamp, ~ ymd_hms(.x, quiet=FALSE))) %>%
-  mutate(hour=map2(.$rt, .$tz, ~ format(.x, "%H", tz=.y))) %>%
-  mutate(wkday=map2(.$rt, .$tz, ~ weekdays(as.Date(.x, tz=.y)))) %>%
-  unnest(rt, hour, wkday)
+  mutate(hour=as.numeric(map2(.$rt, .$tz, ~ format(.x, "%H", tz=.y)))) %>%
+  # mutate(hour2=lubridate::hour(rt)) %>%
+  mutate(wkday_text=map2(.$rt, .$tz, ~ weekdays(as.Date(.x, tz=.y)))) %>%
+  unnest(rt, hour, wkday_text) %>%
+# превратим wkday в фактор принудительно с понедельника
+  mutate(wkday=factor(wkday_text, levels=weekdays(dmy("13.02.2017")+0:6)))
 
 
+wkdays <- count(attacks, wkday, hour)
+wkdays
 
+gg = ggplot(wkdays, aes(x=hour, y=wkday, fill=n))
+gg = gg + geom_tile(color="white", size=0.1)
+# gg = gg + scale_fill_viridis(name="# Events", label=comma)
+gg = gg + scale_fill_viridis(option="B", name="# Events", label=comma)
+gg = gg + scale_fill_distiller(palette="RdYlGn", name="# Events", label=comma) # http://docs.ggplot2.org/current/scale_brewer.html
 
 stop()
 
