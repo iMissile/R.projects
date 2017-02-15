@@ -1,0 +1,263 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(magrittr)
+library(purrr)
+
+```
+
+# Проводим расчеты надежности и необходимого зип
+
+## Количество серверов по площадкам
+
+```{r}
+placement_df <- 
+  tribble(
+    ~model, ~role, ~site, ~amount,
+    "rh2288", "virt", "НЦ", 8,
+    "rh2288", "virt", "РНИЦ", 2,
+    "rh1288", "virt", "НЦ", 3,
+    "rh1288", "app", "НЦ", 3,
+    "rh1288", "app", "РНИЦ", 5,
+    "os5500", "storage", "НЦ", 1,
+    "os5500", "storage", "РНИЦ", 1,
+    "ar2240", "net", "НЦ", 2,
+    "ce6851", "net", "НЦ", 2,
+    "s5320", "net", "НЦ", 2,
+    "ar2240", "net", "РНИЦ", 2,
+    "ce6851", "net", "РНИЦ", 0,
+    "s5320", "net", "РНИЦ", 2
+)
+```
+
+
+    ~element, ~reserved, ~q, ~fits, ~model, ~role
+    "Коммутатор AR2240", FALSE, 1, 10^9/(30*365*24), "ar2240", "net",
+    "Коммутатор CE6851", FALSE, 1, 10^9/(49.08*365*24), "ce6851", "net",
+    "Коммутатор S5320", FALSE, 1, 10^9/(66.07*365*24), "s5320", "net"
+
+Ручками восстановим информацию по fits для SSD дисков на основании данных Google по AFR.
+
+```{r}
+# AFR = 1-exp(-8760/MTBF{в часах})
+
+afr <- 0.02
+mtbf <- -8760/log(1-afr)
+fits <- 10^9/mtbf # mtbf -- в часах
+
+```
+Для SSD диска методом обратных расчетов получаем FITs=`r fits`
+
+## Сервер rh2288
+```{r}
+df <- 
+  tribble(
+    ~element, ~reserved, ~q, ~fits,
+    "Материнская плата 2288", FALSE, 1, 4035.2,
+    "RAID контроллер", FALSE, 1, 559.2,
+    "Процессор", FALSE, 2, 40,
+    "Оперативная память 32Gb", FALSE, 10, 50,
+    "Вентилятор 2288", TRUE, 4, 582,
+    "SSD диск 32Gb", TRUE, 2, 2306, 
+    "Блок питания", TRUE, 2, 2000, 
+    "Ethernet порт 2x10", TRUE, 2, 362.3,
+    "Fibre Channel порт", TRUE, 2, 362.3
+  )
+
+equip_df <- df %>% 
+  mutate(model="rh2288", role="virt", site="НЦ")
+
+equip_df <- df %>% 
+  mutate(model="rh2288", role="virt", site="РНИЦ") %>%
+  bind_rows(equip_df)
+
+equip_df
+
+```
+## Сервер rh1288
+```{r}
+df <- 
+  tribble(
+    ~element, ~reserved, ~q, ~fits,
+    "Материнская плата 1288", FALSE, 1, 4035.2,
+    "RAID контроллер", FALSE, 1, 559.2,
+    "Процессор", FALSE, 2, 40,
+    "Оперативная память 16Gb", FALSE, 10, 50,
+    "Вентилятор 1288", TRUE, 4, 582,
+    "HDD диск 300Gb", TRUE, 2, 3425, 
+    "Блок питания", TRUE, 2, 2000, 
+    "Ethernet порт 2x10", TRUE, 2, 362.3
+  )
+
+
+df1 <- df %>% 
+  bind_rows(tribble(
+    ~element, ~reserved, ~q, ~fits,
+    "Ethernet порт 4x1", TRUE, 2, 362.3
+  ))
+
+
+df2 <- df %>% 
+  bind_rows(tribble(
+    ~element, ~reserved, ~q, ~fits,
+    "Ethernet порт 2x10", TRUE, 2, 362.3,
+    "Fibre Channel порт", TRUE, 2, 362.3
+  ))
+
+equip_df <- df1 %>% 
+  mutate(model="rh1288", role="virt", site="НЦ") %>%
+  bind_rows(equip_df)
+
+equip_df <- df2 %>% 
+  mutate(model="rh1288", role="app", site="НЦ") %>%
+  bind_rows(equip_df)
+
+equip_df <- df2 %>% 
+  mutate(model="rh1288", role="app", site="РНИЦ") %>%
+  bind_rows(equip_df)
+
+
+equip_df
+```
+
+## СХД os5500
+```{r}
+df <- 
+  tribble(
+    ~element, ~reserved, ~q, ~fits,
+    "Материнская плата СХД", TRUE, 2, 4035.2,
+    "Процессор СХД", FALSE, 2, 40,
+    "Блок питания СХД", TRUE, 2, 2000, 
+    "SSD диск 1.8Tb", TRUE, 6, 2306
+  )
+
+df1 <- df %>% 
+  bind_rows(tribble(
+    ~element, ~reserved, ~q, ~fits,
+    "HDD диск 1.2Tb", TRUE, 41, 3425,
+    "HDD диск 4Tb", TRUE, 56, 3425    
+  ))
+
+df2 <- df %>% 
+  bind_rows(tribble(
+    ~element, ~reserved, ~q, ~fits,
+    "HDD диск 1.2Tb", TRUE, 16, 3425,
+    "HDD диск 4Tb", TRUE, 28, 3425    
+  ))
+
+equip_df <- df1 %>% 
+  mutate(model="os5500", role="storage", site="НЦ") %>%
+  bind_rows(equip_df)
+
+equip_df <- df2 %>% 
+  mutate(model="os5500", role="storage", site="РНИЦ") %>%
+  bind_rows(equip_df)
+
+equip_df
+
+```
+ 
+## Сетевое оборудование
+Значение MTBF взяли из документации
+Igor Schastiev [5:10 PM] 
+Huawei AR2240:
+MTBF=30,004 year
+MTTR=0,5 hour
+
+Huawei CE6851:
+MTBF=49,08 year
+MTTR=1,77 hour
+
+Huawei S5320:
+MTBF=66,07 year
+MTTR=2 hour
+
+```{r}
+# fits <- 10^9/mtbf # mtbf -- в часах
+
+df <- 
+  tribble(
+    ~element, ~reserved, ~q, ~fits, ~model, ~role,
+    "Коммутатор AR2240", FALSE, 1, 10^9/(30*365*24), "ar2240", "net",
+    "Коммутатор CE6851", FALSE, 1, 10^9/(49.08*365*24), "ce6851", "net",
+    "Коммутатор S5320", FALSE, 1, 10^9/(66.07*365*24), "s5320", "net"
+  )
+
+equip_df <- df %>% 
+  mutate(site="НЦ") %>%
+  bind_rows(equip_df)
+
+equip_df <- df %>% 
+  mutate(site="РНИЦ") %>%
+  bind_rows(equip_df)
+
+equip_df
+
+```
+
+Дополним информацией о количестве железа по площадкам.
+```{r}
+equip_df %<>% left_join(placement_df, by=c("model", "role", "site")) %>%
+  select(model, everything())
+
+```
+
+## Считаем MTBF для отказоустойчивой конфигурации
+
+AFR = 1-exp(-8760/MTBF{в часах})
+
+```{r}
+equip_df %<>% mutate(mtbf=10^9/fits) %>% # средняя наработка на отказ в часах
+  mutate(afr=(1-exp(-8760/mtbf))*100) %>% # annual falure rate в %
+  mutate(afr7=afr*7) %>% # а за 7 лет?
+  mutate(ext=map(.$q, ~sum(1/(1:.x)))) %>%
+  unnest()
+  
+equip_df %<>% mutate(mtbf_n=mtbf * ext) %>%
+  mutate(fits_n=if_else(reserved, 10^9/mtbf_n, q*fits)) %>%
+  mutate(mtbf_n_year=mtbf_n/(365*24))
+
+equip_df
+```
+
+## Посчитаем теперь различные метрики
+
+Требуемые запасные части
+```{r}
+options(digits=6)
+spta_df <- equip_df %>% 
+  group_by(element, site) %>%
+  summarise(total=sum(q*amount), afr7=mean(afr7)) %>%
+  mutate(spta=round(total*afr7/100, digits=2)) %>%
+  #filter(spta<0.5) %>%
+  arrange(site, desc(spta))
+
+spta_df
+
+```
+Коэффициент готовности для различных серверов
+```{r}
+options(digits=22)
+mttr_value <- c(1, 4, 24, 72) # указано время в часах на восстановление
+
+df <-
+  equip_df %>% group_by(model, role) %>%
+  summarise(mtbf_series=1/sum(1/mtbf_n)) %>%
+  mutate(res=map(mtbf_series, function(x){ tibble(mttr=mttr_value, avail=x / (x + mttr_value/(24*365)))})) %>%
+  unnest()
+  #mutate(spta=total*afr7/100) %>%
+  #arrange(desc(spta))
+
+t <- map(df$mtbf_series, function(x){ tibble(mttr=mttr_value, avail=x / (x + mttr_value/(24*365)))})
+```
+
+Выводим в файл
+```{r}
+  write_delim(equip_df %>% select(-ext, -mtbf_n), "equip_calc.txt", delim="\t")
+  write_delim(spta_df, "equip_SPTA.txt", delim="\t")
+```
+
