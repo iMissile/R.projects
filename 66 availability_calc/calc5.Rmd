@@ -89,8 +89,7 @@ df <-
     "ќперативна€ пам€ть 16Gb", FALSE, 10, 50,
     "¬ентил€тор 1288", TRUE, 4, 582,
     "HDD диск 300Gb", TRUE, 2, 3425, 
-    "Ѕлок питани€", TRUE, 2, 2000, 
-    "Ethernet порт 2x10", TRUE, 2, 362.3
+    "Ѕлок питани€", TRUE, 2, 2000
   )
 
 
@@ -240,6 +239,7 @@ spta_df
 
 ```
  оэффициент готовности дл€ различных серверов
+ѕочему-то так есть ошибки в расчетах.
 ```{r}
 options(digits=22)
 mttr_value <- c(1, 4, 24, 72) # указано врем€ в часах на восстановление
@@ -248,7 +248,8 @@ df <-
   equip_df %>% group_by(model, role) %>%
   summarise(mtbf_series=1/sum(1/mtbf_n)) %>%
   mutate(res=map(mtbf_series, function(x){ tibble(mttr=mttr_value, avail=x / (x + mttr_value/(24*365)))})) %>%
-  unnest()
+  unnest() %>%
+  mutate(mtbf_series=mtbf_series/(24*365))
   #mutate(spta=total*afr7/100) %>%
   #arrange(desc(spta))
 
@@ -259,5 +260,137 @@ t <- map(df$mtbf_series, function(x){ tibble(mttr=mttr_value, avail=x / (x + mtt
 ```{r}
   write_delim(equip_df %>% select(-ext, -mtbf_n), "equip_calc.txt", delim="\t")
   write_delim(spta_df, "equip_SPTA.txt", delim="\t")
+```
+
+
+ѕосчитаем ручками готовность серверов
+
+сервер rh1288
+```{r}
+mttr_value <- c(1, 4, 24, 72, 1100) # указано врем€ в часах на восстановление
+
+# mtbf указан в годах
+
+rh1288 <- tibble(mtbf=c(28.3,
+                        50.0,
+                        85.6,
+                        408.6,
+                        204.1,
+                        472.6,
+                        472.6,
+                        6687.1,
+                        4280.8
+))
+# считаем mtbf дл€ сервера rh1288
+mtbf1_series <- 1 / sum(1/rh1288$mtbf)
+
+server_rh1288 <- tibble(mttr=mttr_value, 
+                        availability=mtbf1_series / (mtbf1_series + mttr_value/(24*365)), # переводим часы просто€ в года
+                        downtime=(1-availability)*365*24*60) # простой считаем в минутах в год
+
+mtbf1_series
+server_rh1288
+
+```
+сервер rh2288
+```{r}
+mttr_value <- c(1, 4, 24, 72) # указано врем€ в часах на восстановление
+
+# mtbf указан в годах
+
+rh2288 <- tibble(mtbf=c(28.3,
+74.3,
+85.6,
+408.6,
+204.1,
+472.6,
+472.6,
+6687.1,
+4280.8
+))
+# считаем mtbf дл€ сервера rh2288
+mtbf1_series <- 1 / sum(1/rh2288$mtbf)
+
+server_rh2288 <- tibble(mttr=mttr_value, 
+                        availability=mtbf1_series / (mtbf1_series + mttr_value/(24*365)), # переводим часы просто€ в года
+                        downtime=(1-availability)*365*24*60) # простой считаем в минутах в год
+
+mtbf1_series
+server_rh2288
+
+```
+
+—’ƒ os5500 Ќ÷
+```{r}
+mttr_value <- c(1, 4, 24, 72) # указано врем€ в часах на восстановление
+
+# mtbf указан в годах
+
+os5500 <- tibble(mtbf=c(42.4,
+143.4,
+153.7,
+121.3,
+85.6,
+4280.8
+))
+# считаем mtbf дл€ сервера rh2288
+mtbf1_series <- 1 / sum(1/os5500$mtbf)
+
+storage_os5500 <- tibble(mttr=mttr_value, 
+                        availability=mtbf1_series / (mtbf1_series + mttr_value/(24*365)), # переводим часы просто€ в года
+                        downtime=(1-availability)*365*24*60) # простой считаем в минутах в год
+
+mtbf1_series
+storage_os5500
+
+```
+
+—’ƒ os5500 –Ќ»÷
+```{r}
+mttr_value <- c(1, 4, 24, 72) # указано врем€ в часах на восстановление
+
+# mtbf указан в годах
+
+os5500 <- tibble(mtbf=c(42.4,
+112.7,
+130.9,
+121.3,
+85.6,
+4280.8
+))
+# считаем mtbf дл€ сервера rh2288
+mtbf1_series <- 1 / sum(1/os5500$mtbf)
+
+storage_os5500 <- tibble(mttr=mttr_value, 
+                        availability=mtbf1_series / (mtbf1_series + mttr_value/(24*365)), # переводим часы просто€ в года
+                        downtime=(1-availability)*365*24*60) # простой считаем в минутах в год
+
+mtbf1_series
+storage_os5500
+
+```
+
+
+# считаем avilability дл€ сетевого оборудовани€
+Huawei AR2240:
+MTBF=30,004 year
+MTTR=0,5 hour
+
+Huawei CE6851:
+MTBF=49,08 year
+MTTR=1,77 hour
+
+Huawei S5320:
+MTBF=66,07 year
+MTTR=2 hour
+
+```{r}
+calc_av <- function(x){
+  mttr_value <- c(1, 4, 24, 72) # указано врем€ в часах на восстановление
+  x / (x + mttr_value/(24*365))
+}
+
+res <- map(c(30, 49.08, 66.07), calc_av)
+res
 ```
 
