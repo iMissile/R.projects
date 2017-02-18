@@ -42,22 +42,21 @@ get_month_data <- function(filename, sheetname="") {
   #name_c2 <- tidyr::gather(df0[1, ], key = name, value = name_c2) # 1-ая колонка ушла в имена
   #name_c3 <- tidyr::gather(df0[2, ], key = name, value = name_c3) # 1-ая колонка ушла в имена
   
-  # различные виды join не подойдут, поскольку мы хотим оставить все строки вне зависимости от результата
+  # различные виды join не подойдут, поскольку мы хотим оставить все строки, вне зависимости от результата
   # сливать по именам опасно, вдруг есть дубли
   # names.df <- dplyr::full_join(name_c2, name_c3, by = "name")
   names.df <- tibble(name_c2=tidyr::gather(df0[1, ], key=name, value=v)$v,
                      name_c3=tidyr::gather(df0[2, ], key=name, value=v)$v) %>%
     # http://www.markhneedham.com/blog/2015/06/28/r-dplyr-update-rows-with-earlierprevious-rows-values/
     mutate(name_c2 = na.locf(name_c2)) %>%
+    # если name_c3 = NA, то результат объединения строк также будет NA, нас это не очень устраивает
     mutate(name.fix = ifelse(is.na(name_c3), name_c2, str_c(name_c2, name_c3, sep=": "))) %>%
     mutate(name.fix = str_replace_all(name.fix, "\r", " ")) %>% # перевод строки
     mutate(name.fix = str_replace_all(name.fix, "\n", " ")) %>% # перевод строки
     mutate(name.fix = str_replace_all(name.fix, "  ", " "))
   
-  # если name_c3 = NA, то результат объединения строк также будет NA, нас это не очень устраивает
-  
   df1 <- df0
-  repl.df <- frame_data(
+  repl.df <- tribble(
     ~pattern, ~replacement,
     "Формующая часть: Угол напорного ящика", "angle_in",
     "Формующая часть: Разница скорости струи/сетки", "speed_diff_in",
@@ -102,7 +101,7 @@ get_month_data <- function(filename, sheetname="") {
 #                   sheet="Январь",
 #                   col_names=FALSE,
 #                   col_types=ctypes) #, skip = 1)
-# 
+# 	
 # browser()
 
 # соберем все страницы вместе
