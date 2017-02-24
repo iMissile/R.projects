@@ -1,83 +1,112 @@
 # Формула вычисления APDEX
+library(tidyverse)
+library(dplyr)
+library(magrittr)
 library(lubridate)
-library(ggplot2)
 #library(scales)
 #library(forecast)
 library(stringr)
 #library(RColorBrewer)
 
-apdexf <- function(respw, T_agreed = 1.2) {
-  # http://stackoverflow.com/questions/3818147/count-number-of-vector-values-in-range-with-r
-  which(0 < respw$response_time & respw$response_time < T_agreed)
-  
+# gf <- c(4,5,6)
+# tracemem(gf)
+# 
+# adf <- function(df){
+#   tracemem(df)
+# пока не модифицируем df, объект идентичен родителю. Проверяем с помощью tracemem()
+#   browser()
+#   df <- 1
+#   browser()
+# }
+# 
+# adf(gf)
+
+
+#' @timestamp -- временная метка
+#' @t_resp -- время отклика
+#' @type -- категория времени отклика
+#' @cur_time -- текущее время
+#' @win_size -- размер временного окна минутах от момента измерения в прошлое
+apdexf <- function(df, cur_time, win_size) {
+
   # Разбиваем, все выполненные операции на 3 категории:
   # N  – общее количество произведенных операций
-  # NS - количество итераций, которые выполнены за менее чем целевое время 0 – Т
-  # NF – количество операция, которые выполнены за Т – 4Т 
+  # NS - количество итераций, которые выполнены за менее чем целевое время [0 – Т]
+  # NF – количество операция, которые выполнены за (Т – 4Т] 
   # (т.е от целевого времени до целевого времени умноженного на 4)
   # Индекс APDEX = (NS + NF/2)/N.
+  t_df <- df %>%
+    filter(timestamp<=cur_time) %>%
+    filter(timestamp>cur_time-minutes(win_size)) %>%
+    group_by(type) %>%
+    summarize(cnt=n())
   
-  respw
+  # print(t_df)
   
-  apdex_N  <- length(respw$response_time) #APDEX_total
-  apdex_NS <- length(which(respw$response_time < T_agreed)) # APDEX_satisfied
-  apdex_NF <- length(which(T_agreed < respw$response_time & respw$response_time < 4*T_agreed)) # APDEX_tolerated F=4T
+
   
+#apdex_NS <- t_df$cnt[[t_df$type=="S"]]
+#apdex_NF <- t_df$cnt[[t_df$type=="F"]]
+  #respw
+  
+  #apdex_N  <- length(respw$response_time) #APDEX_total
+  #apdex_NS <- length(which(respw$response_time < T_agreed)) # APDEX_satisfied
+  #apdex_NF <- length(which(T_agreed < respw$response_time & respw$response_time < 4*T_agreed)) # APDEX_tolerated F=4T
+  
+
+  apdex_NS <- t_df %>% filter(type=="S") %>% "[["("cnt")
+  apdex_NF <- t_df %>% filter(type=="F") %>% "[["("cnt")
+  apdex_NO <- t_df %>% filter(type=="O") %>% "[["("cnt")
+  
+  # если переменной нет, то получаем integer(0), руками превращаем в нули
+  apdex_NS <- ifelse(length(apdex_NS) == 0, 0., apdex_NS)
+  apdex_NF <- ifelse(length(apdex_NF) == 0, 0., apdex_NF)
+  apdex_NO <- ifelse(length(apdex_NO) == 0, 0., apdex_NO)
+  
+  apdex_N  <- apdex_NO + apdex_NF + apdex_NS
   apdex <- (apdex_NS + apdex_NF/2)/apdex_N 
   return(apdex)
 }
 
 
 # http://stackoverflow.com/questions/5796924/how-can-i-determine-the-current-directory-name-in-r
-getwd()
-setwd("C:/iwork.HG/R.projects/05 APDEX/data")  # note / instead of \ in windows 
-filename = "RUM_simulated_data.csv"
+# getwd()
+# setwd("./data")  # note / instead of \ in windows 
+filename = "./data/RUM_simulated_data.csv"
 
-mydata <- read.table(filename, header = TRUE, stringsAsFactors = FALSE,
-                     sep=";") # comment.char = "#"
-#mydata$date <- mdy_hm(mydata$date) #12/27/2013 3:00
-mydata$timestamp <- dmy_hms(mydata$timestamp) #01.06.2013
+mydata <- read_delim(filename, delim=';') %>%
+  mutate(timestamp=dmy_hms(timestamp)) #01.06.2013
 
+# Разбиваем, все выполненные операции на 3 категории:
+# N  – общее количество произведенных операций
+# NS - количество итераций, которые выполнены за менее чем целевое время [0 – Т]
+# NF – количество операция, которые выполнены за (Т – 4Т] 
+# (т.е от целевого времени до целевого времени умноженного на 4)
+# Индекс APDEX = (NS + NF/2)/N.
+t_agreed <- 0.7
+mydata %<>% mutate(t_resp=response_time) %>%
+  mutate(type=case_when(
+    .$t_resp <= t_agreed ~ "S",
+    .$t_resp <= 4*t_agreed ~ "F",
+    TRUE ~ "O"))
+
+# а теперь считаем apdex
+mydata$apdex <- map(mydata$timestamp, ~ apdexf(mydata, .x, 15)) %>% 
+  unlist()
+
+stop()
 # нарисуем график
 # qplot(timestamp, response_time, data = mydata, geom = c("point", "smooth"))
-#### qplot(timestamp, response_time, data = mydata)
 
 # определяем временнЫе рамки
-# http://stackoverflow.com/questions/77434/how-to-access-the-last-value-in-a-vector
-# http://stat.ethz.ch/R-manual/R-patched/library/utils/html/head.html
-start_time <- head(mydata, 1, addrownums = FALSE)$timestamp
-end_time <- tail(mydata, 1, addrownums = FALSE)$timestamp
+start_time <- min(mydata$timestamp)
+end_time <- max(mydata$timestamp)
 
-# необходимо посчитать количество интервалов и сделать вектор значений подсчета
-# duration считает в секундах расстояние между двумя точками
-# http://www.jstatsoft.org/v40/i03/paper "Dates and Times Made Easy with lubridate"
-dt = dminutes(15)
-
-# http://stackoverflow.com/questions/10689055/create-an-empty-data-frame
-# df.apdex = data.frame(matrix(vector(), 0, 3, dimnames=list(c(), c("Date", "File", "User"))), stringsAsFactors=F)
-# http://stackoverflow.com/questions/12613909/how-to-create-empty-data-frame-with-column-names-specified-in-r
-# df.apdex = data.frame(timestamp=NA, apdex=NA)[numeric(0), ]
-
-# R Cookbook: 5.21 Preallocating a Data Frame
-# df.apdex = data.frame(timestamp=structure(numeric(0), class = c("POSIXt", "POSIXct"), tzone = "UTC"), apdex=numeric(0))
-df.apdex = data.frame(timestamp=numeric(0), apdex=numeric(0))
-
-for(t in seq(from = start_time, by = dt, length.out = floor(as.duration(end_time - start_time)/dt))){
-  # выборка и анализ подмножества
-  respw <- subset(mydata, t <= timestamp & timestamp < t+dt)
-  # str(respw)
-  # str(origin + seconds(t))
-  # cat(origin + seconds(t), '  ', apdexf(respw), '\n\n')
-  # R Cookbook: 5.20 Appending Rows to a Data Frame
-  df.apdex <- rbind(df.apdex, data.frame(timestamp = t, apdex = apdexf(respw)))
-}
-
-df.apdex$timestamp <- origin + seconds(df.apdex$timestamp)
 # поставить фиксированные границы + цветные горизонтальные линии
-qplot(timestamp, apdex, data = df.apdex, geom = c("point", "smooth"))
+qplot(timestamp, apdex, data = mydata, geom = c("point", "smooth"))
 
 
-dfplot <- ggplot(df.apdex, aes(timestamp, apdex)) +
+dfplot <- ggplot(mydata, aes(timestamp, apdex)) +
   #scale_x_date(labels = date_format("%d %b %Y"), breaks = date_breaks("week")) +
   # scales http://stackoverflow.com/questions/3606697/how-to-set-limits-for-axes-in-ggplot2-r-plots
   ylim(0, 1) +
@@ -100,7 +129,7 @@ dfplot <- ggplot(df.apdex, aes(timestamp, apdex)) +
 dfplot
 
 # каким образом перейти в директорию уровнем выше?
-setwd("../")
+#setwd("../")
 # Open a new png device to print the figure out to (or use tiff, pdf, etc).
 png(filename = "figure_apdex.png", width = 1200, height = 600, units = 'px')
 print(dfplot) #end of print statement
