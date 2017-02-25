@@ -35,14 +35,23 @@ apdexf <- function(df, cur_time, win_size) {
   # NF – количество операция, которые выполнены за (Т – 4Т] 
   # (т.е от целевого времени до целевого времени умноженного на 4)
   # Индекс APDEX = (NS + NF/2)/N.
-  t_df <- df %>%
-    filter(timestamp<=cur_time) %>%
-    filter(timestamp>cur_time-minutes(win_size)) %>%
+  # print(dplyr::location(df))
+  # filter может и хорошо, но заставляет копировать данные
+  # с точки зрения скорости оптимально просто отмаркировать доп. колонку
+  t_df0 <- df %>%
+    filter(timestamp>cur_time-minutes(win_size) && timestamp<=cur_time)
+  
+  t_df <- t_df0 %>%
     group_by(type) %>%
     summarize(cnt=n())
+
+  print(dplyr::changes(t_df0, t_df))
+  
+  
+  browser()
   
   # print(t_df)
-  
+  # print(object.size(t_df))
 
   
 #apdex_NS <- t_df$cnt[[t_df$type=="S"]]
@@ -54,9 +63,9 @@ apdexf <- function(df, cur_time, win_size) {
   #apdex_NF <- length(which(T_agreed < respw$response_time & respw$response_time < 4*T_agreed)) # APDEX_tolerated F=4T
   
 
-  apdex_NS <- t_df %>% filter(type=="S") %>% "[["("cnt")
-  apdex_NF <- t_df %>% filter(type=="F") %>% "[["("cnt")
-  apdex_NO <- t_df %>% filter(type=="O") %>% "[["("cnt")
+  apdex_NS <- t_df %>% filter(type==0) %>% "[["("cnt")
+  apdex_NF <- t_df %>% filter(type==1) %>% "[["("cnt")
+  apdex_NO <- t_df %>% filter(type==2) %>% "[["("cnt")
   
   # если переменной нет, то получаем integer(0), руками превращаем в нули
   apdex_NS <- ifelse(length(apdex_NS) == 0, 0., apdex_NS)
@@ -69,6 +78,57 @@ apdexf <- function(df, cur_time, win_size) {
 }
 
 
+apdexf2 <- function(df, window_start, cur_time) {
+  
+  # Разбиваем, все выполненные операции на 3 категории:
+  # N  – общее количество произведенных операций
+  # NS - количество итераций, которые выполнены за менее чем целевое время [0 – Т]
+  # NF – количество операция, которые выполнены за (Т – 4Т] 
+  # (т.е от целевого времени до целевого времени умноженного на 4)
+  # Индекс APDEX = (NS + NF/2)/N.
+  # print(dplyr::location(df))
+  # filter может и хорошо, но заставляет копировать данные
+  # с точки зрения скорости оптимально просто отмаркировать доп. колонку
+  # t_df <- df %>%
+  #   mutate(in_window=if_else(timestamp>window_start && 
+  #                              timestamp<=cur_time, 1, 0))
+
+  # чем меньше присваиваний (любых), тем быстрее код
+  # filter получается в 2 раза быстрее и меньше памяти ест, чем разметка
+  # данных не очень много, поэтому доп. select в цикле только время ест
+  # browser()
+
+  # f_expr <- paste0("timestamp > ", window_start, " && timestamp <= ", cur_time)
+  # с POSIXct печать не получается
+  # browser()
+  t_df <- df %>%
+    # filter(timestamp>window_start && timestamp<=cur_time) %>%
+    # filter_(.dots=f_expr) %>%
+    filter_(lazyeval::interp(~ timestamp>var, var=as.name("window_start"))) %>%
+    filter_(lazyeval::interp(~ timestamp<=var, var=as.name("cur_time")))
+    # filter_(lazyeval::interp(~ timestamp>start && timestamp<=end, 
+    #                          .values=list(start=quote(window_start), 
+    #                                       end=quote(cur_time)))) %>%
+    # summarise_at(vars(satisfied, tolerated, frustrated), sum)
+    # mutate(apdex=(satisfied + tolerated/2)/
+    #          (satisfied + tolerated + frustrated))
+  
+  # так быстрее на порядок, чем summarise
+  s <- sum(t_df$satisfied)
+  t <- sum(t_df$tolerated)
+  f <- sum(t_df$frustrated)
+  # browser()
+  
+  #print(dplyr::changes(t_df0, t_df))
+  # apdex <- with(t_df, {(satisfied + tolerated/2)/
+  #     (satisfied + tolerated + frustrated)})
+  
+  # apdex <- (t_df$satisfied + t_df$tolerated/2)/
+  #   (t_df$satisfied + t_df$tolerated + t_df$frustrated)
+  
+  (s + t/2)/(s + t + f)
+}
+
 # http://stackoverflow.com/questions/5796924/how-can-i-determine-the-current-directory-name-in-r
 # getwd()
 # setwd("./data")  # note / instead of \ in windows 
@@ -79,19 +139,44 @@ mydata <- read_delim(filename, delim=';') %>%
 
 # Разбиваем, все выполненные операции на 3 категории:
 # N  – общее количество произведенных операций
-# NS - количество итераций, которые выполнены за менее чем целевое время [0 – Т]
-# NF – количество операция, которые выполнены за (Т – 4Т] 
+# 0 NS - количество итераций, которые выполнены за менее чем целевое время [0 – Т]
+# 1 NF – количество операция, которые выполнены за (Т – 4Т] 
+# 2 - все прочие операции 
 # (т.е от целевого времени до целевого времени умноженного на 4)
 # Индекс APDEX = (NS + NF/2)/N.
 t_agreed <- 0.7
-mydata %<>% mutate(t_resp=response_time) %>%
+mydata %<>% rename(t_resp=response_time) %>%
   mutate(type=case_when(
-    .$t_resp <= t_agreed ~ "S",
-    .$t_resp <= 4*t_agreed ~ "F",
-    TRUE ~ "O"))
+    .$t_resp <= t_agreed ~ 0,
+    .$t_resp <= 4*t_agreed ~ 1,
+    TRUE ~ 2))
+
+
+# обрабатывать type в цикле оказывается очень накладно. Делаем отдельные вектора
+mydata %<>%
+  select(-type) %>%
+  filter(t_resp > 0) %>% # отбросили потенциальный шлак
+  mutate(satisfied=if_else(t_resp <= t_agreed, 1, 0)) %>%
+  mutate(frustrated=if_else(t_resp > 4*t_agreed, 1, 0)) %>%
+  mutate(tolerated=1-satisfied-frustrated) %>%
+  mutate(control=satisfied+tolerated+frustrated) %>%
+  mutate(window_start=timestamp-minutes(15)) %>%
+  select(window_start, everything())
+  
+time_df <- mydata %>%
+  select(window_start, timestamp)
+
+mydata %<>%
+  select(timestamp, satisfied, tolerated, frustrated)
+
 
 # а теперь считаем apdex
-mydata$apdex <- map(mydata$timestamp, ~ apdexf(mydata, .x, 15)) %>% 
+
+#aa <- map2(time_df$window_start, time_df$timestamp,
+#                     ~ apdexf2(mydata, .x, .y))
+
+mydata$apdex <- map2(time_df$window_start, time_df$timestamp,
+                     ~ apdexf2(mydata, .x, .y)) %>%
   unlist()
 
 stop()
