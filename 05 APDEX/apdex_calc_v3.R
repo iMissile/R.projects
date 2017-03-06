@@ -6,6 +6,7 @@ library(lubridate)
 #library(scales)
 #library(forecast)
 library(stringr)
+library(hrbrthemes)
 #library(RColorBrewer)
 
 # gf <- c(4,5,6)
@@ -190,10 +191,15 @@ end_time <- max(mydata$timestamp)
 # поставить фиксированные границы + цветные горизонтальные линии
 qplot(timestamp, apdex, data = mydata, geom = c("point", "smooth"))
 
+# windowsFonts(Verdana="TT Verdana")
+windowsFonts(robotoC="Roboto Condensed")
 
 dfplot <- ggplot(mydata, aes(timestamp, apdex)) +
   #scale_x_date(labels = date_format("%d %b %Y"), breaks = date_breaks("week")) +
   # scales http://stackoverflow.com/questions/3606697/how-to-set-limits-for-axes-in-ggplot2-r-plots
+  theme_ipsum_rc(base_family="robotoC", base_size = 11.5) +
+  # theme_ipsum() + 
+  # theme_bw(base_size = 12, base_family = "") +
   ylim(0, 1) +
   # http://research.stowers-institute.org/efg/R/Color/Chart/ColorChart.pdf
   # APDEX индикаторы/ 0.94, 0.85, 0.7, 0.5
@@ -206,7 +212,6 @@ dfplot <- ggplot(mydata, aes(timestamp, apdex)) +
   geom_hline(aes(yintercept=.7), colour="yellow", linetype="dashed", size=1) +
   geom_hline(aes(yintercept=.5), colour="red", linetype="dashed", size=1) +
   geom_line() +
-  theme_bw(base_size = 12, base_family = "") +
   # geom_density(alpha = 0.3) +
   xlab("Дата") +
   ylab("APDEX")
@@ -221,6 +226,14 @@ print(dfplot) #end of print statement
 dev.off() #close the png device to save the figure. 
 
 stop("Скрипт завершен")
+# ============================================
+# https://github.com/wch/extrafont
+
+# Vector of font family names
+fonts()
+
+# Show entire table
+fonttable()
 
 # ============================================
 

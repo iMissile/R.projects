@@ -45,11 +45,11 @@ windowsFonts(Verdana="TT Verdana")
 
 gg = ggplot(wkdays, aes(x=hour, y=wkday, fill=n))
 gg = gg + geom_tile(color="white", size=0.1)
-gg = gg + scale_fill_viridis(option="B", name="# Events", label=comma) # https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html
+gg = gg + scale_fill_viridis(option="B", name="KPI", label=comma) # https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html
 #gg = gg + scale_fill_distiller(palette="RdYlGn", name="# Events", label=comma) # http://docs.ggplot2.org/current/scale_brewer.html
 #gg = gg + coord_equal()
 gg = gg + coord_fixed(ratio = 1)
-gg = gg + labs(x=NULL, y=NULL, title="Events per weekday & hour of day")
+gg = gg + labs(x=NULL, y=NULL, title="KPI по часам и дням недели")
 gg = gg + theme_tufte(base_family="Verdana")
 gg = gg + theme(plot.title=element_text(hjust=0))
 
@@ -76,7 +76,7 @@ if(TRUE){
 # ==================неэффективное применение map!!!!Все из-за tz и поштучной обработки
 if(FALSE){
   # рабочее решение отсюда: https://github.com/rstudio/rstudio-conf/tree/master/2017/List_Columns-Jenny_Bryan
-  attacks <- attacks %>% 
+  attacks <- attacks_raw %>% 
     # mutate(rt=map(.$timestamp, ~ ymd_hms(.x, quiet=FALSE))) %>% # с этим подходом ~ в 8 раз медленнее
     mutate(rt=ymd_hms(timestamp, quiet=FALSE)) %>%
     mutate(hour=as.numeric(map2(.$rt, .$tz, ~ format(.x, "%H", tz=.y)))) %>%

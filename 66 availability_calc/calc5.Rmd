@@ -244,12 +244,17 @@ spta_df
 options(digits=22)
 mttr_value <- c(1, 4, 24, 72) # указано время в часах на восстановление
 
+
+# показатели mtbf получаются не совсем понятные. 
+# Видимо потому, что дубль по площадкам идет
 df <-
-  equip_df %>% group_by(model, role) %>%
-  summarise(mtbf_series=1/sum(1/mtbf_n)) %>%
+  equip_df %>% group_by(model, role, site) %>%
+  summarise(mtbf_series=1/sum(1/mtbf_n_year))
+
+df <- df %>%
   mutate(res=map(mtbf_series, function(x){ tibble(mttr=mttr_value, avail=x / (x + mttr_value/(24*365)))})) %>%
   unnest() %>%
-  mutate(mtbf_series=mtbf_series/(24*365))
+  mutate(mtbf_series=mtbf_series)
   #mutate(spta=total*afr7/100) %>%
   #arrange(desc(spta))
 
