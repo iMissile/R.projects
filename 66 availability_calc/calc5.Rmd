@@ -54,18 +54,20 @@ fits <- 10^9/mtbf # mtbf -- в часах
 
 ## Сервер rh2288
 ```{r}
+# n_reserve -- количество элементов резерва (из общего числа)
+
 df <- 
   tribble(
-    ~element, ~reserved, ~q, ~fits,
-    "Материнская плата 2288", FALSE, 1, 4035.2,
-    "RAID контроллер", FALSE, 1, 559.2,
-    "Процессор", FALSE, 2, 40,
-    "Оперативная память 32Gb", FALSE, 10, 50,
-    "Вентилятор 2288", TRUE, 4, 582,
-    "SSD диск 32Gb", TRUE, 2, 2306, 
-    "Блок питания", TRUE, 2, 2000, 
-    "Ethernet порт 2x10", TRUE, 2, 362.3,
-    "Fibre Channel порт", TRUE, 2, 362.3
+    ~element, ~reserved, ~n_reserve, ~q, ~fits,
+    "Материнская плата 2288", FALSE, 0, 1, 4035.2,
+    "RAID контроллер", FALSE, 0, 1, 559.2,
+    "Процессор", FALSE, 0, 2, 40,
+    "Оперативная память 32Gb", FALSE, 0, 10, 50,
+    "Вентилятор 2288", TRUE, 1, 4, 582,
+    "SSD диск 32Gb", TRUE, 1, 2, 2306, 
+    "Блок питания", TRUE, 1, 2, 2000, 
+    "Ethernet порт 2x10", TRUE, 1, 2, 362.3,
+    "Fibre Channel порт", TRUE, 1, 2, 362.3
   )
 
 equip_df <- df %>% 
@@ -82,29 +84,29 @@ equip_df
 ```{r}
 df <- 
   tribble(
-    ~element, ~reserved, ~q, ~fits,
-    "Материнская плата 1288", FALSE, 1, 4035.2,
-    "RAID контроллер", FALSE, 1, 559.2,
-    "Процессор", FALSE, 2, 40,
-    "Оперативная память 16Gb", FALSE, 10, 50,
-    "Вентилятор 1288", TRUE, 4, 582,
-    "HDD диск 300Gb", TRUE, 2, 3425, 
-    "Блок питания", TRUE, 2, 2000
+    ~element, ~reserved, ~n_reserve, ~q, ~fits,
+    "Материнская плата 1288", FALSE, 0, 1, 4035.2,
+    "RAID контроллер", FALSE, 0, 1, 559.2,
+    "Процессор", FALSE, 0, 2, 40,
+    "Оперативная память 16Gb", FALSE, 0, 10, 50,
+    "Вентилятор 1288", TRUE, 1, 4, 582,
+    "HDD диск 300Gb", TRUE, 1, 2, 3425, 
+    "Блок питания", TRUE, 1, 2, 2000
   )
 
 
 df1 <- df %>% 
   bind_rows(tribble(
-    ~element, ~reserved, ~q, ~fits,
-    "Ethernet порт 4x1", TRUE, 2, 362.3
+    ~element, ~reserved, ~n_reserve, ~q, ~fits,
+    "Ethernet порт 4x1", TRUE, 1, 2, 362.3
   ))
 
 
 df2 <- df %>% 
   bind_rows(tribble(
-    ~element, ~reserved, ~q, ~fits,
-    "Ethernet порт 2x10", TRUE, 2, 362.3,
-    "Fibre Channel порт", TRUE, 2, 362.3
+    ~element, ~reserved, ~n_reserve, ~q, ~fits,
+    "Ethernet порт 2x10", TRUE, 1, 2, 362.3,
+    "Fibre Channel порт", TRUE, 1, 2, 362.3
   ))
 
 equip_df <- df1 %>% 
@@ -127,25 +129,27 @@ equip_df
 ```{r}
 df <- 
   tribble(
-    ~element, ~reserved, ~q, ~fits,
-    "Материнская плата СХД", TRUE, 2, 4035.2,
-    "Процессор СХД", FALSE, 2, 40,
-    "Блок питания СХД", TRUE, 2, 2000, 
-    "SSD диск 1.8Tb", TRUE, 6, 2306
+    ~element, ~reserved, ~n_reserve, ~q, ~fits,
+    "Материнская плата СХД", TRUE, 1, 2, 4035.2,
+    "Процессор СХД", FALSE, 0, 2, 40,
+    "Блок питания СХД", TRUE, 1, 2, 2000, 
+    "SSD диск 1.8Tb", TRUE, 1, 6, 2306
   )
 
+# НЦ
 df1 <- df %>% 
   bind_rows(tribble(
-    ~element, ~reserved, ~q, ~fits,
-    "HDD диск 1.2Tb", TRUE, 41, 3425,
-    "HDD диск 4Tb", TRUE, 56, 3425    
+    ~element, ~reserved, ~n_reserve, ~q, ~fits,
+    "HDD диск 1.2Tb", TRUE, 6, 41, 3425,
+    "HDD диск 4Tb", TRUE, 10, 56, 3425    
   ))
 
+# РНИЦ
 df2 <- df %>% 
   bind_rows(tribble(
-    ~element, ~reserved, ~q, ~fits,
-    "HDD диск 1.2Tb", TRUE, 16, 3425,
-    "HDD диск 4Tb", TRUE, 28, 3425    
+    ~element, ~reserved, ~n_reserve, ~q, ~fits,
+    "HDD диск 1.2Tb", TRUE, 4, 16, 3425,
+    "HDD диск 4Tb", TRUE, 5, 28, 3425    
   ))
 
 equip_df <- df1 %>% 
@@ -180,10 +184,10 @@ MTTR=2 hour
 
 df <- 
   tribble(
-    ~element, ~reserved, ~q, ~fits, ~model, ~role,
-    "Коммутатор AR2240", FALSE, 1, 10^9/(30*365*24), "ar2240", "net",
-    "Коммутатор CE6851", FALSE, 1, 10^9/(49.08*365*24), "ce6851", "net",
-    "Коммутатор S5320", FALSE, 1, 10^9/(66.07*365*24), "s5320", "net"
+    ~element, ~reserved, ~n_reserve, ~q, ~fits, ~model, ~role,
+    "Коммутатор AR2240", FALSE, 0, 1, 10^9/(30*365*24), "ar2240", "net",
+    "Коммутатор CE6851", FALSE, 0, 1, 10^9/(49.08*365*24), "ce6851", "net",
+    "Коммутатор S5320", FALSE, 0, 1, 10^9/(66.07*365*24), "s5320", "net"
   )
 
 equip_df <- df %>% 
@@ -210,11 +214,28 @@ equip_df %<>% left_join(placement_df, by=c("model", "role", "site")) %>%
 AFR = 1-exp(-8760/MTBF{в часах})
 
 ```{r}
+# пробуем ручками
+# map2(equip_df$q, equip_df$n_reserve, ~ .x+.y) %>% str()
+# Ошибка: Error: `.x` (62) and `.y` (17) are different lengths -- он, почему-то, берет сначала колонки, потом строки
+
+#equip_df %>% {map2(.$q, .$q, ~ .x)} %>% str()
+```
+
+Для исправления ошибки `Error: `.x` (62) and `.y` (17) are different lengths` см. п. ["Re-using the placeholder for attributes"](https://github.com/tidyverse/magrittr). Надо брать в фигурные скобки
+
+```{r}
+
+  
 equip_df %<>% mutate(mtbf=10^9/fits) %>% # средняя наработка на отказ в часах
   mutate(afr=(1-exp(-8760/mtbf))*100) %>% # annual falure rate в %
   mutate(afr7=afr*7) %>% # а за 7 лет?
-  mutate(ext=map(.$q, ~sum(1/(1:.x)))) %>%
-  unnest()
+  mutate(ext_full_parallel=map(.$q, ~sum(1/(1:.x)))) %>%
+  #mutate(ext={map2(.$q, .$n_reserve, ~sum(1/(.x-.y:.x)))}) %>%
+  mutate(ext={map2(.$q, .$n_reserve, ~sum(1/seq(.x-.y, .x)))}) %>%
+  unnest() %>%
+  select((1:5), ext, ext_full_parallel, everything())
+  
+  
   
 equip_df %<>% mutate(mtbf_n=mtbf * ext) %>%
   mutate(fits_n=if_else(reserved, 10^9/mtbf_n, q*fits)) %>%
