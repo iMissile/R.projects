@@ -1,0 +1,112 @@
+ИНТЕРФЕЙС
+
+library(shiny)
+#Определяем макет окна приложения
+shinyUI(fluidPage(
+#Определяем название приложения
+  titlePanel("Uploading Files"),
+#Определяем название и функции боковой панели управления
+    sidebarLayout(
+      sidebarPanel(
+#Добавляем виджет для загрузки исходной версии файла         
+        fileInput('file1', 'Choose Old CSV File',
+                  accept=c('text/csv', 
+                           'text/comma-separated-values,text/plain', 
+                           '.csv')),
+#Добавляем виджет (элемент интерфейса приложения) для загрузки новой версии файла  
+        fileInput('file2', 'Choose New CSV File',
+                  accept=c('text/csv', 
+                           'text/comma-separated-values,text/plain', 
+                           '.csv')),
+#Добавляем виджет для выбора ключа для сопроставления          
+        selectInput ("Select", "Key", choices = "Pending upload"),
+#Добавляем виджет для выбора переменной для расчета отклонений  
+        selectInput ("Select1", "Val", choices = "Pending upload"),
+#Добавляем виджет запуска расчетов
+        actionButton ("go", "Go")
+        ),
+#Определяем название и функции главной панели      
+    mainPanel(
+#Выводим исходную таблицу        
+        tableOutput('contents'),
+#Выводим новую таблицу        
+        tableOutput('contents2'),
+#Выводим расчеты        
+        dataTableOutput("changes2")
+        ))
+    ))
+
+СЕРВЕР
+
+library(shiny)
+shinyServer(function(input, output, session) {
+  contentsrea<-reactive({
+   inFile<-input$file1
+   if (is.null(inFile))
+     return(NULL)
+   read.csv(inFile$datapath, header = TRUE, sep = ";")
+    })
+   output$contents <- renderTable({contentsrea()})
+    observe({
+      updateSelectInput(session, "Select", choices = names(contentsrea()))
+      updateSelectInput(session, "Select1", choices = names(contentsrea()))
+     })
+   output$contents2 <- renderTable({
+      inFile2<-input$file2
+      if (is.null(inFile2))
+        return(NULL)
+      read.csv(inFile2$datapath, header = TRUE, sep = ";")
+    })
+   output$changes2 <- renderDataTable({
+     df.changes(df.old = input$file1, df.new = input$file2, KEYS = input$Select, VAL = input$Select1)
+    })
+  })
+
+
+ФУНКЦИЯ
+
+
+
+function(df.old, df.new, 
+                       KEYS = c("id"),
+                       VAL = NULL,
+                       retain.columns = NULL) {
+    # input checks 
+    stopifnot(KEYS %in% names(df.old),
+              KEYS %in% names(df.new),
+              VAL %in% names(df.old),
+              VAL %in% names(df.new),
+              retain.columns %in% names(df.new),
+              retain.columns %in% names(df.old))
+    # add columns to help us track new/old provenance
+    N <- transform(df.new, is = TRUE)
+    O <- transform(df.old, is = TRUE)
+    # merge
+    M <- merge(N, O, by = KEYS, all = TRUE, suffixes = c(".new",".old"))
+    M$is.new <- !is.na(M$is.new) # replace NA with FALSE
+    M$is.old <- !is.na(M$is.old) # replace NA with FALSE
+    # this will be our output
+    O <- M[KEYS]
+    # add rows.changed
+    O$row.changed <- with(M, ifelse(is.old & is.new, "10.Retained",
+                                    ifelse(is.old,          "05. Lost",
+                                           "00. New")))
+    # add data from new
+    original.vars <- setdiff(names(df.new), KEYS)
+    for (var in original.vars)
+        O[[var]] <- M[[paste0(var, ".new")]]
+    # modify data for retain.columns
+    for (var in retain.columns)
+        O[[var]] <- ifelse(M$is.new, M[[paste0(var, ".new")]],
+                           M[[paste0(var, ".old")]])
+    # add comparisons
+    for (var in VAL) {
+        old.var <- paste0(var, ".old")
+        new.var <- paste0(var, ".new")
+        del.var <- paste0(var, ".delta")
+        O[[del.var]] <- M[[new.var]] - M[[old.var]]
+        O[[old.var]] <- M[[old.var]]
+        O[[new.var]] <- M[[new.var]]
+    }
+    # reorder rows
+    O[order(O$row.changed), ]}
