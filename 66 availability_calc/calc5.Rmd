@@ -8,6 +8,7 @@ library(tidyverse)
 library(magrittr)
 library(purrr)
 
+options(digits=22)
 ```
 
 # Проводим расчеты надежности и необходимого зип
@@ -17,28 +18,25 @@ library(purrr)
 ```{r}
 placement_df <- 
   tribble(
-    ~model, ~role, ~site, ~amount,
-    "rh2288", "virt", "НЦ", 8,
-    "rh2288", "virt", "РНИЦ", 2,
-    "rh1288", "virt", "НЦ", 3,
-    "rh1288", "app", "НЦ", 3,
-    "rh1288", "app", "РНИЦ", 5,
-    "os5500", "storage", "НЦ", 1,
-    "os5500", "storage", "РНИЦ", 1,
-    "ar2240", "net", "НЦ", 2,
-    "ce6851", "net", "НЦ", 2,
-    "s5320", "net", "НЦ", 2,
-    "ar2240", "net", "РНИЦ", 2,
-    "ce6851", "net", "РНИЦ", 0,
-    "s5320", "net", "РНИЦ", 2
+    ~scheme_n, ~model, ~role, ~site, ~amount,
+    9, "rh2288", "virt", "НЦ", 8,
+    9, "rh2288", "virt", "РНИЦ", 2,
+    11, "rh1288", "virt", "НЦ", 3,
+    10, "rh1288", "app", "НЦ", 3,
+    10, "rh1288", "app", "РНИЦ", 5,
+    12, "os5500", "storage", "НЦ", 1,
+    12, "os5500", "storage", "РНИЦ", 1,
+    1, "ar2240", "net", "НЦ", 2,
+    3, "ce6851", "net", "НЦ", 2,
+    5, "s5320", "net", "НЦ", 2,
+    7, "sns2224", "net", "НЦ", 2,
+    1, "ar2240", "net", "РНИЦ", 2,
+    3, "ce6851", "net", "РНИЦ", 0,
+    5, "s5320", "net", "РНИЦ", 2,
+    7, "sns2224", "net", "РНИЦ", 2
 )
 ```
 
-
-    ~element, ~reserved, ~q, ~fits, ~model, ~role
-    "Коммутатор AR2240", FALSE, 1, 10^9/(30*365*24), "ar2240", "net",
-    "Коммутатор CE6851", FALSE, 1, 10^9/(49.08*365*24), "ce6851", "net",
-    "Коммутатор S5320", FALSE, 1, 10^9/(66.07*365*24), "s5320", "net"
 
 Ручками восстановим информацию по fits для SSD дисков на основании данных Google по AFR.
 
@@ -98,7 +96,8 @@ df <-
 df1 <- df %>% 
   bind_rows(tribble(
     ~element, ~reserved, ~n_reserve, ~q, ~fits,
-    "Ethernet порт 4x1", TRUE, 1, 2, 362.3
+    "Ethernet порт 4x1", TRUE, 1, 2, 362.3,
+    "Fibre Channel порт", TRUE, 1, 2, 362.3
   ))
 
 
@@ -127,30 +126,36 @@ equip_df
 
 ## СХД os5500
 ```{r}
-df <- 
+df0 <- 
   tribble(
     ~element, ~reserved, ~n_reserve, ~q, ~fits,
     "Материнская плата СХД", TRUE, 1, 2, 4035.2,
     "Процессор СХД", FALSE, 0, 2, 40,
     "Блок питания СХД", TRUE, 1, 2, 2000, 
-    "SSD диск 1.8Tb", TRUE, 1, 6, 2306
+    "SSD диск 1.8Tb", TRUE, 2, 5+2, 2306
   )
 
-# НЦ
+# НЦ дисковые полки
 df1 <- df %>% 
   bind_rows(tribble(
     ~element, ~reserved, ~n_reserve, ~q, ~fits,
-    "HDD диск 1.2Tb", TRUE, 6, 41, 3425,
-    "HDD диск 4Tb", TRUE, 10, 56, 3425    
+    "HDD диск 4Tb", TRUE, 15, 46+15, 3425,
+    #"HDD диск 1.2Tb", TRUE, 12, 34+12, 3425
+    "HDD диск 1.2Tb", TRUE, 11, 35+11, 3425
   ))
 
-# РНИЦ
+# РНИЦ дисковые полки
 df2 <- df %>% 
   bind_rows(tribble(
     ~element, ~reserved, ~n_reserve, ~q, ~fits,
-    "HDD диск 1.2Tb", TRUE, 4, 16, 3425,
-    "HDD диск 4Tb", TRUE, 5, 28, 3425    
+    "HDD диск 4Tb", TRUE, 8, 23+8, 3425,    
+    "HDD диск 1.2Tb", TRUE, 5, 12+5, 3425
   ))
+
+equip_df <- df0 %>% 
+  mutate(model="os5500", role="storage", site="НЦ") %>%
+  bind_rows(equip_df)
+
 
 equip_df <- df1 %>% 
   mutate(model="os5500", role="storage", site="НЦ") %>%
@@ -179,6 +184,10 @@ Huawei S5320:
 MTBF=66,07 year
 MTTR=2 hour
 
+Igor Schastiev [10:50 AM] 
+На китайском сайте нашел MTBF для Brocade 6505/6510 (это аналоги Huawei SNS2224):
+535906 часов = 61,17 лет
+
 ```{r}
 # fits <- 10^9/mtbf # mtbf -- в часах
 
@@ -187,7 +196,8 @@ df <-
     ~element, ~reserved, ~n_reserve, ~q, ~fits, ~model, ~role,
     "Коммутатор AR2240", FALSE, 0, 1, 10^9/(30*365*24), "ar2240", "net",
     "Коммутатор CE6851", FALSE, 0, 1, 10^9/(49.08*365*24), "ce6851", "net",
-    "Коммутатор S5320", FALSE, 0, 1, 10^9/(66.07*365*24), "s5320", "net"
+    "Коммутатор S5320", FALSE, 0, 1, 10^9/(66.07*365*24), "s5320", "net",
+    "Коммутатор SNS2224", FALSE, 0, 1, 10^9/(61.17*365*24), "sns2224", "net"
   )
 
 equip_df <- df %>% 
@@ -259,43 +269,100 @@ spta_df <- equip_df %>%
 spta_df
 
 ```
-Коэффициент готовности для различных серверов
-Почему-то так есть ошибки в расчетах.
-```{r}
-options(digits=22)
-mttr_value <- c(1, 4, 24, 72) # указано время в часах на восстановление
-
-
-# показатели mtbf получаются не совсем понятные. 
-# Видимо потому, что дубль по площадкам идет
-df <-
-  equip_df %>% group_by(model, role, site) %>%
-  summarise(mtbf_series=1/sum(1/mtbf_n_year))
-
-df <- df %>%
-  mutate(res=map(mtbf_series, function(x){ tibble(mttr=mttr_value, avail=x / (x + mttr_value/(24*365)))})) %>%
-  unnest() %>%
-  mutate(mtbf_series=mtbf_series)
-  #mutate(spta=total*afr7/100) %>%
-  #arrange(desc(spta))
-
-t <- map(df$mtbf_series, function(x){ tibble(mttr=mttr_value, avail=x / (x + mttr_value/(24*365)))})
-```
-
 Выводим в файл
 ```{r}
   write_delim(equip_df %>% select(-ext, -mtbf_n), "equip_calc.txt", delim="\t")
   write_delim(spta_df, "equip_SPTA.txt", delim="\t")
 ```
 
+# Считаем готовность элементов и комплексов
 
-Посчитаем ручками готовность серверов
+Коэффициент готовности для различных серверов
+Почему-то так есть ошибки в расчетах.
+показатели mtbf получаются не совсем понятные. 
+Видимо потому, что дубль по площадкам идет. 
+Но все исправили
 
-сервер rh1288
+```{r}
+options(digits=22)
+mttr_value <- c(1, 4, 24, 36, 48, 72) # указано время в часах на восстановление
+
+
+df <-
+  equip_df %>% group_by(model, role, site) %>%
+  summarise(mtbf_series=1/sum(1/mtbf_n_year), amount=mean(amount), scheme_n=mean(scheme_n))
+
+avail_df <- df %>%
+  mutate(res=map(mtbf_series, function(x){ tibble(mttr=mttr_value, avail=x / (x + mttr_value/(24*365)))})) %>%
+  unnest() %>%
+  select(scheme_n, everything())
+  # mutate(mtbf_series=mtbf_series)
+  #mutate(spta=total*afr7/100) %>%
+  #arrange(desc(spta))
+
+t <- map(avail_df$mtbf_series, function(x){ tibble(mttr=mttr_value, avail=x / (x + mttr_value/(24*365)))})
+```
+
+# Расчитываем готовность Системы в целом
+
+p_c (t)=[p_1 (t)+p_2 (t)-p_1 (t)p_2 (t)]•[p_3 (t)+p_4 (t)-p_3 (t)p_4 (t)]•p_5 (t)•p_6 (t)[p_5 (t)+p_6 (t)-p_5 (t)p_6 (t)]•p_7 (t)•p_8 (t)
+
+
+считаем для 72 часов MTTR:
+
+- Маршрутизатор AR2240	1, 2
+- Коммутатор CE6851	3, 4
+- Коммутатор S5320	5, 6
+- Коммутатор SNS2224	7, 8
+- virt 9
+- app 10
+- упр вирт 11
+- СХД OceanStor 5500 12
+
+```{r}
+# устанавливаем MTTR для вычисления
+mttr_calc <- 24
+```
+
+
+```{r}
+# считаем готовность для НЦ
+NC_df <- 
+  avail_df %>% 
+  filter(mttr==mttr_calc) %>%
+  filter(site=="НЦ") %>%
+  filter(amount>0) %>% 
+  mutate(comp_avail=1-(1-avail)^amount) %>%
+  arrange(scheme_n)
+
+NC_df
+```
+
+Надежность комплекса НЦ при MTTR `r mttr_calc` ч. = `r prod(NC_df$comp_avail)`
+
+```{r}
+# считаем готовность для РНИЦ
+RNC_df <- 
+  avail_df %>% 
+  filter(mttr==mttr_calc) %>%
+  filter(site=="РНИЦ") %>%
+  filter(amount>0) %>% 
+  mutate(comp_avail=1-(1-avail)^amount) %>%
+  arrange(scheme_n)
+
+RNC_df
+```
+
+Надежность комплекса РНИЦ при MTTR `r mttr_calc` ч. = `r prod(RNC_df$comp_avail)`
+
+# Посчитаем ручками готовность серверов (здесь неверные показатели)
+
+## Сервер rh1288
 ```{r}
 mttr_value <- c(1, 4, 24, 72, 1100) # указано время в часах на восстановление
 
 # mtbf указан в годах
+# rh1288 <- 
 
 rh1288 <- tibble(mtbf=c(28.3,
                         50.0,
