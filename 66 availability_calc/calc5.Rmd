@@ -26,6 +26,8 @@ placement_df <-
     10, "rh1288", "app", "–Õ»÷", 5,
     12, "os5500", "storage", "Õ÷", 1,
     12, "os5500", "storage", "–Õ»÷", 1,
+    12, "os5500", "storage-disk", "Õ÷", 1,
+    12, "os5500", "storage-disk", "–Õ»÷", 1,
     1, "ar2240", "net", "Õ÷", 2,
     3, "ce6851", "net", "Õ÷", 2,
     5, "s5320", "net", "Õ÷", 2,
@@ -136,34 +138,28 @@ df0 <-
   )
 
 # Õ÷ ‰ËÒÍÓ‚˚Â ÔÓÎÍË
-df1 <- df %>% 
-  bind_rows(tribble(
+df1 <- 
+  tribble(
     ~element, ~reserved, ~n_reserve, ~q, ~fits,
     "HDD ‰ËÒÍ 4Tb", TRUE, 15, 46+15, 3425,
     #"HDD ‰ËÒÍ 1.2Tb", TRUE, 12, 34+12, 3425
     "HDD ‰ËÒÍ 1.2Tb", TRUE, 11, 35+11, 3425
-  ))
+  )
 
 # –Õ»÷ ‰ËÒÍÓ‚˚Â ÔÓÎÍË
-df2 <- df %>% 
-  bind_rows(tribble(
+df2 <- 
+  tribble(
     ~element, ~reserved, ~n_reserve, ~q, ~fits,
     "HDD ‰ËÒÍ 4Tb", TRUE, 8, 23+8, 3425,    
     "HDD ‰ËÒÍ 1.2Tb", TRUE, 5, 12+5, 3425
-  ))
+  )
 
-equip_df <- df0 %>% 
-  mutate(model="os5500", role="storage", site="Õ÷") %>%
-  bind_rows(equip_df)
+equip_df %<>%
+  bind_rows(mutate(df0, model="os5500", role="storage", site="Õ÷")) %>%
+  bind_rows(mutate(df0, model="os5500", role="storage", site="–Õ»÷")) %>%
+  bind_rows(mutate(df1, model="os5500", role="storage-disk", site="Õ÷")) %>%
+  bind_rows(mutate(df2, model="os5500", role="storage-disk", site="–Õ»÷"))
 
-
-equip_df <- df1 %>% 
-  mutate(model="os5500", role="storage", site="Õ÷") %>%
-  bind_rows(equip_df)
-
-equip_df <- df2 %>% 
-  mutate(model="os5500", role="storage", site="–Õ»÷") %>%
-  bind_rows(equip_df)
 
 equip_df
 
