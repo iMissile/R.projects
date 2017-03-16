@@ -8,6 +8,7 @@ library(ggthemes)    # has a clean theme for ggplot2
 library(viridis)     # best. color. palette. evar.
 library(RColorBrewer)# best. color. palette. evar.
 library(extrafont)   # http://blog.revolutionanalytics.com/2012/09/how-to-use-your-favorite-fonts-in-r-charts.html
+library(dvtiot)
 
 # см. https://rpubs.com/omicsdata/faceted_heatmap
 

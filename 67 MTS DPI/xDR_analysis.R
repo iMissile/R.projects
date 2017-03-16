@@ -58,7 +58,7 @@ group_df <- df1 %>%
 
 plot_df <- group_df %>%
   top_n(10, downlink_Kb) %>%
-  mutate(downlink_Mb=downlink_Kb/1024)
+  mutate(downlink_Mb=downlink_Kb/1024) %>%
   arrange(desc(downlink_Kb))
 
 gp <- ggplot(plot_df, aes(fct_reorder(radius_user_name, downlink_Mb), downlink_Mb)) + 

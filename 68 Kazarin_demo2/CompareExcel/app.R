@@ -8,8 +8,19 @@
 #
 
 library(shiny)
+library(tidyverse)
+library(readxl)
+library(magrittr)
+
+# devtools::install_github("tidyverse/readxl") -- используем фичи dev версии
+# в частности, чтение без расширения файла
+# https://github.com/tidyverse/readxl/issues/85
+# https://github.com/leeper/rio/issues/130
 
 eval(parse("funcs.R", encoding="UTF-8"))
+# source("funcs.R", encoding="UTF-8", local=TRUE)
+
+
 
 #Определяем макет окна приложения
 ui <- fluidPage(
@@ -19,19 +30,19 @@ ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(
       #Добавляем виджет для загрузки исходной версии файла         
-      fileInput('file1', 'Choose Old CSV File',
+      fileInput('old_file', 'Choose Old Excel File',
                 accept=c('text/csv', 
                          'text/comma-separated-values,text/plain', 
                          '.csv')),
       #Добавляем виджет (элемент интерфейса приложения) для загрузки новой версии файла  
-      fileInput('file2', 'Choose New CSV File',
+      fileInput('new_file', 'Choose New Excel File',
                 accept=c('text/csv', 
                          'text/comma-separated-values,text/plain', 
                          '.csv')),
       #Добавляем виджет для выбора ключа для сопроставления          
-      selectInput ("Select", "Key", choices = "Pending upload"),
+      selectInput ("key_name", "Key", choices = "Pending upload"),
       #Добавляем виджет для выбора переменной для расчета отклонений  
-      selectInput ("Select1", "Val", choices = "Pending upload"),
+      selectInput ("val_name", "Val", choices = "Pending upload"),
       #Добавляем виджет запуска расчетов
       actionButton ("go", "Go")
     ),
@@ -47,39 +58,31 @@ ui <- fluidPage(
 )
 
 
-# Define server logic required to draw a histogram
-server <- function(input, output) {
-   
-   output$distPlot <- renderPlot({
-      # generate bins based on input$bins from ui.R
-      x    <- faithful[, 2] 
-      bins <- seq(min(x), max(x), length.out = input$bins + 1)
-      
-      # draw the histogram with the specified number of bins
-      hist(x, breaks = bins, col = 'darkgray', border = 'white')
-   })
-}
-
 server <- function(input, output, session) {
-  contentsrea<-reactive({
-    inFile<-input$file1
-    if (is.null(inFile))
-      return(NULL)
-    read.csv(inFile$datapath, header = TRUE, sep = ";")
+  
+  old_df <- reactive({
+    #browser()
+    read_xlsx(req(input$old_file$datapath))
   })
-  output$contents <- renderTable({contentsrea()})
+
+  new_df <- reactive({
+    #browser()
+    read_xlsx(req(input$new_file$datapath))
+  })
+
   observe({
-    updateSelectInput(session, "Select", choices = names(contentsrea()))
-    updateSelectInput(session, "Select1", choices = names(contentsrea()))
+    updateSelectInput(session, "key_name", choices=names(req(old_df())))
+    updateSelectInput(session, "val_name", choices=names(req(old_df())))
   })
-  output$contents2 <- renderTable({
-    inFile2<-input$file2
-    if (is.null(inFile2))
-      return(NULL)
-    read.csv(inFile2$datapath, header = TRUE, sep = ";")
-  })
+
+  output$contents <- renderTable({old_df()})
+  output$contents2 <- renderTable({new_df()})
+  
+  
   output$changes2 <- renderDataTable({
-    cmpExcelCols(old_df=input$file1, new_df=input$file2, key_name=input$Select, val_name=input$Select1)
+    if(input$key_name != input$val_name){
+      cmpExcelCols(old_df=old_df(), new_df=new_df(), key_name=input$key_name, val_name=input$val_name)
+    }
   })
 }
 
