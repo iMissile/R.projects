@@ -10,8 +10,7 @@ output:
 header-includes:
   - \usepackage{fontspec}
   - \setmainfont{Linux Libertine O}
-  - \usepackage{polyglossia}
-  - \setmainlanguage[babelshorthands=true]{russian}
+  - \usepackage[english,russian]{babel}
 --- 
 
 <!---
