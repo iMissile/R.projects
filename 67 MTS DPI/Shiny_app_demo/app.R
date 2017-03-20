@@ -47,46 +47,33 @@ ui <- fluidPage(
                     }
                     "))
     ),
-  
-  fluidRow(
-    column(width = 2, wellPanel(
+
+  sidebarLayout(
+    sidebarPanel(
+      width = 2, # обязательно ширины надо взаимно балансировать!!!!
       radioButtons("plot_type", "Тип графика",
-                   c("base", "ggplot2")
-      )
-    )),
-    
-    column(width = 5,
-           # In a plotOutput, passing values for click, dblclick, hover, or brush
-           # will enable those interactions.
-           plotOutput("plot1", height = 350,
-                      click = "plot_click",
-                      dblclick = "plot_dblclick",
-                      hover = "plot_hover",
-                      brush = "plot_brush"
-           ), 
-           p(),
-           verbatimTextOutput("data_info")
+                   c("base", "ggplot2")),
+      # Кнопка запуска расчетов event_heat_map
+      actionButton ("draw_ehm", "Расчет тепловой карты")
     ),
-    column(width = 5,
-           # А здесь мы нарисуем отрендеренный вручную график
-           imageOutput("image", height = 350,
-                       click = "plot_click",
-                       dblclick = "plot_dblclick",
-                       hover = "plot_hover",
-                       brush = "plot_brush"
-           )
-    )
-    
-    
-  ),
-  
-  fluidRow(
-    column(width = 3, verbatimTextOutput("click_info")),
-    column(width = 3, verbatimTextOutput("dblclick_info")),
-    column(width = 3, verbatimTextOutput("hover_info")),
-    column(width = 3, verbatimTextOutput("brush_info"))
+
+    mainPanel(
+      fluidRow(
+        width = 10, # обязательно ширины надо взаимно балансировать!!!!
+        column(width=6, 
+               plotOutput("plot1", height = 350,
+                          click = "plot_click",
+                          dblclick = "plot_dblclick",
+                          hover = "plot_hover",
+                          brush = "plot_brush")),
+        column(width=6,
+               # А здесь мы нарисуем тепловую карту по событиям
+               plotOutput("event_plot", height = 350))
+        
+        )
+      )
+    )  
   )
-    )
 
 # Define server logic required to draw a network
 server <- function(input, output, session) {
@@ -126,60 +113,12 @@ server <- function(input, output, session) {
       gp
     }
   })
-  
-  output$image <- renderImage({
-    gp <- ggplot(net, aes(x=x, y=y, xend=xend, yend=yend)) +
-      # geom_edges(aes(linetype=type, color=type, lwd=type)) +
-      geom_edges(aes(linetype=type), color="grey75", lwd=1.2)+ #  , curvature = 0.1) +
-      geom_nodes(color="gold", size=8) +
-      # geom_nodelabel(aes(label=vertex.names), fontface="bold") +
-      # geom_nodelabel_repel(aes(color=ip_addr, label=vertex.names), fontface = "bold", box.padding=unit(2, "lines")) +
-      geom_nodelabel_repel(aes(label=ip_addr), fontface = "bold", box.padding=unit(2, "lines"), 
-                           segment.colour="red", segment.size=1) +
-      geom_edgetext_repel(aes(label=volume), color="white", fill="grey25",
-                          box.padding = unit(1, "lines")) +
-      theme_blank() +
-      theme(axis.text = element_blank(),
-            axis.title = element_blank(),
-            panel.background = element_rect(fill = "grey25"),
-            panel.grid = element_blank())
-    
-    flog.info("ggplot for Image built")
-    
-    # сохраним в файл, разбираемся с антиалайзингом
-    # http://blog.revolutionanalytics.com/2009/01/10-tips-for-making-your-r-graphics-look-their-best.html
-    # http://gforge.se/2013/02/exporting-nice-plots-in-r/ (см. отдельно UPDATE и "lines and text anti-aliased - not fills/polygons")
-    outfile <- "render_w_cairo.png"
-    # outfile <- tempfile(fileext='.png')
-    flog.info(paste0("rendered file:", outfile))
-    
-    # Read plot2's width and height. These are reactive values, so this
-    # expression will re-run whenever these values change.
-    width  <- session$clientData$output_image_width
-    height <- session$clientData$output_image_height
-    flog.info(paste0("render size (H x W): ", height, " x ", width))
-    
-    
-    png(filename=outfile, type="cairo", #pointsize=24, 
-        units="px", height=height, width=width, res=72, pointsize=12, antialias="default")
-    print(gp)
-    dev.off()
-    flog.info("Image rendered")
-    
-    
-    # Return a list containing information about the image
-    list(
-      src = outfile,
-      #contentType = "image/png",
-      #width = width,
-      #height = height,
-      alt = "This is alternate text"
-    )      
-    
-  }, deleteFile=FALSE)
-  
-  
-  
+
+  output$event_plot <- renderPlot({
+    browser()
+    createEventPlot(attacks_raw)
+  })
+
   output$click_info <- renderPrint({
     cat("input$plot_click:\n")
     str(input$plot_click)
