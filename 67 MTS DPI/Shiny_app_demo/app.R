@@ -25,17 +25,15 @@ eval(parse("heatmap_func.R", encoding="UTF-8"))
 # https://shiny.rstudio.com/articles/debugging.html
 # https://blog.rstudio.org/2015/06/16/shiny-0-12-interactive-plots-with-ggplot2/
 
-flog.appender(appender.file('network.log'))
+flog.appender(appender.file('app.log'))
 flog.threshold(TRACE)
-flog.info("Network dashboard started")
+flog.info("Dashboard started")
 
-options(shiny.error=browser)
-options(shiny.reactlog=TRUE)
-options(shiny.usecairo=TRUE)
+# options(shiny.error=browser)
+# options(shiny.reactlog=TRUE)
+# options(shiny.usecairo=TRUE)
 
 # первичная инициализация --------------------------
-attacks_raw <- read_csv("eventlog.csv", col_types="ccc", progress=interactive()) %>%
-  slice(1:20000)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -47,54 +45,82 @@ ui <- fluidPage(
                     }
                     "))
     ),
+  shinythemes::themeSelector(),
 
   sidebarLayout(
     sidebarPanel(
       width = 2, # обязательно ширины надо взаимно балансировать!!!!
       radioButtons("plot_type", "Тип графика",
                    c("base", "ggplot2")),
+      radioButtons("ehm_pal", "Палитра",
+                   c("viridis", "brewer")),
       # Кнопка запуска расчетов event_heat_map
-      actionButton ("draw_ehm", "Расчет тепловой карты")
+      actionButton ("ehm_btn", "Карта событий")
     ),
 
     mainPanel(
+      width = 10, # обязательно ширины надо взаимно балансировать!!!!
       fluidRow(
-        width = 10, # обязательно ширины надо взаимно балансировать!!!!
         column(width=6, 
-               plotOutput("plot1", height = 350,
+               plotOutput("plot1", 
                           click = "plot_click",
                           dblclick = "plot_dblclick",
                           hover = "plot_hover",
                           brush = "plot_brush")),
         column(width=6,
                # А здесь мы нарисуем тепловую карту по событиям
-               plotOutput("event_plot", height = 350))
+               plotOutput("event1_plot")) # , height = 350
         
-        )
+        ),
+      fluidRow(width=12, plotOutput("event_plot"))
       )
     )  
   )
 
 # Define server logic required to draw a network
 server <- function(input, output, session) {
-  # определяем сетевой объект на уровне сессии пользователя
-  g <- graph_from_literal(A-+B-+C, D-+A, C+-E-+D, E-+B)
-  set.seed(123)
-  g <- igraph::set_vertex_attr(g, "ip_addr", # "label"
-                               value=stringr::str_c("192.168.1.", sample(1:254, vcount(g), replace=FALSE)))
-  # прошлись по граням
-  val <- stringr::str_c("UP = ", sample(1:10, ecount(g), replace=FALSE))
-  g <- igraph::set_edge_attr(g, "volume", value=val)
-  g <- igraph::set_edge_attr(g, "type", value=sample(letters[24:26], ecount(g), replace=TRUE))
-  lo <- layout_on_grid(g) # lo is a matrix of coordinates
-  # !! из анализа github понял, что можно в качестве layout матрицу подсовывать!!
-  net <- ggnetwork(g, layout=lo)
+  
+  attacks <- reactive({
+    # специально завязали на кнопку
+    flog.info(paste0("attacks invalidated ", input$ehm_btn))        
+
+    attacks_raw <- req(read_csv("eventlog.csv", col_types="ccc", progress=interactive()) %>%
+                         slice(1:20000))
+    
+    attacks <- attacks_raw %>%
+      group_by(tz) %>%
+      nest()
+    
+    attacks <- attacks %>%
+      mutate(res=map2(data, tz, parseDFDayParts)) %>%
+      unnest() %>%
+      # превратим wkday в фактор принудительно с понедельника
+      mutate(wkday=factor(wkday, levels=weekdays(dmy("13.02.2017")+0:6)))
+    
+  })
+  
+  net <- reactive({
+    # определяем сетевой объект на уровне сессии пользователя
+    g <- graph_from_literal(A-+B-+C, D-+A, C+-E-+D, E-+B)
+    set.seed(123)
+    g <- igraph::set_vertex_attr(g, "ip_addr", # "label"
+                                 value=stringr::str_c("192.168.1.", sample(1:254, vcount(g), replace=FALSE)))
+    # прошлись по граням
+    val <- stringr::str_c("UP = ", sample(1:10, ecount(g), replace=FALSE))
+    g <- igraph::set_edge_attr(g, "volume", value=val)
+    g <- igraph::set_edge_attr(g, "type", value=sample(letters[24:26], ecount(g), replace=TRUE))
+    lo <- layout_on_grid(g) # lo is a matrix of coordinates
+    # !! из анализа github понял, что можно в качестве layout матрицу подсовывать!!
+    net <- ggnetwork(g, layout=lo)
+    
+    net
+  })
   
   output$plot1 <- renderPlot({
     if (input$plot_type == "base") {
       plot(mtcars$wt, mtcars$mpg)
     } else if (input$plot_type == "ggplot2") {
-      gp <- ggplot(net, aes(x=x, y=y, xend=xend, yend=yend)) +
+      gp <- ggplot(net(), aes(x=x, y=y, xend=xend, yend=yend)) +
         # geom_edges(aes(linetype=type, color=type, lwd=type)) +
         geom_edges(aes(linetype=type), color="grey75", lwd=1.2)+ #  , curvature = 0.1) +
         geom_nodes(color="gold", size=8) +
@@ -115,8 +141,13 @@ server <- function(input, output, session) {
   })
 
   output$event_plot <- renderPlot({
-    browser()
-    createEventPlot(attacks_raw)
+    fontsize <- session$clientData$output_event_plot_height/400 * 20
+    #fontsize <- session$clientData$output_event_plot_width/1600 * 24
+    flog.info(paste0("Font size recalculated. Size = ", fontsize, " pt"))
+    flog.info(sprintf("H = %s px, W = %s px", 
+                      session$clientData$output_event_plot_height, 
+                      session$clientData$output_event_plot_width))
+    createEventPlot(attacks(), palette=input$ehm_pal, fontsize)
   })
 
   output$click_info <- renderPrint({
@@ -142,7 +173,7 @@ server <- function(input, output, session) {
   
   output$data_info <- renderPrint({
     # With base graphics, need to tell it what the x and y variables are.
-    nearPoints(net, input$plot_click, xvar="x", yvar="y")
+    nearPoints(net(), input$plot_click, xvar="x", yvar="y")
   })
   
 }
