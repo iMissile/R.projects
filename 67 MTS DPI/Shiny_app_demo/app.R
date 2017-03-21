@@ -3,7 +3,7 @@ library(lubridate)   # date manipulation
 library(magrittr)
 library(countrycode) # turn country codes into pretty names
 library(scales)      # pairs nicely with ggplot2 for plot label formatting
-library(gridExtra)   # a helper for arranging individual ggplot objects
+# library(gridExtra)   # a helper for arranging individual ggplot objects
 library(ggthemes)    # has a clean theme for ggplot2
 library(viridis)     # best. color. palette. evar.
 library(RColorBrewer)# best. color. palette. evar.
@@ -17,6 +17,7 @@ library(intergraph) # http://mbojan.github.io/intergraph/
 library(ggnetwork)
 library(Cairo)
 library(shiny)
+library(shinythemes) # https://rstudio.github.io/shinythemes/
 library(futile.logger)
 
 eval(parse("heatmap_func.R", encoding="UTF-8"))
@@ -45,6 +46,7 @@ ui <- fluidPage(
                     }
                     "))
     ),
+  theme=shinytheme("united"), #("slate"),
   shinythemes::themeSelector(),
 
   sidebarLayout(
@@ -72,7 +74,10 @@ ui <- fluidPage(
                plotOutput("event1_plot")) # , height = 350
         
         ),
-      fluidRow(width=12, plotOutput("event_plot"))
+      fluidRow(
+        #column(width=12, div(style = "height:200px;background-color: yellow;"), plotOutput("event_plot"))
+        column(width=12, plotOutput("event_plot"))
+      )
       )
     )  
   )
@@ -147,8 +152,10 @@ server <- function(input, output, session) {
     flog.info(sprintf("H = %s px, W = %s px", 
                       session$clientData$output_event_plot_height, 
                       session$clientData$output_event_plot_width))
-    createEventPlot(attacks(), palette=input$ehm_pal, fontsize)
-  })
+    gp <- createEventPlot(attacks(), palette=input$ehm_pal, fontsize)
+    ggsave("fig8.png", plot=gp)
+    gp
+  }, bg="transparent")
 
   output$click_info <- renderPrint({
     cat("input$plot_click:\n")

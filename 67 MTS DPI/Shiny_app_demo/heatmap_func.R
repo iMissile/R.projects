@@ -23,10 +23,10 @@ createEventPlot <- function(attacks, palette, fontsize) {
   # gg = gg + theme_ipsum_rc(base_family="robotoC", base_size = 11.5)
   # gg = gg + theme_tufte(base_family="Verdana")
   gg = gg + theme(plot.title=element_text(hjust=0))
-  gg = gg + theme(plot.background=element_rect(fill = "lightblue", 
-                                               colour = "black", size = 2,
-                                               linetype = "longdash"))
-  
+  # gg = gg + theme(plot.background=element_rect(fill = "transparent", #"lightblue", 
+  #                                             colour = "black", size = 2,
+  #                                             linetype = "longdash"))
+  # gg = gg + theme(panel.background=element_rect(fill = "green"))
   gg
 }
 
