@@ -9,12 +9,13 @@ library(viridis)     # best. color. palette. evar.
 library(RColorBrewer)# best. color. palette. evar.
 library(hrbrthemes)
 library(extrafont)   # http://blog.revolutionanalytics.com/2012/09/how-to-use-your-favorite-fonts-in-r-charts.html
+library(stringr)
 # library(forcats)
-library(sna)
-library(igraph)
-library(intergraph) # http://mbojan.github.io/intergraph/
+#library(sna)
+#library(igraph)
+#library(intergraph) # http://mbojan.github.io/intergraph/
 # library(ggpmisc)
-library(ggnetwork)
+#library(ggnetwork)
 library(Cairo)
 library(shiny)
 library(shinythemes) # https://rstudio.github.io/shinythemes/
@@ -38,6 +39,7 @@ flog.info("Dashboard started")
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
+  titlePanel("Аналитика DPI"),
   # Some custom CSS for a smaller font for preformatted text
   tags$head(
     tags$style(HTML("
@@ -75,8 +77,7 @@ ui <- fluidPage(
                verbatimTextOutput("data_info"))
       ),
       fluidRow(
-        #column(width=12, div(style = "height:200px;background-color: yellow;"), plotOutput("event_plot"))
-        column(width=12, plotOutput("event_plot", click="ehm_click"))
+        column(width=8, dataTableOutput("edr_table"))
       )
     )
   )  
@@ -88,29 +89,10 @@ server <- function(input, output, session) {
   edr_http <- reactive({
     flog.info(paste0("loading edr http ", input$ehm_btn))
     
-    http <- req(read_csv("edr_http.csv", progress=interactive()) %>%
-                         slice(1:20000))
-  })
-  
-  wkd_attacks <- reactive({
-    count(attacks(), wkday, hour)
-  })
-  
-  net <- reactive({
-    # определяем сетевой объект на уровне сессии пользователя
-    g <- graph_from_literal(A-+B-+C, D-+A, C+-E-+D, E-+B)
-    set.seed(123)
-    g <- igraph::set_vertex_attr(g, "ip_addr", # "label"
-                                 value=stringr::str_c("192.168.1.", sample(1:254, vcount(g), replace=FALSE)))
-    # прошлись по граням
-    val <- stringr::str_c("UP = ", sample(1:10, ecount(g), replace=FALSE))
-    g <- igraph::set_edge_attr(g, "volume", value=val)
-    g <- igraph::set_edge_attr(g, "type", value=sample(letters[24:26], ecount(g), replace=TRUE))
-    lo <- layout_on_grid(g) # lo is a matrix of coordinates
-    # !! из анализа github понял, что можно в качестве layout матрицу подсовывать!!
-    net <- ggnetwork(g, layout=lo)
-    
-    net
+    req(read_csv("edr_http_small.csv", progress=interactive())) %>%
+      select(msisdn, end_timestamp, uplink_bytes, downlink_bytes)
+    # req(read_csv("edr_http.csv", progress=interactive()) %>% slice(1:20000))
+    # write_csv(t %>% sample_frac(0.2), "edr_http_small.csv")
   })
   
   output$plot1 <- renderPlot({
@@ -137,45 +119,12 @@ server <- function(input, output, session) {
     }
   })
   
-  output$event_plot <- renderPlot({
-    fontsize <- session$clientData$output_event_plot_height/400 * 20
-    #fontsize <- session$clientData$output_event_plot_width/1600 * 24
-    flog.info(paste0("Font size recalculated. Size = ", fontsize, " pt"))
-    flog.info(sprintf("H = %s px, W = %s px", 
-                      session$clientData$output_event_plot_height, 
-                      session$clientData$output_event_plot_width))
-    gp <- createEventPlot(wkd_attacks(), palette=input$ehm_pal, fontsize)
-    # ggsave("fig8.png", plot=gp)
-    gp
-  }, bg="transparent")
+  output$edr_table <- renderDataTable({
+    edr_http()},
+    options=list(pageLength=5, lengthMenu=c(5, 10))
+    )
   
-  output$click_info <- renderPrint({
-    cat("input$ehm_click:\n")
-    str(input$ehm_click)
-  })
-  
-  output$hover_info <- renderPrint({
-    cat("input$plot_hover:\n")
-    str(input$plot_hover)
-  })
-  output$dblclick_info <- renderPrint({
-    cat("input$plot_dblclick:\n")
-    str(input$plot_dblclick)
-  })
-  output$brush_info <- renderPrint({
-    # cat("input$plot_brush:\n")
-    # str(input$plot_brush)
-    # Get width and height of image output
-    #w  <- session$clientData#$output_image_render_width
-    #h <- session$clientData#$output_image_render_height
-    #str(w, h)      
-  })
-  
-  output$data_info <- renderPrint({
-    # With base graphics, need to tell it what the x and y variables are.
-    nearPoints(wkd_attacks(), input$ehm_click, threshold = 10, xvar="hour", yvar="wkday")
-  })
-  
+    
 }
 
 
