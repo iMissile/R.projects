@@ -1,48 +1,43 @@
-plotTop10Download <- function(df) {
+plotTop10Downlink <- function(df) {
   
-  group_df <- df %>%
+  flog.info(paste0("top10 download plot: nrow = ", nrow(df)))
+  if(nrow(df)==0) return(NULL)
+  
+  plot_df <- df %>%
+    filter(direction=="down") %>%
     mutate(msisdn=as.factor(msisdn)) %>%
     group_by(msisdn) %>%
-    summarise(user_recs=n(), 
-              uplink_Kb=round(sum(uplink_bytes)/1024, 1), 
-              downlink_Kb=round(sum(downlink_bytes)/1024, 1)) %>%
-    arrange(desc(user_recs))
-  
-  plot_df <- group_df %>%
-    top_n(10, downlink_Kb) %>%
-    mutate(downlink_Mb=downlink_Kb/1024) %>%
-    arrange(desc(downlink_Kb))
-  
-  gp <- ggplot(plot_df, aes(fct_reorder(msisdn, downlink_Mb), downlink_Mb)) + 
+    summarise(volume=round(sum(bytes)/1024/1024, 1)) %>% # Перевели в Мб
+    top_n(10, volume)
+
+  gp <- ggplot(plot_df, aes(fct_reorder(msisdn, volume), volume)) + 
     geom_bar(fill=brewer.pal(n=9, name="Blues")[4], alpha=0.5, stat="identity") +
     theme_ipsum_rc(base_size=16, axis_title_size=14) +
-    xlab("'Как бы' MSISN") +
+    xlab("MSISN") +
     ylab("Суммарный Downlink, Mb") +
+    ggtitle("ТОП 10 скачивающих") +
     coord_flip()
   
   gp
 }
 
-plotTop10Upload <- function(df) {
+plotTop10Uplink <- function(df) {
+
+  if(nrow(df)==0) return(NULL)
   
-  group_df <- df %>%
+  plot_df <- df %>%
+    filter(direction=="up") %>%
     mutate(msisdn=as.factor(msisdn)) %>%
     group_by(msisdn) %>%
-    summarise(user_recs=n(), 
-              uplink_Kb=round(sum(uplink_bytes)/1024, 1), 
-              downlink_Kb=round(sum(downlink_bytes)/1024, 1)) %>%
-    arrange(desc(user_recs))
+    summarise(volume=round(sum(bytes)/1024, 1)) %>% # Перевели в Кб
+    top_n(10, volume)
   
-  plot_df <- group_df %>%
-    top_n(10, downlink_Kb) %>%
-    mutate(downlink_Mb=downlink_Kb/1024) %>%
-    arrange(desc(downlink_Kb))
-  
-  gp <- ggplot(plot_df, aes(fct_reorder(msisdn, uplink_Kb), uplink_Kb)) + 
-    geom_bar(fill=brewer.pal(n=9, name="Blues")[4], alpha=0.5, stat="identity") +
+  gp <- ggplot(plot_df, aes(fct_reorder(msisdn, volume), volume)) + 
+    geom_bar(fill=brewer.pal(n=9, name="Greens")[4], alpha=0.5, stat="identity") +
     theme_ipsum_rc(base_size=16, axis_title_size=14) +
-    xlab("'Как бы' MSISN") +
-    ylab("Суммарный Uplink, Mb") +
+    xlab("MSISN") +
+    ylab("Суммарный Uplink, Кb") +
+    ggtitle("ТОП 10 публикующих") +
     coord_flip()
   
   gp

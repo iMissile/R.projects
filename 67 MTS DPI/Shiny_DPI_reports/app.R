@@ -55,6 +55,8 @@ ui <- fluidPage(
                     "))
     ),
   #                     font-size: smaller;
+  # http://stackoverflow.com/questions/25387844/right-align-elements-in-shiny-mainpanel/25390164
+  tags$head(tags$style(".rightAlign{float:right;}")), 
   theme=shinytheme("united"), #("slate"),
   # shinythemes::themeSelector(),
   
@@ -73,12 +75,16 @@ ui <- fluidPage(
               tabsetPanel(
                 tabPanel("Plot", 
                          fluidRow(
-                           column(5, plotOutput("top_download_plot")),
-                           column(5, plotOutput("top_upload_plot"))
+                           column(6, plotOutput("top_downlink_plot")),
+                           column(6, plotOutput("top_uplink_plot"))
                            ),
                          fluidRow(
+                           column(6, downloadButton("top_downlink_download", class = 'rightAlign')),
+                           column(6, downloadButton("top_uplink_download", class = 'rightAlign'))
+                         ),
+                         fluidRow(
                            column(12, selectInput("site", "Площадки", regions, 
-                                                 selected=regions[c(1,4,6,7)], multiple=TRUE, width="100%"))
+                                                 selected=regions[c(1)], multiple=TRUE, width="100%"))
                          ),
                          fluidRow(
                            column(12, dataTableOutput("top10_table"))
@@ -104,21 +110,23 @@ server <- function(input, output, session) {
   })
   
   top10_df <- reactive({
-    df <- edr_http() %>%
+    edr_http() %>%
       select(timestamp=end_timestamp, down=downlink_bytes, up=uplink_bytes, site, msisdn) %>%
       gather(up, down, key="direction", value="bytes") %>%
       group_by(site, direction, msisdn) %>%
       summarise(user_recs=n(), bytes=sum(bytes)) %>%
       top_n(10, bytes) %>%
-      ungroup()      
+      ungroup() %>%
+      filter(site %in% input$site)
+
   })
   
-  output$top_download_plot <- renderPlot({
-    plotTop10Download(edr_http())
+  output$top_downlink_plot <- renderPlot({
+    plotTop10Downlink(top10_df())
   })
   
-  output$top_upload_plot <- renderPlot({
-    plotTop10Upload(edr_http())
+  output$top_uplink_plot <- renderPlot({
+    plotTop10Uplink(top10_df())
   })  
   
   output$edr_table <- renderDataTable({
