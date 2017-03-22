@@ -1,5 +1,6 @@
 library(tidyverse)
 library(lubridate)   # date manipulation
+library(forcats)
 library(magrittr)
 library(countrycode) # turn country codes into pretty names
 library(scales)      # pairs nicely with ggplot2 for plot label formatting
@@ -19,9 +20,12 @@ library(stringr)
 library(Cairo)
 library(shiny)
 library(shinythemes) # https://rstudio.github.io/shinythemes/
+library(shinyBS)
 library(futile.logger)
 
-# eval(parse("heatmap_func.R", encoding="UTF-8"))
+# В DataTable поиск работает только для UNICODE!!!!!!
+
+eval(parse("funcs.R", encoding="UTF-8"))
 
 # http://shiny.rstudio.com/gallery/plot-interaction-basic.html
 # https://shiny.rstudio.com/articles/debugging.html
@@ -36,6 +40,8 @@ flog.info("Dashboard started")
 # options(shiny.usecairo=TRUE)
 
 # первичная инициализация --------------------------
+regions <- c("Владивосток", "Новосибирск", "Екатеринбург", "Н.Новгород", 
+             "Краснодар", "Москва", "Санкт-Петербург")
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -48,6 +54,7 @@ ui <- fluidPage(
                     }
                     "))
     ),
+  #                     font-size: smaller;
   theme=shinytheme("united"), #("slate"),
   # shinythemes::themeSelector(),
   
@@ -62,26 +69,26 @@ ui <- fluidPage(
       actionButton ("ehm_btn", "Карта событий")
     ),
     
-    mainPanel(
-      width = 10, # обязательно ширины надо взаимно балансировать!!!!
-      fluidRow(
-        column(width=6, 
-               plotOutput("plot1", 
-                          click="plot_click",
-                          dblclick="plot_dblclick",
-                          hover="plot_hover",
-                          brush="plot_brush")),
-        column(width=3,
-               verbatimTextOutput("click_info")),
-        column(width=3,
-               verbatimTextOutput("data_info"))
-      ),
-      fluidRow(
-        column(width=8, dataTableOutput("edr_table"))
-      )
-    )
-  )  
-    )
+    mainPanel(width=10, # обязательно ширины надо взаимно балансировать!!!!
+              tabsetPanel(
+                tabPanel("Plot", 
+                         fluidRow(
+                           column(5, plotOutput("top_download_plot")),
+                           column(5, plotOutput("top_upload_plot"))
+                           ),
+                         fluidRow(
+                           column(12, selectInput("site", "Площадки", regions, 
+                                                 selected=regions[c(1,4,6,7)], multiple=TRUE, width="100%"))
+                         ),
+                         fluidRow(
+                           column(12, dataTableOutput("top10_table"))
+                         )
+                ),
+                tabPanel("Summary", verbatimTextOutput("summary")),
+                tabPanel("Таблица", p(), dataTableOutput("edr_table"))
+              ))
+  )
+)
 
 # Define server logic required to draw a network
 server <- function(input, output, session) {
@@ -89,40 +96,40 @@ server <- function(input, output, session) {
   edr_http <- reactive({
     flog.info(paste0("loading edr http ", input$ehm_btn))
     
-    req(read_csv("edr_http_small.csv", progress=interactive())) %>%
-      select(msisdn, end_timestamp, uplink_bytes, downlink_bytes)
+    # req(read_csv("edr_http_small.csv", progress=interactive())) %>%
+    req(readRDS("edr_http.rds")) %>%
+      select(msisdn, end_timestamp, uplink_bytes, downlink_bytes, site)
     # req(read_csv("edr_http.csv", progress=interactive()) %>% slice(1:20000))
     # write_csv(t %>% sample_frac(0.2), "edr_http_small.csv")
   })
   
-  output$plot1 <- renderPlot({
-    if (input$plot_type == "base") {
-      plot(mtcars$wt, mtcars$mpg)
-    } else if (input$plot_type == "ggplot2") {
-      gp <- ggplot(net(), aes(x=x, y=y, xend=xend, yend=yend)) +
-        # geom_edges(aes(linetype=type, color=type, lwd=type)) +
-        geom_edges(aes(linetype=type), color="grey75", lwd=1.2)+ #  , curvature = 0.1) +
-        geom_nodes(color="gold", size=8) +
-        # geom_nodelabel(aes(label=vertex.names), fontface="bold") +
-        # geom_nodelabel_repel(aes(color=ip_addr, label=vertex.names), fontface = "bold", box.padding=unit(2, "lines")) +
-        geom_nodelabel_repel(aes(label=ip_addr), fontface = "bold", box.padding=unit(2, "lines"), 
-                             segment.colour="red", segment.size=1) +
-        geom_edgetext_repel(aes(label=volume), color="white", fill="grey25",
-                            box.padding = unit(1, "lines")) +
-        theme_blank() +
-        theme(axis.text = element_blank(),
-              axis.title = element_blank(),
-              panel.background = element_rect(fill = "grey25"),
-              panel.grid = element_blank())
-      
-      gp
-    }
+  top10_df <- reactive({
+    df <- edr_http() %>%
+      select(timestamp=end_timestamp, down=downlink_bytes, up=uplink_bytes, site, msisdn) %>%
+      gather(up, down, key="direction", value="bytes") %>%
+      group_by(site, direction, msisdn) %>%
+      summarise(user_recs=n(), bytes=sum(bytes)) %>%
+      top_n(10, bytes) %>%
+      ungroup()      
   })
+  
+  output$top_download_plot <- renderPlot({
+    plotTop10Download(edr_http())
+  })
+  
+  output$top_upload_plot <- renderPlot({
+    plotTop10Upload(edr_http())
+  })  
   
   output$edr_table <- renderDataTable({
     edr_http()},
-    options=list(pageLength=5, lengthMenu=c(5, 10))
+    options=list(pageLength=10, lengthMenu=c(5, 10, 15))
     )
+
+  output$top10_table <- renderDataTable({
+    top10_df()},
+    options=list(pageLength=5, lengthMenu=c(5, 7))
+  )
   
     
 }

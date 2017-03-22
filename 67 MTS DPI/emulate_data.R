@@ -14,6 +14,8 @@ library(profvis)
 
 flow_list <- dir(path="./data/", pattern="edr_BASE-edr_flow_format.*", full.names=TRUE)
 http_list <- dir(path="./data/", pattern="edr_BASE-edr_http_format.*", full.names=TRUE)
+regions <- c("Владивосток", "Новосибирск", "Екатеринбург", "Н.Новгород", 
+             "Краснодар", "Москва", "Санкт-Петербург")
 
 
 # импортируем flow edr файлы -----------------------------------------
@@ -30,7 +32,8 @@ http_df <- http_list %>%
   purrr::map(read_delim, delim=',')
 
 df <- reduce(http_df, rbind) %>%
-  repair_names()
+  repair_names() %>%
+  sample_frac(0.2) # и сразу случайным образом урежем объем
 
 # преобразования -----------------------------------------
 # очистим имена колонок от кривых символов
@@ -51,8 +54,9 @@ radius_subst %>%
   count() %>%
   arrange(desc(n))
 
-# добавим MSISDN в исходные данные
-df1 <- left_join(df, radius_subst, by="radius_user_name")
+# добавим MSISDN и случайные площадки в исходные данные
+df1 <- df %>% left_join(radius_subst, by="radius_user_name") %>%
+  mutate(site=sample(regions, nrow(.), replace=TRUE))
 
 # а теперь равномерно размажем записи по временному промежутку в сутки. 
 # сделаем так, чтобы start_time и end_time отличались на [0-10] сек
@@ -72,5 +76,7 @@ df1 %<>% mutate(end_timestamp=time_sample(nrow(.), now()-days(30), now())) %>%
   mutate(uplink_bytes=as.numeric(transaction_uplink_bytes)) # %>%  
 # select(start_timestamp, end_timestamp, everything())
 
-system.time(write_csv(df1, "./Shiny_DPI_reports/edr_http.csv"))
 system.time(saveRDS(df1, "./Shiny_DPI_reports/edr_http.rds", compress=FALSE))
+
+stop()
+system.time(write_csv(df1, "./Shiny_DPI_reports/edr_http_small.csv"))

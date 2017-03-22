@@ -83,6 +83,7 @@ cat(sprintf("Минимальное время закрытия:  %s\nМакси
 )
 
 group_df <- df1 %>%
+  slice(1:20000) %>%
   group_by(radius_user_name) %>%
   summarise(user_recs=n(), 
             uplink_Kb=round(sum(uplink_bytes)/1024, 1), 
@@ -115,7 +116,8 @@ gp
 ```
 ```{r}
  # gtable_show_layout(ggplotGrob(gp))
-df2 <- df1 %>% 
+df2 <- df1 %>%
+  #slice(1:20000) %>%
   select(timestamp=end_timestamp, downlink_bytes, uplink_bytes) %>%
   gather(downlink_bytes, uplink_bytes, key="direction", value="bytes") %>%
   sample_frac(0.2) %>%

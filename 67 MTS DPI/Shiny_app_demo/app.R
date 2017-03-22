@@ -47,7 +47,7 @@ ui <- fluidPage(
                     "))
     ),
   theme=shinytheme("united"), #("slate"),
-  shinythemes::themeSelector(),
+  # shinythemes::themeSelector(),
 
   sidebarLayout(
     sidebarPanel(
@@ -65,18 +65,18 @@ ui <- fluidPage(
       fluidRow(
         column(width=6, 
                plotOutput("plot1", 
-                          click = "plot_click",
-                          dblclick = "plot_dblclick",
-                          hover = "plot_hover",
-                          brush = "plot_brush")),
-        column(width=6,
-               # А здесь мы нарисуем тепловую карту по событиям
-               plotOutput("event1_plot")) # , height = 350
-        
+                          click="plot_click",
+                          dblclick="plot_dblclick",
+                          hover="plot_hover",
+                          brush="plot_brush")),
+        column(width=3,
+               verbatimTextOutput("click_info")),
+        column(width=3,
+               verbatimTextOutput("data_info"))
         ),
       fluidRow(
         #column(width=12, div(style = "height:200px;background-color: yellow;"), plotOutput("event_plot"))
-        column(width=12, plotOutput("event_plot"))
+        column(width=12, plotOutput("event_plot", click="ehm_click"))
       )
       )
     )  
@@ -102,6 +102,10 @@ server <- function(input, output, session) {
       # превратим wkday в фактор принудительно с понедельника
       mutate(wkday=factor(wkday, levels=weekdays(dmy("13.02.2017")+0:6)))
     
+  })
+  
+  wkd_attacks <- reactive({
+    count(attacks(), wkday, hour)
   })
   
   net <- reactive({
@@ -152,15 +156,16 @@ server <- function(input, output, session) {
     flog.info(sprintf("H = %s px, W = %s px", 
                       session$clientData$output_event_plot_height, 
                       session$clientData$output_event_plot_width))
-    gp <- createEventPlot(attacks(), palette=input$ehm_pal, fontsize)
-    ggsave("fig8.png", plot=gp)
+    gp <- createEventPlot(wkd_attacks(), palette=input$ehm_pal, fontsize)
+    # ggsave("fig8.png", plot=gp)
     gp
   }, bg="transparent")
 
   output$click_info <- renderPrint({
-    cat("input$plot_click:\n")
-    str(input$plot_click)
+    cat("input$ehm_click:\n")
+    str(input$ehm_click)
   })
+  
   output$hover_info <- renderPrint({
     cat("input$plot_hover:\n")
     str(input$plot_hover)
@@ -180,7 +185,7 @@ server <- function(input, output, session) {
   
   output$data_info <- renderPrint({
     # With base graphics, need to tell it what the x and y variables are.
-    nearPoints(net(), input$plot_click, xvar="x", yvar="y")
+    nearPoints(wkd_attacks(), input$ehm_click, threshold = 10, xvar="hour", yvar="wkday")
   })
   
 }
