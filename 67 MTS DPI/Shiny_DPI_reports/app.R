@@ -73,7 +73,10 @@ ui <- fluidPage(
     
     mainPanel(width=10, # обязательно ширины надо взаимно балансировать!!!!
               tabsetPanel(
-                tabPanel("Plot", 
+                "eDR данные",
+                selected="row_edr",
+                tabPanel("Топ N",
+                         value="top_n",
                          fluidRow(
                            column(6, plotOutput("top_downlink_plot")),
                            column(6, plotOutput("top_uplink_plot"))
@@ -90,8 +93,8 @@ ui <- fluidPage(
                            column(12, dataTableOutput("top10_table"))
                          )
                 ),
-                tabPanel("Summary", verbatimTextOutput("summary")),
-                tabPanel("Таблица", p(), dataTableOutput("edr_table"))
+                tabPanel("Динамика", value="dynamics", verbatimTextOutput("summary")),
+                tabPanel("Таблица", value="row_edr", p(), dataTableOutput("edr_table"))
               ))
   )
 )
