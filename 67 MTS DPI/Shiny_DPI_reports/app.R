@@ -1,5 +1,6 @@
 library(tidyverse)
 library(lubridate)   # date manipulation
+library(padr)
 library(forcats)
 library(magrittr)
 library(countrycode) # turn country codes into pretty names
@@ -22,6 +23,7 @@ library(shiny)
 library(shinythemes) # https://rstudio.github.io/shinythemes/
 library(shinyBS)
 library(futile.logger)
+library(RcppRoll)
 
 # В DataTable поиск работает только для UNICODE!!!!!!
 
@@ -74,9 +76,8 @@ ui <- fluidPage(
     mainPanel(width=10, # обязательно ширины надо взаимно балансировать!!!!
               tabsetPanel(
                 "eDR данные",
-                selected="row_edr",
-                tabPanel("Топ N",
-                         value="top_n",
+                selected="dynamics",
+                tabPanel("Топ N", value="top_n",
                          fluidRow(
                            column(6, plotOutput("top_downlink_plot")),
                            column(6, plotOutput("top_uplink_plot"))
@@ -84,16 +85,24 @@ ui <- fluidPage(
                          fluidRow(
                            column(6, downloadButton("top_downlink_download", class = 'rightAlign')),
                            column(6, downloadButton("top_uplink_download", class = 'rightAlign'))
-                         ),
+                           ),
                          fluidRow(
                            column(12, selectInput("site", "Площадки", regions, 
                                                  selected=regions[c(1)], multiple=TRUE, width="100%"))
-                         ),
+                           ),
                          fluidRow(
                            column(12, dataTableOutput("top10_table"))
+                           )
+                         ),
+                tabPanel("Динамика", value="dynamics", 
+                         fluidRow(
+                           column(12, plotOutput("dynamic_plot"))
+                           ),
+                         fluidRow(
+                           column(12, selectInput("site_dynamic", "Площадки", regions, 
+                                                  selected=regions[c(1, 3, 5, 7)], multiple=TRUE, width="100%"))
                          )
                 ),
-                tabPanel("Динамика", value="dynamics", verbatimTextOutput("summary")),
                 tabPanel("Таблица", value="row_edr", p(), dataTableOutput("edr_table"))
               ))
   )
@@ -105,8 +114,8 @@ server <- function(input, output, session) {
   edr_http <- reactive({
     flog.info(paste0("loading edr http ", input$ehm_btn))
     
-    # req(read_csv("edr_http_small.csv", progress=interactive())) %>%
-    req(readRDS("edr_http.rds")) %>%
+    req(read_csv("edr_http_small.csv", progress=interactive())) %>%
+    # req(readRDS("edr_http.rds")) %>%
       select(msisdn, end_timestamp, uplink_bytes, downlink_bytes, site)
     # req(read_csv("edr_http.csv", progress=interactive()) %>% slice(1:20000))
     # write_csv(t %>% sample_frac(0.2), "edr_http_small.csv")
@@ -120,8 +129,26 @@ server <- function(input, output, session) {
       summarise(user_recs=n(), bytes=sum(bytes)) %>%
       top_n(10, bytes) %>%
       ungroup() %>%
+      mutate(msisdn=as.character(msisdn) %>% 
+      {sprintf("(%s) %s-%s-%s", stri_sub(., 1, 3), 
+               stri_sub(., 4, 5), stri_sub(., 6, 7), stri_sub(., 8, 9))}) %>%
       filter(site %in% input$site)
+      
 
+  })
+  
+  traffic_df <- reactive({
+    edr_http() %>%
+      select(timestamp=end_timestamp, down=downlink_bytes, up=uplink_bytes, site, msisdn) %>%
+      mutate(timegroup=hgroup.enum(timestamp, time.bin=24)) %>%
+      group_by(site, timegroup) %>%
+      summarize(up=sum(up), down=sum(down)) %>%
+      ungroup() %>%
+      gather(up, down, key="direction", value="volume") %>%
+      mutate(volume=volume/1024/1024) %>% #пересчитали в Мб
+      group_by(site, direction) %>%
+      mutate(volume_meanr = RcppRoll::roll_meanr(x=volume, n=7, fill=NA)) %>%
+      ungroup()
   })
   
   output$top_downlink_plot <- renderPlot({
@@ -133,14 +160,17 @@ server <- function(input, output, session) {
   })  
   
   output$edr_table <- renderDataTable({
-    edr_http()},
-    options=list(pageLength=10, lengthMenu=c(5, 10, 15))
+    edr_http()}, options=list(pageLength=10, lengthMenu=c(5, 10, 15))
     )
 
   output$top10_table <- renderDataTable({
-    top10_df()},
-    options=list(pageLength=5, lengthMenu=c(5, 7))
+    top10_df()}, options=list(pageLength=5, lengthMenu=c(5, 7))
   )
+
+  output$dynamic_plot <- renderPlot({
+    plotFacetTraffic(traffic_df() %>%
+                       filter(site %in% input$site_dynamic))
+  })  
   
     
 }
