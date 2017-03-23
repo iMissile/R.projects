@@ -21,6 +21,7 @@ library(stringr)
 #library(ggnetwork)
 library(Cairo)
 library(shiny)
+library(plotly)
 library(shinythemes) # https://rstudio.github.io/shinythemes/
 library(shinyBS)
 library(shinyjs)
@@ -120,7 +121,13 @@ ui <- fluidPage(
                 # tabPanel("Таблица", value="row_edr", p(), dataTableOutput("edr_table"))
                 tabPanel("'Соц. сети'", value="http_category", 
                          fluidRow(
-                           column(12, plotOutput("http_category_plot", height = "600px"))
+                           column(12, plotOutput("http_category_plot"))
+                         )
+                ),
+                tabPanel("Plot.ly lib", value="plotly_tab", 
+                         fluidRow(
+                           column(6, plotlyOutput("plotly_plot1")),
+                           column(6, plotlyOutput("plotly_plot2"))
                          )
                 )
               ))
@@ -151,7 +158,7 @@ server <- function(input, output, session) {
       ungroup() %>%
       mutate(msisdn=as.character(msisdn) %>% 
       {sprintf("(%s) %s-%s-%s", stri_sub(., 1, 3), 
-               stri_sub(., 4, 5), stri_sub(., 6, 7), stri_sub(., 8, 9))}) %>%
+               stri_sub(., 4, 6), stri_sub(., 7, 8), stri_sub(., 9, 10))}) %>%
       filter(site %in% input$site)
   })
   
@@ -194,6 +201,7 @@ server <- function(input, output, session) {
       "vk\\.com", "ВКонтакте",
       "xxx", "XXX",
       "facebook.com", "Facebook",
+      "twitter.com", "Twitter",
       "windowsupdate\\.com", "Microsoft" 
     )
     
@@ -262,6 +270,17 @@ server <- function(input, output, session) {
   output$http_category_plot <- renderPlot({
     plotHttpCategory(http_cat_df())
   }) 
+  
+  # Пример визуализации с применением plot.ly -------------------------------------------
+  output$plotly_plot1 <- renderPlotly({
+    gp <- plotTop10Downlink(top10_down_df())
+    ggplotly(gp)
+  })  
+  
+  output$plotly_plot2 <- renderPlotly({
+    gp <- plotTop10Uplink(top10_up_df())
+    ggplotly(gp)
+  })    
   
   # обработчики кнопок выгрузки файлов --------------------------------------------------
   output$top_downlink_download <- downloadHandler(

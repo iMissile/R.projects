@@ -29,13 +29,14 @@ plotTop10Downlink <- function(df) {
   if(nrow(df)==0) return(NULL)
   
   plot_df <- df %>%
+    mutate(msisdn=fct_reorder(msisdn, volume)) %>%
     mutate(volume=round(volume/1024/1024, 1)) # Перевели в Мб
 
-  gp <- ggplot(plot_df, aes(fct_reorder(msisdn, volume), volume)) + 
+  gp <- ggplot(plot_df, aes(msisdn, volume)) + 
     geom_bar(fill=brewer.pal(n=9, name="Blues")[4], alpha=0.5, stat="identity") +
     theme_ipsum_rc(base_size=16, axis_title_size=14) +
     xlab("MSISN") +
-    ylab("Суммарный Downlink, Mb") +
+    ylab("Суммарный Downlink, Мб") +
     ggtitle("ТОП 10 скачивающих") +
     coord_flip()
   
@@ -47,13 +48,14 @@ plotTop10Uplink <- function(df) {
   if(nrow(df)==0) return(NULL)
   
   plot_df <- df %>%
+    mutate(msisdn=fct_reorder(msisdn, volume)) %>%
     mutate(volume=round(volume/1024, 1)) # Перевели в Кб
 
-  gp <- ggplot(plot_df, aes(fct_reorder(msisdn, volume), volume)) + 
+  gp <- ggplot(plot_df, aes(msisdn, volume)) + 
     geom_bar(fill=brewer.pal(n=9, name="Greens")[4], alpha=0.5, stat="identity") +
     theme_ipsum_rc(base_size=16, axis_title_size=14) +
     xlab("MSISN") +
-    ylab("Суммарный Uplink, Кb") +
+    ylab("Суммарный Uplink, Кб") +
     ggtitle("ТОП 10 публикующих") +
     coord_flip()
   
