@@ -217,7 +217,12 @@ server <- function(input, output, session) {
     df <- traffic_df() %>%
       filter(site %in% input$site_dynamic) %>%
       filter(timegroup >= timeframe[1]) %>%
-      filter(timegroup <= timeframe[2])
+      filter(timegroup <= timeframe[2]) %>%
+      # расчет среднего по всему объему группы для каждой группы
+      group_by(timegroup, direction) %>%
+      mutate(global_meanr=mean(volume_meanr)) %>%
+      ungroup()
+    
     # browser()
     plotFacetTraffic(df, input$dynamic_pal, input$wrap_dynamic)
   })  

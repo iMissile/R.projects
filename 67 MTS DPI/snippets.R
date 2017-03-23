@@ -11,7 +11,7 @@ library(profvis)
 library(RcppRoll)
 
 
-df0 <- readRDS("./Shiny_DPI_reports/edr_http.rds")
+df0 <- readRDS("./Shiny_DPI_reports/edr_http_small.rds")
 
 # facet графики для top 10 up/down ---------------------------------
 t <- 9161234567
@@ -141,4 +141,20 @@ gp <- ggplot(plot_df, aes(timegroup, volume)) +
   ylab("Суммарный объем данных, Mb")
 
 gp
+
+# расчет среднего по всему объему для группы с разбросом по группам ------------------------------------
+t <- traffic_df()
+m <- t %>% group_by(timegroup) %>% nest()
+
+m5 <- t %>% group_by(timegroup) %>%
+  mutate(meanr=mean(volume_meanr)) %>%
+  ungroup() %>%
+  arrange(timegroup)
+
+m2 <- m %>%
+  mutate(global_meanr=purrr::map(data, ~ mean(.x$volume_meanr)))
+# пока не получается потом развернуть
+m3 <- m2 %>% ungroup() %>% unnest(data)
+
+
   

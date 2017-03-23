@@ -65,6 +65,7 @@ plotFacetTraffic <- function(df, pal="Set1", wrap=FALSE) {
   gp <- ggplot(df, aes(timegroup, volume)) + 
     # geom_line(aes(colour=direction), alpha=0.4, lwd=1) +
     # geom_point(aes(colour=direction), alpha=0.4, shape=1, size=2) +
+    geom_line(aes(y=global_meanr, group=direction), alpha=0.85, linetype="longdash", lwd=1, colour="black") +
     scale_y_continuous(trans='log10') +
     #scale_y_log10(breaks=trans_breaks("log10", function(x) 10^x),
     #              labels=trans_format("log10", math_format(10^.x))) +
@@ -73,7 +74,7 @@ plotFacetTraffic <- function(df, pal="Set1", wrap=FALSE) {
     # theme_ipsum_rc(base_family="robotoC", base_size=16, axis_title_size=14) +
     xlab("Дата, время") +
     ylab("Суммарный объем данных, Mb") +
-    ggtitle("Динамика трафика")
+    ggtitle("Динамика трафика", subtitle="Черный пунктир -- скользящее среднее по всем площадкам")
 
   if(wrap){
     # делаем цветовую раскладку по направлению
