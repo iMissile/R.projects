@@ -26,6 +26,7 @@ library(shinyBS)
 library(shinyjs)
 library(futile.logger)
 library(RcppRoll)
+library(fuzzyjoin)
 
 # В DataTable поиск работает только для UNICODE!!!!!!
 
@@ -78,8 +79,8 @@ ui <- fluidPage(
                         )),
       # Кнопка запуска расчетов event_heat_map
       # actionButton("ehm_btn", "Карта событий"),
-      checkboxInput("wrap_dynamic", "По регионам", value=FALSE),
-      verbatimTextOutput("info_text")
+      checkboxInput("wrap_dynamic", "По регионам", value=FALSE) #,
+      #verbatimTextOutput("info_text")
     ),
     
     mainPanel(width=10, # обязательно ширины надо взаимно балансировать!!!!
@@ -116,7 +117,12 @@ ui <- fluidPage(
                                                   selected=regions[c(1, 3, 5, 7)], multiple=TRUE, width="100%"))
                          )
                 ),
-                tabPanel("Таблица", value="row_edr", p(), dataTableOutput("edr_table"))
+                # tabPanel("Таблица", value="row_edr", p(), dataTableOutput("edr_table"))
+                tabPanel("'Соц. сети'", value="http_category", 
+                         fluidRow(
+                           column(12, plotOutput("http_category_plot", height = "600px"))
+                         )
+                )
               ))
   )
 )
@@ -130,7 +136,7 @@ server <- function(input, output, session) {
     
     # req(read_csv("edr_http_small.csv", progress=interactive())) %>%
     req(readRDS("edr_http_small.rds")) %>%
-      select(msisdn, end_timestamp, uplink_bytes, downlink_bytes, site)
+      select(msisdn, end_timestamp, uplink_bytes, downlink_bytes, site, http_host)
     # req(read_csv("edr_http.csv", progress=interactive()) %>% slice(1:20000))
     # write_csv(t %>% sample_frac(0.2), "edr_http_small.csv")
   })
@@ -184,7 +190,7 @@ server <- function(input, output, session) {
       select(timestamp=end_timestamp, down=downlink_bytes, up=uplink_bytes, site, msisdn) %>%
       mutate(timegroup=hgroup.enum(timestamp, time.bin=6)) %>%
       group_by(site, timegroup) %>%
-      summarize(up=sum(up), down=sum(down)) %>%
+      summarise(up=sum(up), down=sum(down)) %>%
       ungroup() %>%
       gather(up, down, key="direction", value="volume") %>%
       mutate(volume=volume/1024/1024) %>% #пересчитали в Мб
@@ -209,7 +215,8 @@ server <- function(input, output, session) {
   output$top10_table <- renderDataTable({
     top10_df()}, options=list(pageLength=5, lengthMenu=c(5, 7))
   )
-  # Временная визуализация --------------------------------------------------------
+
+  # ВременнАя визуализация --------------------------------------------------------
   output$dynamic_plot <- renderPlot({
     timeframe <- getTimeframe(input$dynamic_time_depth, 0)
     # browser()
@@ -227,6 +234,30 @@ server <- function(input, output, session) {
     plotFacetTraffic(df, input$dynamic_pal, input$wrap_dynamic)
   })  
 
+  
+  # Визуализация категорий трафика ------------------------------------------------------
+  output$http_category_plot <- renderPlot({
+    repl_df <- tribble(
+      ~pattern, ~category,
+      "instagramm\\.com", "Instagramm",
+      "vk\\.com", "ВКонтакте",
+      "xxx", "XXX",
+      "facebook.com", "Facebook",
+      "windowsupdate\\.com", "Microsoft" 
+    )
+
+    df <- edr_http() %>%
+      select(timestamp=end_timestamp, down=downlink_bytes, up=uplink_bytes, site, http_host) %>%
+      group_by(http_host) %>%
+      regex_left_join(repl_df, by=c(http_host="pattern")) %>%
+      ungroup() %>%
+      filter(complete.cases(.)) %>%
+      group_by(category) %>%
+      summarise(up=sum(up), down=sum(down))
+      
+    plotHttpCategory(df)
+  }) 
+  
   # обработчики кнопок выгрузки файлов --------------------------------------------------
   output$top_downlink_download <- downloadHandler(
     filename = function() {

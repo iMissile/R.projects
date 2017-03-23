@@ -9,6 +9,8 @@ library(hrbrthemes)
 library(lubridate)
 library(profvis)
 library(RcppRoll)
+library(digest)
+library(fuzzyjoin)
 
 
 df0 <- readRDS("./Shiny_DPI_reports/edr_http_small.rds")
@@ -155,6 +157,22 @@ m2 <- m %>%
   mutate(global_meanr=purrr::map(data, ~ mean(.x$volume_meanr)))
 # пока не получается потом развернуть
 m3 <- m2 %>% ungroup() %>% unnest(data)
+
+# категоризируем http_hosts ------------------------------------
+repl_df <- tribble(
+  ~pattern, ~category,
+  "instagramm\\.com", "Instagramm",
+  "vk\\.com", "ВКонтакте",
+  "xxx", "XXX",
+  "facebook.com", "Facebook",
+  "windowsupdate\\.com", "Microsoft" 
+)
+
+t <- df0 %>% group_by(http_host) %>%
+  summarise(n=n())
+
+t2 <- regex_left_join(t, repl_df, by=c(http_host="pattern"))
+
 
 
   

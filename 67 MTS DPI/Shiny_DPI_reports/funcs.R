@@ -101,3 +101,21 @@ plotFacetTraffic <- function(df, pal="Set1", wrap=FALSE) {
 
   gp
 }
+
+plotHttpCategory <- function(df) {
+  
+  if(nrow(df)==0) return(NULL)
+  
+  plot_df <- df %>%
+    mutate(volume=round(down/1024/1024, 1)) # Перевели в Мб
+  
+  #browser()
+  gp <- ggplot(plot_df, aes(fct_reorder(category, volume), volume)) + 
+    geom_bar(fill=brewer.pal(n=9, name="PuOr")[4], alpha=0.85, stat="identity") +
+    theme_ipsum_rc(base_size=16, axis_title_size=14) +
+    xlab("Категория") +
+    ylab("Суммарный трафик, Мб") +
+    ggtitle("Объем трафика по категориям")
+
+  gp
+}
