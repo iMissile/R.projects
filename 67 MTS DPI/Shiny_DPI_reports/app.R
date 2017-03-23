@@ -23,6 +23,7 @@ library(Cairo)
 library(shiny)
 library(shinythemes) # https://rstudio.github.io/shinythemes/
 library(shinyBS)
+library(shinyjs)
 library(futile.logger)
 library(RcppRoll)
 
@@ -48,6 +49,7 @@ regions <- c("Владивосток", "Новосибирск", "Екатери
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
+  useShinyjs(),  # Include shinyjs
   titlePanel("Аналитика DPI"),
   # Some custom CSS for a smaller font for preformatted text
   tags$head(
@@ -67,18 +69,22 @@ ui <- fluidPage(
     sidebarPanel(
       width = 2, # обязательно ширины надо взаимно балансировать!!!!
       h3(textOutput("time_info")),
-      radioButtons("plot_type", "Тип графика",
-                   c("base", "ggplot2")),
-      radioButtons("ehm_pal", "Палитра",
-                   c("viridis", "brewer")),
+      p(),
+      #strong("Цветовая палитра"),
+      radioButtons("dynamic_pal", "Цветовая палитра",
+                   list(`Набор 1`="Set1", `Набор 2`="Accent", `Набор 3`="Dark2"
+                        #`Мин-Макс 1`="YlGn", `Мин-Макс 2`="PuRd", 
+                        #`От центра 1`="Spectral", `От центра 2`="PiYG"
+                        )),
       # Кнопка запуска расчетов event_heat_map
-      actionButton("ehm_btn", "Карта событий"),
-      textOutput("info_text")
+      # actionButton("ehm_btn", "Карта событий"),
+      checkboxInput("wrap_dynamic", "По регионам", value=FALSE),
+      verbatimTextOutput("info_text")
     ),
     
     mainPanel(width=10, # обязательно ширины надо взаимно балансировать!!!!
               tabsetPanel(
-                "eDR данные",
+                id="panel_id",
                 selected="dynamics",
                 tabPanel("Топ N", value="top_n",
                          fluidRow(
@@ -99,7 +105,7 @@ ui <- fluidPage(
                          ),
                 tabPanel("Динамика", value="dynamics", 
                          fluidRow(
-                           column(12, plotOutput("dynamic_plot"))
+                           column(12, plotOutput("dynamic_plot", height = "600px"))
                            ),
                          fluidRow(
                            column(2, selectInput("dynamic_time_depth", "Диапазон", 
@@ -128,6 +134,18 @@ server <- function(input, output, session) {
     # req(read_csv("edr_http.csv", progress=interactive()) %>% slice(1:20000))
     # write_csv(t %>% sample_frac(0.2), "edr_http_small.csv")
   })
+  
+  # управляем контекстным отображением элементов --------------------------
+  observeEvent(input$panel_id, {
+    #browser()
+    if(input$panel_id == "dynamics"){
+      purrr::walk(c("wrap_dynamic", "dynamic_pal"), shinyjs::show)
+      
+    }else{
+      purrr::walk(c("wrap_dynamic", "dynamic_pal"), shinyjs::hide)
+    }
+    })
+               
   
   top10_df <- reactive({
     edr_http() %>%
@@ -201,7 +219,7 @@ server <- function(input, output, session) {
       filter(timegroup >= timeframe[1]) %>%
       filter(timegroup <= timeframe[2])
     # browser()
-    plotFacetTraffic(df)
+    plotFacetTraffic(df, input$dynamic_pal)
   })  
 
   # обработчики кнопок выгрузки файлов --------------------------------------------------
@@ -231,7 +249,8 @@ server <- function(input, output, session) {
   
   # хелпер справочной панели --------------------------------------------
   output$info_text <- renderText({
-    paste0("Глубина отображения динамики = ", input$dynamic_time_depth, " дн.")
+    paste0("Глубина отображения динамики = ", input$dynamic_time_depth, " дн.\n",
+           "Активная панель = ", input$panel_id)
   })    
 }
 
