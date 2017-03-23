@@ -60,21 +60,11 @@ plotTop10Uplink <- function(df) {
   gp
 }
 
-plotFacetTraffic <- function(df, pal) {
+plotFacetTraffic <- function(df, pal="Set1", wrap=FALSE) {
 
   gp <- ggplot(df, aes(timegroup, volume)) + 
-    # http://www.sthda.com/english/wiki/ggplot2-colors-how-to-change-colors-automatically-and-manually
-    facet_wrap(~site, scales="free", nrow=2) +
-    # http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/
-      scale_color_brewer(palette=pal,
-                         name="Трафик",
-                         breaks=c("up", "down"),
-                         labels=c("Uplink", "Downlink")
-      ) +
     # geom_line(aes(colour=direction), alpha=0.4, lwd=1) +
     # geom_point(aes(colour=direction), alpha=0.4, shape=1, size=2) +
-    geom_line(aes(y=volume_meanr, colour=direction), alpha=0.85, lwd=1) +
-    geom_point(aes(colour=direction), alpha=0.85, shape=1, size=3) +      
     scale_y_continuous(trans='log10') +
     #scale_y_log10(breaks=trans_breaks("log10", function(x) 10^x),
     #              labels=trans_format("log10", math_format(10^.x))) +
@@ -82,7 +72,31 @@ plotFacetTraffic <- function(df, pal) {
     theme_ipsum_rc(base_size=16, axis_title_size=14) +
     # theme_ipsum_rc(base_family="robotoC", base_size=16, axis_title_size=14) +
     xlab("Дата, время") +
-    ylab("Суммарный объем данных, Mb")
-  
+    ylab("Суммарный объем данных, Mb") +
+    ggtitle("Динамика трафика")
+
+  if(wrap){
+    # делаем цветовую раскладку по направлению
+    gp <- gp + 
+      facet_wrap(~site, scales="free", nrow=2) +
+      # http://www.sthda.com/english/wiki/ggplot2-colors-how-to-change-colors-automatically-and-manually
+      # http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/
+      scale_color_brewer(palette=pal,
+                         name="Трафик",
+                         breaks=c("up", "down"),
+                         labels=c("Uplink", "Downlink")
+      ) +
+      geom_point(aes(colour=direction), alpha=0.85, shape=1, size=3) +
+      geom_line(aes(y=volume_meanr, colour=direction), alpha=0.85, lwd=1)
+  }else{
+    # делаем цветовую раскладку по площадкам
+    # http://stackoverflow.com/questions/6910988/change-both-legend-titles-in-a-ggplot-with-two-legends
+    gp <- gp + 
+      scale_color_brewer(palette=pal) +
+      labs(linetype="Трафик", colour="Площадка") +
+      geom_point(aes(colour=site), alpha=0.85, shape=1, size=3) +
+      geom_line(aes(y=volume_meanr, colour=site, linetype=direction), alpha=0.85, lwd=1)
+  } 
+
   gp
 }

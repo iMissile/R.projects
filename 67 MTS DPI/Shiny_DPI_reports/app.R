@@ -193,7 +193,7 @@ server <- function(input, output, session) {
       ungroup()
   })
   
-  # Top N графики --------------------------------------------------------
+  # Top N визуализация --------------------------------------------------------
   output$top_downlink_plot <- renderPlot({
     plotTop10Downlink(top10_down_df())
   })
@@ -209,7 +209,7 @@ server <- function(input, output, session) {
   output$top10_table <- renderDataTable({
     top10_df()}, options=list(pageLength=5, lengthMenu=c(5, 7))
   )
-
+  # Временная визуализация --------------------------------------------------------
   output$dynamic_plot <- renderPlot({
     timeframe <- getTimeframe(input$dynamic_time_depth, 0)
     # browser()
@@ -219,7 +219,7 @@ server <- function(input, output, session) {
       filter(timegroup >= timeframe[1]) %>%
       filter(timegroup <= timeframe[2])
     # browser()
-    plotFacetTraffic(df, input$dynamic_pal)
+    plotFacetTraffic(df, input$dynamic_pal, input$wrap_dynamic)
   })  
 
   # обработчики кнопок выгрузки файлов --------------------------------------------------
