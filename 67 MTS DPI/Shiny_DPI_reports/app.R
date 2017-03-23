@@ -86,7 +86,7 @@ ui <- fluidPage(
     mainPanel(width=10, # обязательно ширины надо взаимно балансировать!!!!
               tabsetPanel(
                 id="panel_id",
-                selected="dynamics",
+                #selected="dynamics",
                 tabPanel("Топ N", value="top_n",
                          fluidRow(
                            column(6, plotOutput("top_downlink_plot")),
@@ -134,24 +134,12 @@ server <- function(input, output, session) {
   edr_http <- reactive({
     flog.info(paste0("loading edr http ", input$ehm_btn))
     
-    # req(read_csv("edr_http_small.csv", progress=interactive())) %>%
-    req(readRDS("edr_http_small.rds")) %>%
+    req(read_csv("edr_http_small.csv", progress=interactive())) %>%
+    # req(readRDS("edr_http_small.rds")) %>%
       select(msisdn, end_timestamp, uplink_bytes, downlink_bytes, site, http_host)
     # req(read_csv("edr_http.csv", progress=interactive()) %>% slice(1:20000))
     # write_csv(t %>% sample_frac(0.2), "edr_http_small.csv")
   })
-  
-  # управляем контекстным отображением элементов --------------------------
-  observeEvent(input$panel_id, {
-    #browser()
-    if(input$panel_id == "dynamics"){
-      purrr::walk(c("wrap_dynamic", "dynamic_pal"), shinyjs::show)
-      
-    }else{
-      purrr::walk(c("wrap_dynamic", "dynamic_pal"), shinyjs::hide)
-    }
-    })
-               
   
   top10_df <- reactive({
     edr_http() %>%
@@ -198,7 +186,42 @@ server <- function(input, output, session) {
       mutate(volume_meanr = RcppRoll::roll_meanr(x=volume, n=7, fill=NA)) %>%
       ungroup()
   })
+
+  http_cat_df <- reactive({
+    repl_df <- tribble(
+      ~pattern, ~category,
+      "instagramm\\.com", "Instagramm",
+      "vk\\.com", "ВКонтакте",
+      "xxx", "XXX",
+      "facebook.com", "Facebook",
+      "windowsupdate\\.com", "Microsoft" 
+    )
+    
+    df <- edr_http() %>%
+      select(timestamp=end_timestamp, down=downlink_bytes, up=uplink_bytes, site, http_host) %>%
+      group_by(http_host) %>%
+      regex_left_join(repl_df, by=c(http_host="pattern")) %>%
+      ungroup() %>%
+      filter(complete.cases(.)) %>%
+      mutate(category=as.factor(category)) %>%
+      gather(up, down, key="direction", value="volume") %>%
+      group_by(category, direction) %>%
+      summarise(volume=sum(volume))
+    
+    df
+  })
   
+  # управляем контекстным отображением элементов --------------------------
+  observeEvent(input$panel_id, {
+    #browser()
+    if(input$panel_id == "dynamics"){
+      purrr::walk(c("wrap_dynamic", "dynamic_pal"), shinyjs::show)
+      
+    }else{
+      purrr::walk(c("wrap_dynamic", "dynamic_pal"), shinyjs::hide)
+    }
+  })
+
   # Top N визуализация --------------------------------------------------------
   output$top_downlink_plot <- renderPlot({
     plotTop10Downlink(top10_down_df())
@@ -237,25 +260,7 @@ server <- function(input, output, session) {
   
   # Визуализация категорий трафика ------------------------------------------------------
   output$http_category_plot <- renderPlot({
-    repl_df <- tribble(
-      ~pattern, ~category,
-      "instagramm\\.com", "Instagramm",
-      "vk\\.com", "ВКонтакте",
-      "xxx", "XXX",
-      "facebook.com", "Facebook",
-      "windowsupdate\\.com", "Microsoft" 
-    )
-
-    df <- edr_http() %>%
-      select(timestamp=end_timestamp, down=downlink_bytes, up=uplink_bytes, site, http_host) %>%
-      group_by(http_host) %>%
-      regex_left_join(repl_df, by=c(http_host="pattern")) %>%
-      ungroup() %>%
-      filter(complete.cases(.)) %>%
-      group_by(category) %>%
-      summarise(up=sum(up), down=sum(down))
-      
-    plotHttpCategory(df)
+    plotHttpCategory(http_cat_df())
   }) 
   
   # обработчики кнопок выгрузки файлов --------------------------------------------------

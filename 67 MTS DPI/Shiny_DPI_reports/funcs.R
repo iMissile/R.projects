@@ -107,11 +107,12 @@ plotHttpCategory <- function(df) {
   if(nrow(df)==0) return(NULL)
   
   plot_df <- df %>%
-    mutate(volume=round(down/1024/1024, 1)) # Перевели в Мб
-  
-  #browser()
+    mutate(volume=round(volume/1024/1024, 1)) # Перевели в Мб
+
+  # browser()
   gp <- ggplot(plot_df, aes(fct_reorder(category, volume), volume)) + 
-    geom_bar(fill=brewer.pal(n=9, name="PuOr")[4], alpha=0.85, stat="identity") +
+    scale_fill_brewer(palette="Set1") +
+    geom_bar(aes(fill=direction), alpha=0.85, stat="identity", position="dodge") +
     theme_ipsum_rc(base_size=16, axis_title_size=14) +
     xlab("Категория") +
     ylab("Суммарный трафик, Мб") +
