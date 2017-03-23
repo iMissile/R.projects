@@ -11,6 +11,7 @@ library(viridis)     # best. color. palette. evar.
 library(RColorBrewer)# best. color. palette. evar.
 library(hrbrthemes)
 library(extrafont)   # http://blog.revolutionanalytics.com/2012/09/how-to-use-your-favorite-fonts-in-r-charts.html
+library(stringi)
 library(stringr)
 # library(forcats)
 #library(sna)
@@ -133,10 +134,26 @@ server <- function(input, output, session) {
       {sprintf("(%s) %s-%s-%s", stri_sub(., 1, 3), 
                stri_sub(., 4, 5), stri_sub(., 6, 7), stri_sub(., 8, 9))}) %>%
       filter(site %in% input$site)
-      
-
   })
   
+  top10_up_df <- reactive({
+    top10_df() %>%
+      filter(direction=="up") %>%
+      mutate(msisdn=as.factor(msisdn)) %>%
+      group_by(msisdn) %>%
+      summarise(volume=sum(bytes)) %>%
+      top_n(10, volume)
+  })
+
+  top10_down_df <- reactive({
+    top10_df() %>%
+      filter(direction=="down") %>%
+      mutate(msisdn=as.factor(msisdn)) %>%
+      group_by(msisdn) %>%
+      summarise(volume=sum(bytes)) %>%
+      top_n(10, volume)
+  })
+
   traffic_df <- reactive({
     edr_http() %>%
       select(timestamp=end_timestamp, down=downlink_bytes, up=uplink_bytes, site, msisdn) %>%
@@ -152,11 +169,11 @@ server <- function(input, output, session) {
   })
   
   output$top_downlink_plot <- renderPlot({
-    plotTop10Downlink(top10_df())
+    plotTop10Downlink(top10_down_df())
   })
   
   output$top_uplink_plot <- renderPlot({
-    plotTop10Uplink(top10_df())
+    plotTop10Uplink(top10_up_df())
   })  
   
   output$edr_table <- renderDataTable({
@@ -171,8 +188,25 @@ server <- function(input, output, session) {
     plotFacetTraffic(traffic_df() %>%
                        filter(site %in% input$site_dynamic))
   })  
+
+  output$top_downlink_download <- downloadHandler(
+    filename = function() {
+      paste0("downlink-data-", Sys.Date(), ".csv", sep="")
+    },
+    content = function(file) {
+      write_csv(top10_down_df(), file)
+    }
+  )
+
+  output$top_uplink_download <- downloadHandler(
+    filename = function() {
+      paste0("uplink-data-", Sys.Date(), ".csv", sep="")
+    },
+    content = function(file) {
+      write_csv(top10_up_df(), file)
+    }
+  )
   
-    
 }
 
 

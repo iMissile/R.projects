@@ -87,6 +87,19 @@ hgroup.enum <- function(date, time.bin = 4){
   floor_date(tick_time, unit="day") + minutes(n * time.bin *60)
 }
 
+# ломаный сэмпл
+# https://edwinth.github.io/blog/padr-examples/
+plot_df <- df0 %>%
+  mutate(msisdn=sample(100:199, nrow(.), replace=TRUE)) %>%
+  select(timestamp=end_timestamp, down=downlink_bytes, up=uplink_bytes, msisdn)
+
+saveRDS(plot_df, "padr_sample.rds")
+write_csv(plot_df, "padr_sample.csv")
+
+plot_df <- readRDS("padr_sample.rds")
+tmp_df <- plot_df %>%
+  thicken("day", col="time") # don't work
+
 
 # https://edwinth.github.io/blog/padr-examples/
 plot_df <- df0 %>%
