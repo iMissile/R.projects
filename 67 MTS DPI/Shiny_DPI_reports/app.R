@@ -107,7 +107,16 @@ ui <- fluidPage(
                          ),
                 tabPanel("Динамика", value="dynamics", 
                          fluidRow(
-                           column(12, plotOutput("dynamic_plot", height = "600px"))
+                           # this is an extra div used ONLY to create positioned ancestor for tooltip
+                           # we don't change its position
+                           div(
+                             style = "position:relative",
+                             # column(12, plotOutput("dynamic_plot", height = "600px"))
+                             column(12, plotOutput("dynamic_plot", 
+                                                   height="600px",
+                                                   hover=hoverOpts("plot_hover", delay=100, delayType = "debounce"))), 
+                             uiOutput("hover_info")
+                             )
                            ),
                          fluidRow(
                            column(2, selectInput("dynamic_time_depth", "Диапазон", 
@@ -312,7 +321,45 @@ server <- function(input, output, session) {
     paste0("Глубина отображения динамики = ", input$dynamic_time_depth, " дн.\n",
            "Активная панель = ", input$panel_id)
   })    
+
+  # tooltip хелпер  --------------------------------------------  
+  # https://gitlab.com/snippets/16220
+  output$hover_info <- renderUI({
+    # browser()
+    
+    hover <- input$plot_hover
+    point <- nearPoints(traffic_df(), hover, threshold = 5, maxpoints = 1, addDist = TRUE)
+    if (nrow(point) == 0) return(NULL)
+    
+    # calculate point position INSIDE the image as percent of total dimensions
+    # from left (horizontal) and from top (vertical)
+    left_pct <- (hover$x - hover$domain$left) / (hover$domain$right - hover$domain$left)
+    top_pct <- (hover$domain$top - hover$y) / (hover$domain$top - hover$domain$bottom)
+    
+    # calculate distance from left and bottom side of the picture in pixels
+    left_px <- hover$range$left + left_pct * (hover$range$right - hover$range$left)
+    top_px <- hover$range$top + top_pct * (hover$range$bottom - hover$range$top)
+    
+    # create style property fot tooltip
+    # background color is set so tooltip is a bit transparent
+    # z-index is set so we are sure are tooltip will be on top
+    style <- paste0("position:absolute; z-index:100; background-color: rgba(245, 245, 245, 0.85); ",
+                    "left:", left_px + 2, "px; top:", top_px + 2, "px;")
+    
+    # actual tooltip created as wellPanel
+    # browser()
+    wellPanel(
+      style = style,
+      p(HTML(paste0("<b> __: </b>", rownames(point), "<br/>",
+                    "<b> Площадка: </b>", point$site, "<br/>",
+                    "<b> Время: </b>", point$timegroup, "<br/>",
+                    "<b> Объем: </b>", point$volume, "<br/>"
+                    #"<b> Distance from left: </b>", left_px, "<b>, from top: </b>", top_px
+                    )))
+    )
+  })  
 }
+
 
 
 shinyApp(ui, server)
