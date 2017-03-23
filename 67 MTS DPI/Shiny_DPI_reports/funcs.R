@@ -33,7 +33,8 @@ plotTop10Downlink <- function(df) {
     mutate(volume=round(volume/1024/1024, 1)) # Перевели в Мб
 
   gp <- ggplot(plot_df, aes(msisdn, volume)) + 
-    geom_bar(fill=brewer.pal(n=9, name="Blues")[4], alpha=0.5, stat="identity") +
+    geom_bar(fill=brewer.pal(n=9, name="Blues")[4], 
+             alpha=0.5, stat="identity") +
     theme_ipsum_rc(base_size=16, axis_title_size=14) +
     xlab("MSISN") +
     ylab("Суммарный Downlink, Мб") +

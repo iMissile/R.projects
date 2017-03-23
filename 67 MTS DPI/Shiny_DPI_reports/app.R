@@ -88,6 +88,30 @@ ui <- fluidPage(
               tabsetPanel(
                 id="panel_id",
                 #selected="dynamics",
+                tabPanel("Динамика", value="dynamics", 
+                         fluidRow(
+                           # this is an extra div used ONLY to create positioned ancestor for tooltip
+                           # we don't change its position
+                           column(12, 
+                                  div(
+                                    style = "position:relative; font-size:smaller;",
+                                    # column(12, plotOutput("dynamic_plot", height = "600px"))
+                                    plotOutput("dynamic_plot", 
+                                               height="600px",
+                                               hover=hoverOpts("plot_hover", delay=100, delayType = "debounce")),
+                                    uiOutput("hover_info")
+                                  )
+                           )
+                         ),
+                         fluidRow(
+                           column(2, selectInput("dynamic_time_depth", "Диапазон", 
+                                                 choices=list(`Сутки`=1, `3 дня`=3, 
+                                                              `Неделя`=7, `2 недели`=14, `Месяц`=30),
+                                                 selected=3, multiple=FALSE)),
+                           column(10, selectInput("site_dynamic", "Площадки", regions, 
+                                                  selected=regions[c(1, 3, 5, 7)], multiple=TRUE, width="100%"))
+                         )
+                ),
                 tabPanel("Топ N", value="top_n",
                          fluidRow(
                            column(6, plotOutput("top_downlink_plot")),
@@ -105,28 +129,6 @@ ui <- fluidPage(
                            column(12, dataTableOutput("top10_table"))
                            )
                          ),
-                tabPanel("Динамика", value="dynamics", 
-                         fluidRow(
-                           # this is an extra div used ONLY to create positioned ancestor for tooltip
-                           # we don't change its position
-                           div(
-                             style = "position:relative",
-                             # column(12, plotOutput("dynamic_plot", height = "600px"))
-                             column(12, plotOutput("dynamic_plot", 
-                                                   height="600px",
-                                                   hover=hoverOpts("plot_hover", delay=100, delayType = "debounce"))), 
-                             uiOutput("hover_info")
-                             )
-                           ),
-                         fluidRow(
-                           column(2, selectInput("dynamic_time_depth", "Диапазон", 
-                                                 choices=list(`Сутки`=1, `3 дня`=3, 
-                                                              `Неделя`=7, `Месяц`=30),
-                                                 selected=3, multiple=FALSE)),
-                           column(10, selectInput("site_dynamic", "Площадки", regions, 
-                                                  selected=regions[c(1, 3, 5, 7)], multiple=TRUE, width="100%"))
-                         )
-                ),
                 # tabPanel("Таблица", value="row_edr", p(), dataTableOutput("edr_table"))
                 tabPanel("'Соц. сети'", value="http_category", 
                          fluidRow(
@@ -191,7 +193,8 @@ server <- function(input, output, session) {
 
   traffic_df <- reactive({
     edr_http() %>%
-      select(timestamp=end_timestamp, down=downlink_bytes, up=uplink_bytes, site, msisdn) %>%
+      select(timestamp=end_timestamp, down=downlink_bytes, 
+             up=uplink_bytes, site, msisdn) %>%
       mutate(timegroup=hgroup.enum(timestamp, time.bin=6)) %>%
       group_by(site, timegroup) %>%
       summarise(up=sum(up), down=sum(down)) %>%
@@ -199,7 +202,7 @@ server <- function(input, output, session) {
       gather(up, down, key="direction", value="volume") %>%
       mutate(volume=volume/1024/1024) %>% #пересчитали в Мб
       group_by(site, direction) %>%
-      mutate(volume_meanr = RcppRoll::roll_meanr(x=volume, n=7, fill=NA)) %>%
+      mutate(volume_meanr=RcppRoll::roll_meanr(x=volume, n=7, fill=NA)) %>%
       ungroup()
   })
 
@@ -350,10 +353,9 @@ server <- function(input, output, session) {
     # browser()
     wellPanel(
       style = style,
-      p(HTML(paste0("<b> __: </b>", rownames(point), "<br/>",
-                    "<b> Площадка: </b>", point$site, "<br/>",
+      p(HTML(paste0("<b> Площадка: </b>", point$site, "<br/>",
                     "<b> Время: </b>", point$timegroup, "<br/>",
-                    "<b> Объем: </b>", point$volume, "<br/>"
+                    "<b> Объем: </b>", round(point$volume, 1)
                     #"<b> Distance from left: </b>", left_px, "<b>, from top: </b>", top_px
                     )))
     )

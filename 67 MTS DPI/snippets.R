@@ -165,6 +165,7 @@ repl_df <- tribble(
   "vk\\.com", "ВКонтакте",
   "xxx", "XXX",
   "facebook.com", "Facebook",
+  "twitter.com", "Twitter",
   "windowsupdate\\.com", "Microsoft" 
 )
 
