@@ -66,12 +66,14 @@ ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(
       width = 2, # обязательно ширины надо взаимно балансировать!!!!
+      h3(textOutput("time_info")),
       radioButtons("plot_type", "Тип графика",
                    c("base", "ggplot2")),
       radioButtons("ehm_pal", "Палитра",
                    c("viridis", "brewer")),
       # Кнопка запуска расчетов event_heat_map
-      actionButton ("ehm_btn", "Карта событий")
+      actionButton("ehm_btn", "Карта событий"),
+      textOutput("info_text")
     ),
     
     mainPanel(width=10, # обязательно ширины надо взаимно балансировать!!!!
@@ -100,7 +102,11 @@ ui <- fluidPage(
                            column(12, plotOutput("dynamic_plot"))
                            ),
                          fluidRow(
-                           column(12, selectInput("site_dynamic", "Площадки", regions, 
+                           column(2, selectInput("dynamic_time_depth", "Диапазон", 
+                                                 choices=list(`Сутки`=1, `3 дня`=3, 
+                                                              `Неделя`=7, `Месяц`=30),
+                                                 selected=3, multiple=FALSE)),
+                           column(10, selectInput("site_dynamic", "Площадки", regions, 
                                                   selected=regions[c(1, 3, 5, 7)], multiple=TRUE, width="100%"))
                          )
                 ),
@@ -112,11 +118,12 @@ ui <- fluidPage(
 # Define server logic required to draw a network
 server <- function(input, output, session) {
   
+  # реактивные переменные ------------------------------------------------
   edr_http <- reactive({
     flog.info(paste0("loading edr http ", input$ehm_btn))
     
-    req(read_csv("edr_http_small.csv", progress=interactive())) %>%
-    # req(readRDS("edr_http.rds")) %>%
+    # req(read_csv("edr_http_small.csv", progress=interactive())) %>%
+    req(readRDS("edr_http_small.rds")) %>%
       select(msisdn, end_timestamp, uplink_bytes, downlink_bytes, site)
     # req(read_csv("edr_http.csv", progress=interactive()) %>% slice(1:20000))
     # write_csv(t %>% sample_frac(0.2), "edr_http_small.csv")
@@ -157,7 +164,7 @@ server <- function(input, output, session) {
   traffic_df <- reactive({
     edr_http() %>%
       select(timestamp=end_timestamp, down=downlink_bytes, up=uplink_bytes, site, msisdn) %>%
-      mutate(timegroup=hgroup.enum(timestamp, time.bin=24)) %>%
+      mutate(timegroup=hgroup.enum(timestamp, time.bin=6)) %>%
       group_by(site, timegroup) %>%
       summarize(up=sum(up), down=sum(down)) %>%
       ungroup() %>%
@@ -168,6 +175,7 @@ server <- function(input, output, session) {
       ungroup()
   })
   
+  # Top N графики --------------------------------------------------------
   output$top_downlink_plot <- renderPlot({
     plotTop10Downlink(top10_down_df())
   })
@@ -185,10 +193,18 @@ server <- function(input, output, session) {
   )
 
   output$dynamic_plot <- renderPlot({
-    plotFacetTraffic(traffic_df() %>%
-                       filter(site %in% input$site_dynamic))
+    timeframe <- getTimeframe(input$dynamic_time_depth, 0)
+    # browser()
+
+    df <- traffic_df() %>%
+      filter(site %in% input$site_dynamic) %>%
+      filter(timegroup >= timeframe[1]) %>%
+      filter(timegroup <= timeframe[2])
+    # browser()
+    plotFacetTraffic(df)
   })  
 
+  # обработчики кнопок выгрузки файлов --------------------------------------------------
   output$top_downlink_download <- downloadHandler(
     filename = function() {
       paste0("downlink-data-", Sys.Date(), ".csv", sep="")
@@ -207,6 +223,16 @@ server <- function(input, output, session) {
     }
   )
   
+  # обработчик часов  --------------------------------------------------
+  output$time_info <- renderText({
+    invalidateLater(1000 * 1) # обновляем в автономном режиме раз в N минут
+    format(Sys.time(), "%H:%M:%S")
+  })  
+  
+  # хелпер справочной панели --------------------------------------------
+  output$info_text <- renderText({
+    paste0("Глубина отображения динамики = ", input$dynamic_time_depth, " дн.")
+  })    
 }
 
 

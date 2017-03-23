@@ -1,3 +1,28 @@
+hgroup.enum <- function(date, time.bin = 4){
+  # привязываем все измерения, которые попали в промежуток [0, t] к точке измерения.
+  # точки измерения могут быть кратны 1, 2, 3, 4, 6, 12 часам, определяется time.bin
+  # отсчет измерений идет с 0:00
+  # поправка для лаборатории. для группировки меньше часа допускается указывать числа меньше 1
+  # 0.5 -- раз в полчаса.0.25 -- раз в 15 минут
+  
+  tick_time <- date
+  if (time.bin < 1 & !(time.bin %in% c(0.25, 0.5))) time.bin=1
+  n <- floor((hour(tick_time)*60 + minute(tick_time))/ (time.bin * 60))
+  floor_date(tick_time, unit="day") + minutes(n * time.bin *60)
+}
+
+getTimeframe <- function(days_back=7, days_forward=0){
+  # если по каким-либо причинам наверху не определились с прогнозом (NA),
+  # то полагаем что он есть и он равен базовому горизонту
+  days_formard <- ifelse(is.na(days_forward), 0, days_forward)
+  min_lim <- floor_date(now() - days(days_back), unit = "day")
+  # поскольку будущее округляем вниз, то надо добавить еще сутки (+1)
+  max_lim <- ceiling_date(now() + days(days_forward), unit = "day")
+  timeframe <- c(min_lim, max_lim)
+  
+  timeframe
+}
+
 plotTop10Downlink <- function(df) {
   
   flog.info(paste0("top10 download plot: nrow = ", nrow(df)))
@@ -33,19 +58,6 @@ plotTop10Uplink <- function(df) {
     coord_flip()
   
   gp
-}
-
-hgroup.enum <- function(date, time.bin = 4){
-  # привязываем все измерения, которые попали в промежуток [0, t] к точке измерения.
-  # точки измерения могут быть кратны 1, 2, 3, 4, 6, 12 часам, определяется time.bin
-  # отсчет измерений идет с 0:00
-  # поправка для лаборатории. для группировки меньше часа допускается указывать числа меньше 1
-  # 0.5 -- раз в полчаса.0.25 -- раз в 15 минут
-  
-  tick_time <- date
-  if (time.bin < 1 & !(time.bin %in% c(0.25, 0.5))) time.bin=1
-  n <- floor((hour(tick_time)*60 + minute(tick_time))/ (time.bin * 60))
-  floor_date(tick_time, unit="day") + minutes(n * time.bin *60)
 }
 
 plotFacetTraffic <- function(df) {
