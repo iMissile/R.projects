@@ -1,6 +1,7 @@
 library(tidyverse)
 library(lubridate)   # date manipulation
 library(padr)
+library(ggrepel)
 library(forcats)
 library(magrittr)
 library(countrycode) # turn country codes into pretty names
@@ -107,7 +108,7 @@ ui <- fluidPage(
                            column(2, selectInput("dynamic_time_depth", "Диапазон", 
                                                  choices=list(`Сутки`=1, `3 дня`=3, 
                                                               `Неделя`=7, `2 недели`=14, `Месяц`=30),
-                                                 selected=3, multiple=FALSE)),
+                                                 selected=14, multiple=FALSE)),
                            column(10, selectInput("site_dynamic", "Площадки", regions, 
                                                   selected=regions[c(1, 3, 5, 7)], multiple=TRUE, width="100%"))
                          )
@@ -133,6 +134,9 @@ ui <- fluidPage(
                 tabPanel("'Соц. сети'", value="http_category", 
                          fluidRow(
                            column(12, plotOutput("http_category_plot"))
+                         ),
+                         fluidRow(
+                           column(12, dataTableOutput("http_category_table"))
                          )
                 ),
                 tabPanel("Plot.ly lib", value="plotly_tab", 
@@ -282,6 +286,11 @@ server <- function(input, output, session) {
   output$http_category_plot <- renderPlot({
     plotHttpCategory(http_cat_df())
   }) 
+  
+  
+  output$http_category_table <- renderDataTable(
+    {http_cat_df()}, options=list(pageLength=5, lengthMenu=c(5, 7))
+    ) 
   
   # Пример визуализации с применением plot.ly -------------------------------------------
   output$plotly_plot1 <- renderPlotly({

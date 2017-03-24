@@ -90,18 +90,28 @@ plotFacetTraffic <- function(df, pal="Set1", wrap=FALSE) {
                          breaks=c("up", "down"),
                          labels=c("Uplink", "Downlink")
       ) +
-      geom_point(aes(colour=direction), alpha=0.85, shape=1, size=3) +
+      geom_point(aes(colour=direction, shape=direction), alpha=0.85, size=3) +
       geom_line(aes(y=volume_meanr, colour=direction), alpha=0.85, lwd=1)
   }else{
     # делаем цветовую раскладку по площадкам
     # http://stackoverflow.com/questions/6910988/change-both-legend-titles-in-a-ggplot-with-two-legends
     gp <- gp + 
       scale_color_brewer(palette=pal) +
-      labs(linetype="Трафик", colour="Площадка") +
-      geom_point(aes(colour=site), alpha=0.85, shape=1, size=3) +
+      labs(colour="Площадка", linetype="Трафик", shape="Направление") +
+      geom_point(aes(colour=site, shape=direction), alpha=0.85, size=3) +
       geom_line(aes(y=volume_meanr, colour=site, linetype=direction), alpha=0.85, lwd=1)
   } 
 
+  gp <- gp +
+    # geom_text_repel(aes(label=volume)) +
+    geom_label_repel(
+      aes(label=round(volume, 1)),
+      fontface = 'bold', # color = 'white',
+      box.padding = unit(0.35, "lines"),
+      point.padding = unit(0.5, "lines"),
+      segment.color = 'grey50'
+    )
+    
   gp
 }
 
