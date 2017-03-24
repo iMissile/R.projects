@@ -63,7 +63,7 @@ plotTop10Uplink <- function(df) {
   gp
 }
 
-plotFacetTraffic <- function(df, pal="Set1", wrap=FALSE) {
+plotFacetTraffic <- function(df, pal="Set1", wrap=FALSE, point_labes=FALSE) {
 
   gp <- ggplot(df, aes(timegroup, volume)) + 
     # geom_line(aes(colour=direction), alpha=0.4, lwd=1) +
@@ -102,15 +102,22 @@ plotFacetTraffic <- function(df, pal="Set1", wrap=FALSE) {
       geom_line(aes(y=volume_meanr, colour=site, linetype=direction), alpha=0.85, lwd=1)
   } 
 
-  gp <- gp +
-    # geom_text_repel(aes(label=volume)) +
-    geom_label_repel(
-      aes(label=round(volume, 1)),
-      fontface = 'bold', # color = 'white',
-      box.padding = unit(0.35, "lines"),
-      point.padding = unit(0.5, "lines"),
-      segment.color = 'grey50'
-    )
+  if(point_labes){
+    # создадим подмножество элементов по которым расставим метки
+    label_df <- df %>%
+      mutate(deviation=abs(1-volume/volume_meanr)) %>%
+      filter(deviation>.6)
+    
+    gp <- gp +
+      # geom_text_repel(aes(label=volume)) +
+      geom_label_repel(data=label_df,
+                       aes(timegroup, volume, label=round(volume, 1)),
+                       fontface = 'bold', # color = 'white',
+                       box.padding = unit(0.35, "lines"),
+                       point.padding = unit(0.5, "lines"),
+                       segment.color = 'grey50'
+      )
+    }
     
   gp
 }

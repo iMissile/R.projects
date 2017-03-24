@@ -81,7 +81,8 @@ ui <- fluidPage(
                         )),
       # Кнопка запуска расчетов event_heat_map
       # actionButton("ehm_btn", "Карта событий"),
-      checkboxInput("wrap_dynamic", "По регионам", value=FALSE) #,
+      checkboxInput("wrap_dynamic", "По регионам", value=FALSE),
+      checkboxInput("show_point_labels", "Вывести значения", value=TRUE) #,
       #verbatimTextOutput("info_text")
     ),
     
@@ -239,10 +240,10 @@ server <- function(input, output, session) {
   observeEvent(input$panel_id, {
     #browser()
     if(input$panel_id == "dynamics"){
-      purrr::walk(c("wrap_dynamic", "dynamic_pal"), shinyjs::show)
+      purrr::walk(c("wrap_dynamic", "dynamic_pal", "show_point_labels"), shinyjs::show)
       
     }else{
-      purrr::walk(c("wrap_dynamic", "dynamic_pal"), shinyjs::hide)
+      purrr::walk(c("wrap_dynamic", "dynamic_pal", "show_point_labels"), shinyjs::hide)
     }
   })
 
@@ -278,7 +279,7 @@ server <- function(input, output, session) {
       ungroup()
     
     # browser()
-    plotFacetTraffic(df, input$dynamic_pal, input$wrap_dynamic)
+    plotFacetTraffic(df, input$dynamic_pal, input$wrap_dynamic, input$show_point_labels)
   })  
 
   
