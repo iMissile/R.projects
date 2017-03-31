@@ -105,12 +105,17 @@ loadExcelReportList <- function(file_list) {
             .packages = 'futile.logger',
             .combine = rbind) %do% {
               flog.info(paste0("Parsing report file: ", fname))
+              cat(fname)
+              browser()
               
               # адресацию ведем по именам колонок, как в Excel, поэтому ручные названия все дропаем
               # хак по считыванию типов колонок
+              
+              file_format <- readxl:::excel_format(fname)
+              flog.info(paste0("File format: ", file_format))
               raw <- read_excel(fname, col_names=FALSE)
               flog.info(paste0("Columns = ", ncol(raw)))
-              
+
               # col_types <- readxl:::xlsx_col_types(fname)
               col_types <- rep("text", ncol(raw))
               col_names <- str_c("grp_", seq_along(col_types))
@@ -165,7 +170,7 @@ loadReportsType3 <- function(path){
   # отчет в разрезе ОКС (отчет №3); отчет о СС ИПР; несколько файлов эксель
   file_list <- getExcelFileList(path, pattern="*№\\s*3")
   flog.info(paste0("Report #3 file list: ", file_list))
-  
+  browser()
   raw <- loadExcelReportList(file_list)
   raw %>% filter(str_detect(grp_1, '\\d{3}-\\d{7}')) # 022-2000791
 }
