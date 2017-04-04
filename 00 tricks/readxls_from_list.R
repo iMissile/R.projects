@@ -71,7 +71,14 @@ file_list2 <- unlist(partial_matches)
 identical(file_list, file_list2)
 df_list <- map(file_list2, read_excel) # а так опять ошибка
 
+file_list3 <- stri_conv(file_list2, from="UTF-8", to="windows-1251", to_raw=FALSE)
+file_list3 <- stri_conv(file_list2, from="UTF-8", to_raw=FALSE)
+df_list <- map(file_list3, read_excel) # а все прошло!
+
+
 # упражнения с кодировками --------------------------------
-m <- file_list2[[2]]
+stri_enc_list()
+fname <- file_list2[[2]]
+stri_enc_detect2(fname)
+m <- stri_conv(fname, from = "UTF-8", to = NULL, to_raw = FALSE)
 stri_enc_detect2(m)
-m <- stri_conv(file_list2[[2]], from = NULL, to = NULL, to_raw = FALSE)
