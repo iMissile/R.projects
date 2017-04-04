@@ -53,7 +53,7 @@ regions <- c("Владивосток", "Новосибирск", "Екатери
 # Define UI for application that draws a histogram
 ui <- fluidPage(
   useShinyjs(),  # Include shinyjs
-  titlePanel("Аналитика DPI"),
+  titlePanel("Аналитика <...>"),
   # Some custom CSS for a smaller font for preformatted text
   tags$head(
     tags$style(HTML("
