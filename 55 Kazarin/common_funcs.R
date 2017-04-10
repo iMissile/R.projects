@@ -95,6 +95,7 @@ getExcelFileList <- function(path=".", pattern="") {
   # stri_encode(full_matches, to=stri_enc_get())
   # full_matches <- partial_matches[!sapply(partial_matches, function(x) all(is.na(x)))] # удаляем NA
   #str(full_matches)
+  stri_conv(full_matches, from="UTF-8", to_raw=FALSE)
 }
 
 loadExcelReportList <- function(file_list) {
@@ -106,7 +107,7 @@ loadExcelReportList <- function(file_list) {
             .combine = rbind) %do% {
               flog.info(paste0("Parsing report file: ", fname))
               cat(fname)
-              browser()
+              # browser()
               
               # адресацию ведем по именам колонок, как в Excel, поэтому ручные названия все дропаем
               # хак по считыванию типов колонок
@@ -170,7 +171,7 @@ loadReportsType3 <- function(path){
   # отчет в разрезе ОКС (отчет №3); отчет о СС ИПР; несколько файлов эксель
   file_list <- getExcelFileList(path, pattern="*№\\s*3")
   flog.info(paste0("Report #3 file list: ", file_list))
-  browser()
+  # browser()
   raw <- loadExcelReportList(file_list)
   raw %>% filter(str_detect(grp_1, '\\d{3}-\\d{7}')) # 022-2000791
 }
