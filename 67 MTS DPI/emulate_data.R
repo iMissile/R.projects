@@ -68,7 +68,7 @@ time_sample <- function(N, st = "2012/01/01", et = lubridate::now()) {
   rt <- st + ev
 }
 
-df1 %<>% mutate(end_timestamp=time_sample(nrow(.), now()-days(30), now()+5)) %>%
+df1 %<>% mutate(end_timestamp=time_sample(nrow(.), now()-days(40), now()+days(10)))%>%
   mutate(start_timestamp=end_timestamp-seconds(runif(nrow(.), -10, 0))) %>% 
   #mutate(start_timestamp=as.POSIXct(sn_start_time, origin="1970-01-01", tz="Europe/Moscow")) %>%
   #mutate(end_timestamp=as.POSIXct(sn_end_time, origin="1970-01-01", tz="Europe/Moscow")) %>%
@@ -77,6 +77,7 @@ df1 %<>% mutate(end_timestamp=time_sample(nrow(.), now()-days(30), now()+5)) %>%
 # select(start_timestamp, end_timestamp, everything())
 
 system.time(saveRDS(df1, "./Shiny_DPI_reports/edr_http_small.rds", compress=FALSE))
+system.time(write_csv(df1, "./Shiny_DPI_reports/edr_http_small.csv"))
 
 stop()
 system.time(write_csv(df1, "./Shiny_DPI_reports/edr_http_small.csv"))

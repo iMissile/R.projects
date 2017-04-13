@@ -267,7 +267,6 @@ server <- function(input, output, session) {
   # ВременнАя визуализация --------------------------------------------------------
   output$dynamic_plot <- renderPlot({
     timeframe <- getTimeframe(input$dynamic_time_depth, 0)
-    # browser()
 
     df <- traffic_df() %>%
       filter(site %in% input$site_dynamic) %>%
@@ -277,7 +276,7 @@ server <- function(input, output, session) {
       group_by(timegroup, direction) %>%
       mutate(global_meanr=mean(volume_meanr)) %>%
       ungroup()
-    
+
     # browser()
     plotFacetTraffic(df, input$dynamic_pal, input$wrap_dynamic, input$show_point_labels)
   })  
