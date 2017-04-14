@@ -219,7 +219,7 @@ fcast <- forecast(fit, h=f_depth) # h - Number of periods for forecasting
 autoplot(fcast) +
 geom_forecast(h=f_depth, level=c(50,80,95)) + theme_bw()
 
-autoplot(fcast) +
+autoplot(fcast)
 
 #ggplot(data=df1, aes(x=timegroup, y=up)) +
 

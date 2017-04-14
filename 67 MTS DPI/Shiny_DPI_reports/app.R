@@ -20,6 +20,8 @@ library(stringr)
 #library(intergraph) # http://mbojan.github.io/intergraph/
 # library(ggpmisc)
 #library(ggnetwork)
+library(zoo)
+library(forecast)
 library(Cairo)
 library(shiny)
 library(plotly)
@@ -155,7 +157,7 @@ ui <- fluidPage(
                            radioButtons("f_depth", "Глубина прогноза",
                                         c("4 недели" = 28,
                                           "2 недели" = 14,
-                                          "1 неделя" = 7))
+                                          "1 неделя" = 7), selected=7)
                            )
                          )
                 
@@ -318,14 +320,45 @@ server <- function(input, output, session) {
   ) 
   
   # Визуализация прогноза трафика ------------------------------------------------------
-  output$down_forecast_plot <- renderPlot({
-    plotHttpCategory(http_cat_df())
+  output$up_forecast_plot <- renderPlot({
+    df1 <- edr_http() %>%
+      select(timestamp=end_timestamp, down=downlink_bytes, up=uplink_bytes, site, msisdn) %>%
+      #filter(timestamp<now()) %>%
+      filter(site=="Москва") %>%
+      mutate(timegroup=hgroup.enum(timestamp, time.bin=24)) %>%
+      # thicken("day", col="time") %>% # не работает
+      group_by(timegroup) %>%
+      summarize(up=sum(up), down=sum(down)) %>%
+      ungroup() # %>% filter(complete.cases(.))
+    
+    sensor <- ts(df1$up, frequency=7)
+    
+    fit <- auto.arima(sensor)
+    fcast <- forecast(fit, h=input$f_depth) # h - Number of periods for forecasting
+    
+    # browser()
+    autoplot(fcast) + 
+      geom_forecast(h=input$f_depth, level=c(50,80,95)) + theme_bw()
   }) 
   
+  output$down_forecast_plot <- renderPlot({
+    df1 <- edr_http() %>%
+      select(timestamp=end_timestamp, down=downlink_bytes, up=uplink_bytes, site, msisdn) %>%
+      #filter(timestamp<=now()) %>%
+      filter(site=="Москва") %>%
+      mutate(timegroup=hgroup.enum(timestamp, time.bin=24)) %>%
+      # thicken("day", col="time") %>% # не работает
+      group_by(timegroup) %>%
+      summarize(up=sum(up), down=sum(down)) %>%
+      ungroup() # %>% filter(complete.cases(.))
 
-  output$up_forecast_plot <- renderPlot({
-    plotHttpCategory(http_cat_df())
-  }) 
+    sensor <- ts(df1$down, frequency=14)
+    
+    fit <- auto.arima(sensor)
+    fcast <- forecast(fit, h=input$f_depth) # h - Number of periods for forecasting
+    autoplot(fcast) + 
+      geom_forecast(h=input$f_depth, level=c(50,80,95)) + theme_bw()
+    }) 
   
   # обработчики кнопок выгрузки файлов --------------------------------------------------
   output$top_downlink_download <- downloadHandler(

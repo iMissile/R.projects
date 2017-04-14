@@ -19,12 +19,15 @@ regions <- c("Владивосток", "Новосибирск", "Екатеринбург", "Н.Новгород",
 
 
 # импортируем flow edr файлы -----------------------------------------
-if(FALSE){
+if(TRUE){
+  profvis({
   flow_df <- flow_list %>%
     purrr::map(read_delim, delim=',')
+  
   df <- reduce(flow_df, rbind) %>%
     repair_names()
-  profvis({saveRDS(df, "flow_df.rds")})
+  
+  saveRDS(df, "flow_df.rds")})
 }
 
 # импортируем http eDR файлы -----------------------------------------
