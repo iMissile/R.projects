@@ -10,16 +10,21 @@ library(lubridate)
 library(profvis)
 library(RcppRoll)
 library(digest)
+library(xts)
+library(zoo)
+library(forecast)
 library(fuzzyjoin)
 
+source("./Shiny_DPI_reports/funcs.R")
 
 df0 <- readRDS("./Shiny_DPI_reports/edr_http_small.rds")
 
+
 # facet графики для top 10 up/down ---------------------------------
 t <- 9161234567
-sprintf("(%s) %s-%s-%s", unlist(list(1, 2, 3, 4)))
+# sprintf("(%s) %s-%s-%s", list(1, 2, 3, 4)) # не работает, пишет `too few arguments`
 st <- as.character(t)
-m <- st %>% {sprintf("(%s) %s-%s-%s", stri_sub(., 1, 3), stri_sub(., 4, 5), stri_sub(., 6, 7), stri_sub(., 8, 9))}
+m <- st %>% {sprintf("(%s) %s-%s-%s", stri_sub(., 1, 3), stri_sub(., 4, 6), stri_sub(., 7, 8), stri_sub(., 9, 10))}
 
 df1 <- df0 %>%
   select(timestamp=end_timestamp, downlink_bytes, uplink_bytes, site, msisdn) %>%
@@ -76,18 +81,18 @@ df2 <- df0 %>%
 
 # рисуем time-series трафик ---------------------------------
 
-hgroup.enum <- function(date, time.bin = 4){
-  # привязываем все измерения, которые попали в промежуток [0, t] к точке измерения.
-  # точки измерения могут быть кратны 1, 2, 3, 4, 6, 12 часам, определяется time.bin
-  # отсчет измерений идет с 0:00
-  # поправка для лаборатории. для группировки меньше часа допускается указывать числа меньше 1
-  # 0.5 -- раз в полчаса.0.25 -- раз в 15 минут
-  
-  tick_time <- date
-  if (time.bin < 1 & !(time.bin %in% c(0.25, 0.5))) time.bin = 1
-  n <- floor((hour(tick_time)*60 + minute(tick_time))/ (time.bin * 60))
-  floor_date(tick_time, unit="day") + minutes(n * time.bin *60)
-}
+# hgroup.enum <- function(date, time.bin = 4){
+#   # привязываем все измерения, которые попали в промежуток [0, t] к точке измерения.
+#   # точки измерения могут быть кратны 1, 2, 3, 4, 6, 12 часам, определяется time.bin
+#   # отсчет измерений идет с 0:00
+#   # поправка для лаборатории. для группировки меньше часа допускается указывать числа меньше 1
+#   # 0.5 -- раз в полчаса.0.25 -- раз в 15 минут
+#   
+#   tick_time <- date
+#   if (time.bin < 1 & !(time.bin %in% c(0.25, 0.5))) time.bin = 1
+#   n <- floor((hour(tick_time)*60 + minute(tick_time))/ (time.bin * 60))
+#   floor_date(tick_time, unit="day") + minutes(n * time.bin *60)
+# }
 
 # ломаный сэмпл
 # https://edwinth.github.io/blog/padr-examples/
@@ -174,6 +179,78 @@ t <- df0 %>% group_by(http_host) %>%
 
 t2 <- regex_left_join(t, repl_df, by=c(http_host="pattern"))
 
+# -----------------------------------------------------------------
+# суточное прогнозирование средствами пакета forecast --------------
+# повторяем по мотивам \iwork.HG\R.projects\02 predictive_PM_demo\predict_interface_load_06(tadv_test)
 
+df1 <- df0 %>%
+  filter(site=="Москва") %>%
+  select(timestamp=end_timestamp, down=downlink_bytes, up=uplink_bytes, site, msisdn) %>%
+  mutate(timegroup=hgroup.enum(timestamp, time.bin=24)) %>%
+  # thicken("day", col="time") %>% # не работает
+  group_by(site, timegroup) %>%
+  summarize(up=sum(up), down=sum(down)) %>%
+  ungroup()
+
+f_depth <- 14 # глубина прогноза
+
+# есть нюансы с отсутствующими датами. Для получения правильного прогноза обязательно необходимо вставить 
+# все даты с заданной периодичностью и заполнить значения NA
+seq(min(df1$timegroup), max(df1$timegroup) + days(f_depth), by="1 day")
+
+
+# строим формальный сенсор без привязки к дате, с указанием недельной периодичности
+# почему берем 7 сказано в "Forecasting with daily data" http://robjhyndman.com/hyndsight/dailydata/
+# frequency	-- the number of observations per unit of time.
+sensor <- ts(df1$up, frequency=7)
+sensor
+
+#  ARIMA = Auto Regressive Integrated Moving Average
+# увы, ARIMA работает только для суточных измерений с глубиной не более 350 измерений
+# ограничение в 350: http://robjhyndman.com/hyndsight/longseasonality/
+# ==============================================
+fit <- auto.arima(sensor) #http://stackoverflow.com/questions/14331314/time-series-prediction-of-daily-data-of-a-month-using-arima
+# fit <- tbats(sensor)
+fcast <- forecast(fit, h=f_depth) # h - Number of periods for forecasting
+
+# fcast$x -- исходные данные, fcast$mean -- прогнозные
+
+# Directly plot your forecast without your axes
+autoplot(fcast) +
+geom_forecast(h=f_depth, level=c(50,80,95)) + theme_bw()
+
+autoplot(fcast) +
+
+#ggplot(data=df1, aes(x=timegroup, y=up)) +
+
+gp <- ggplot(df1, aes(time, x)) +
+  #geom_ribbon(aes(ymin=low2, ymax=upp2), fill="yellow") +
+  #geom_ribbon(aes(ymin=low1, ymax=upp1), fill="orange") +
+  # geom_ribbon(aes(ymin=low2, ymax=upp2), fill=cpal[1]) +
+  # geom_ribbon(aes(ymin=low1, ymax=upp1), fill=cpal[2]) +
+  theme_bw() +
+  geom_line() +
+  # geom_line(data=df[!is.na(df$forecast), ], aes(time, forecast), color="blue", size=1.5, na.rm=TRUE) +
+  # http://docs.ggplot2.org/current/scale_continuous.html
+  #scale_x_continuous("") +
+  #scale_y_continuous(limits=c(0, 120)) +
+  # scale_x_date(breaks=date_breaks('days'), labels = date_format("%d %b %Y")) +
+  # ОБЯЗАТЕЛЬНО library(scales)
+  # http://docs.ggplot2.org/current/scale_date.html
+  scale_x_date(labels = date_format("%d %b %Y"), breaks = date_breaks("week")) +
+  geom_hline(aes(yintercept=100), colour="red", linetype="dashed", size=1) +
+  geom_hline(aes(yintercept=hard_threshold), colour="magenta", linetype="dashed", size=1) +
+  geom_vline(xintercept=as.numeric(df_upper$time), colour="green", linetype="dashed", size=1) + # linetype="dotted"
+  #geom_point(data=df_upper, colour = "green", size = 4, aes(x=time, y=value), shape=1) +
+  geom_point(data=df_upper, colour = "green", size = 5, aes(x=time, y=value)) +
+  geom_point(data=df_upper, colour = "grey90", size = 3, aes(x=time, y=value)) +
+  xlab("Дата") +
+  ylab("Загрузка CPU, %") +
+  # scale_shape(solid = FALSE) +
+  # http://blog.rstudio.org/2012/09/07/ggplot2-0-9-2/  
+  # opts(title=paste("Forecasts from ", fcast$method))
+  labs(title=paste("Forecasts from ", fcast$method))
+
+gp
 
   

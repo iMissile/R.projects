@@ -112,8 +112,8 @@ ui <- fluidPage(
                                                  selected=14, multiple=FALSE)),
                            column(10, selectInput("site_dynamic", "Площадки", regions, 
                                                   selected=regions[c(1, 3, 5, 7)], multiple=TRUE, width="100%"))
-                         )
-                ),
+                           )
+                         ),
                 tabPanel("Топ N", value="top_n",
                          fluidRow(
                            column(6, plotOutput("top_downlink_plot")),
@@ -132,20 +132,34 @@ ui <- fluidPage(
                            )
                          ),
                 # tabPanel("Таблица", value="row_edr", p(), dataTableOutput("edr_table"))
-                tabPanel("'Соц. сети'", value="http_category", 
-                         fluidRow(
-                           column(12, plotOutput("http_category_plot"))
-                         ),
-                         fluidRow(
-                           column(12, dataTableOutput("http_category_table"))
-                         )
-                ),
-                tabPanel("Plot.ly lib", value="plotly_tab", 
+                tabPanel("Tog N - Plot.ly", value="plotly_tab", 
                          fluidRow(
                            column(6, plotlyOutput("plotly_plot1")),
                            column(6, plotlyOutput("plotly_plot2"))
+                           )
+                         ),
+                tabPanel("'Соц. сети'", value="http_category", 
+                         fluidRow(
+                           column(12, plotOutput("http_category_plot"))
+                           ),
+                         fluidRow(
+                           column(12, dataTableOutput("http_category_table"))
+                           )
+                         ),
+                tabPanel("Прогноз", value="forecast_tab", 
+                         fluidRow(
+                           column(6, plotOutput("up_forecast_plot")),
+                           column(6, plotOutput("down_forecast_plot"))
+                           ),
+                         fluidRow(
+                           radioButtons("f_depth", "Глубина прогноза",
+                                        c("4 недели" = 28,
+                                          "2 недели" = 14,
+                                          "1 неделя" = 7))
+                           )
                          )
-                )
+                
+                
               ))
   )
 )
@@ -282,16 +296,6 @@ server <- function(input, output, session) {
   })  
 
   
-  # Визуализация категорий трафика ------------------------------------------------------
-  output$http_category_plot <- renderPlot({
-    plotHttpCategory(http_cat_df())
-  }) 
-  
-  
-  output$http_category_table <- renderDataTable(
-    {http_cat_df()}, options=list(pageLength=5, lengthMenu=c(5, 7))
-    ) 
-  
   # Пример визуализации с применением plot.ly -------------------------------------------
   output$plotly_plot1 <- renderPlotly({
     gp <- plotTop10Downlink(top10_down_df())
@@ -302,6 +306,26 @@ server <- function(input, output, session) {
     gp <- plotTop10Uplink(top10_up_df())
     ggplotly(gp)
   })    
+
+  # Визуализация категорий трафика ------------------------------------------------------
+  output$http_category_plot <- renderPlot({
+    plotHttpCategory(http_cat_df())
+  }) 
+  
+  
+  output$http_category_table <- renderDataTable(
+    {http_cat_df()}, options=list(pageLength=5, lengthMenu=c(5, 7))
+  ) 
+  
+  # Визуализация прогноза трафика ------------------------------------------------------
+  output$down_forecast_plot <- renderPlot({
+    plotHttpCategory(http_cat_df())
+  }) 
+  
+
+  output$up_forecast_plot <- renderPlot({
+    plotHttpCategory(http_cat_df())
+  }) 
   
   # обработчики кнопок выгрузки файлов --------------------------------------------------
   output$top_downlink_download <- downloadHandler(

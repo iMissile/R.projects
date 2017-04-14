@@ -78,6 +78,3 @@ df1 %<>% mutate(end_timestamp=time_sample(nrow(.), now()-days(40), now()+days(10
 
 system.time(saveRDS(df1, "./Shiny_DPI_reports/edr_http_small.rds", compress=FALSE))
 system.time(write_csv(df1, "./Shiny_DPI_reports/edr_http_small.csv"))
-
-stop()
-system.time(write_csv(df1, "./Shiny_DPI_reports/edr_http_small.csv"))

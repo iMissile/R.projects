@@ -45,9 +45,8 @@ sensor <- ts(subdata$util_out_max, frequency=14)
 sensor
 
 #  ARIMA = Auto Regressive Integrated Moving Average
-
 # увы, ARIMA работает только для суточных измерений с глубиной не более 350 измерений
-# ограничение в 350: http://www.r-bloggers.com/forecasting-with-long-seasonal-periods/
+# ограничение в 350: http://robjhyndman.com/hyndsight/longseasonality/
 # ==============================================
 fit <- auto.arima(sensor) #http://stackoverflow.com/questions/14331314/time-series-prediction-of-daily-data-of-a-month-using-arima
 # fit <- tbats(sensor)
