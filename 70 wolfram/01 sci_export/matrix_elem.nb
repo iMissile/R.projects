@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       158,          7]
-NotebookDataLength[    175605,       4635]
-NotebookOptionsPosition[    172691,       4549]
-NotebookOutlinePosition[    173202,       4569]
-CellTagsIndexPosition[    173159,       4566]
+NotebookDataLength[    197024,       5131]
+NotebookOptionsPosition[    193392,       5024]
+NotebookOutlinePosition[    193916,       5045]
+CellTagsIndexPosition[    193873,       5042]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -1565,7 +1565,7 @@ Cell[BoxData[{
         RowBox[{"0", ",", 
          RowBox[{
           RowBox[{"asum", "[", "t", "]"}], "=", "0"}]}], "}"}]}], "}"}], 
-     "]"}]}], ";"}], "\n"}], "\[IndentingNewLine]", 
+     "]"}]}], ";"}], "\[IndentingNewLine]"}], "\n", 
  RowBox[{
   RowBox[{
    RowBox[{"int", "[", 
@@ -1983,7 +1983,7 @@ Cell[BoxData[{
         SuperscriptBox["n1", "2"]], "-", 
        FractionBox["1", 
         SuperscriptBox["n2", "2"]]}], ")"}]}]}], ";"}], 
-  "\[IndentingNewLine]"}], "\n", 
+  "\n"}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{
    RowBox[{
@@ -2249,7 +2249,7 @@ Cell[BoxData[
   Function[BoxForm`e$, 
    TableForm[BoxForm`e$]]]], "Output",
  CellChangeTimes->{3.70105807921926*^9, 3.7010678374115963`*^9, 
-  3.7010757082930856`*^9}],
+  3.7010757082930856`*^9, 3.701101942808219*^9}],
 
 Cell[BoxData[
  InterpretationBox[
@@ -2263,15 +2263,15 @@ Cell[BoxData[
   SequenceForm["{n, l, m}: min=", {2, 0, -2}, " max=", {3, 2, 2}],
   Editable->False]], "Print",
  CellChangeTimes->{3.701058079222262*^9, 3.7010678374195967`*^9, 
-  3.701075708301086*^9}],
+  3.701075708301086*^9, 3.701101942820837*^9}],
 
 Cell[BoxData["True"], "Output",
  CellChangeTimes->{3.70105807921926*^9, 3.7010678374115963`*^9, 
-  3.701075708305086*^9}],
+  3.7010757082930856`*^9, 3.701101942828264*^9}],
 
 Cell[BoxData["False"], "Output",
  CellChangeTimes->{3.70105807921926*^9, 3.7010678374115963`*^9, 
-  3.7010757083080864`*^9}]
+  3.7010757082930856`*^9, 3.7011019428355303`*^9}]
 }, Open  ]],
 
 Cell[CellGroupData[{
@@ -2342,7 +2342,8 @@ Cell[BoxData[
   SequenceForm[
   "t_elem = ", 2, ", t = ", {0.001, 62.83285307179586, 62.83185307179586}],
   Editable->False]], "Print",
- CellChangeTimes->{3.7010580826195693`*^9, 3.701075721761856*^9}],
+ CellChangeTimes->{3.7010580826195693`*^9, 3.701075721761856*^9, 
+  3.701101947319113*^9}],
 
 Cell[BoxData[
  InterpretationBox[
@@ -2356,7 +2357,8 @@ Cell[BoxData[
   "\[Alpha]_elem = ", 1, ", \[Alpha] = ", {
    Rational[1, 4] Pi, Rational[1, 4] Pi, 1}],
   Editable->False]], "Print",
- CellChangeTimes->{3.7010580826195693`*^9, 3.7010757217648563`*^9}],
+ CellChangeTimes->{3.7010580826195693`*^9, 3.701075721761856*^9, 
+  3.70110194732642*^9}],
 
 Cell[BoxData[
  InterpretationBox[
@@ -2370,7 +2372,8 @@ Cell[BoxData[
   "\[Beta]_elem = ", 1, ", \[Beta] = ", {
    Rational[1, 4] Pi, Rational[1, 4] Pi, 1}],
   Editable->False]], "Print",
- CellChangeTimes->{3.7010580826195693`*^9, 3.7010757217708564`*^9}]
+ CellChangeTimes->{3.7010580826195693`*^9, 3.701075721761856*^9, 
+  3.701101947333679*^9}]
 }, Open  ]]
 }, Open  ]],
 
@@ -2542,7 +2545,7 @@ Cell[BoxData[{
   RowBox[{"Export", "[", 
    RowBox[{
    "\"\<.\\\\output\\\\vv_index.mjson\>\"", ",", "vvtable", ",", 
-    "\"\<ExpressionJSON\>\""}], "]"}], "\[IndentingNewLine]", "\n", 
+    "\"\<ExpressionJSON\>\""}], "]"}], "\n", "\[IndentingNewLine]", 
   StyleBox[
    RowBox[{"(*", " ", 
     RowBox[{
@@ -2655,7 +2658,7 @@ Cell[BoxData[{
  Background->GrayLevel[0.85]],
 
 Cell[BoxData[
- TemplateBox[{RowBox[{"\"Thu 13 Apr 2017 15:36:47\"", 
+ TemplateBox[{RowBox[{"\"Thu 13 Apr 2017 22:52:33\"", 
      StyleBox[
       RowBox[{"\"GMT+\"", "\[InvisibleSpace]", "3.`"}], FontColor -> 
       GrayLevel[0.5]]}],RowBox[{"DateObject", "[", 
@@ -2665,31 +2668,31 @@ Cell[BoxData[
        RowBox[{"TimeObject", "[", 
          RowBox[{
            RowBox[{"{", 
-             RowBox[{"15", ",", "36", ",", "47.4717582`"}], "}"}], ",", 
+             RowBox[{"22", ",", "52", ",", "33.976659`"}], "}"}], ",", 
            RowBox[{"TimeZone", "\[Rule]", "3.`"}]}], "]"}], ",", 
        RowBox[{"TimeZone", "\[Rule]", "3.`"}]}], "]"}]},
   "DateObject",
   Editable->False]], "Output",
  CellChangeTimes->{3.7010580864549665`*^9, 3.7010678681893563`*^9, 
-  3.701075731678423*^9, 3.701075808362809*^9}],
+  3.701075731678423*^9, 3.701075808362809*^9, 3.7011019625571203`*^9}],
 
 Cell[BoxData[
  InterpretationBox[
   RowBox[{"\<\"t=\"\>", "\[InvisibleSpace]", 
    DynamicBox[ToBoxes[$CellContext`t, StandardForm],
-    ImageSizeCache->{49., {0., 8.}}], 
+    ImageSizeCache->{50., {1., 8.}}], 
    "\[InvisibleSpace]", "\<\", \[Alpha]=\"\>", "\[InvisibleSpace]", 
    DynamicBox[ToBoxes[$CellContext`\[Alpha], StandardForm],
-    ImageSizeCache->{12.2, {10.1, 16.009999999999998`}}], 
+    ImageSizeCache->{7., {1., 6.}}], 
    "\[InvisibleSpace]", "\<\", \[Beta]=\"\>", "\[InvisibleSpace]", 
    DynamicBox[ToBoxes[$CellContext`\[Beta], StandardForm],
-    ImageSizeCache->{12.2, {10.1, 16.009999999999998`}}], 
+    ImageSizeCache->{11.320703125000001`, {10.2630859375, 15.40892578125}}], 
    "\[InvisibleSpace]", "\<\", n1=\"\>", "\[InvisibleSpace]", 
    DynamicBox[ToBoxes[$CellContext`n1, StandardForm],
-    ImageSizeCache->{7., {0., 8.}}], "\[InvisibleSpace]", "\<\", l1=\"\>", 
+    ImageSizeCache->{14., {0., 8.}}], "\[InvisibleSpace]", "\<\", l1=\"\>", 
    "\[InvisibleSpace]", 
    DynamicBox[ToBoxes[$CellContext`l1, StandardForm],
-    ImageSizeCache->{7., {0., 8.}}], "\[InvisibleSpace]", "\<\", m1=\"\>", 
+    ImageSizeCache->{14., {0., 8.}}], "\[InvisibleSpace]", "\<\", m1=\"\>", 
    "\[InvisibleSpace]", 
    DynamicBox[ToBoxes[$CellContext`m1, StandardForm],
     ImageSizeCache->{14., {0., 8.}}], "\[InvisibleSpace]", "\<\", n2=\"\>", 
@@ -2714,7 +2717,7 @@ Cell[BoxData[
    Dynamic[$CellContext`m2]],
   Editable->False]], "Print",
  CellChangeTimes->{3.7010580864619713`*^9, 3.701067868377367*^9, 
-  3.7010757318654337`*^9, 3.7010758085478196`*^9}],
+  3.7010757318654337`*^9, 3.7010758085478196`*^9, 3.701101963009008*^9}],
 
 Cell[BoxData[
  DynamicBox[ToBoxes[
@@ -2723,61 +2726,78 @@ Cell[BoxData[
      " l1=", $CellContext`l1, " m1=", $CellContext`m1, 
      " n2=", $CellContext`n2, " l2=", $CellContext`l2, 
      " m2=", $CellContext`m2]; Null, StandardForm],
-  ImageSizeCache->{28., {0., 9.}}]], "Output",
+  ImageSizeCache->{31., {0., 9.}}]], "Output",
  CellChangeTimes->{3.7010580864549665`*^9, 3.7010678681893563`*^9, 
-  3.701075731678423*^9, 3.7010758085628204`*^9}],
+  3.701075731678423*^9, 3.701075808362809*^9, 3.7011019630207653`*^9}],
 
 Cell[BoxData[
- TemplateBox[{
-  "ClebschGordan","phy",
-   "\"\\!\\(\\*RowBox[{\\\"ThreeJSymbol\\\", \\\"[\\\", RowBox[{RowBox[{\\\"{\
-\\\", RowBox[{\\\"1\\\", \\\",\\\", \\\"1\\\"}], \\\"}\\\"}], \\\",\\\", \
-RowBox[{\\\"{\\\", RowBox[{\\\"0\\\", \\\",\\\", RowBox[{\\\"-\\\", \
-\\\"1\\\"}]}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
-\\\",\\\", \\\"0\\\"}], \\\"}\\\"}]}], \\\"]\\\"}]\\) is not physical.\"",2,
-   89,8,25583475600745382283,"Local"},
-  "MessageTemplate"]], "Message", "MSG",
+ RowBox[{
+  StyleBox[
+   RowBox[{"ClebschGordan", "::", "phy"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"\[NoBreak]\\!\\(\\*RowBox[{\\\"ThreeJSymbol\\\", \
+\\\"[\\\", RowBox[{RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \\\",\\\", \
+\\\"1\\\"}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\"{\\\", RowBox[{\\\"0\\\", \\\
+\",\\\", RowBox[{\\\"-\\\", \\\"1\\\"}]}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\
+\"{\\\", RowBox[{\\\"1\\\", \\\",\\\", \\\"0\\\"}], \\\"}\\\"}]}], \
+\\\"]\\\"}]\\)\[NoBreak] is not physical. \\!\\(\\*ButtonBox[\\\"\
+\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/ClebschGordan/phy\\\", ButtonNote -> \
+\\\"ClebschGordan::phy\\\"]\\)\"\>"}]], "Message", "MSG",
  CellChangeTimes->{3.701058086679078*^9, 3.7010678686513824`*^9, 
-  3.70107573197744*^9, 3.7010758086438255`*^9}],
+  3.70107573197744*^9, 3.7010758086438255`*^9, 3.701101963178273*^9}],
 
 Cell[BoxData[
- TemplateBox[{
-  "ClebschGordan","phy",
-   "\"\\!\\(\\*RowBox[{\\\"ThreeJSymbol\\\", \\\"[\\\", RowBox[{RowBox[{\\\"{\
-\\\", RowBox[{\\\"1\\\", \\\",\\\", \\\"1\\\"}], \\\"}\\\"}], \\\",\\\", \
-RowBox[{\\\"{\\\", RowBox[{\\\"0\\\", \\\",\\\", RowBox[{\\\"-\\\", \
-\\\"2\\\"}]}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
-\\\",\\\", \\\"1\\\"}], \\\"}\\\"}]}], \\\"]\\\"}]\\) is not physical.\"",2,
-   89,9,25583475600745382283,"Local"},
-  "MessageTemplate"]], "Message", "MSG",
+ RowBox[{
+  StyleBox[
+   RowBox[{"ClebschGordan", "::", "phy"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"\[NoBreak]\\!\\(\\*RowBox[{\\\"ThreeJSymbol\\\", \
+\\\"[\\\", RowBox[{RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \\\",\\\", \
+\\\"1\\\"}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\"{\\\", RowBox[{\\\"0\\\", \\\
+\",\\\", RowBox[{\\\"-\\\", \\\"2\\\"}]}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\
+\"{\\\", RowBox[{\\\"1\\\", \\\",\\\", \\\"1\\\"}], \\\"}\\\"}]}], \
+\\\"]\\\"}]\\)\[NoBreak] is not physical. \\!\\(\\*ButtonBox[\\\"\
+\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/ClebschGordan/phy\\\", ButtonNote -> \
+\\\"ClebschGordan::phy\\\"]\\)\"\>"}]], "Message", "MSG",
  CellChangeTimes->{3.701058086679078*^9, 3.7010678686513824`*^9, 
-  3.70107573197744*^9, 3.7010758086678267`*^9}],
+  3.70107573197744*^9, 3.7010758086438255`*^9, 3.701101963249114*^9}],
 
 Cell[BoxData[
- TemplateBox[{
-  "ClebschGordan","phy",
-   "\"\\!\\(\\*RowBox[{\\\"ThreeJSymbol\\\", \\\"[\\\", RowBox[{RowBox[{\\\"{\
-\\\", RowBox[{\\\"1\\\", \\\",\\\", \\\"1\\\"}], \\\"}\\\"}], \\\",\\\", \
-RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \\\",\\\", RowBox[{\\\"-\\\", \
-\\\"2\\\"}]}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \
-\\\",\\\", \\\"1\\\"}], \\\"}\\\"}]}], \\\"]\\\"}]\\) is not physical.\"",2,
-   89,10,25583475600745382283,"Local"},
-  "MessageTemplate"]], "Message", "MSG",
+ RowBox[{
+  StyleBox[
+   RowBox[{"ClebschGordan", "::", "phy"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"\[NoBreak]\\!\\(\\*RowBox[{\\\"ThreeJSymbol\\\", \
+\\\"[\\\", RowBox[{RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \\\",\\\", \
+\\\"1\\\"}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \\\
+\",\\\", RowBox[{\\\"-\\\", \\\"2\\\"}]}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\
+\"{\\\", RowBox[{\\\"1\\\", \\\",\\\", \\\"1\\\"}], \\\"}\\\"}]}], \
+\\\"]\\\"}]\\)\[NoBreak] is not physical. \\!\\(\\*ButtonBox[\\\"\
+\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/ClebschGordan/phy\\\", ButtonNote -> \
+\\\"ClebschGordan::phy\\\"]\\)\"\>"}]], "Message", "MSG",
  CellChangeTimes->{3.701058086679078*^9, 3.7010678686513824`*^9, 
-  3.70107573197744*^9, 3.7010758086908283`*^9}],
+  3.70107573197744*^9, 3.7010758086438255`*^9, 3.70110196330399*^9}],
 
 Cell[BoxData[
- TemplateBox[{
-  "General","stop",
-   "\"Further output of \\!\\(\\*StyleBox[RowBox[{\\\"ClebschGordan\\\", \
-\\\"::\\\", \\\"phy\\\"}], \\\"MessageName\\\"]\\) will be suppressed during \
-this calculation.\"",2,89,11,25583475600745382283,"Local"},
-  "MessageTemplate"]], "Message", "MSG",
+ RowBox[{
+  StyleBox[
+   RowBox[{"General", "::", "stop"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Further output of \
+\[NoBreak]\\!\\(\\*StyleBox[RowBox[{\\\"ClebschGordan\\\", \\\"::\\\", \
+\\\"phy\\\"}], \\\"MessageName\\\"]\\)\[NoBreak] will be suppressed during \
+this calculation. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", \
+ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/General/stop\\\", ButtonNote -> \
+\\\"General::stop\\\"]\\)\"\>"}]], "Message", "MSG",
  CellChangeTimes->{3.701058086679078*^9, 3.7010678686513824`*^9, 
-  3.70107573197744*^9, 3.701075808715829*^9}],
+  3.70107573197744*^9, 3.7010758086438255`*^9, 3.701101963370038*^9}],
 
 Cell[BoxData[
- TemplateBox[{RowBox[{"\"Thu 13 Apr 2017 15:36:49\"", 
+ TemplateBox[{RowBox[{"\"Thu 13 Apr 2017 22:52:44\"", 
      StyleBox[
       RowBox[{"\"GMT+\"", "\[InvisibleSpace]", "3.`"}], FontColor -> 
       GrayLevel[0.5]]}],RowBox[{"DateObject", "[", 
@@ -2787,13 +2807,13 @@ Cell[BoxData[
        RowBox[{"TimeObject", "[", 
          RowBox[{
            RowBox[{"{", 
-             RowBox[{"15", ",", "36", ",", "49.9278987`"}], "}"}], ",", 
+             RowBox[{"22", ",", "52", ",", "44.612794`"}], "}"}], ",", 
            RowBox[{"TimeZone", "\[Rule]", "3.`"}]}], "]"}], ",", 
        RowBox[{"TimeZone", "\[Rule]", "3.`"}]}], "]"}]},
   "DateObject",
   Editable->False]], "Output",
  CellChangeTimes->{3.7010580864549665`*^9, 3.7010678681893563`*^9, 
-  3.701075731678423*^9, 3.701075810574936*^9}],
+  3.701075731678423*^9, 3.701075808362809*^9, 3.7011019657941647`*^9}],
 
 Cell[BoxData[
  InterpretationBox[
@@ -2805,34 +2825,39 @@ Cell[BoxData[
 \:044b = ", 0.12654876708984375`, " \:041c\:0431"],
   Editable->False]], "Print",
  CellChangeTimes->{3.7010580864619713`*^9, 3.701067868377367*^9, 
-  3.7010757318654337`*^9, 3.701075810578936*^9}],
+  3.7010757318654337`*^9, 3.7010758085478196`*^9, 3.701101965800033*^9}],
 
-Cell[BoxData["\<\"H:\\\\Olga\\\\OneDrive\\\\Science\\\\SCIENCE_2017\\\\_Ampl\"\
-\>"], "Output",
+Cell[BoxData["\<\"/Users/olya/OneDrive/Science/SCIENCE_2017/_Ampl\"\>"], \
+"Output",
  CellChangeTimes->{3.7010580864549665`*^9, 3.7010678681893563`*^9, 
-  3.701075731678423*^9, 3.7010758105929365`*^9}],
+  3.701075731678423*^9, 3.701075808362809*^9, 3.701101965842157*^9}],
 
 Cell[BoxData["\<\".\\\\output\\\\vv_index.mjson\"\>"], "Output",
  CellChangeTimes->{3.7010580864549665`*^9, 3.7010678681893563`*^9, 
-  3.701075731678423*^9, 3.7010758106069374`*^9}],
+  3.701075731678423*^9, 3.701075808362809*^9, 3.7011019658497868`*^9}],
 
 Cell[BoxData[
- TemplateBox[{
-  "ListInterpolation","inhr",
-   "\"Requested order is too high; order has been reduced to \
-\\!\\(\\*RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \\\",\\\", \\\"0\\\", \
-\\\",\\\", \\\"0\\\", \\\",\\\", \\\"1\\\", \\\",\\\", \\\"2\\\", \\\",\\\", \
-\\\"3\\\", \\\",\\\", \\\"1\\\", \\\",\\\", \\\"2\\\", \\\",\\\", \
-\\\"3\\\"}], \\\"}\\\"}]\\).\"",2,95,12,25583475600745382283,"Local"},
-  "MessageTemplate"]], "Message", "MSG",
+ RowBox[{
+  StyleBox[
+   RowBox[{"ListInterpolation", "::", "inhr"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Requested order is too high; order has been reduced to \
+\[NoBreak]\\!\\(\\*RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \\\",\\\", \
+\\\"0\\\", \\\",\\\", \\\"0\\\", \\\",\\\", \\\"1\\\", \\\",\\\", \\\"2\\\", \
+\\\",\\\", \\\"3\\\", \\\",\\\", \\\"1\\\", \\\",\\\", \\\"2\\\", \\\",\\\", \
+\\\"3\\\"}], \\\"}\\\"}]\\)\[NoBreak]. \
+\\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", \
+ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/ListInterpolation/inhr\\\", ButtonNote -> \
+\\\"ListInterpolation::inhr\\\"]\\)\"\>"}]], "Message", "MSG",
  CellChangeTimes->{3.701058086679078*^9, 3.7010678686513824`*^9, 
-  3.70107573197744*^9, 3.7010758106429396`*^9}],
+  3.70107573197744*^9, 3.7010758086438255`*^9, 3.7011019659156*^9}],
 
 Cell[BoxData[
  RowBox[{"0.9999999237950818`", "\[VeryThinSpace]", "+", 
   RowBox[{"0.`", " ", "\[ImaginaryI]"}]}]], "Output",
  CellChangeTimes->{3.7010580864549665`*^9, 3.7010678681893563`*^9, 
-  3.701075731678423*^9, 3.70107581064594*^9}]
+  3.701075731678423*^9, 3.701075808362809*^9, 3.701101965923128*^9}]
 }, Open  ]],
 
 Cell[CellGroupData[{
@@ -2849,7 +2874,9 @@ Cell[BoxData[
      RowBox[{"Import", "[", 
       RowBox[{
       "\"\<.\\\\output\\\\vv_index.mjson\>\"", ",", 
-       "\"\<ExpressionJSON\>\""}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+       "\"\<ExpressionJSON\>\""}], "]"}]}], ";"}], 
+   StyleBox["\[IndentingNewLine]",
+    FontColor->RGBColor[0, 0, 1]], 
    StyleBox[
     RowBox[{"(*", " ", 
      RowBox[{
@@ -2863,9 +2890,7 @@ Cell[BoxData[
 \:0442\:044c", " ", "\:043f\:043e\:0440\:044f\:0434\:043e\:043a", " ", 
        "\:0430\:0440\:0433\:0443\:043c\:0435\:043d\:0442\:043e\:0432"}]}], 
      " ", "*)"}],
-    FontColor->RGBColor[0, 0, 1]], 
-   StyleBox["\[IndentingNewLine]",
-    FontColor->RGBColor[0, 0, 1]], 
+    FontColor->RGBColor[0, 0, 1]], "\[IndentingNewLine]", 
    RowBox[{
     RowBox[{
      RowBox[{"vvinterp", "[", 
@@ -2947,37 +2972,51 @@ Cell[BoxData[
  Background->GrayLevel[0.85]],
 
 Cell[BoxData[
- TemplateBox[{
-  "ListInterpolation","inhr",
-   "\"Requested order is too high; order has been reduced to \
-\\!\\(\\*RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \\\",\\\", \\\"0\\\", \
-\\\",\\\", \\\"0\\\", \\\",\\\", \\\"1\\\", \\\",\\\", \\\"2\\\", \\\",\\\", \
-\\\"3\\\", \\\",\\\", \\\"1\\\", \\\",\\\", \\\"2\\\", \\\",\\\", \
-\\\"3\\\"}], \\\"}\\\"}]\\).\"",2,99,13,25583475600745382283,"Local"},
-  "MessageTemplate"]], "Message", "MSG",
- CellChangeTimes->{3.701058098608733*^9, 3.701075824133711*^9}],
+ RowBox[{
+  StyleBox[
+   RowBox[{"ListInterpolation", "::", "inhr"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Requested order is too high; order has been reduced to \
+\[NoBreak]\\!\\(\\*RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \\\",\\\", \
+\\\"0\\\", \\\",\\\", \\\"0\\\", \\\",\\\", \\\"1\\\", \\\",\\\", \\\"2\\\", \
+\\\",\\\", \\\"3\\\", \\\",\\\", \\\"1\\\", \\\",\\\", \\\"2\\\", \\\",\\\", \
+\\\"3\\\"}], \\\"}\\\"}]\\)\[NoBreak]. \
+\\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", \
+ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/ListInterpolation/inhr\\\", ButtonNote -> \
+\\\"ListInterpolation::inhr\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.701058098608733*^9, 3.701075824133711*^9, 
+  3.70110197514205*^9}],
 
 Cell[BoxData[
  RowBox[{"0.9999999790800246`", "\[VeryThinSpace]", "+", 
   RowBox[{"0.`", " ", "\[ImaginaryI]"}]}]], "Output",
- CellChangeTimes->{3.7010580986112337`*^9, 3.701075824162713*^9}],
+ CellChangeTimes->{3.7010580986112337`*^9, 3.701075824162713*^9, 
+  3.701101975153556*^9}],
 
 Cell[BoxData[
- TemplateBox[{
-  "ListInterpolation","inhr",
-   "\"Requested order is too high; order has been reduced to \
-\\!\\(\\*RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \\\",\\\", \\\"0\\\", \
-\\\",\\\", \\\"0\\\", \\\",\\\", \\\"1\\\", \\\",\\\", \\\"2\\\", \\\",\\\", \
-\\\"3\\\", \\\",\\\", \\\"1\\\", \\\",\\\", \\\"2\\\", \\\",\\\", \
-\\\"3\\\"}], \\\"}\\\"}]\\).\"",2,100,14,25583475600745382283,"Local"},
-  "MessageTemplate"]], "Message", "MSG",
- CellChangeTimes->{3.701058098608733*^9, 3.7010758241887145`*^9}],
+ RowBox[{
+  StyleBox[
+   RowBox[{"ListInterpolation", "::", "inhr"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Requested order is too high; order has been reduced to \
+\[NoBreak]\\!\\(\\*RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \\\",\\\", \
+\\\"0\\\", \\\",\\\", \\\"0\\\", \\\",\\\", \\\"1\\\", \\\",\\\", \\\"2\\\", \
+\\\",\\\", \\\"3\\\", \\\",\\\", \\\"1\\\", \\\",\\\", \\\"2\\\", \\\",\\\", \
+\\\"3\\\"}], \\\"}\\\"}]\\)\[NoBreak]. \
+\\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", \
+ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/ListInterpolation/inhr\\\", ButtonNote -> \
+\\\"ListInterpolation::inhr\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.701058098608733*^9, 3.701075824133711*^9, 
+  3.701101975218226*^9}],
 
 Cell[BoxData[
  RowBox[{
   RowBox[{"-", "4.525725153183365`*^-7"}], "+", 
   RowBox[{"0.`", " ", "\[ImaginaryI]"}]}]], "Output",
- CellChangeTimes->{3.7010580986112337`*^9, 3.7010758241907144`*^9}]
+ CellChangeTimes->{3.7010580986112337`*^9, 3.701075824162713*^9, 
+  3.7011019752458067`*^9}]
 }, Open  ]],
 
 Cell[BoxData[
@@ -3005,9 +3044,9 @@ Cell[BoxData[
        RowBox[{
        "n2", ",", " ", "l2", ",", " ", "m2", ",", " ", "n1", ",", " ", "l1", 
         ",", " ", "m1", ",", " ", "t", ",", " ", "\[Alpha]", ",", " ", 
-        "\[Beta]"}], "]"}], "]"}]}], ";"}], 
+        "\[Beta]"}], "]"}], "]"}]}], ";"}], "\[IndentingNewLine]", 
    StyleBox["\[IndentingNewLine]",
-    FontColor->RGBColor[0, 0, 1]], "\[IndentingNewLine]", 
+    FontColor->RGBColor[0, 0, 1]], 
    RowBox[{
     RowBox[{
      RowBox[{"rcalc", "[", 
@@ -3315,7 +3354,7 @@ Cell[BoxData[{
  Background->GrayLevel[0.85]],
 
 Cell[BoxData[
- TemplateBox[{RowBox[{"\"Thu 13 Apr 2017 15:38:57\"", 
+ TemplateBox[{RowBox[{"\"Thu 13 Apr 2017 22:53:09\"", 
      StyleBox[
       RowBox[{"\"GMT+\"", "\[InvisibleSpace]", "3.`"}], FontColor -> 
       GrayLevel[0.5]]}],RowBox[{"DateObject", "[", 
@@ -3325,32 +3364,32 @@ Cell[BoxData[
        RowBox[{"TimeObject", "[", 
          RowBox[{
            RowBox[{"{", 
-             RowBox[{"15", ",", "38", ",", "57.8152134`"}], "}"}], ",", 
+             RowBox[{"22", ",", "53", ",", "9.650002`"}], "}"}], ",", 
            RowBox[{"TimeZone", "\[Rule]", "3.`"}]}], "]"}], ",", 
        RowBox[{"TimeZone", "\[Rule]", "3.`"}]}], "]"}]},
   "DateObject",
   Editable->False]], "Output",
  CellChangeTimes->{
   3.701058136878075*^9, 3.7010679324630327`*^9, {3.70107591223075*^9, 
-   3.7010759384842515`*^9}}],
+   3.7010759384842515`*^9}, 3.7011019912971487`*^9}],
 
 Cell[BoxData[
  InterpretationBox[
   RowBox[{"\<\"t=\"\>", "\[InvisibleSpace]", 
    DynamicBox[ToBoxes[$CellContext`t, StandardForm],
-    ImageSizeCache->{49., {0., 8.}}], 
+    ImageSizeCache->{50., {1., 8.}}], 
    "\[InvisibleSpace]", "\<\", \[Alpha]=\"\>", "\[InvisibleSpace]", 
    DynamicBox[ToBoxes[$CellContext`\[Alpha], StandardForm],
-    ImageSizeCache->{12.2, {10.1, 16.009999999999998`}}], 
+    ImageSizeCache->{11.320703125000001`, {10.2630859375, 15.40892578125}}], 
    "\[InvisibleSpace]", "\<\", \[Beta]=\"\>", "\[InvisibleSpace]", 
    DynamicBox[ToBoxes[$CellContext`\[Beta], StandardForm],
-    ImageSizeCache->{12.2, {10.1, 16.009999999999998`}}], 
+    ImageSizeCache->{11.320703125000001`, {10.2630859375, 15.40892578125}}], 
    "\[InvisibleSpace]", "\<\", n1=\"\>", "\[InvisibleSpace]", 
    DynamicBox[ToBoxes[$CellContext`n1, StandardForm],
-    ImageSizeCache->{7., {0., 8.}}], "\[InvisibleSpace]", "\<\", l1=\"\>", 
+    ImageSizeCache->{14., {0., 8.}}], "\[InvisibleSpace]", "\<\", l1=\"\>", 
    "\[InvisibleSpace]", 
    DynamicBox[ToBoxes[$CellContext`l1, StandardForm],
-    ImageSizeCache->{7., {0., 8.}}], "\[InvisibleSpace]", "\<\", m1=\"\>", 
+    ImageSizeCache->{14., {0., 8.}}], "\[InvisibleSpace]", "\<\", m1=\"\>", 
    "\[InvisibleSpace]", 
    DynamicBox[ToBoxes[$CellContext`m1, StandardForm],
     ImageSizeCache->{14., {0., 8.}}], "\[InvisibleSpace]", "\<\", n2=\"\>", 
@@ -3376,60 +3415,80 @@ Cell[BoxData[
   Editable->False]], "Print",
  CellChangeTimes->{
   3.701058136884579*^9, 3.7010679324690332`*^9, {3.701075912239751*^9, 
-   3.7010759386582613`*^9}}],
+   3.7010759386582613`*^9}, 3.701101991307024*^9}],
 
 Cell[BoxData[
- TemplateBox[{
-  "ListInterpolation","inhr",
-   "\"Requested order is too high; order has been reduced to \
-\\!\\(\\*RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \\\",\\\", \\\"0\\\", \
-\\\",\\\", \\\"0\\\", \\\",\\\", \\\"1\\\", \\\",\\\", \\\"2\\\", \\\",\\\", \
-\\\"3\\\", \\\",\\\", \\\"1\\\", \\\",\\\", \\\"2\\\", \\\",\\\", \
-\\\"3\\\"}], \\\"}\\\"}]\\).\"",2,113,20,25583475600745382283,"Local"},
-  "MessageTemplate"]], "Message", "MSG",
+ RowBox[{
+  StyleBox[
+   RowBox[{"ListInterpolation", "::", "inhr"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Requested order is too high; order has been reduced to \
+\[NoBreak]\\!\\(\\*RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \\\",\\\", \
+\\\"0\\\", \\\",\\\", \\\"0\\\", \\\",\\\", \\\"1\\\", \\\",\\\", \\\"2\\\", \
+\\\",\\\", \\\"3\\\", \\\",\\\", \\\"1\\\", \\\",\\\", \\\"2\\\", \\\",\\\", \
+\\\"3\\\"}], \\\"}\\\"}]\\)\[NoBreak]. \
+\\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", \
+ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/ListInterpolation/inhr\\\", ButtonNote -> \
+\\\"ListInterpolation::inhr\\\"]\\)\"\>"}]], "Message", "MSG",
  CellChangeTimes->{
   3.7010581370630803`*^9, 3.7010679326980457`*^9, {3.7010759124847646`*^9, 
-   3.701075938724265*^9}}],
+   3.701075938724265*^9}, 3.70110199188519*^9}],
 
 Cell[BoxData[
- TemplateBox[{
-  "ListInterpolation","inhr",
-   "\"Requested order is too high; order has been reduced to \
-\\!\\(\\*RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \\\",\\\", \\\"0\\\", \
-\\\",\\\", \\\"0\\\", \\\",\\\", \\\"1\\\", \\\",\\\", \\\"2\\\", \\\",\\\", \
-\\\"3\\\", \\\",\\\", \\\"1\\\", \\\",\\\", \\\"2\\\", \\\",\\\", \
-\\\"3\\\"}], \\\"}\\\"}]\\).\"",2,113,21,25583475600745382283,"Local"},
-  "MessageTemplate"]], "Message", "MSG",
+ RowBox[{
+  StyleBox[
+   RowBox[{"ListInterpolation", "::", "inhr"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Requested order is too high; order has been reduced to \
+\[NoBreak]\\!\\(\\*RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \\\",\\\", \
+\\\"0\\\", \\\",\\\", \\\"0\\\", \\\",\\\", \\\"1\\\", \\\",\\\", \\\"2\\\", \
+\\\",\\\", \\\"3\\\", \\\",\\\", \\\"1\\\", \\\",\\\", \\\"2\\\", \\\",\\\", \
+\\\"3\\\"}], \\\"}\\\"}]\\)\[NoBreak]. \
+\\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", \
+ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/ListInterpolation/inhr\\\", ButtonNote -> \
+\\\"ListInterpolation::inhr\\\"]\\)\"\>"}]], "Message", "MSG",
  CellChangeTimes->{
   3.7010581370630803`*^9, 3.7010679326980457`*^9, {3.7010759124847646`*^9, 
-   3.701075938750267*^9}}],
+   3.701075938724265*^9}, 3.7011019918931093`*^9}],
 
 Cell[BoxData[
- TemplateBox[{
-  "ListInterpolation","inhr",
-   "\"Requested order is too high; order has been reduced to \
-\\!\\(\\*RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \\\",\\\", \\\"0\\\", \
-\\\",\\\", \\\"0\\\", \\\",\\\", \\\"1\\\", \\\",\\\", \\\"2\\\", \\\",\\\", \
-\\\"3\\\", \\\",\\\", \\\"1\\\", \\\",\\\", \\\"2\\\", \\\",\\\", \
-\\\"3\\\"}], \\\"}\\\"}]\\).\"",2,113,22,25583475600745382283,"Local"},
-  "MessageTemplate"]], "Message", "MSG",
+ RowBox[{
+  StyleBox[
+   RowBox[{"ListInterpolation", "::", "inhr"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Requested order is too high; order has been reduced to \
+\[NoBreak]\\!\\(\\*RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \\\",\\\", \
+\\\"0\\\", \\\",\\\", \\\"0\\\", \\\",\\\", \\\"1\\\", \\\",\\\", \\\"2\\\", \
+\\\",\\\", \\\"3\\\", \\\",\\\", \\\"1\\\", \\\",\\\", \\\"2\\\", \\\",\\\", \
+\\\"3\\\"}], \\\"}\\\"}]\\)\[NoBreak]. \
+\\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", \
+ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/ListInterpolation/inhr\\\", ButtonNote -> \
+\\\"ListInterpolation::inhr\\\"]\\)\"\>"}]], "Message", "MSG",
  CellChangeTimes->{
   3.7010581370630803`*^9, 3.7010679326980457`*^9, {3.7010759124847646`*^9, 
-   3.7010759387792683`*^9}}],
+   3.701075938724265*^9}, 3.7011019918996468`*^9}],
 
 Cell[BoxData[
- TemplateBox[{
-  "General","stop",
-   "\"Further output of \\!\\(\\*StyleBox[RowBox[{\\\"ListInterpolation\\\", \
-\\\"::\\\", \\\"inhr\\\"}], \\\"MessageName\\\"]\\) will be suppressed during \
-this calculation.\"",2,113,23,25583475600745382283,"Local"},
-  "MessageTemplate"]], "Message", "MSG",
+ RowBox[{
+  StyleBox[
+   RowBox[{"General", "::", "stop"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Further output of \
+\[NoBreak]\\!\\(\\*StyleBox[RowBox[{\\\"ListInterpolation\\\", \\\"::\\\", \\\
+\"inhr\\\"}], \\\"MessageName\\\"]\\)\[NoBreak] will be suppressed during \
+this calculation. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", \
+ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/General/stop\\\", ButtonNote -> \
+\\\"General::stop\\\"]\\)\"\>"}]], "Message", "MSG",
  CellChangeTimes->{
   3.7010581370630803`*^9, 3.7010679326980457`*^9, {3.7010759124847646`*^9, 
-   3.70107593880227*^9}}],
+   3.701075938724265*^9}, 3.701101991984518*^9}],
 
 Cell[BoxData[
- TemplateBox[{RowBox[{"\"Thu 13 Apr 2017 15:40:09\"", 
+ TemplateBox[{RowBox[{"\"Thu 13 Apr 2017 22:54:26\"", 
      StyleBox[
       RowBox[{"\"GMT+\"", "\[InvisibleSpace]", "3.`"}], FontColor -> 
       GrayLevel[0.5]]}],RowBox[{"DateObject", "[", 
@@ -3439,13 +3498,38 @@ Cell[BoxData[
        RowBox[{"TimeObject", "[", 
          RowBox[{
            RowBox[{"{", 
-             RowBox[{"15", ",", "40", ",", "9.9463391`"}], "}"}], ",", 
+             RowBox[{"22", ",", "54", ",", "26.095861`"}], "}"}], ",", 
            RowBox[{"TimeZone", "\[Rule]", "3.`"}]}], "]"}], ",", 
        RowBox[{"TimeZone", "\[Rule]", "3.`"}]}], "]"}]},
   "DateObject",
   Editable->False]], "Output",
- CellChangeTimes->{3.701058136878075*^9, 3.7010679324630327`*^9, 
-  3.70107591223075*^9, 3.701076010763386*^9}]
+ CellChangeTimes->{
+  3.701058136878075*^9, 3.7010679324630327`*^9, {3.70107591223075*^9, 
+   3.7010759384842515`*^9}, 3.701102067799695*^9}],
+
+Cell[BoxData[
+ InterpretationBox[
+  RowBox[{"\<\"\:0420\:0430\:0437\:043c\:0435\:0440 \:0442\:0430\:0431\:043b\
+\:0438\:0446\:044b = \"\>", "\[InvisibleSpace]", "0.12738800048828125`", 
+   "\[InvisibleSpace]", "\<\" \:041c\:0431\"\>"}],
+  SequenceForm[
+  "\:0420\:0430\:0437\:043c\:0435\:0440 \:0442\:0430\:0431\:043b\:0438\:0446\
+\:044b = ", 0.12738800048828125`, " \:041c\:0431"],
+  Editable->False]], "Print",
+ CellChangeTimes->{
+  3.701058136884579*^9, 3.7010679324690332`*^9, {3.701075912239751*^9, 
+   3.7010759386582613`*^9}, 3.701102067806322*^9}],
+
+Cell[BoxData["\<\"/Users/olya/OneDrive/Science/SCIENCE_2017/_Ampl\"\>"], \
+"Output",
+ CellChangeTimes->{
+  3.701058136878075*^9, 3.7010679324630327`*^9, {3.70107591223075*^9, 
+   3.7010759384842515`*^9}, 3.70110206785425*^9}],
+
+Cell[BoxData["\<\".\\\\output\\\\r_index.mjson\"\>"], "Output",
+ CellChangeTimes->{
+  3.701058136878075*^9, 3.7010679324630327`*^9, {3.70107591223075*^9, 
+   3.7010759384842515`*^9}, 3.701102067860705*^9}]
 }, Open  ]],
 
 Cell[CellGroupData[{
@@ -3536,21 +3620,28 @@ Cell[BoxData[{
  Background->GrayLevel[0.85]],
 
 Cell[BoxData[
- TemplateBox[{
-  "ListInterpolation","inhr",
-   "\"Requested order is too high; order has been reduced to \
-\\!\\(\\*RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \\\",\\\", \\\"0\\\", \
-\\\",\\\", \\\"0\\\", \\\",\\\", \\\"1\\\", \\\",\\\", \\\"2\\\", \\\",\\\", \
-\\\"3\\\", \\\",\\\", \\\"1\\\", \\\",\\\", \\\"2\\\", \\\",\\\", \
-\\\"3\\\"}], \\\"}\\\"}]\\).\"",2,122,24,25583475600745382283,"Local"},
-  "MessageTemplate"]], "Message", "MSG",
- CellChangeTimes->{3.701076372298064*^9}],
+ RowBox[{
+  StyleBox[
+   RowBox[{"ListInterpolation", "::", "inhr"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Requested order is too high; order has been reduced to \
+\[NoBreak]\\!\\(\\*RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \\\",\\\", \
+\\\"0\\\", \\\",\\\", \\\"0\\\", \\\",\\\", \\\"1\\\", \\\",\\\", \\\"2\\\", \
+\\\",\\\", \\\"3\\\", \\\",\\\", \\\"1\\\", \\\",\\\", \\\"2\\\", \\\",\\\", \
+\\\"3\\\"}], \\\"}\\\"}]\\)\[NoBreak]. \
+\\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", \
+ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/ListInterpolation/inhr\\\", ButtonNote -> \
+\\\"ListInterpolation::inhr\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.701076372298064*^9, 3.7011020900821333`*^9}],
 
 Cell[BoxData[
  RowBox[{"0.031249998863197462`", "\[VeryThinSpace]", "+", 
   RowBox[{"0.`", " ", "\[ImaginaryI]"}]}]], "Output",
- CellChangeTimes->{3.701076372300064*^9}]
+ CellChangeTimes->{3.701076372300064*^9, 3.701102090092301*^9}]
 }, Open  ]],
+
+Cell[CellGroupData[{
 
 Cell[BoxData[{
  RowBox[{"Remove", "[", 
@@ -3561,9 +3652,7 @@ Cell[BoxData[{
     RowBox[{"Import", "[", 
      RowBox[{
      "\"\<.\\\\output\\\\r_index.mjson\>\"", ",", "\"\<ExpressionJSON\>\""}], 
-     "]"}]}], ";"}], 
-  StyleBox["\[IndentingNewLine]",
-   FontColor->RGBColor[0, 0, 1]], 
+     "]"}]}], ";"}], "\[IndentingNewLine]", 
   StyleBox[
    RowBox[{"(*", " ", 
     RowBox[{
@@ -3941,13 +4030,8 @@ Cell[BoxData[{
             RowBox[{"equations", ",", "initialcond"}], "}"}], "//", 
            "Flatten"}], ",", " ", "vars", ",", " ", 
           RowBox[{"{", 
-           RowBox[{"t", ",", " ", "ti", ",", " ", "tf"}], "}"}], ",", 
-          RowBox[{"Method", "\[Rule]", 
-           RowBox[{"{", 
-            RowBox[{
-            "\"\<EquationSimplification\>\"", "\[Rule]", "\"\<Residual\>\""}],
-             "}"}]}]}], "]"}], "//", "Flatten"}]}], ";", 
-      "\[IndentingNewLine]", 
+           RowBox[{"t", ",", " ", "ti", ",", " ", "tf"}], "}"}]}], "]"}], "//",
+         "Flatten"}]}], ";", "\[IndentingNewLine]", 
       RowBox[{"ampfuncall", "=", 
        RowBox[{"Table", "[", 
         RowBox[{
@@ -4246,12 +4330,403 @@ Cell[BoxData[{
    "\[IndentingNewLine]", 
    RowBox[{"{", 
     RowBox[{
-    "\[Alpha]", ",", "\[Alpha]1i", ",", "\[Alpha]1f", ",", "d\[Alpha]1"}], 
+    "\[Alpha]", ",", "\[Alpha]i", ",", "\[Alpha]f", ",", "d\[Alpha]"}], 
     "}"}]}], "]"}]}], "Input",
  CellChangeTimes->{{3.7010677565849733`*^9, 3.7010677575370274`*^9}, {
-  3.70106779237402*^9, 3.7010678164293957`*^9}, {3.7010761470341797`*^9, 
-  3.7010761568577423`*^9}, {3.7010762343051715`*^9, 3.701076273121392*^9}},
+   3.70106779237402*^9, 3.7010678164293957`*^9}, {3.7010761470341797`*^9, 
+   3.7010761568577423`*^9}, {3.7010762343051715`*^9, 3.701076273121392*^9}, {
+   3.701102153391779*^9, 3.70110215772647*^9}, {3.701102211498275*^9, 
+   3.701102222641611*^9}, {3.701102372341709*^9, 3.7011023779485817`*^9}, {
+   3.701102411604866*^9, 3.7011024159389877`*^9}, {3.7011024681957903`*^9, 
+   3.701102474802022*^9}, {3.701102546619549*^9, 3.7011025558818502`*^9}, 
+   3.701102682963332*^9, {3.701102716929533*^9, 3.701102723466703*^9}},
  Background->GrayLevel[0.85]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ FractionBox["\[Pi]", "4"]], "Print",
+ CellChangeTimes->{3.701102161639236*^9, 3.701102223844556*^9, 
+  3.701102424290669*^9, 3.701102478358109*^9, 3.701102684714313*^9, 
+  3.7011027478140574`*^9}],
+
+Cell[BoxData["\<\"Enter in calcSolution\"\>"], "Print",
+ CellChangeTimes->{3.701102161639236*^9, 3.701102223844556*^9, 
+  3.701102424290669*^9, 3.701102478358109*^9, 3.701102684714313*^9, 
+  3.701102747823288*^9}],
+
+Cell[BoxData[
+ InterpretationBox[
+  RowBox[{"\<\"vars = \"\>", "\[InvisibleSpace]", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"amp", "[", 
+      RowBox[{"2", ",", "1", ",", 
+       RowBox[{"-", "1"}]}], "]"}], ",", 
+     RowBox[{"amp", "[", 
+      RowBox[{"2", ",", "1", ",", "0"}], "]"}], ",", 
+     RowBox[{"amp", "[", 
+      RowBox[{"2", ",", "1", ",", "1"}], "]"}], ",", 
+     RowBox[{"amp", "[", 
+      RowBox[{"3", ",", "1", ",", 
+       RowBox[{"-", "1"}]}], "]"}], ",", 
+     RowBox[{"amp", "[", 
+      RowBox[{"3", ",", "1", ",", "0"}], "]"}], ",", 
+     RowBox[{"amp", "[", 
+      RowBox[{"3", ",", "1", ",", "1"}], "]"}], ",", 
+     RowBox[{"amp", "[", 
+      RowBox[{"3", ",", "2", ",", 
+       RowBox[{"-", "2"}]}], "]"}], ",", 
+     RowBox[{"amp", "[", 
+      RowBox[{"3", ",", "2", ",", 
+       RowBox[{"-", "1"}]}], "]"}], ",", 
+     RowBox[{"amp", "[", 
+      RowBox[{"3", ",", "2", ",", "0"}], "]"}], ",", 
+     RowBox[{"amp", "[", 
+      RowBox[{"3", ",", "2", ",", "1"}], "]"}], ",", 
+     RowBox[{"amp", "[", 
+      RowBox[{"3", ",", "2", ",", "2"}], "]"}], ",", 
+     RowBox[{"amp", "[", 
+      RowBox[{"3", ",", "0", ",", "0"}], "]"}]}], "}"}]}],
+  SequenceForm["vars = ", {
+    $CellContext`amp[2, 1, -1], 
+    $CellContext`amp[2, 1, 0], 
+    $CellContext`amp[2, 1, 1], 
+    $CellContext`amp[3, 1, -1], 
+    $CellContext`amp[3, 1, 0], 
+    $CellContext`amp[3, 1, 1], 
+    $CellContext`amp[3, 2, -2], 
+    $CellContext`amp[3, 2, -1], 
+    $CellContext`amp[3, 2, 0], 
+    $CellContext`amp[3, 2, 1], 
+    $CellContext`amp[3, 2, 2], 
+    $CellContext`amp[3, 0, 0]}],
+  Editable->False]], "Print",
+ CellChangeTimes->{3.701102161639236*^9, 3.701102223844556*^9, 
+  3.701102424290669*^9, 3.701102478358109*^9, 3.701102684714313*^9, 
+  3.7011027478329973`*^9}]
+}, Open  ]],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"ListInterpolation", "::", "inhr"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Requested order is too high; order has been reduced to \
+\[NoBreak]\\!\\(\\*RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \\\",\\\", \
+\\\"0\\\", \\\",\\\", \\\"0\\\", \\\",\\\", \\\"1\\\", \\\",\\\", \\\"2\\\", \
+\\\",\\\", \\\"3\\\", \\\",\\\", \\\"1\\\", \\\",\\\", \\\"2\\\", \\\",\\\", \
+\\\"3\\\"}], \\\"}\\\"}]\\)\[NoBreak]. \
+\\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", \
+ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/ListInterpolation/inhr\\\", ButtonNote -> \
+\\\"ListInterpolation::inhr\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.701102098856392*^9, 3.701102161735372*^9, 
+  3.701102223913486*^9, 3.701102424359293*^9, 3.701102478435605*^9, 
+  3.701102684778462*^9, 3.70110274787665*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"ListInterpolation", "::", "inhr"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Requested order is too high; order has been reduced to \
+\[NoBreak]\\!\\(\\*RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \\\",\\\", \
+\\\"0\\\", \\\",\\\", \\\"0\\\", \\\",\\\", \\\"1\\\", \\\",\\\", \\\"2\\\", \
+\\\",\\\", \\\"3\\\", \\\",\\\", \\\"1\\\", \\\",\\\", \\\"2\\\", \\\",\\\", \
+\\\"3\\\"}], \\\"}\\\"}]\\)\[NoBreak]. \
+\\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", \
+ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/ListInterpolation/inhr\\\", ButtonNote -> \
+\\\"ListInterpolation::inhr\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.701102098856392*^9, 3.701102161735372*^9, 
+  3.701102223913486*^9, 3.701102424359293*^9, 3.701102478435605*^9, 
+  3.701102684778462*^9, 3.701102747927992*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"ListInterpolation", "::", "inhr"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Requested order is too high; order has been reduced to \
+\[NoBreak]\\!\\(\\*RowBox[{\\\"{\\\", RowBox[{\\\"1\\\", \\\",\\\", \
+\\\"0\\\", \\\",\\\", \\\"0\\\", \\\",\\\", \\\"1\\\", \\\",\\\", \\\"2\\\", \
+\\\",\\\", \\\"3\\\", \\\",\\\", \\\"1\\\", \\\",\\\", \\\"2\\\", \\\",\\\", \
+\\\"3\\\"}], \\\"}\\\"}]\\)\[NoBreak]. \
+\\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", \
+ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/ListInterpolation/inhr\\\", ButtonNote -> \
+\\\"ListInterpolation::inhr\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.701102098856392*^9, 3.701102161735372*^9, 
+  3.701102223913486*^9, 3.701102424359293*^9, 3.701102478435605*^9, 
+  3.701102684778462*^9, 3.701102747987335*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"General", "::", "stop"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Further output of \
+\[NoBreak]\\!\\(\\*StyleBox[RowBox[{\\\"ListInterpolation\\\", \\\"::\\\", \\\
+\"inhr\\\"}], \\\"MessageName\\\"]\\)\[NoBreak] will be suppressed during \
+this calculation. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", \
+ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/General/stop\\\", ButtonNote -> \
+\\\"General::stop\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.701102098856392*^9, 3.701102161735372*^9, 
+  3.701102223913486*^9, 3.701102424359293*^9, 3.701102478435605*^9, 
+  3.701102684778462*^9, 3.701102748048626*^9}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ InterpretationBox[
+  RowBox[{"\<\"Table = \"\>", "\[InvisibleSpace]", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{"el", "[", 
+          RowBox[{"2", ",", "1", ",", 
+           RowBox[{"-", "1"}]}], "]"}], "}"}], ",", 
+        RowBox[{"{", 
+         RowBox[{"el", "[", 
+          RowBox[{"2", ",", "1", ",", "0"}], "]"}], "}"}], ",", 
+        RowBox[{"{", 
+         RowBox[{"el", "[", 
+          RowBox[{"2", ",", "1", ",", "1"}], "]"}], "}"}]}], "}"}], "}"}], 
+     ",", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{"el", "[", 
+           RowBox[{"3", ",", "1", ",", 
+            RowBox[{"-", "1"}]}], "]"}], "}"}], ",", 
+         RowBox[{"{", 
+          RowBox[{"el", "[", 
+           RowBox[{"3", ",", "1", ",", "0"}], "]"}], "}"}], ",", 
+         RowBox[{"{", 
+          RowBox[{"el", "[", 
+           RowBox[{"3", ",", "1", ",", "1"}], "]"}], "}"}]}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{"el", "[", 
+           RowBox[{"3", ",", "2", ",", 
+            RowBox[{"-", "2"}]}], "]"}], "}"}], ",", 
+         RowBox[{"{", 
+          RowBox[{"el", "[", 
+           RowBox[{"3", ",", "2", ",", 
+            RowBox[{"-", "1"}]}], "]"}], "}"}], ",", 
+         RowBox[{"{", 
+          RowBox[{"el", "[", 
+           RowBox[{"3", ",", "2", ",", "0"}], "]"}], "}"}], ",", 
+         RowBox[{"{", 
+          RowBox[{"el", "[", 
+           RowBox[{"3", ",", "2", ",", "1"}], "]"}], "}"}], ",", 
+         RowBox[{"{", 
+          RowBox[{"el", "[", 
+           RowBox[{"3", ",", "2", ",", "2"}], "]"}], "}"}]}], "}"}]}], 
+      "}"}]}], "}"}]}],
+  SequenceForm["Table = ", {{{{
+       $CellContext`el[2, 1, -1]}, {
+       $CellContext`el[2, 1, 0]}, {
+       $CellContext`el[2, 1, 1]}}}, {{{
+       $CellContext`el[3, 1, -1]}, {
+       $CellContext`el[3, 1, 0]}, {
+       $CellContext`el[3, 1, 1]}}, {{
+       $CellContext`el[3, 2, -2]}, {
+       $CellContext`el[3, 2, -1]}, {
+       $CellContext`el[3, 2, 0]}, {
+       $CellContext`el[3, 2, 1]}, {
+       $CellContext`el[3, 2, 2]}}}}],
+  Editable->False]], "Print",
+ CellChangeTimes->{3.701102161639236*^9, 3.701102223844556*^9, 
+  3.701102424290669*^9, 3.701102478358109*^9, 3.701102684714313*^9, 
+  3.701102749095632*^9}],
+
+Cell[BoxData[
+ InterpretationBox[
+  RowBox[{"\<\"Flatten table = \"\>", "\[InvisibleSpace]", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"el", "[", 
+      RowBox[{"2", ",", "1", ",", 
+       RowBox[{"-", "1"}]}], "]"}], ",", 
+     RowBox[{"el", "[", 
+      RowBox[{"2", ",", "1", ",", "0"}], "]"}], ",", 
+     RowBox[{"el", "[", 
+      RowBox[{"2", ",", "1", ",", "1"}], "]"}], ",", 
+     RowBox[{"el", "[", 
+      RowBox[{"3", ",", "1", ",", 
+       RowBox[{"-", "1"}]}], "]"}], ",", 
+     RowBox[{"el", "[", 
+      RowBox[{"3", ",", "1", ",", "0"}], "]"}], ",", 
+     RowBox[{"el", "[", 
+      RowBox[{"3", ",", "1", ",", "1"}], "]"}], ",", 
+     RowBox[{"el", "[", 
+      RowBox[{"3", ",", "2", ",", 
+       RowBox[{"-", "2"}]}], "]"}], ",", 
+     RowBox[{"el", "[", 
+      RowBox[{"3", ",", "2", ",", 
+       RowBox[{"-", "1"}]}], "]"}], ",", 
+     RowBox[{"el", "[", 
+      RowBox[{"3", ",", "2", ",", "0"}], "]"}], ",", 
+     RowBox[{"el", "[", 
+      RowBox[{"3", ",", "2", ",", "1"}], "]"}], ",", 
+     RowBox[{"el", "[", 
+      RowBox[{"3", ",", "2", ",", "2"}], "]"}]}], "}"}]}],
+  SequenceForm["Flatten table = ", {
+    $CellContext`el[2, 1, -1], 
+    $CellContext`el[2, 1, 0], 
+    $CellContext`el[2, 1, 1], 
+    $CellContext`el[3, 1, -1], 
+    $CellContext`el[3, 1, 0], 
+    $CellContext`el[3, 1, 1], 
+    $CellContext`el[3, 2, -2], 
+    $CellContext`el[3, 2, -1], 
+    $CellContext`el[3, 2, 0], 
+    $CellContext`el[3, 2, 1], 
+    $CellContext`el[3, 2, 2]}],
+  Editable->False]], "Print",
+ CellChangeTimes->{3.701102161639236*^9, 3.701102223844556*^9, 
+  3.701102424290669*^9, 3.701102478358109*^9, 3.701102684714313*^9, 
+  3.7011027491043167`*^9}],
+
+Cell[BoxData["\<\"Elem calculated\"\>"], "Print",
+ CellChangeTimes->{3.701102161639236*^9, 3.701102223844556*^9, 
+  3.701102424290669*^9, 3.701102478358109*^9, 3.701102684714313*^9, 
+  3.7011027853844433`*^9}]
+}, Open  ]],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{"{", 
+   RowBox[{
+    GraphicsBox[{{}, {{}, {}, 
+       {RGBColor[0.368417, 0.506779, 0.709798], PointSize[
+        0.012833333333333334`], AbsoluteThickness[1.6], 
+        LineBox[{{0.001, 0.333}, {62.83285307179586, 0.33299998125839597`}, {
+         62.83285307179586, 0.33299998125839597`}}]}, 
+       {RGBColor[0.880722, 0.611041, 0.142051], PointSize[
+        0.012833333333333334`], AbsoluteThickness[1.6], 
+        LineBox[{{0.001, 0.333}, {62.83285307179586, 0.3329999633004143}, {
+         62.83285307179586, 0.3329999633004143}}]}, 
+       {RGBColor[0.560181, 0.691569, 0.194885], PointSize[
+        0.012833333333333334`], AbsoluteThickness[1.6], 
+        LineBox[{{0.001, 0.333}, {62.83285307179586, 0.33299996066693727`}, {
+         62.83285307179586, 0.33299996066693727`}}]}}, {}},
+     AspectRatio->NCache[GoldenRatio^(-1), 0.6180339887498948],
+     Axes->{True, True},
+     AxesLabel->{None, None},
+     AxesOrigin->{0, 0},
+     DisplayFunction->Identity,
+     Frame->{{False, False}, {False, False}},
+     FrameLabel->{{None, None}, {None, None}},
+     FrameTicks->{{Automatic, Automatic}, {Automatic, Automatic}},
+     GridLines->{None, None},
+     GridLinesStyle->Directive[
+       GrayLevel[0.5, 0.4]],
+     ImagePadding->All,
+     ImageSize->Large,
+     Method->{"CoordinatesToolOptions" -> {"DisplayFunction" -> ({
+           (Part[{{Identity, Identity}, {Identity, Identity}}, 1, 2][#]& )[
+            Part[#, 1]], 
+           (Part[{{Identity, Identity}, {Identity, Identity}}, 2, 2][#]& )[
+            Part[#, 2]]}& ), "CopiedValueFunction" -> ({
+           (Part[{{Identity, Identity}, {Identity, Identity}}, 1, 2][#]& )[
+            Part[#, 1]], 
+           (Part[{{Identity, Identity}, {Identity, Identity}}, 2, 2][#]& )[
+            Part[#, 2]]}& )}},
+     PlotRange->{{0, 62.83285307179586}, {0, 0.6659999213338745}},
+     PlotRangeClipping->True,
+     PlotRangePadding->{{
+        Scaled[0.02], 
+        Scaled[0.02]}, {
+        Scaled[0.02], 
+        Scaled[0.05]}},
+     Ticks->{Automatic, Automatic}], " ", 
+    GraphicsBox[{{}, {{}, {}, 
+       {RGBColor[0.368417, 0.506779, 0.709798], PointSize[
+        0.012833333333333334`], AbsoluteThickness[1.6], 
+        LineBox[{{0.001, 0.333}, {62.83285307179586, 0.33299996066693727`}, {
+         62.83285307179586, 0.33299996066693727`}}]}, 
+       {RGBColor[0.880722, 0.611041, 0.142051], PointSize[
+        0.012833333333333334`], AbsoluteThickness[1.6], 
+        LineBox[{{0.001, 0.}, {62.83285307179586, 5.503234757195774*^-11}, {
+         62.83285307179586, 5.503234757195774*^-11}}]}, 
+       {RGBColor[0.560181, 0.691569, 0.194885], PointSize[
+        0.012833333333333334`], AbsoluteThickness[1.6], 
+        LineBox[{{0.001, 0.}, {62.83285307179586, 8.281889220717448*^-11}, {
+         62.83285307179586, 8.281889220717448*^-11}}]}, 
+       {RGBColor[0.922526, 0.385626, 0.209179], PointSize[
+        0.012833333333333334`], AbsoluteThickness[1.6], 
+        LineBox[{{0.001, 6.310887241768095*^-30}, {62.83285307179586, 
+         1.1893775746082927`*^-10}, {62.83285307179586, 
+         1.1893775746082927`*^-10}}]}, 
+       {RGBColor[0.528488, 0.470624, 0.701351], PointSize[
+        0.012833333333333334`], AbsoluteThickness[1.6], 
+        LineBox[{{0.001, 0.}, {62.83285307179586, 0.}, {62.83285307179586, 
+         0.}}]}, 
+       {RGBColor[0.772079, 0.431554, 0.102387], PointSize[
+        0.012833333333333334`], AbsoluteThickness[1.6], 
+        LineBox[{{0.001, 0.}, {62.83285307179586, 8.734941891937978*^-14}, {
+         62.83285307179586, 8.734941891937978*^-14}}]}, 
+       {RGBColor[0.363898, 0.618501, 0.782349], PointSize[
+        0.012833333333333334`], AbsoluteThickness[1.6], 
+        LineBox[{{0.001, 0.}, {62.83285307179586, 6.575523157430882*^-14}, {
+         62.83285307179586, 6.575523157430882*^-14}}]}, 
+       {RGBColor[1, 0.75, 0], PointSize[0.012833333333333334`], 
+        AbsoluteThickness[1.6], 
+        LineBox[{{0.001, 0.}, {62.83285307179586, 2.1192945972121932`*^-14}, {
+         62.83285307179586, 2.1192945972121932`*^-14}}]}, 
+       {RGBColor[0.647624, 0.37816, 0.614037], PointSize[
+        0.012833333333333334`], AbsoluteThickness[1.6], 
+        LineBox[{{0.001, 9.62964972193618*^-35}, {62.83285307179586, 
+         9.305290344729391*^-14}, {62.83285307179586, 
+         9.305290344729391*^-14}}]}, 
+       {RGBColor[0.571589, 0.586483, 0.], PointSize[0.012833333333333334`], 
+        AbsoluteThickness[1.6], 
+        LineBox[{{0.001, 0.}, {62.83285307179586, 6.781633573563834*^-7}, {
+         62.83285307179586, 6.781633573563834*^-7}}]}}, {}},
+     AspectRatio->NCache[GoldenRatio^(-1), 0.6180339887498948],
+     Axes->{True, True},
+     AxesLabel->{None, None},
+     AxesOrigin->{0, 0},
+     DisplayFunction->Identity,
+     Frame->{{False, False}, {False, False}},
+     FrameLabel->{{None, None}, {None, None}},
+     FrameTicks->{{Automatic, Automatic}, {Automatic, Automatic}},
+     GridLines->{None, None},
+     GridLinesStyle->Directive[
+       GrayLevel[0.5, 0.4]],
+     ImagePadding->All,
+     ImageSize->Large,
+     Method->{"CoordinatesToolOptions" -> {"DisplayFunction" -> ({
+           (Part[{{Identity, Identity}, {Identity, Identity}}, 1, 2][#]& )[
+            Part[#, 1]], 
+           (Part[{{Identity, Identity}, {Identity, Identity}}, 2, 2][#]& )[
+            Part[#, 2]]}& ), "CopiedValueFunction" -> ({
+           (Part[{{Identity, Identity}, {Identity, Identity}}, 1, 2][#]& )[
+            Part[#, 1]], 
+           (Part[{{Identity, Identity}, {Identity, Identity}}, 2, 2][#]& )[
+            Part[#, 2]]}& )}},
+     PlotRange->{{0, 62.83285307179586}, {0, 0.333}},
+     PlotRangeClipping->True,
+     PlotRangePadding->{{
+        Scaled[0.02], 
+        Scaled[0.02]}, {
+        Scaled[0.02], 
+        Scaled[0.05]}},
+     Ticks->{Automatic, Automatic}]}], "}"}], "}"}]], "Output",
+ CellChangeTimes->{3.701102098865004*^9, 3.701102173019353*^9, 
+  3.701102236690275*^9, 3.701102437282055*^9, 3.701102491045643*^9, 
+  3.7011027286441393`*^9, 3.7011027854880333`*^9}]
+}, Open  ]],
 
 Cell[CellGroupData[{
 
@@ -4547,14 +5022,15 @@ Cell[BoxData[
    3.7010588162658668`*^9}, {3.7010589124862404`*^9, 3.7010589532707043`*^9}}]
 }, Open  ]]
 },
-WindowSize->{1430, 875},
-WindowMargins->{{24, Automatic}, {Automatic, 34}},
+WindowSize->{1340, 647},
+WindowMargins->{{-8, Automatic}, {Automatic, 19}},
 PrintingCopies->1,
 PrintingPageRange->{32000, 32000},
 PrintingOptions->{"Magnification"->1.,
 "PaperOrientation"->"Portrait",
 "PaperSize"->{595.1999999999999, 841.68}},
-FrontEndVersion->"11.0 for Microsoft Windows (64-bit) (July 28, 2016)",
+FrontEndVersion->"10.4 for Mac OS X x86 (32-bit, 64-bit Kernel) (April 11, \
+2016)",
 StyleDefinitions->"Default.nb"
 ]
 (* End of Notebook Content *)
@@ -4569,73 +5045,93 @@ CellTagsIndex->{}
 (*NotebookFileOutline
 Notebook[{
 Cell[CellGroupData[{
-Cell[580, 22, 77347, 2195, 2646, "Input"],
-Cell[77930, 2219, 930, 32, 230, "Output"],
-Cell[78863, 2253, 493, 12, 22, "Print"],
-Cell[79359, 2267, 121, 2, 30, "Output"],
-Cell[79483, 2271, 124, 2, 30, "Output"]
+Cell[580, 22, 77347, 2195, 3115, "Input"],
+Cell[77930, 2219, 952, 32, 228, "Output"],
+Cell[78885, 2253, 515, 12, 21, "Print"],
+Cell[79403, 2267, 145, 2, 28, "Output"],
+Cell[79551, 2271, 148, 2, 28, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[79644, 2278, 2019, 52, 104, "Input"],
+Cell[79736, 2278, 2019, 52, 139, "Input"],
 Cell[CellGroupData[{
-Cell[81688, 2334, 452, 10, 22, "Print"],
-Cell[82143, 2346, 494, 12, 38, "Print"],
-Cell[82640, 2360, 490, 12, 38, "Print"]
+Cell[81780, 2334, 477, 11, 21, "Print"],
+Cell[82260, 2347, 516, 13, 36, "Print"],
+Cell[82779, 2362, 513, 13, 36, "Print"]
 }, Open  ]]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[83179, 2378, 11947, 276, 654, "Input"],
-Cell[95129, 2656, 737, 17, 41, "Output"],
-Cell[95869, 2675, 2012, 41, 38, "Print"],
-Cell[97884, 2718, 496, 9, 30, "Output"],
-Cell[98383, 2729, 627, 11, 21, "Message"],
-Cell[99013, 2742, 627, 11, 21, "Message"],
-Cell[99643, 2755, 628, 11, 21, "Message"],
-Cell[100274, 2768, 415, 8, 21, "Message"],
-Cell[100692, 2778, 737, 17, 41, "Output"],
-Cell[101432, 2797, 527, 10, 22, "Print"],
-Cell[101962, 2809, 212, 3, 30, "Output"],
-Cell[102177, 2814, 181, 2, 30, "Output"],
-Cell[102361, 2818, 565, 10, 21, "Message"],
-Cell[102929, 2830, 239, 4, 30, "Output"]
+Cell[83341, 2381, 11947, 276, 793, "Input"],
+Cell[95291, 2659, 760, 17, 41, "Output"],
+Cell[96054, 2678, 2034, 41, 36, "Print"],
+Cell[98091, 2721, 518, 9, 28, "Output"],
+Cell[98612, 2732, 878, 15, 24, "Message"],
+Cell[99493, 2749, 878, 15, 24, "Message"],
+Cell[100374, 2766, 877, 15, 24, "Message"],
+Cell[101254, 2783, 661, 13, 24, "Message"],
+Cell[101918, 2798, 760, 17, 41, "Output"],
+Cell[102681, 2817, 551, 10, 23, "Print"],
+Cell[103235, 2829, 221, 3, 28, "Output"],
+Cell[103459, 2834, 203, 2, 28, "Output"],
+Cell[103665, 2838, 827, 15, 24, "Message"],
+Cell[104495, 2855, 262, 4, 28, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[103205, 2839, 4576, 107, 247, "Input"],
-Cell[107784, 2948, 515, 9, 21, "Message"],
-Cell[108302, 2959, 191, 3, 30, "Output"],
-Cell[108496, 2964, 518, 9, 21, "Message"],
-Cell[109017, 2975, 194, 4, 30, "Output"]
+Cell[104794, 2864, 4576, 107, 295, "Input"],
+Cell[109373, 2973, 781, 15, 24, "Message"],
+Cell[110157, 2990, 216, 4, 28, "Output"],
+Cell[110376, 2996, 782, 15, 24, "Message"],
+Cell[111161, 3013, 219, 5, 32, "Output"]
 }, Open  ]],
-Cell[109226, 2982, 5069, 113, 203, "Input"],
+Cell[111395, 3021, 5069, 113, 222, "Input"],
 Cell[CellGroupData[{
-Cell[114320, 3099, 8994, 215, 506, "Input"],
-Cell[123317, 3316, 742, 18, 41, "Output"],
-Cell[124062, 3336, 2016, 42, 38, "Print"],
-Cell[126081, 3380, 575, 11, 21, "Message"],
-Cell[126659, 3393, 575, 11, 21, "Message"],
-Cell[127237, 3406, 577, 11, 21, "Message"],
-Cell[127817, 3419, 431, 9, 21, "Message"],
-Cell[128251, 3430, 733, 17, 41, "Output"]
+Cell[116489, 3138, 8994, 215, 642, "Input"],
+Cell[125486, 3355, 764, 18, 41, "Output"],
+Cell[126253, 3375, 2078, 42, 36, "Print"],
+Cell[128334, 3419, 837, 16, 24, "Message"],
+Cell[129174, 3437, 840, 16, 24, "Message"],
+Cell[130017, 3455, 840, 16, 24, "Message"],
+Cell[130860, 3473, 675, 14, 24, "Message"],
+Cell[131538, 3489, 763, 18, 41, "Output"],
+Cell[132304, 3509, 555, 11, 23, "Print"],
+Cell[132862, 3522, 225, 4, 28, "Output"],
+Cell[133090, 3528, 205, 3, 28, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[129021, 3452, 3127, 83, 175, "Input"],
-Cell[132151, 3537, 494, 9, 21, "Message"],
-Cell[132648, 3548, 169, 3, 63, "Output"]
+Cell[133332, 3536, 3127, 83, 227, "Input"],
+Cell[136462, 3621, 759, 14, 24, "Message"],
+Cell[137224, 3637, 191, 3, 28, "Output"]
 }, Open  ]],
-Cell[132832, 3554, 27147, 699, 1711, "Input"],
 Cell[CellGroupData[{
-Cell[160004, 4257, 3759, 90, 172, "Input"],
-Cell[163766, 4349, 1349, 29, 22, "Print"],
-Cell[165118, 4380, 623, 11, 21, "Message"],
-Cell[165744, 4393, 625, 11, 21, "Message"],
-Cell[166372, 4406, 625, 11, 21, "Message"],
-Cell[167000, 4419, 482, 9, 21, "Message"],
-Cell[167485, 4430, 2509, 59, 46, "Output"],
-Cell[169997, 4491, 623, 11, 21, "Message"],
-Cell[170623, 4504, 625, 11, 21, "Message"],
-Cell[171251, 4517, 623, 11, 21, "Message"],
-Cell[171877, 4530, 482, 9, 21, "Message"],
-Cell[172362, 4541, 313, 5, 30, "Output"]
+Cell[137452, 3645, 27280, 697, 2510, "Input"],
+Cell[CellGroupData[{
+Cell[164757, 4346, 211, 4, 36, "Print"],
+Cell[164971, 4352, 213, 3, 21, "Print"],
+Cell[165187, 4357, 1778, 49, 22, "Print"]
+}, Open  ]],
+Cell[166980, 4409, 872, 16, 24, "Message"],
+Cell[167855, 4427, 873, 16, 24, "Message"],
+Cell[168731, 4445, 873, 16, 24, "Message"],
+Cell[169607, 4463, 710, 14, 24, "Message"],
+Cell[CellGroupData[{
+Cell[170342, 4481, 2380, 68, 21, "Print"],
+Cell[172725, 4551, 1662, 46, 21, "Print"],
+Cell[174390, 4599, 209, 3, 21, "Print"]
+}, Open  ]],
+Cell[174614, 4605, 6054, 122, 418, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[180705, 4732, 3759, 90, 221, "Input"],
+Cell[184467, 4824, 1349, 29, 21, "Print"],
+Cell[185819, 4855, 623, 11, 40, "Message"],
+Cell[186445, 4868, 625, 11, 40, "Message"],
+Cell[187073, 4881, 625, 11, 40, "Message"],
+Cell[187701, 4894, 482, 9, 40, "Message"],
+Cell[188186, 4905, 2509, 59, 47, "Output"],
+Cell[190698, 4966, 623, 11, 40, "Message"],
+Cell[191324, 4979, 625, 11, 40, "Message"],
+Cell[191952, 4992, 623, 11, 40, "Message"],
+Cell[192578, 5005, 482, 9, 40, "Message"],
+Cell[193063, 5016, 313, 5, 28, "Output"]
 }, Open  ]]
 }
 ]
