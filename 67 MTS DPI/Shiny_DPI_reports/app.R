@@ -338,10 +338,10 @@ server <- function(input, output, session) {
     fit <- auto.arima(sensor)
     # fit <- arima(sensor, c(0,1,0))
     # fcast <- forecast(fit, h=input$f_depth) # h - Number of periods for forecasting
-    fcast <- forecast(fit, h=input$f_depth) # h - Number of periods for forecasting
+    fcast <- forecast(fit, h=as.numeric(input$f_depth)) # h - Number of periods for forecasting
     
     # browser()
-    autoplot(fcast) + geom_forecast(h=input$f_depth, level=c(50,80,95)) + theme_bw()
+    autoplot(fcast) + theme_bw()
     # plot(fcast) # + geom_forecast(h=input$f_depth, level=c(50,80,95)) + theme_bw()
   }) 
   
@@ -357,14 +357,16 @@ server <- function(input, output, session) {
       ungroup() %>% 
       filter(complete.cases(.))
 
-    sensor <- ts(df1$down, frequency=14)
+    sensor <- ts(df1$down, frequency=7)
     sensor <- ts(c(df1$down, max(df1$down)*.1), frequency=7)
     
-    
+    fit <- ets(sensor)
     fit <- auto.arima(sensor)
-    fcast <- forecast(fit, h=input$f_depth) # h - Number of periods for forecasting
-    autoplot(fcast) + 
-      geom_forecast(h=input$f_depth, level=c(50,80,95)) + theme_bw()
+    # browser()
+    
+    fcast <- forecast(fit, h=as.numeric(input$f_depth)) # h - Number of periods for forecasting
+    autoplot(fcast) + theme_bw()
+    # geom_forecast(h=input$f_depth, level=c(50,80,95)) 
     }) 
   
   # обработчики кнопок выгрузки файлов --------------------------------------------------
