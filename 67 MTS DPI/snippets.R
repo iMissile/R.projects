@@ -192,7 +192,7 @@ df1 <- df0 %>%
   summarize(up=sum(up), down=sum(down)) %>%
   ungroup()
 
-f_depth <- 14 # глубина прогноза
+f_depth <- 7 # глубина прогноза
 
 # есть нюансы с отсутствующими датами. Для получения правильного прогноза обязательно необходимо вставить 
 # все даты с заданной периодичностью и заполнить значения NA
@@ -210,6 +210,7 @@ sensor
 # ограничение в 350: http://robjhyndman.com/hyndsight/longseasonality/
 # ==============================================
 fit <- auto.arima(sensor) #http://stackoverflow.com/questions/14331314/time-series-prediction-of-daily-data-of-a-month-using-arima
+fit
 # fit <- tbats(sensor)
 fcast <- forecast(fit, h=f_depth) # h - Number of periods for forecasting
 

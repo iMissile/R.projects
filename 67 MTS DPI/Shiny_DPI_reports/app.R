@@ -329,16 +329,20 @@ server <- function(input, output, session) {
       # thicken("day", col="time") %>% # не работает
       group_by(timegroup) %>%
       summarize(up=sum(up), down=sum(down)) %>%
-      ungroup() # %>% filter(complete.cases(.))
+      ungroup() %>% 
+      filter(complete.cases(.))
     
     sensor <- ts(df1$up, frequency=7)
-    
+    sensor <- ts(c(df1$up, max(df1$up)*.1), frequency=14)
+
     fit <- auto.arima(sensor)
+    # fit <- arima(sensor, c(0,1,0))
+    # fcast <- forecast(fit, h=input$f_depth) # h - Number of periods for forecasting
     fcast <- forecast(fit, h=input$f_depth) # h - Number of periods for forecasting
     
     # browser()
-    autoplot(fcast) + 
-      geom_forecast(h=input$f_depth, level=c(50,80,95)) + theme_bw()
+    autoplot(fcast) + geom_forecast(h=input$f_depth, level=c(50,80,95)) + theme_bw()
+    # plot(fcast) # + geom_forecast(h=input$f_depth, level=c(50,80,95)) + theme_bw()
   }) 
   
   output$down_forecast_plot <- renderPlot({
@@ -350,9 +354,12 @@ server <- function(input, output, session) {
       # thicken("day", col="time") %>% # не работает
       group_by(timegroup) %>%
       summarize(up=sum(up), down=sum(down)) %>%
-      ungroup() # %>% filter(complete.cases(.))
+      ungroup() %>% 
+      filter(complete.cases(.))
 
     sensor <- ts(df1$down, frequency=14)
+    sensor <- ts(c(df1$down, max(df1$down)*.1), frequency=7)
+    
     
     fit <- auto.arima(sensor)
     fcast <- forecast(fit, h=input$f_depth) # h - Number of periods for forecasting
