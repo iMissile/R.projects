@@ -11,6 +11,7 @@ library(profvis)
 library(RcppRoll)
 library(digest)
 library(xts)
+library(padr)
 library(zoo)
 library(forecast)
 library(fuzzyjoin)
@@ -19,7 +20,7 @@ source("./Shiny_DPI_reports/funcs.R")
 
 df0 <- readRDS("./Shiny_DPI_reports/edr_http_small.rds")
 
-
+if(FALSE){
 # facet графики дл€ top 10 up/down ---------------------------------
 t <- 9161234567
 # sprintf("(%s) %s-%s-%s", list(1, 2, 3, 4)) # не работает, пишет `too few arguments`
@@ -179,6 +180,7 @@ t <- df0 %>% group_by(http_host) %>%
 
 t2 <- regex_left_join(t, repl_df, by=c(http_host="pattern"))
 
+}
 # -----------------------------------------------------------------
 # суточное прогнозирование средствами пакета forecast --------------
 # повтор€ем по мотивам \iwork.HG\R.projects\02 predictive_PM_demo\predict_interface_load_06(tadv_test)
@@ -194,16 +196,97 @@ df1 <- df0 %>%
 
 f_depth <- 7 # глубина прогноза
 
-# есть нюансы с отсутствующими датами. ƒл€ получени€ правильного прогноза об€зательно необходимо вставить 
+
+# 1. есть нюансы с отсутствующими датами. ƒл€ получени€ правильного прогноза об€зательно необходимо вставить 
 # все даты с заданной периодичностью и заполнить значени€ NA
-seq(min(df1$timegroup), max(df1$timegroup) + days(f_depth), by="1 day")
+
+df2 <- df1 %>% mutate(value=up) %>% # прогнозирование делаем дл€ value
+  # pad(interval="day", start_val=min(df1$timegroup)-days(7))
+  pad(interval="day") %>% # добили отсутствующие даты
+  head(-1) # убрали частичный недоагрегат по последней дате
+
+
+# скрываем эксперименты, пишем тут начистую
+
+# строим формальный сенсор без прив€зки к дате, с указанием недельной периодичности
+# почему берем 7 сказано в "Forecasting with daily data" http://robjhyndman.com/hyndsight/dailydata/
+# frequency	-- the number of observations per unit of time.
+sensor <- ts(df2$value, frequency=7)
+
+#  ARIMA = Auto Regressive Integrated Moving Average
+# увы, ARIMA работает только дл€ суточных измерений с глубиной не более 350 измерений
+# ограничение в 350: http://robjhyndman.com/hyndsight/longseasonality/
+# ==============================================
+fit <- auto.arima(sensor) #http://stackoverflow.com/questions/14331314/time-series-prediction-of-daily-data-of-a-month-using-arima
+# fit <- tbats(sensor)
+fcast <- forecast(fit, h=f_depth) # h - Number of periods for forecasting
+
+# теперь ручками пересоберем данные в удобном дл€ визуализации виде
+# fcast$x -- исходные данные, fcast$mean -- прогнозные
+
+tseq <- seq(max(df2$timegroup) + days(1), along.with=fcast$mean, by = "1 day")
+
+df3 <-
+  tibble(
+    timegroup=tseq,
+    value=fcast$mean,
+    # 80%
+    low1=fcast$lower[, 1], 
+    upp1=fcast$upper[, 1],
+    # 95%
+    low2=fcast$lower[, 2], 
+    upp2=fcast$upper[, 2]
+  )
+
+cpal <- brewer.pal(7, "Blues")
+cpal <- brewer.pal(7, "Oranges")
+
+gp <- ggplot(df3, aes(timegroup, value)) +
+  #geom_ribbon(aes(ymin=low2, ymax=upp2), fill="yellow") +
+  #geom_ribbon(aes(ymin=low1, ymax=upp1), fill="orange") +
+  # рисуем исходные данные
+  geom_line(data=df2, aes(timegroup, value)) +
+  geom_ribbon(aes(ymin=low2, ymax=upp2), fill=cpal[1]) +
+  geom_ribbon(aes(ymin=low1, ymax=upp1), fill=cpal[2]) +
+  theme_bw() +
+  geom_line() +
+  # geom_line(data=df[!is.na(df$forecast), ], aes(time, forecast), color="blue", size=1.5, na.rm=TRUE) +
+  # http://docs.ggplot2.org/current/scale_continuous.html
+  #scale_x_continuous("") +
+  #scale_y_continuous(limits=c(0, 120)) +
+  # scale_x_date(breaks=date_breaks('days'), labels = date_format("%d %b %Y")) +
+  # ќЅя«ј“≈Ћ№Ќќ library(scales)
+  # http://docs.ggplot2.org/current/scale_date.html
+  scale_x_datetime(labels=date_format("%d %b %Y"), breaks=date_breaks("day")) +
+  # ylim(0, NA) +
+  # scale_y_continuous(trans='log10', limits = c(0, NA)) +
+  scale_y_log10(breaks=trans_breaks("log10", function(x) 10^x),
+                labels=trans_format("log10", math_format(10^.x)),
+                limits=c(1, 10^6)) +
+  xlab("ƒата") +
+  ylab("Up volume") +
+  # scale_shape(solid = FALSE) +
+  # http://blog.rstudio.org/2012/09/07/ggplot2-0-9-2/  
+  # opts(title=paste("Forecasts from ", fcast$method))
+  labs(title=paste("Forecasts from ", fcast$method))
+
+gp
+
+if(FALSE){
+start_date <- min(df2$timegroup) # дата последующей прив€зки
+  
+# tdf<- tibble(timegroup=seq(min(df1$timegroup), max(df1$timegroup) + days(f_depth), by="1 day"))
+
+# разные способы объединени€
+# merge(df2, tdf, by="timegroup", all.x=TRUE, all.y=TRUE)
+# res <- full_join(df2, tdf, by="timegroup")
 
 
 # строим формальный сенсор без прив€зки к дате, с указанием недельной периодичности
 # почему берем 7 сказано в "Forecasting with daily data" http://robjhyndman.com/hyndsight/dailydata/
 # frequency	-- the number of observations per unit of time.
-sensor <- ts(df1$up, frequency=7)
-sensor
+sensor <- ts(df2$value, frequency=7)
+#sensor <- head(sensor, -1) # убрали частичный недоагрегат по последней дате
 
 #  ARIMA = Auto Regressive Integrated Moving Average
 # увы, ARIMA работает только дл€ суточных измерений с глубиной не более 350 измерений
@@ -214,8 +297,6 @@ fit
 # fit <- tbats(sensor)
 fcast <- forecast(fit, h=f_depth) # h - Number of periods for forecasting
 
-# fcast$x -- исходные данные, fcast$mean -- прогнозные
-
 # Directly plot your forecast without your axes
 autoplot(fcast) +
 geom_forecast(h=f_depth, level=c(50,80,95)) + theme_bw()
@@ -224,11 +305,36 @@ autoplot(fcast)
 
 #ggplot(data=df1, aes(x=timegroup, y=up)) +
 
-gp <- ggplot(df1, aes(time, x)) +
+# теперь ручками пересоберем данные в удобном дл€ визуализации виде
+# fcast$x -- исходные данные, fcast$mean -- прогнозные
+
+fcast$timegroup <- seq(max(df2$timegroup) + days(1), along.with=fcast$mean, by = "1 day")
+
+lenx <- length(fcast$x)
+lenmn <- length(fcast$mean)
+
+df3 <-
+  tibble(
+    timegroup = seq(start_date, length.out = lenx + lenmn, by = "1 day"),
+    value = c(fcast$x, fcast$mean),
+    # type=c(rep("real", lenx), rep("fcast", lenmn)),
+    forecast = c(rep(NA, lenx), fcast$mean),
+    low1 = c(rep(NA, lenx), fcast$lower[, 1]),
+    upp1 = c(rep(NA, lenx), fcast$upper[, 1]),
+    low2 = c(rep(NA, lenx), fcast$lower[, 2]),
+    upp2 = c(rep(NA, lenx), fcast$upper[, 2])
+  )
+
+cpal <- brewer.pal(7, "Blues")
+cpal <- brewer.pal(7, "Oranges")
+
+
+
+gp <- ggplot(df3, aes(timegroup, value)) +
   #geom_ribbon(aes(ymin=low2, ymax=upp2), fill="yellow") +
   #geom_ribbon(aes(ymin=low1, ymax=upp1), fill="orange") +
-  # geom_ribbon(aes(ymin=low2, ymax=upp2), fill=cpal[1]) +
-  # geom_ribbon(aes(ymin=low1, ymax=upp1), fill=cpal[2]) +
+  geom_ribbon(aes(ymin=low2, ymax=upp2), fill=cpal[1]) +
+  geom_ribbon(aes(ymin=low1, ymax=upp1), fill=cpal[2]) +
   theme_bw() +
   geom_line() +
   # geom_line(data=df[!is.na(df$forecast), ], aes(time, forecast), color="blue", size=1.5, na.rm=TRUE) +
@@ -238,20 +344,15 @@ gp <- ggplot(df1, aes(time, x)) +
   # scale_x_date(breaks=date_breaks('days'), labels = date_format("%d %b %Y")) +
   # ќЅя«ј“≈Ћ№Ќќ library(scales)
   # http://docs.ggplot2.org/current/scale_date.html
-  scale_x_date(labels = date_format("%d %b %Y"), breaks = date_breaks("week")) +
-  geom_hline(aes(yintercept=100), colour="red", linetype="dashed", size=1) +
-  geom_hline(aes(yintercept=hard_threshold), colour="magenta", linetype="dashed", size=1) +
-  geom_vline(xintercept=as.numeric(df_upper$time), colour="green", linetype="dashed", size=1) + # linetype="dotted"
-  #geom_point(data=df_upper, colour = "green", size = 4, aes(x=time, y=value), shape=1) +
-  geom_point(data=df_upper, colour = "green", size = 5, aes(x=time, y=value)) +
-  geom_point(data=df_upper, colour = "grey90", size = 3, aes(x=time, y=value)) +
+  scale_x_datetime(labels=date_format("%d %b %Y"), breaks=date_breaks("week")) +
+  ylim(0, NA) +
   xlab("ƒата") +
-  ylab("«агрузка CPU, %") +
+  ylab("Up volume") +
   # scale_shape(solid = FALSE) +
   # http://blog.rstudio.org/2012/09/07/ggplot2-0-9-2/  
   # opts(title=paste("Forecasts from ", fcast$method))
   labs(title=paste("Forecasts from ", fcast$method))
 
 gp
-
+}
   
