@@ -340,7 +340,7 @@ server <- function(input, output, session) {
     # fcast <- forecast(fit, h=input$f_depth) # h - Number of periods for forecasting
     fcast <- forecast(fit, h=as.numeric(input$f_depth)) # h - Number of periods for forecasting
     
-    browser()
+    # browser()
     autoplot(fcast) + theme_bw()
     # plot(fcast) # + geom_forecast(h=input$f_depth, level=c(50,80,95)) + theme_bw()
   }) 
