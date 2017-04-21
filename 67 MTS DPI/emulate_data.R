@@ -19,15 +19,30 @@ regions <- c("Владивосток", "Новосибирск", "Екатеринбург", "Н.Новгород",
 
 
 # импортируем flow edr файлы -----------------------------------------
-if(TRUE){
+if(FALSE){
   profvis({
   flow_df <- flow_list %>%
+    head(30) %>%
     purrr::map(read_delim, delim=',')
   
   df <- reduce(flow_df, rbind) %>%
     repair_names()
   
-  saveRDS(df, "flow_df.rds")})
+  rm(df)
+  gc(verbose=TRUE)
+  })
+
+  rm(df, flow_df)
+  
+  profvis({
+  # вариант 2, взят отсюда: http://readxl.tidyverse.org/articles/articles/readxl-workflows.html
+  # так быстрее на 20% и памяти в 3 раза меньше требуется
+  # на больших объемах скорость начинает выигрывать в разы, объем памяти также, в 4-6 раз меньше.
+  df <- flow_list %>%
+    head(30) %>%
+    purrr::map_df(read_delim, delim=',', .id = NULL)
+  # saveRDS(df, "flow_df.rds")
+  })
 }
 
 # импортируем http eDR файлы -----------------------------------------
