@@ -1,0 +1,109 @@
+---
+title: "ru-tex-pdf"
+author: "ishutov"
+date: '9 января 2017 г '
+fontsize: 12pt
+output:
+  pdf_document:
+    keep_tex: yes
+    latex_engine: xelatex
+header-includes:
+  - \usepackage{fontspec}
+  - \setmainfont{Linux Libertine O}
+  - \usepackage[english,russian]{babel}
+--- 
+
+<!---
+Конфигурация XeLaTeX
+
+output:
+  pdf_document:
+    keep_tex: yes
+    latex_engine: xelatex
+header-includes:
+  - \usepackage[T2A]{fontenc}
+  - \usepackage[utf8]{inputenc}
+  - \usepackage[english,russian]{babel}
+  - \usepackage{fontspec}
+  - \setmainfont{Cambria}
+  - \setmainfont{Linux Libertine}
+-->
+
+<!---
+Конфигурация pdfLaTeX
+
+output:
+  pdf_document:
+    keep_tex: yes
+    latex_engine: pdflatex
+header-includes:
+  - \usepackage[T2A]{fontenc}
+  - \usepackage[utf8]{inputenc}
+  - \usepackage[russian]{babel}
+  - \usepackage{pscyr}
+-->
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(dev='cairo_pdf') # решили проблему с генерацией русского текста в графиках
+# http://qa.piterdata.ninja/p/1742/
+library(latex2exp)
+library(ggplot2)
+# library(printr) !!!!
+```
+
+## R Markdown
+Это R Markdown документ.
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure1, echo=FALSE}
+# {r pressure1, echo=FALSE, dev="cairo_pdf"}
+plot(pressure,
+     # xlab=TeX("Температура, $C^\\degree$"), 
+     # ylab=TeX("Давление, Па")
+     xlab="Температура, C", 
+     ylab="Pressure")
+
+```
+
+```{r pressure2, echo=FALSE}
+# {r pressure2, echo=FALSE, dev="cairo_pdf"}
+ggplot(pressure, aes(x=temperature, y=pressure)) +
+     geom_line(lwd = 1.2) +
+     xlab(TeX("Температура, $C^\\degree$")) + # не работает TeX в knitr !!!
+     xlab(expression(paste(alpha))) +
+     # ylab="Давление, Па")
+     # xlab("Температура, C") +
+     ylab("Pressure") # +
+     # hrbrmisc::theme_hrbrmstr(grid="XY")
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+## 108 минут Юрия Гагарина
+Он был первым, кто увидел, что Земля, в самом деле, круглая, голубая. И - очень красивая.
+
+Полет Гагарина длился всего 108 минут. Но эти минуты перевернули весь мир, все представления о возможном невозможном. Далекий и неведомый космос заговорил! Заговорил по-русски. Планета рукоплескала Гагарину, советским ученым и конструкторам, триумфу великой страны. "Всем показана цель. Не придется ли теперь начать летоисчисление с того дня, когда человек одним прыжком поднялся выше пределов воображения?" - сказал тогда французский писатель Луи Арагон.  
+
+Всего за 108 минут жизнь Юрия Гагарина перестала ему принадлежать. Буквально каждая минута - от рождения и до самой смерти - стала частью легенды о великом советском человеке, который первым полетел в космос.
+
+За девять месяцев до легендарного полета отборная шестерка летчиков встретилась с академиком Королевым. Он показал первый космический корабль. Все сгрудились у серебристо-белого шара диаметром около двух с половиной метров. Королев спросил: "Есть желающие познакомиться с кабиной?"
+
+"Разрешите?" - сделал шаг вперед Юрий Гагарин. Снял ботинки и в носках поднялся по стремянке к люку... Сергей Павлович подтолкнул локтем своего заместителя: "Этот, пожалуй, и полетит первым".
+
+Юрий Гагарин прекрасно понимал, что вернуться из полета к звездам можно на колеснице славы, но так же легко превратиться и в летающий саркофаг. Поэтому он оставил письмо жене Валентине: "В технику я верю полностью. Она подвести не должна. Но бывает ведь, что на ровном месте человек падает и ломает себе шею. Здесь тоже может что-нибудь случиться". Вот так просто. Это письмо Валентине Ивановне передали семь лет спустя. Уже  после трагической гибели мужа в 1968 году.
+
+На первой гагаринской фотографии после приземления - осунувшееся лицо, усталые глаза. 108 минут - не один миг.
