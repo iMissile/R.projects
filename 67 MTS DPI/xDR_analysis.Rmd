@@ -40,22 +40,21 @@ library(RColorBrewer)
 # Reading and combining many tidy data files in R, Jun 13, 2016 in science
 # http://serialmentor.com/blog/2016/6/13/reading-and-combining-many-tidy-data-files-in-R
 
-http_list <- dir(path="./", pattern="edr_BASE-edr_http_format.*", full.names=TRUE)
+http_list <- dir(path="./", pattern="edr_BASE-edr_http_format_.*", full.names=TRUE)
 ```
 
 Импортируемый список файлов:
 `r http_list`
 
 ```{r message=FALSE, warning=FALSE}
-http_df <- http_list %>%
-  purrr::map(read_delim, delim=',')
+df <- http_list %>%
+  purrr::map_df(read_delim, delim=',', .id = NULL) %>%
+  repair_names()
 
 ```
 
 
 ```{r}
-df <- reduce(http_df, rbind) %>%
-  repair_names()
 
 # преобразования -----------------------------------------
 # очистим имена колонок от кривых символов

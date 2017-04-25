@@ -46,10 +46,8 @@ if(FALSE){
 }
 
 # импортируем http eDR файлы -----------------------------------------
-http_df <- http_list %>%
-  purrr::map(read_delim, delim=',')
-
-df <- reduce(http_df, rbind) %>%
+df <- http_list %>%
+  purrr::map_df(read_delim, delim=',', .id = NULL) %>%
   repair_names() %>%
   sample_frac(0.2) # и сразу случайным образом урежем объем
 

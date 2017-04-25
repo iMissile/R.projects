@@ -51,6 +51,7 @@ knitr::opts_chunk$set(dev='cairo_pdf') # решили проблему с ген
 library(latex2exp)
 library(ggplot2)
 # library(printr) !!!!
+# library(hrbrthemes)
 ```
 
 ## R Markdown
