@@ -2,20 +2,21 @@
 title: "Анализ xDR"
 author: "Шутов Илья"
 date: '`r Sys.Date()`'
+fontsize: 12pt
 output:
   pdf_document:
+    dev: cairo_pdf
     keep_tex: yes
     latex_engine: xelatex
+    includes:
+        in_header: mystyles.sty
   html_document: default
-fontsize: 12pt
-header-includes:
-  - \usepackage{fontspec}
-  - \setmainfont{Linux Libertine O}
-  - \usepackage[english,russian]{babel}
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(echo=FALSE)
+# knitr::opts_chunk$set(dev='cairo_pdf') # решили проблему с генерацией русского текста в графиках (см. параметр dev!!!)
+# http://qa.piterdata.ninja/p/1742/
 ```
 
 ```{r include=FALSE}
@@ -28,7 +29,7 @@ library(ggthemes)
 library(gtable)
 library(extrafont) # http://www.fromthebottomoftheheap.net/2013/09/09/preparing-figures-for-plos-one-with-r/
 library(Cairo)
-# library(hrbrthemes)
+library(hrbrthemes)
 library(RColorBrewer)
 ```
 
@@ -105,7 +106,7 @@ plot_df <- group_df %>%
 gp <- ggplot(plot_df, aes(fct_reorder(radius_user_name, downlink_Mb), downlink_Mb)) + 
   geom_bar(fill=brewer.pal(n=9, name="Blues")[4], alpha=0.5, stat="identity") +
   #theme_igray() +
-  # theme_ipsum_rc(base_size = 11.5) +
+  theme_ipsum_rc(base_size=11.5) +
   # theme_ipsum_rc(base_family="robotoC", base_size = 11.5) +
   theme(legend.position="none") +
   xlab("Raduis хэш") +
@@ -129,7 +130,7 @@ df2 <- df1 %>%
 
 gp2 <- ggplot(df2, aes(timestamp, bytes)) + 
   geom_point(aes(colour=direction), alpha=0.4, shape=1, size=2) +
-  # theme_ipsum_rc(base_size = 11.5) +
+  theme_ipsum_rc(base_size=11.5) +
   theme(legend.position="right") +
   scale_y_log10(breaks=trans_breaks("log10", function(x) 10^x),
                 labels=trans_format("log10", math_format(10^.x)))

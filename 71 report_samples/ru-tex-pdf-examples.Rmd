@@ -1,16 +1,14 @@
 ---
 title: "ru-tex-pdf"
-author: "ishutov"
-date: '9 января 2017 г '
+author: "Шутов Илья"
+date: '`r Sys.Date()`'
 fontsize: 12pt
 output:
   pdf_document:
     keep_tex: yes
     latex_engine: xelatex
-header-includes:
-  - \usepackage{fontspec}
-  - \setmainfont{Linux Libertine O}
-  - \usepackage[english,russian]{babel}
+    includes:
+        in_header: mystyles.sty
 --- 
 
 <!---
