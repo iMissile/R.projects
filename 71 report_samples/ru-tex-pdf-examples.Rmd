@@ -84,9 +84,9 @@ ggplot(pressure, aes(x=temperature, y=pressure)) +
      geom_line(lwd = 1.2) +
      xlab(TeX("Температура, $C^\\degree$")) + # не работает TeX в knitr !!!
      xlab(expression(paste(alpha))) +
-     # ylab="Давление, Па")
+     ylab("Давление, Па")
      # xlab("Температура, C") +
-     ylab("Pressure") # +
+     # ylab("Pressure") # +
      # hrbrmisc::theme_hrbrmstr(grid="XY")
 
 ```
