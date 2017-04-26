@@ -1,10 +1,7 @@
 library(tidyverse)
 library(lubridate)   # date manipulation
-library(padr)
-library(ggrepel)
 library(forcats)
 library(magrittr)
-library(countrycode) # turn country codes into pretty names
 library(scales)      # pairs nicely with ggplot2 for plot label formatting
 # library(gridExtra)   # a helper for arranging individual ggplot objects
 library(ggthemes)    # has a clean theme for ggplot2
@@ -14,23 +11,13 @@ library(hrbrthemes)
 library(extrafont)   # http://blog.revolutionanalytics.com/2012/09/how-to-use-your-favorite-fonts-in-r-charts.html
 library(stringi)
 library(stringr)
-# library(forcats)
-#library(sna)
-#library(igraph)
-#library(intergraph) # http://mbojan.github.io/intergraph/
-# library(ggpmisc)
-#library(ggnetwork)
-library(zoo)
-library(forecast)
 library(Cairo)
 library(shiny)
-library(plotly)
 library(shinythemes) # https://rstudio.github.io/shinythemes/
 library(shinyBS)
 library(shinyjs)
 library(futile.logger)
-library(RcppRoll)
-library(fuzzyjoin)
+library(uuid) # для генерации случайного имени лог файла
 
 # В DataTable поиск работает только для UNICODE!!!!!!
 
@@ -45,7 +32,7 @@ flog.threshold(TRACE)
 flog.info("Dashboard started")
 
 # options(shiny.error=browser)
-# options(shiny.reactlog=TRUE)
+options(shiny.reactlog=TRUE)
 # options(shiny.usecairo=TRUE)
 
 # первичная инициализация --------------------------
@@ -71,7 +58,8 @@ ui <- fluidPage(
     sidebarPanel(
       width = 2, # обязательно ширины надо взаимно балансировать!!!!
       h3(textOutput("time_info")),
-      p()
+      p(),
+      actionButton("load_btn", "Load xDR")
     ),
     
     mainPanel(width=10, # обязательно ширины надо взаимно балансировать!!!!
@@ -82,16 +70,33 @@ ui <- fluidPage(
                                       selected=14, multiple=FALSE)),
                 column(10, selectInput("site_dynamic", "Площадки", c(1,2,3,4,5,6,7), 
                                        selected=c(1, 3, 5, 7), multiple=TRUE, width="100%"))
+              ),
+              fluidRow(
+                column(12, dataTableOutput("xdr_table"))
               )
+              
   ))
 )
 
-# Define server logic required to draw a network
+# Define server logic
 server <- function(input, output, session) {
   
   # реактивные переменные ------------------------------------------------
-  edr_http <- reactive({
+  xdr_df <- reactive({
     # flog.info(paste0("loading edr http ", input$ehm_btn))
+    # вариант 2, взят отсюда: http://readxl.tidyverse.org/articles/articles/readxl-workflows.html
+    # так быстрее на 20% и памяти в 3 раза меньше требуется
+    # на больших объемах скорость начинает выигрывать в разы, объем памяти также, в 4-6 раз меньше.
+    
+    flog.info(paste0("loading xDR ", input$load_btn))
+    
+    xdr_list <- dir(path="D:/iwork.GH/R.projects/67 MTS DPI/data/", pattern="edr_BASE-edr_http_format_.*", full.names=TRUE)
+    
+    df <- xdr_list %>%
+      head(2) %>%
+      purrr::map_df(process_xDR, delim=',', .id = NULL)
+    
+    # browser()
   })
   
   # Top N визуализация --------------------------------------------------------
@@ -100,19 +105,10 @@ server <- function(input, output, session) {
     top10_df()}, options=list(pageLength=5, lengthMenu=c(5, 7))
   )
 
-  # ВременнАя визуализация --------------------------------------------------------
-
   # Визуализация категорий трафика ------------------------------------------------------
-  output$http_category_plot <- renderPlot({
-    plotHttpCategory(http_cat_df())
-  }) 
-  
-  
-  output$http_category_table <- renderDataTable(
-    {http_cat_df()}, options=list(pageLength=5, lengthMenu=c(5, 7))
+  output$xdr_table <- renderDataTable(
+    {xdr_df()}, options=list(pageLength=5, lengthMenu=c(5, 7))
   ) 
-  
-  
   
   # обработчик часов  --------------------------------------------------
   output$time_info <- renderText({
