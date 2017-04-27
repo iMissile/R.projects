@@ -27,10 +27,6 @@ eval(parse("funcs.R", encoding="UTF-8"))
 # https://shiny.rstudio.com/articles/debugging.html
 # https://blog.rstudio.org/2015/06/16/shiny-0-12-interactive-plots-with-ggplot2/
 
-flog.appender(appender.file('app.log'))
-flog.threshold(TRACE)
-flog.info("Dashboard started")
-
 # options(shiny.error=browser)
 options(shiny.reactlog=TRUE)
 # options(shiny.usecairo=TRUE)
@@ -73,15 +69,38 @@ ui <- fluidPage(
               ),
               fluidRow(
                 column(12, dataTableOutput("xdr_table"))
+              ),
+              fluidRow(
+                column(12, wellPanel("Лог файл", verbatimTextOutput("log_info")))
               )
-              
+
   ))
 )
 
 # Define server logic
 server <- function(input, output, session) {
   
+  log_name <- "app.log"
+
+  flog.appender(appender.file(log_name))
+  flog.threshold(TRACE)
+  flog.info("Dashboard started")
+  
+  # browser()
+
+  getXdrList <- function(){
+    dir(path="D:/iwork.GH/R.projects/67 MTS DPI/data/", 
+        pattern="edr_BASE-edr_http_format_.*", full.names=TRUE)
+  }
+  
   # реактивные переменные ------------------------------------------------
+  xdr_list <- reactive({
+    dir(path="D:/iwork.GH/R.projects/67 MTS DPI/data/", 
+        pattern="edr_BASE-edr_http_format_.*", full.names=TRUE)
+    
+  })
+
+    
   xdr_df <- reactive({
     # flog.info(paste0("loading edr http ", input$ehm_btn))
     # вариант 2, взят отсюда: http://readxl.tidyverse.org/articles/articles/readxl-workflows.html
@@ -90,13 +109,32 @@ server <- function(input, output, session) {
     
     flog.info(paste0("loading xDR ", input$load_btn))
     
-    xdr_list <- dir(path="D:/iwork.GH/R.projects/67 MTS DPI/data/", pattern="edr_BASE-edr_http_format_.*", full.names=TRUE)
     
-    df <- xdr_list %>%
+    df <- xdr_list() %>%
       head(2) %>%
       purrr::map_df(process_xDR, delim=',', .id = NULL)
     
-    # browser()
+    # очистим имена колонок от кривых символов
+    fix_names <- names(df) %>%
+      stri_replace_all_fixed(pattern=c("#", "-", " "), replacement=c("", "_", "_"), vectorize_all=FALSE)
+    names(df) <- fix_names
+
+    # выберем только то, что нам интересно
+    df %>%
+      select(timestamp=sn_end_time, downlink_bytes=transaction_downlink_bytes, uplink_bytes=transaction_uplink_bytes)
+  })
+  
+  # Log file визуализация --------------------------------------------------------
+  # This part of the code monitors the file for changes once per
+  # 0.5 second (500 milliseconds).
+  logReader <- reactiveFileReader(500, session, log_name, readLines)
+  
+  output$log_info <- renderText({
+    # Read the text, and make it a consistent number of lines so
+    # that the output box doesn't grow in height.
+    text <- logReader() %>% tail(10)
+    text[is.na(text)] <- ""
+    paste(text, collapse = '\n')
   })
   
   # Top N визуализация --------------------------------------------------------

@@ -413,10 +413,10 @@ guimgr.overall-gui-state = {'windowing-policy': 'combined-window',
                  'splits': 2,
                  'tab_location': 'left',
                  'user_data': {}},
-        'window-alloc': (-70,
-                         189,
-                         1900,
-                         1008)}]}
+        'window-alloc': (-5,
+                         11,
+                         1914,
+                         1019)}]}
 guimgr.recent-documents = [loc('excel_convert.py')]
 guimgr.visual-state = {loc('../42 IoT_test/main.py'): {'attrib-starts': [],
         'first-line': 0,
