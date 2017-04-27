@@ -1,4 +1,4 @@
-process_xDR <- function(fname, ...){
+processxDR <- function(fname, ...){
   # выносим процесс загрузки в отдельный файл для того, чтобы иметь возможность делать потом прогресс бар и логирование
   # cat(fname)
   flog.info(paste0("Processing xDR '", fname, "'"))
