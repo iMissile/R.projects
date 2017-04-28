@@ -1,7 +1,10 @@
-processxDR <- function(fname, ...){
+processxDR <- function(fname, progress, ...){
   # выносим процесс загрузки в отдельный файл для того, чтобы иметь возможность делать потом прогресс бар и логирование
   # cat(fname)
+  # browser()
   flog.info(paste0("Processing xDR '", fname, "'"))
+  text <- paste0("...", stri_sub(basename(fname), from=-26, to=-1))
+  progress$inc(amount=1, detail=text)
   
   df <- read_delim(fname, delim=',')
   # problems(df)
