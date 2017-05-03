@@ -25,6 +25,11 @@ if(FALSE){
 t <- 9161234567
 # sprintf("(%s) %s-%s-%s", list(1, 2, 3, 4)) # не работает, пишет `too few arguments`
 st <- as.character(t)
+
+# [magrittr - Ceci n'est pas un pipe](https://github.com/tidyverse/magrittr). Для исправления ошибки выше см. п. "Re-using the placeholder for attributes":
+# `x %>% f(y = nrow(.), z = ncol(.))` is equivalent to `f(x, y = nrow(x), z = ncol(x))`
+# The behavior can be overruled by enclosing the right-hand side in braces:
+# `x %>% {f(y = nrow(.), z = ncol(.))}` is equivalent to `f(y = nrow(x), z = ncol(x))`
 m <- st %>% {sprintf("(%s) %s-%s-%s", stri_sub(., 1, 3), stri_sub(., 4, 6), stri_sub(., 7, 8), stri_sub(., 9, 10))}
 
 df1 <- df0 %>%
