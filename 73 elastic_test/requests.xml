@@ -1,0 +1,12 @@
+GET _search
+{
+  "query": {
+    "bool": {
+       "must": [ {"match": { "source.ip": "10.0.0.232"}} 
+       ],
+      "filter":  [
+          { "range": { "start_time": { "gte": "now-1d", "lte": "now" }}}
+        ] 
+    }
+  }
+}
