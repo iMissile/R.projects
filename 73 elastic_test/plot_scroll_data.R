@@ -1,4 +1,6 @@
 library(tidyverse)
+library(lubridate)
+library(parsedate)
 # library(tibble)
 library(purrr)
 library(magrittr)
@@ -11,46 +13,7 @@ library(tidyjson)
 library(profvis)
 library(elastic)
 
-# functions -----------------------
-processScroll <- function(n, scroll_id, req_size){
-  cat("iteration", n, "\n")
-  
-  scroll_json <- scroll(scroll_id=scroll_id, raw=TRUE, size=req_size)
-  
-  # http://stackoverflow.com/questions/35198991/tidyjson-is-there-an-exit-object-equivalent
-  # делаем в два шага
-  df <-
-    scroll_json %>% enter_object("hits") %>% enter_object("hits") %>%
-    gather_array %>% enter_object("_source") %>%
-    spread_values(
-      start_time=jstring("start_time")
-    ) %>%
-    enter_object("source") %>%
-    spread_values(
-      src_ip=jstring("ip"),
-      src_port=jnumber("port")
-    ) %>%
-    enter_object("stats") %>%
-    spread_values(
-      bytes_total=jnumber("net_bytes_total")
-    ) %>%
-    select(-document.id)
-  
-  # then enter an object and get something from inside, merging it as a new column
-  df <- merge(df, 
-              scroll_json %>% enter_object("hits") %>% enter_object("hits") %>%
-                gather_array %>% 
-                enter_object("_source") %>%
-                enter_object("dest") %>%
-                spread_values(
-                  dst_ip=jstring("ip"),
-                  dst_port=jnumber("port")
-                ) %>% select(-document.id),
-              by = c('array.index'))
-  
-  df
-}
-
+source("funcs.R")
 
 # main -----------------------------
 
@@ -66,7 +29,7 @@ body <- '{
 {"match": { "source.ip": "10.0.0.232"}} 
 ],
 "filter":  [
-{ "range": { "start_time": { "gte": "now-4h", "lte": "now" }}}
+{ "range": { "start_time": { "gte": "now-2h", "lte": "now" }}}
 ] 
 }
 }
@@ -88,3 +51,8 @@ cat(res$hits$total, ",  ", req_list, "\n")
 df <- req_list %>%
   purrr::map_df(processScroll, scroll_id=res$`_scroll_id`, req_size=req_size, .id = NULL)
 })
+
+# преобразуем типы
+df2 <- df %>%
+  mutate(timestamp=parsedate::parse_date(start_time)) %>% # время указано в ISO 8601
+  mutate(timegroup=hgroup.enum(timestamp, time.bin=.25))
