@@ -22,8 +22,7 @@ body <- list(query=list(range=list(start_time=list(gte="now-1d/d", lte="now"))))
 Search(index="packetbeat-*", body=body)$hits$total
 m <- Search(index="packetbeat-*", body=body)$hits$hits # получаем только 10 элементов вместо Total=129k (default size=10)
 
-
-body <- list(query=list(bool=list(must=list(match_all=''), filter=(match=list(source.ip="10.0.0.232")))))
+# ------------- пишем хитрый запрос через отдельный json
 
 # так выдается очень много результатов (>10K, надо делать scroll)
 body <- '{
@@ -40,8 +39,31 @@ body <- '{
 }'
 Search(index="packetbeat-*", body=body, source="source.stats.net_bytes_total")$hits$total
 # получим только интересующие поля, пробелов между полями быть не должно
-m <- Search(index="packetbeat-*", body=body, size=100, sort="source.stats.net_bytes_total:desc",
+m <- Search(index="packetbeat-*", body=body, size=10000, sort="source.stats.net_bytes_total:desc",
             source="start_time,source.port,source.ip,source.stats.net_bytes_total")$hits$hits
+
+# ------------- делаем scroll, чтобы вытащить все элементы
+body <- '{
+  "query": {
+    "bool": {
+      "must": [ 
+        {"match": { "source.ip": "10.0.0.232"}} 
+      ],
+      "filter":  [
+        { "range": { "start_time": { "gte": "now-1d", "lte": "now" }}}
+      ] 
+    }
+  }
+}'
+
+# надо оптимизировать размер size исходя из совокупного времени исполнения запросов + склейки
+req_size <- 2000
+res <- Search(index="packetbeat-*", body=body, scroll="1m", size=req_size)
+res$hits$total
+seq(from=1, by=1, length.out=res$hits$total/req_size)
+
+# посмотрим длину скрола
+length(scroll(scroll_id = res$`_scroll_id`)$hits$hits)
 
 # ========
 Search(index="packetbeat-*", body=body)$hits$total
