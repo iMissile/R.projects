@@ -1,4 +1,4 @@
-library(tydyverse)
+library(tidyverse)
 library(tibble)
 library(purrr)
 library(magrittr)
@@ -6,6 +6,8 @@ library(data.tree)
 library(rlist)
 library(reshape2)
 library(pipeR)
+library(jsonlite)
+library(tidyjson)
 library(elastic)
 
 
@@ -50,7 +52,75 @@ Search(index="packetbeat-*", body=body, source="source.stats.net_bytes_total")$h
 m <- Search(index="packetbeat-*", body=body, size=10000, sort="source.stats.net_bytes_total:desc",
             source="start_time,source.port,source.ip,source.stats.net_bytes_total")$hits$hits
 
-# ------------- делаем scroll, чтобы вытащить все элементы
+
+
+# --------------------------------------------------------------------------
+# делаем scroll, чтобы вытащить все элементы, делаем через JSON ------------
+body <- '{
+  "query": {
+    "bool": {
+      "must": [ 
+        {"match": { "source.ip": "10.0.0.232"}} 
+      ],
+      "filter":  [
+        { "range": { "start_time": { "gte": "now-1d", "lte": "now" }}}
+      ] 
+    }
+  }
+}'
+
+# надо оптимизировать размер size исходя из совокупного времени исполнения запросов + склейки
+req_size <- 1000
+res <- Search(index="packetbeat-*", body=body, scroll="1m", size=req_size)
+
+# взглянем на длину данных и длину скрола
+res$hits$total
+#length(scroll(scroll_id = res$`_scroll_id`)$hits$hits)
+req_list <- seq(from=1, by=1, length.out=res$hits$total/req_size)
+
+scroll_json <- scroll(scroll_id = res$`_scroll_id`, raw=TRUE, size=req_size)
+lres_df <- jsonlite::fromJSON(scroll_json, simplifyDataFrame=TRUE)
+m <- lres_df$hits$hits
+
+# jsonlite::prettify(scroll_res)
+
+# http://stackoverflow.com/questions/35198991/tidyjson-is-there-an-exit-object-equivalent
+# делаем в два шага
+df <-
+  scroll_json %>% enter_object("hits") %>% enter_object("hits") %>%
+  gather_array %>% enter_object("_source") %>%
+  spread_values(
+    start_time=jstring("start_time")
+    ) %>%
+  enter_object("source") %>%
+  spread_values(
+    src_ip=jstring("ip"),
+    src_port=jnumber("port")
+    ) %>%
+  enter_object("stats") %>%
+  spread_values(
+    bytes_total=jnumber("net_bytes_total")
+  ) %>%
+  select(-document.id)
+
+
+df
+
+# then enter an object and get something from inside, merging it as a new column
+df <- merge(df, 
+            scroll_json %>% enter_object("hits") %>% enter_object("hits") %>%
+              gather_array %>% 
+              enter_object("_source") %>%
+              enter_object("dest") %>%
+              spread_values(
+                dst_ip=jstring("ip"),
+                dst_port=jnumber("port")
+              ) %>% select(-document.id),
+              by = c('array.index'))
+
+df
+
+# делаем scroll, чтобы вытащить все элементы, пытаемся сделать через списки ------------- 
 body <- '{
   "query": {
     "bool": {
@@ -68,6 +138,7 @@ body <- '{
 req_size <- 2
 res <- Search(index="packetbeat-*", body=body, scroll="1m", size=req_size)
 m <- res$hits$hits
+
 
 jl <- as.Node(m)
 list.names(m)
