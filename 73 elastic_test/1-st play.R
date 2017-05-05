@@ -9,7 +9,21 @@ library(pipeR)
 library(jsonlite)
 library(tidyjson)
 library(elastic)
+library(parsedate)
+library(fasttime)
+library(anytime)
+library(microbenchmark)
 
+# тесты на проверку функций по парсингу времени ----------------------------
+tm <- "2017-05-04T13:55:00.302Z"
+anytime(tm, tz="Europe/Moscow")
+fastPOSIXct(tm) # на 5-10% медленнее
+parse_date(tm) # на 2 порядка медленнее
+
+microbenchmark(anytime(tm, tz="Europe/Moscow"), times=1000, unit="us")
+microbenchmark(fastPOSIXct(tm), times=1000, unit="us")
+microbenchmark(parse_date(tm), times=1000, unit="us")
+# ----------------------------
 
 connect(es_host="89.223.29.108", es_port = 9200)
 info() # посмотрели информацию про соединение
