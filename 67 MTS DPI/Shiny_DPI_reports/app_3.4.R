@@ -8,7 +8,7 @@ library(countrycode) # turn country codes into pretty names
 library(scales)      # pairs nicely with ggplot2 for plot label formatting
 # library(gridExtra)   # a helper for arranging individual ggplot objects
 library(ggthemes)    # has a clean theme for ggplot2
-library(viridis)     # best. color. palette. evar.
+# library(viridis)     # best. color. palette. evar.
 library(RColorBrewer)# best. color. palette. evar.
 library(hrbrthemes)
 library(extrafont)   # http://blog.revolutionanalytics.com/2012/09/how-to-use-your-favorite-fonts-in-r-charts.html
@@ -44,7 +44,7 @@ flog.appender(appender.file('app.log'))
 flog.threshold(TRACE)
 flog.info("Dashboard started")
 
-# options(shiny.error=browser)
+#options(shiny.error=browser)
 # options(shiny.error=recover)
 # options(shiny.fullstacktrace=TRUE)
 # options(shiny.trace=TRUE)
@@ -104,10 +104,10 @@ ui <- fluidPage(
                                     style = "position:relative; font-size:smaller;",
                                     # column(12, plotOutput("dynamic_plot", height = "600px"))
                                     plotOutput("dynamic_plot", 
-                                               height="600px",
-                                               hover=hoverOpts("plot_hover", delay=100, delayType = "debounce")
-                                               ),
-                                    uiOutput("hover_info")
+                                               height="600px"#,
+                                               #hover=hoverOpts("plot_hover", delay=100, delayType = "debounce")
+                                               )#,
+                                    # uiOutput("hover_info")
                                   )
                            )
                          ),
@@ -177,14 +177,16 @@ server <- function(input, output, session) {
   edr_http <- reactive({
     flog.info(paste0("loading edr http ", input$ehm_btn))
     
-    req(read_csv("edr_http_small.csv"), cancelOutput=TRUE) %>%
+    tmp <- req(read_csv("edr_http_small.csv"), cancelOutput=TRUE)
+    # browser()
     # req(readRDS("edr_http_small.rds")) %>%
-      select(msisdn, end_timestamp, uplink_bytes, downlink_bytes, site, http_host)
+    tmp %>% select(msisdn, end_timestamp, uplink_bytes, downlink_bytes, site, http_host)
     # req(read_csv("edr_http.csv", progress=interactive()) %>% slice(1:20000))
     # write_csv(t %>% sample_frac(0.2), "edr_http_small.csv")
   })
   
   top10_df <- reactive({
+    flog.info("top10_df()")
     edr_http() %>%
       select(timestamp=end_timestamp, down=downlink_bytes, up=uplink_bytes, site, msisdn) %>%
       gather(up, down, key="direction", value="bytes") %>%
@@ -285,9 +287,11 @@ server <- function(input, output, session) {
     top10_df()}, options=list(pageLength=5, lengthMenu=c(5, 7))
   )
 
-    
+  
   # ВременнАя визуализация --------------------------------------------------------
   output$dynamic_plot <- renderPlot({
+    # проблема в 3.4 возникает здесь
+    # browser()
     flog.info("Dynamic plot")
     timeframe <- getTimeframe(input$dynamic_time_depth, 0)
 
@@ -308,7 +312,8 @@ server <- function(input, output, session) {
   # Пример визуализации с применением plot.ly -------------------------------------------
   output$plotly_plot1 <- renderPlotly({
     gp <- plotTop10Downlink(top10_down_df())
-    ggplotly(gp)
+    t <- ggplotly(gp)
+    t
   })  
   
   output$plotly_plot2 <- renderPlotly({
@@ -411,8 +416,6 @@ server <- function(input, output, session) {
   # https://gitlab.com/snippets/16220
   output$hover_info <- renderUI({
     # browser()
-    # В 3.4 hover не работает пока. 
-    # Warning: Error in $<-.data.frame: replacement has 0 rows, data has 2800
     
     hover <- input$plot_hover
     point <- nearPoints(traffic_df(), hover, threshold = 5, maxpoints = 1, addDist = TRUE)
