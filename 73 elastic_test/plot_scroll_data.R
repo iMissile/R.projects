@@ -34,7 +34,7 @@ body <- '{
 {"match": { "source.ip": "10.0.0.232"}} 
 ],
 "filter":  [
-{ "range": { "start_time": { "gte": "now-36h", "lte": "now" }}}
+{ "range": { "start_time": { "gte": "now-7d", "lte": "now" }}}
 ] 
 }
 }

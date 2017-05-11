@@ -41,7 +41,7 @@ df2 <- df1 %>%
 
 # векторизируем с помощью враппера, чтобы применить внутри mutate
 parseDate <- Vectorize(function(x){
- if(x > 1e7) ymd(x) else as.Date(x, origin = "1899-12-30") # orogin из мануала as.Date
+ if(x > 1e7) ymd(x) else as.Date(x, origin = "1899-12-30") # origin из мануала as.Date
 })
 
 # где-то в ходе преобразований Date теряет свой класс и превращается просто в набор чисел
