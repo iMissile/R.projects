@@ -13,6 +13,8 @@ library(profvis)
 library(tictoc)
 library(microbenchmark)
 
+eval(parse("funcs.R", encoding="UTF-8"))
+
 fields <-
   flatten_chr(
     stri_split_regex(
@@ -75,6 +77,9 @@ df <- df0 %>%
   filter(record_type=="01") %>% # выкинули закрывающие строчки и потенциальный хлам
   mutate(timestamp=readr::parse_datetime(channel_seizure_date_time, format="%Y%m%d%H%M%S")) %>%
   select(-channel_seizure_date_time, -record_id) %>%
+  # очистили шлак и дубли после предварительного анализа данных
+  select(-message_switch_id, -us_seq_no, -at_feature_code, -catchup_ind, -call_action_code, -call_destination) %>%
+  #  --
   select_if(function(x) !all(is.na(x))) %>% # удал€ем колонки только с NA значени€ми
   select_if(function(x) n_distinct(x)>1) %>% # удалим колонки у которых нет уникальных значений
   select(timestamp, everything()) 
@@ -84,9 +89,9 @@ toc()
 tic()
 # посчитаем количество уникальных значений в колонках
 dist_cols <- map_df(df, n_distinct)
+# посчитаем словарные уникальные значени€
+unq <- map(select(df, -timestamp, -subscriber_no, -call_to_tn_sgsn, -calling_no_ggsn), unique)
 toc()
-
-
 
 # эксперименты с данными ---------
 # посчитаем кол-во записей по каждому no_ggsn
@@ -95,6 +100,62 @@ a_df <- df %>%
   summarise(n=n()) %>%
   arrange(desc(n))
 
+tic()
+write_csv(df, "CDP_result.log.gz")
+toc()
+
+# попробуем отобразить графики ================
+df %<>%
+  mutate(timegroup=hgroup.enum(timestamp, min_bin=10)) %>%
+  mutate(CP=calling_no_ggsn)
+
+# top_n примен€етс€ дл€ каждой группы, поэтому сначала  необходимо определить “ќѕ N по контент провайдерам.
+# выберем наиболее активных контент-провайдеров
+cp_df <- df %>%
+  group_by(CP) %>%
+  summarise(n=n()) %>%
+  top_n(9, n) %>%
+  arrange(desc(n))
+
+# а теперь выберем из исходного материала только данные, касающиес€ этих “ќѕ 20
+df2 <- df %>%
+  semi_join(cp_df, by="CP") %>%
+  group_by(timegroup, CP, message_type) %>%
+  summarise(n=n()) %>%
+  ungroup() %>%
+  arrange(desc(n)) %>%
+  # 3. Add order column of row numbers
+  mutate(order=row_number())
+
+
+windowsFonts(robotoC="Roboto Condensed")
+
+# To change the order in which the panels appear, change the levels
+# of the underlying factor.
+# df2$CP_order <- reorder(df2$CP, df2$n)
+# так тоже не работает, потому что внутри группировка идет по пор€дку O,S,T. ј там максимумы другие.
+
+gp <- ggplot(df2, aes(timegroup, n, colour=message_type)) + 
+  geom_point(alpha=0.85, shape=1, size=3) +
+  geom_line(alpha=0.85, lwd=1) +
+  # theme_ipsum_rc(base_family="robotoC", base_size=16, axis_title_size=14) +
+  scale_x_datetime(breaks=date_breaks("2 hour")
+                   #minor_breaks = date_breaks("6 hours"),
+  ) +
+  #facet_wrap(~fct_reorder(CP, n, .desc=TRUE), scales = "free_y") +
+  #facet_wrap(~CP_order, scales = "free_y") +
+  facet_wrap(~fct_reorder(CP_order, n, .desc = TRUE)) +
+  # theme_ipsum_rc(base_family="robotoC", base_size=14, axis_title_size=12) +
+  theme_ipsum_rc(base_size=14, axis_title_size=12) +
+  theme(axis.text.x = element_text(angle=90)) +
+  xlab("ƒата, врем€") +
+  ylab(" оличество CDR за 10 мин") +
+  ggtitle("ƒинамика обмена контентом")
+
+gp
+
+# очистим все warnings():
+assign("last.warning", NULL, envir = baseenv())
 
 if (FALSE){
 # проверим какой из вариантов по отбросу полностью NA колонок быстрее
@@ -118,3 +179,9 @@ df1 %<>% mutate(timestamp=anytime(channel_seizure_date_time))
 rm(df2)
 }
 # http://r4ds.had.co.nz/lists.html
+
+
+stop()
+
+df3 <- df2 %>%
+  arrange(desc(n))
