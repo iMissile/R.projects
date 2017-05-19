@@ -177,8 +177,8 @@ df3 <- df2 %>%
 
 gg = ggplot(df3, aes(x=hour, y=fct_reorder(CP, n, .desc=FALSE), fill=n))
 gg = gg + geom_tile(color="white", size=0.1)
-# gg = gg + scale_fill_viridis(option="B", name="CDR в час", label=comma) # https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html
-gg = gg + scale_fill_distiller(palette="RdYlGn", name="CDR в час", label=comma) # http://docs.ggplot2.org/current/scale_brewer.html
+gg = gg + scale_fill_viridis(option="B", name="CDR в час", label=comma) # https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html
+#gg = gg + scale_fill_distiller(palette="RdYlGn", name="CDR в час", label=comma) # http://docs.ggplot2.org/current/scale_brewer.html
 #gg = gg + coord_equal()
 gg = gg + coord_fixed(ratio = 1)
 gg = gg + labs(x=NULL, y=NULL, title="KPI по часам и дням недели")
