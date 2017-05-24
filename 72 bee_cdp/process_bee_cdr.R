@@ -37,6 +37,8 @@ fields <-
     )
   )
 
+# либо парсим исходные файлы, либо подгружаем уже ранее консолидированный
+if (FALSE){
 cdr_spec <- tibble(fields) %>% 
   separate(fields, into=c("cname", "ctype"), sep=":") %>% 
   replace_na(list(ctype = "c"))
@@ -90,6 +92,17 @@ df <- df0 %>%
 toc()
 
 tic()
+write_csv(df, "CDP_result.log.gz")
+saveRDS(df, file="CDP_result.rds")
+toc()
+} else{
+  tic()
+  df <- readRDS("CDP_result.rds")  
+  toc()
+}
+
+
+tic()
 # посчитаем количество уникальных значений в колонках
 dist_cols <- map_df(df, n_distinct)
 # посчитаем словарные уникальные значения
@@ -103,9 +116,6 @@ a_df <- df %>%
   summarise(n=n()) %>%
   arrange(desc(n))
 
-tic()
-write_csv(df, "CDP_result.log.gz")
-toc()
 
 # попробуем отобразить графики. предварительная подготовка ================
 df %<>%
@@ -188,6 +198,24 @@ gg = gg + theme(plot.title=element_text(hjust=0))
 #                                              colour = "black", size = 1,
 #                                              linetype="longdash"))
 gg = gg + facet_wrap(~message_type, ncol=1)
+
+gg
+
+# Поисследуем денежки ====================================
+df3 <- df %>%
+  filter(!is.na(sdr_amount) & sdr_amount>0) %>%
+  group_by(CP) %>%
+  summarize(rur=sum(sdr_amount)/100000)
+
+
+gg <- ggplot(df3 %>% top_n(10, rur), aes(x=fct_reorder(CP, rur, .desc=TRUE), y=rur)) +
+  geom_bar(stat="identity") +
+  theme_ipsum_rc(base_size=14, axis_title_size=12) +
+  theme(axis.text.x = element_text(angle=90)) +
+  geom_text(aes(label=rur), vjust=-0.5, colour="red") +
+  xlab("Контент-провайдер") +
+  ylab("Денежки за период анализа, руб.") +
+  ggtitle("Анализ денежных потоков")  
 
 gg
 
