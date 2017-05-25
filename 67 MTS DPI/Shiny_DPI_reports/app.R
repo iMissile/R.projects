@@ -4,7 +4,7 @@ library(padr)
 library(ggrepel)
 library(forcats)
 library(magrittr)
-library(countrycode) # turn country codes into pretty names
+# library(countrycode) # turn country codes into pretty names
 library(scales)      # pairs nicely with ggplot2 for plot label formatting
 # library(gridExtra)   # a helper for arranging individual ggplot objects
 library(ggthemes)    # has a clean theme for ggplot2
@@ -411,11 +411,15 @@ server <- function(input, output, session) {
   # https://gitlab.com/snippets/16220
   output$hover_info <- renderUI({
     # browser()
-    # В 3.4 hover не работает пока. 
-    # Warning: Error in $<-.data.frame: replacement has 0 rows, data has 2800
+    
+    # browser()
     
     hover <- input$plot_hover
-    point <- nearPoints(traffic_df(), hover, threshold = 5, maxpoints = 1, addDist = TRUE)
+    # В 3.4 hover не работает пока. 
+    # Warning: Error in $<-.data.frame: replacement has 0 rows, data has 2800
+    # point <- nearPoints(traffic_df(), hover, threshold = 5, maxpoints = 1, addDist = TRUE)
+    # а так работает. почему-то mapping в hover$mappings не такой как хотелось, по `global_meanr`
+    point <- nearPoints(traffic_df(), hover, xvar="timegroup", yvar="volume", threshold=5, maxpoints=1, addDist=TRUE)
     if (nrow(point) == 0) return(NULL)
     
     # calculate point position INSIDE the image as percent of total dimensions
