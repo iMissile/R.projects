@@ -61,6 +61,7 @@ setMethod("dbConnect", "clickhouse_driver",
     con <- new("clickhouse_connection",
       url = paste0("http://", user, ":", password, "@", host, ":", port, "/")
     )
+    # browser()
     stopifnot(dbIsValid(con))
     con
   }
@@ -74,8 +75,9 @@ setMethod("dbExistsTable", "clickhouse_connection", function(conn, name, ...) {
 	as.logical(name %in% dbListTables(conn))
 })
 
-setMethod("dbReadTable", "clickhouse_connection", function(conn, name, ...) {
-	dbGetQuery(conn, paste0("SELECT * FROM ", name))
+setMethod("dbReadTable", c("clickhouse_connection", "character"), function(conn, name, ...) {
+	cat("dbReadTable")
+  dbGetQuery(conn, paste0("SELECT * FROM ", name))
 })
 
 setMethod("dbRemoveTable", "clickhouse_connection", function(conn, name, ...) {
@@ -86,6 +88,7 @@ setMethod("dbRemoveTable", "clickhouse_connection", function(conn, name, ...) {
 setMethod("dbSendQuery", "clickhouse_connection", function(conn, statement, use = c("memory", "temp"), ...) {
   # with use = "temp" we try to avoid exception with long vectors conversion in rawToChar
   # <simpleError in rawToChar(req$content): long vectors are not supported yet: raw.c:68>
+  # browser()
   use <- match.arg(use)
 
   q <- sub("[; ]*;\\s*$", "", statement, ignore.case=T, perl=T)

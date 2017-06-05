@@ -11,16 +11,38 @@ source("clickhouse.R")
 # https://github.com/rstats-db/odbc
 
 
+dbq <-
+  function(conn, x, ...) {
+    browser()
+  if (nzchar(conn@quote)) {
+    x <- gsub(conn@quote, paste0(conn@quote, conn@quote), x, fixed = TRUE)
+  }
+  DBI::SQL(paste(conn@quote, encodeString(x), conn@quote, sep = ""))
+}
+
 # https://github.com/hannesmuehleisen/clickhouse-r
 
 # con <- dbConnect(clickhouse::clickhouse(), host="10.0.0.234", port=8123L, user="default", password="")
 con <- dbConnect(clickhouse(), host="10.0.0.234", port=8123L, user="default", password="")
 #dbWriteTable(con, "mtcars", mtcars)
-dbListTables(con)
-dbGetQuery(con, "SELECT COUNT(*) FROM mtcars")
-dbGetQuery(con, "SHOW TABLES")
-browser()
+# dbListTables(con)
+# dbGetQuery(con, "SELECT COUNT(*) FROM mtcars")
+# dbGetQuery(con, "SHOW TABLES")
+# browser()
 # mtrace(dbReadTable)
+tt <- dbReadTable(con, "mtcars")
+
+dbWriteTable(con, "mtcars")
+# проверим маскирование кавычек
+# dbq(con, "mtcars")
+
+dbWriteTable(con, "mtcars2", mtcars)
+dbListTables(con)
+
+
+t <- dbGetQuery(con, "SELECT *  FROM mtcars")
+browser()
+
 d <- dbReadTable(con, "mtcars")
 dbDisconnect(con)
 stop()

@@ -39,5 +39,9 @@ SELECT * FROM mtcars
 5. ѕосмотрим таблицу в браузере на клиентской машине:
 http://10.0.0.234:8123/?query=SELECT%20*%20FROM%20mtcars
 
-3. ”дал€ем таблицу
+6. ѕосмотрим на структуру таблицы (CREATE по которому была создана таблица)
+SHOW CREATE TABLE mtcars
+
+
+7. ”дал€ем таблицу
 DROP TABLE mtcars
