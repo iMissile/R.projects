@@ -8,6 +8,7 @@ library(microbenchmark)
 library(anytime)
 # library(fasttime)
 library(tictoc)
+library(RColorBrewer)
 library(hrbrthemes)
 
 
@@ -60,26 +61,47 @@ windowsFonts(robotoC="Roboto Condensed")
 
 # To change the order in which the panels appear, change the levels
 # of the underlying factor.
-# df2$CP_order <- reorder(df2$CP, df2$n)
-# так тоже не работает, потому что внутри группировка идет по порядку O,S,T. А там максимумы другие.
 
+# переделываем группировку для корректного отображения внутри facet
+# https://drsimonj.svbtle.com/ordering-categories-within-ggplot2-facets
 df2 <- df1 %>% 
   group_by(region) %>% 
-  top_n(5, duration)
+  top_n(5, duration) %>%
+  ungroup() %>%
+  arrange(desc(total_duration), desc(duration)) %>%
+  # mutate_at(vars(channelId, region), as.factor) %>%
+  mutate(order=row_number())
+  
+# очистим все warnings():
+assign("last.warning", NULL, envir = baseenv())
+
+m <- reorder(df2$channelId, df2$order)
+
+f3 <- fct_reorder(df2$channelId, df2$order)
 
 # Гистограмма ТОП-5 программ по выбранным регионам ====================================
-# https://drsimonj.svbtle.com/ordering-categories-within-ggplot2-facets
-gp <- ggplot(df2, aes(fct_reorder(channelId, duration, .desc=TRUE), duration)) + 
-  geom_bar(stat="identity") +
-  coord_flip() +
+# 45 строк и 34 фактора по передачам!
+# gp <- ggplot(df2, aes(fct_reorder(channelId, duration, .desc=TRUE), duration)) +
+# gp <- ggplot(df2, aes(order, duration)) +
+gp <- ggplot(df2, aes(fct_reorder(as.factor(order), order, .desc = TRUE), duration)) +
+# gp <- ggplot(df2, aes(x=fct_reorder(channelId, order, .desc = TRUE), y=duration)) +  
+  geom_bar(fill=brewer.pal(n=9, name="Blues")[4], alpha=0.5, stat="identity") +
+  # geom_text(aes(label=order), vjust=-0.5, colour="red") + # для вертикальных
+  geom_text(aes(label=order), hjust=+0.5, colour="red") + # для вертикальных
+  scale_x_discrete("Передача", breaks=df2$order, labels=df2$channelId) +
+  #scale_x_discrete("Передача", labels=df2$channelId)
+  #scale_x_manual("Передача", values=df2$channelId)
+  # scale_x_discrete(labels=channelId)) +
   #facet_wrap(~fct_reorder(CP, n, .desc=TRUE), scales = "free_y") +
   #facet_wrap(~CP_order, scales = "free_y") +
   facet_wrap(~fct_reorder(region, total_duration, .desc = TRUE), scales = "free") +
-  # theme_ipsum_rc(base_family="robotoC", base_size=14, axis_title_size=12) +
-  theme_ipsum_rc(base_size=14, axis_title_size=12) +
+  theme_ipsum_rc(base_size=14, axis_title_size=12) +  
   theme(axis.text.x = element_text(angle=90)) +
-  xlab("Дата, время") +
   ylab("Суммарное количество минут") +
-  ggtitle("Телесмотрение")
+  ggtitle("Телесмотрение") +
+  coord_flip()
+
 
 gp
+
+
