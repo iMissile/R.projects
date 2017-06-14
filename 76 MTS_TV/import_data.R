@@ -17,7 +17,8 @@ library(tictoc)
 
 # https://jsonformatter.curiousconcept.com/
 
-if (FALSE){
+# 1-ый шаг преобразований ===============
+if(FALSE){
 fname <- "./data/head.json"
 fname <- "./data/stat_fix.json"
 # fname <- "./data/stat_small.json"
@@ -35,24 +36,71 @@ toc()
 system.time(saveRDS(tvstream, "tvstream2.rds", ascii=FALSE, compress="gzip"))
 }
 
+# 2-ой шаг преобразований ===============
+if(FALSE){
 system.time(rawdf <- readRDS("./data/tvstream2.rds"))
 
-tic()
-# руками проводим перекомпоновку
-tracemem(df)
-df <- select(rawdf, -`_source`) %>%
+tic("Postprocessing")
+# руками проводим перекомпоновку, имена оставляем плоскими
+#tracemem(df)
+df0 <- select(rawdf, -`_source`) %>%
   add_column(date=rawdf$`_source`$date) %>%
   add_column(timestamp=rawdf$`_source`$`@timestamp`) %>%
   add_column(version=rawdf$`_source`$`@version`) %>%
   add_column(host=rawdf$`_source`$host) %>%
   add_column(type=rawdf$`_source`$type) %>%
   bind_cols(rawdf$`_source`$headers) %>%
-  bind_cols(rawdf$`_source`$data)
+  bind_cols(rawdf$`_source`$data) %>%
+  rename(data_date=date1)
 toc()
 # ==============
 
+tic("Cleaning")
+df <- df0 %>%
+  repair_names() %>%
+  # -- удаляем тестовый мусор (обсудили в скайпе)
+  select(-`_id`, -http_accept_encoding, -http_origin, -request_uri, -content_length) %>%
+  select(-http_user_agent, -http_accept_language, -http_cache_control, -http_pragma, -http_cookie) %>%
+  #  --
+  select_if(function(x) !all(is.na(x))) %>% # удаляем колонки только с NA значениями
+  select_if(function(x) n_distinct(x)>1) %>% # удалим колонки у которых нет уникальных значений
+
+  select(timestamp, everything()) 
+toc()
+
+tic("Analysis")
+# посчитаем количество уникальных значений в колонках
+dist_cols <- map_df(select(df, -timestamp), n_distinct)
+# посчитаем словарные уникальные значения
+unq <- map(select(df, -timestamp), unique)
+toc()
+
+
+system.time(saveRDS(df, "./data/tvstream3.rds", ascii=FALSE, compress="gzip"))
+}
+
 stop()
+
+
+# Область упражнений ====================
+
 m <- rawdf[c(2,3,4), ]
+
+
+
+# myfunc <- function(t){
+#   browser()
+#   TRUE
+# }
+# df3 <- df %>% select_at(vars(-one_of("timestamp")), function(x) n_distinct(x)>1)
+# df3 <- df %>% select_at(vars(-one_of("timestamp")))
+# df3 <- select(df, one_of(vars))
+
+# df %>% vars(-one_of("timestamp"))
+
+# one_of(c("timestamp"))
+# vars <- c("timestamp", "date")
+# one_of(vars)
 
 
 
