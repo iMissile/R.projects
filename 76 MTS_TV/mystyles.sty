@@ -1,3 +1,10 @@
 \usepackage{fontspec}
-\setmainfont{Linux Libertine O}
 \usepackage[english,russian]{babel}
+\setmainfont{Linux Libertine O}
+
+% https://tex.stackexchange.com/questions/110013/russian-language-within-figure-captions-in-unicode-aware-systems
+% https://tex.stackexchange.com/questions/55090/renewcommand-tablenamename-does-not-work
+\AtBeginDocument{%
+  %\renewcommand\tablename{new}
+  \def\tablename{Таблица}
+}
