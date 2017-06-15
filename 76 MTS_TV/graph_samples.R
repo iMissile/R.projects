@@ -6,7 +6,7 @@ library(magrittr)
 library(forcats)
 library(microbenchmark)
 library(anytime)
-# library(fasttime)
+library(Cairo)
 library(tictoc)
 library(RColorBrewer)
 library(hrbrthemes)
@@ -75,10 +75,6 @@ df2 <- df1 %>%
 # очистим все warnings():
 assign("last.warning", NULL, envir = baseenv())
 
-m <- reorder(df2$channelId, df2$order)
-
-f3 <- fct_reorder(df2$channelId, df2$order)
-
 # Гистограмма ТОП-5 программ по выбранным регионам ====================================
 # 45 строк и 34 фактора по передачам!
 # gp <- ggplot(df2, aes(fct_reorder(channelId, duration, .desc=TRUE), duration)) +
@@ -98,7 +94,7 @@ gp <- ggplot(df2, aes(fct_reorder(as.factor(order), order, .desc = TRUE), durati
   theme_ipsum_rc(base_size=14, axis_title_size=12) +  
   theme(axis.text.x = element_text(angle=90)) +
   ylab("Суммарное количество минут") +
-  ggtitle("Телесмотрение") +
+  ggtitle("Статистика телесмотрения", subtitle="Топ 5 каналов для Топ 9 регионов") +
   coord_flip()
 
 
