@@ -1,16 +1,18 @@
 ---
 title: "Анализ xDR"
-author: "Шутов Илья"
-date: '`r Sys.Date()`'
-fontsize: 12pt
+author: "empty"
+date: "`r Sys.Date()`"
 output:
+  html_document: default
   pdf_document:
     dev: cairo_pdf
+    includes:
+      in_header: mystyles.sty
     keep_tex: yes
     latex_engine: xelatex
-    includes:
-        in_header: mystyles.sty
-  html_document: default
+resource_files:
+- data/edr_BASE-edr_http_format_03092017143656_002_002808698
+fontsize: 12pt
 ---
 
 ```{r setup, include=FALSE}

@@ -1,6 +1,6 @@
 ---
 title: "ru-tex-pdf"
-author: "Шутов Илья"
+author: ""
 date: '`r Sys.Date()`'
 fontsize: 12pt
 output:
