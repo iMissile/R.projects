@@ -2,11 +2,31 @@ library(tidyverse)
 library(readxl)
 library(stringi)
 library(profvis)
+library(anytime)
 
-pplan <- "./data/Гибрид_КП_DVBC_2017-05-02.xlsx"
+
+pplan <- "./data/Гибрид_КП_DVBC_2017-05-02_small.xlsx"
+pplan <- "./data/Гибрид_КП_DVBS_2017-04-03.xlsx"
+#pplan <- "./data/Гибрид_КП_IPTV_2017-04-03.xlsx"
 
 tmp <- excel_sheets(pplan)
 sheets <- tmp[!stri_detect_fixed(tmp, c('КП', 'AC'))]
+# sheets <- tmp[!stri_detect_fixed(tmp, c('AC'))]
+
+# определяем тип файла --------------------
+ptype <- case_when(
+  "IPTV" %in% sheets  ~ "iptv",
+  "DVB-S" %in% sheets ~ "dvbs",
+  length(sheets) > 8 ~ "dvbc",
+  TRUE                ~ "unknown"
+)
+
+ptype
+
+# теперь вытащим дату ---------------------
+pdate <- stri_extract_first_regex(pplan, pattern="\\d{4}-\\d{2}-\\d{2}")
+pdate <- Sys.Date() # берем после разговора с Кириллом
+# dput(anytime(date))
 
 parseSheet <- function(sheet_name, fname){
   
@@ -16,35 +36,48 @@ parseSheet <- function(sheet_name, fname){
     # select(title=`Наименование канала`, epg_id=`EPG ID`, genre=`Жанр`) %>%
     select(row_num=`#`, title=`Наименование канала`, epg_id=`EPG ID`) %>%
     # filter(complete.cases(.)) %>%
-    mutate(city=sheet_name) %>%
+    mutate(city=sheet_name)
     #mutate(row_num=row_number()+) %>% # +2 потому что удалили первую строку, а вторая ушла в заголовок
-    select(city, row_num, everything())
   
   df0
 } 
 
-# вариант 2, взят отсюда: http://readxl.tidyverse.org/articles/articles/readxl-workflows.html
-# так быстрее на 20% и памяти в 3 раза меньше требуется
-# на больших объемах скорость начинает выигрывать в разы, объем памяти также, в 4-6 раз меньше.
-df0 <- sheets %>%
-  purrr::map_df(parseSheet, fname=pplan) %>%
-  mutate(epg_id=stri_trim_left(epg_id, pattern="\\P{Wspace}")) # убрали лидирующие пробелы
-# saveRDS(df, "flow_df.rds")
+if(ptype == "dvbc") {
+  # вариант 2, взят отсюда: http://readxl.tidyverse.org/articles/articles/readxl-workflows.html
+  # так быстрее на 20% и памяти в 3 раза меньше требуется
+  # на больших объемах скорость начинает выигрывать в разы, объем памяти также, в 4-6 раз меньше.
+  df0 <- sheets %>%
+    purrr::map_df(parseSheet, fname = pplan) %>%
+    mutate(timezone=0)
+} # обойдемся без вложенных else
+if(ptype == "dvbs") {
+  df0 <- read_excel(pplan, sheet="DVB-S", skip=1) %>% # пропускаем шапку
+    select(row_num=`#`, title=`Наименование канала`, epg_id=`EPG ID`, timezone=`Час Зона`) %>%
+    mutate(city='', timezone=as.numeric(stri_extract_first_regex(timezone, pattern="\\d+")))
+} # обойдемся без вложенных else
 
+
+# общий постпроцессинг
+df1 <- df0 %>%
+  mutate(epg_id=stri_trim_left(epg_id, pattern="\\P{Wspace}")) %>% # убрали лидирующие пробелы
+  mutate(date=pdate) %>%
+  select(date, row_num, epg_id, title, city, everything())
+
+# определяем полезное подмножество ---------
 # почистим данные от шлака, а потом выясним пересечение
-df <- df0 %>%
+clean_df <- df1 %>%
   filter(!is.na(epg_id)) %>%
   filter(stri_startswith_fixed(epg_id, 'epg')) %>%
   distinct()
 
-bad_df <- anti_join(df0, df)  
+bad_df <- anti_join(df1, clean_df)  
+
+stop()
 
 write_excel_csv(df, "program_plan_fast.csv", na="NA", append=FALSE, col_names=TRUE)
 # write_delim(df, "program_plan.csv", delim="\t", na="NA", append=FALSE, col_names=TRUE)
 write.table(df, "program_plan_slow.csv", na="NA", append=FALSE, col.names=TRUE, row.names=FALSE, sep=";")
 
-
-stop()
 
 na_df <- df %>%
   filter(is.na(epg_id))
