@@ -34,7 +34,9 @@ ui <- fluidPage(
       fileInput('pplan', 'Выбор .xlsx файла с планом',
                 #accept=c('application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')),
                 accept=c('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')),
-      actionButton("go", "Публиковать")
+      actionButton("go", "Публиковать"),
+      p(),
+      h3(textOutput("type_info", inline=TRUE))
     ),
 
     mainPanel(
@@ -68,32 +70,54 @@ server <- function(input, output, session) {
     normalizePath(fname)
   })
   
-  sheets_df <- reactive({
+  sheet_names <- reactive({
     tmp <- excel_sheets(pplan())
     sheets <- tmp[!stri_detect_fixed(tmp, c('КП', 'AC'))]    
     
     sheets
   })
   
+  ptype <- reactive({
+    # определяем тип файла --------------------
+    case_when(
+      "IPTV" %in% sheet_names()  ~ "iptv",
+      "DVB-S" %in% sheet_names() ~ "dvbs",
+      length(sheet_names()) > 8  ~ "dvbc",
+      TRUE                       ~ "unknown"
+    )
+  })
+  
   raw_plan_df <- reactive({
-    # парсим закладки файла
-    
-    progress <- Progress$new(session, min=1, max=length(sheets_df()))
-    on.exit(progress$close())
-    
-    # progress$set(message=HTML(paste0("Парсинг закладок (", length(sheets_df()), " шт)", "<br/>")), # format(Sys.time(), "%H:%M:%S")), 
-    #              detail="...")
 
-    progress$set(message=paste0("Парсинг закладок (", length(sheets_df()), " шт) . . . ."),
-                detail="...")
+    # обойдемся без вложенных else, нет смысла усложнять
+    if (ptype == "dvbc") {
+      # парсим закладки файла
+      
+      progress <- Progress$new(session, min = 1, max = length(sheet_names()))
+      on.exit(progress$close())
+      
+      # progress$set(message=HTML(paste0("Парсинг закладок (", length(sheets_df()), " шт)", "<br/>")), # format(Sys.time(), "%H:%M:%S")),
+      #              detail="...")
+      
+      progress$set(message = paste0("Парсинг закладок (", length(sheet_names()), " шт) . . . ."),
+                   detail = "...")
+      
+      # вариант 2, взят отсюда: http://readxl.tidyverse.org/articles/articles/readxl-workflows.html
+      # так быстрее на 20% и памяти в 3 раза меньше требуется
+      # на больших объемах скорость начинает выигрывать в разы, объем памяти также, в 4-6 раз меньше.
+      # browser()
+      df0 <- sheet_names() %>%
+        purrr::map_df(parseSheet, fname = pplan(), progress = progress, .id = NULL) %>%
+        mutate(timezone = 0)
+    }
     
-    # вариант 2, взят отсюда: http://readxl.tidyverse.org/articles/articles/readxl-workflows.html
-    # так быстрее на 20% и памяти в 3 раза меньше требуется
-    # на больших объемах скорость начинает выигрывать в разы, объем памяти также, в 4-6 раз меньше.
-    # browser()
-    df <- sheets_df() %>%
-      purrr::map_df(parseSheet, fname=pplan(), progress=progress, .id = NULL) %>%
-      mutate(epg_id=stri_trim_left(epg_id, pattern="\\P{Wspace}")) # убрали лидирующие пробелы    
+    # общий постпроцессинг --------------
+    df <- df0 %>%  
+      mutate(epg_id=stri_trim_left(epg_id, pattern="\\P{Wspace}")) %>% # убрали лидирующие пробелы
+      mutate(date=Sys.Date()) %>% # берем после разговора с Кириллом
+      mutate(type=ptype()) %>%
+      select(date, row_num, epg_id, title, city, everything())    
+    
     
   })
   
@@ -112,6 +136,10 @@ server <- function(input, output, session) {
     options=list(pageLength=10, lengthMenu=c(5, 10, 15))
   )
 
+  output$type_info <- renderText({
+    ptype()
+  })
+  
   # Log file визуализация --------------------------------------------------------
   # This part of the code monitors the file for changes once per
   # 0.5 second (500 milliseconds).
