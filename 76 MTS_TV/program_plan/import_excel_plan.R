@@ -7,7 +7,7 @@ library(anytime)
 
 pplan <- "./data/Гибрид_КП_DVBC_2017-05-02_small.xlsx"
 pplan <- "./data/Гибрид_КП_DVBS_2017-04-03.xlsx"
-#pplan <- "./data/Гибрид_КП_IPTV_2017-04-03.xlsx"
+pplan <- "./data/Гибрид_КП_IPTV_2017-04-03.xlsx"
 
 tmp <- excel_sheets(pplan)
 sheets <- tmp[!stri_detect_fixed(tmp, c('КП', 'AC'))]
@@ -42,6 +42,7 @@ parseSheet <- function(sheet_name, fname){
   df0
 } 
 
+# обойдемся без вложенных else, нет смысла усложнять
 if(ptype == "dvbc") {
   # вариант 2, взят отсюда: http://readxl.tidyverse.org/articles/articles/readxl-workflows.html
   # так быстрее на 20% и памяти в 3 раза меньше требуется
@@ -49,18 +50,27 @@ if(ptype == "dvbc") {
   df0 <- sheets %>%
     purrr::map_df(parseSheet, fname = pplan) %>%
     mutate(timezone=0)
-} # обойдемся без вложенных else
+}
 if(ptype == "dvbs") {
   df0 <- read_excel(pplan, sheet="DVB-S", skip=1) %>% # пропускаем шапку
     select(row_num=`#`, title=`Наименование канала`, epg_id=`EPG ID`, timezone=`Час Зона`) %>%
-    mutate(city='', timezone=as.numeric(stri_extract_first_regex(timezone, pattern="\\d+")))
-} # обойдемся без вложенных else
+    mutate(city='') %>%
+    mutate(timezone=as.numeric(stri_extract_first_regex(timezone, pattern="\\d+"))) %>%
+    replace_na(list(timezone=0))
+}
+if(ptype == "iptv") {
+  df0 <- read_excel(pplan, sheet="IPTV", skip=1) %>% # пропускаем шапку
+    select(row_num=`#`, title=`Название канала`, epg_id=`EPG ID`) %>%
+    mutate(city='') %>%
+    mutate(timezone=0)
+}
 
 
-# общий постпроцессинг
+# общий постпроцессинг --------------
 df1 <- df0 %>%
   mutate(epg_id=stri_trim_left(epg_id, pattern="\\P{Wspace}")) %>% # убрали лидирующие пробелы
   mutate(date=pdate) %>%
+  mutate(type=ptype) %>%
   select(date, row_num, epg_id, title, city, everything())
 
 # определяем полезное подмножество ---------
