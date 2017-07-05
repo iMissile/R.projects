@@ -25,7 +25,15 @@ ui <- fluidPage(
   useShinyjs(),  # Include shinyjs
   
   titlePanel("Канальный план"),
-
+  # Some custom CSS for a smaller font for preformatted text
+  tags$head(
+    tags$style(HTML("
+                    pre, table.table {
+                    font-size: smaller;
+                    }
+                    "))
+    ),
+  
   theme=shinytheme("united"), #("slate"),
   
   sidebarLayout(
@@ -43,7 +51,11 @@ ui <- fluidPage(
       width=10, # обязательно ширины надо взаимно балансировать!!!!
       fluidRow(
         h3("Список некорректных записей"),
-        column(12, DT::dataTableOutput('wrong_rec_table'))
+        column(12, div(DT::dataTableOutput('wrong_rec_table')), style="font-size: 90%"),
+        h3("Список выверенных записей"),
+        column(12, div(DT::dataTableOutput('clean_rec_table')), style="font-size: 90%")
+        # column(12, div(DT::dataTableOutput('clean_rec_table')), style="font-size: 80%; width: 75%")
+        # https://stackoverflow.com/questions/31921238/shrink-dtdatatableoutput-size
       )
       
       # fluidRow(
@@ -130,7 +142,7 @@ server <- function(input, output, session) {
     if (ptype() == "iptv") {
       df0 <- read_excel(pplan(), sheet="IPTV", skip=1) # пропускаем шапку
       
-      repl.df <- tribble(
+      repl_df <- tribble(
         ~pattern, ~replacement,
         "Название канала", "title",
         "EPG ID", "epg_id",
@@ -138,22 +150,23 @@ server <- function(input, output, session) {
         "#", "row_num"
       )
       names(df0) <- stri_replace_all_fixed(names(df0),
-                                           pattern = repl.df$pattern,
-                                           replacement = repl.df$replacement,
+                                           pattern = repl_df$pattern,
+                                           replacement = repl_df$replacement,
                                            vectorize_all = FALSE)
       
-      browser()
-      # а здесь с кодировкой нормально...
-      if (Sys.info()["sysname"] == "Windows") {
-        # под Windows вынуждены преобразовать имена колонок в UTF, поскольку shinyapp в utf
-        flog.info("Платформа Windows. dvbs: конвертация колонок")
-        names(df0) <- names(df0) %>%
-          stri_conv(from="windows-1251", to="UTF-8", to_raw=FALSE)
-      }      
-      browser()
+      # browser()
+      # # а здесь с кодировкой нормально...
+      # if (Sys.info()["sysname"] == "Windows") {
+      #   # под Windows вынуждены преобразовать имена колонок в UTF, поскольку shinyapp в utf
+      #   flog.info("Платформа Windows. dvbs: конвертация колонок")
+      #   names(df0) <- names(df0) %>%
+      #     stri_conv(from="windows-1251", to="UTF-8", to_raw=FALSE)
+      # }      
+      # browser()
       df0 %<>%
-        select(row_num=`#`, title=`Название канала`, epg_id=`EPG ID`, lcn=`Позиция (LCN)`) %>%
+        select(row_num, title, epg_id, lcn) %>%
         filter(!is.na(lcn)) %>% # отсекаем пояснения и легенду внизу таблицы
+        select(-lcn) %>%
         mutate(city='') %>%
         mutate(timezone=0)
     }    
@@ -161,6 +174,7 @@ server <- function(input, output, session) {
     # общий постпроцессинг --------------
     df <- df0 %>%  
       mutate(epg_id=stri_trim_left(epg_id, pattern="\\P{Wspace}")) %>% # убрали лидирующие пробелы
+      mutate(row_num=as.numeric(row_num)) %>%
       mutate(date=Sys.Date()) %>% # берем после разговора с Кириллом
       mutate(type=ptype()) %>%
       select(date, row_num, epg_id, title, city, everything())    
@@ -171,16 +185,24 @@ server <- function(input, output, session) {
     raw_plan_df() %>%
       filter(!is.na(epg_id)) %>%
       filter(stri_startswith_fixed(epg_id, 'epg')) %>%
+      filter(row_num > 5) %>% # для тестов
       distinct()
   })
 
   output$wrong_rec_table <- DT::renderDataTable({
     anti_join(raw_plan_df(), clean_plan_df())}, 
-    colnames=c('Город'='city', 'Строка'='row_num', 'Канал'='title', 'EPG ID'='epg_id'),
-    rownames = FALSE,
+    colnames=c('Город'='city', 'Строка'='row_num', 'Канал'='title', 'EPG ID'='epg_id', 'Дата'='date', 'Тип'='type'),
+    rownames=FALSE,
     options=list(pageLength=10, lengthMenu=c(5, 10, 15))
   )
 
+  output$clean_rec_table <- DT::renderDataTable({
+    clean_plan_df()}, 
+    colnames=c('Город'='city', 'Строка'='row_num', 'Канал'='title', 'EPG ID'='epg_id', 'Дата'='date', 'Тип'='type'),
+    rownames=FALSE,
+    options=list(pageLength=10, lengthMenu=c(5, 10, 15))
+  )
+  
   output$type_info <- renderText({
     ptype()
   })
