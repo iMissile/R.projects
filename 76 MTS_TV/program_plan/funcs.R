@@ -8,11 +8,20 @@ parseSheet <- function(sheet_name, fname, progress, ...){
   
   # browser()
   df0 <- read_excel(fname, sheet=sheet_name, skip=1) # пропускаем шапку
-  # вынуждены преобразовать имена колонок в UTF, поскольку shinyapp в utf
-  fix_names <- names(df0) %>%
-    stri_conv(from="windows-1251", to="UTF-8", to_raw=FALSE)
-  names(df0) <- fix_names
 
+  if (Sys.info()["sysname"] == "Windows") {
+    # под Windows вынуждены преобразовать имена колонок в UTF, поскольку shinyapp в utf
+    flog.info("----------------------------------------")
+    flog.info(paste0("Исходные имена колонок: ", names(df0)))
+    
+    fix_names <- names(df0) %>%
+      stri_conv(from="windows-1251", to="UTF-8", to_raw=FALSE)
+    names(df0) <- fix_names
+    
+    flog.info("----------------------------------------")
+    flog.info(paste0("Преобразованные имена колонок: ", fix_names))
+  }
+  
   df <- df0 %>% 
     # select(title=`Наименование канала`, epg_id=`EPG ID`, genre=`Жанр`) %>%
     # возникают нюансы с кодировками имен закладок. они в 1251
@@ -25,4 +34,5 @@ parseSheet <- function(sheet_name, fname, progress, ...){
   df
 } 
 
-# 
+# stri_conv("Имя канала", from="", to="UTF-8", to_raw=FALSE)
+# stri_conv("Имя канала", from="windows-1251", to="UTF-8", to_raw=FALSE)

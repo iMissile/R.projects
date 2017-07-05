@@ -9,6 +9,8 @@ library(shinyBS)
 library(shinyjs)
 library(futile.logger)
 
+# /var/lib/rstudio-connect/apps/8
+# Accessing RStudio Server Open-Source. http://<server-ip>:8787
 
 options(shiny.maxRequestSize=30*1024^2)
         
@@ -37,9 +39,17 @@ ui <- fluidPage(
 
     mainPanel(
       width=10, # обязательно ширины надо взаимно балансировать!!!!
-      h3("Список некорректных записей"),
-      dataTableOutput('wrong_rec_table')
-    ))
+      fluidRow(
+        h3("Список некорректных записей"),
+        column(12, DT::dataTableOutput('wrong_rec_table'))
+      )
+      
+      # fluidRow(
+      #   column(12, wellPanel("Лог файл", verbatimTextOutput("log_info"))),
+      #   #tags$style(type='text/css', '#log_info {background-color: rgba(255,255,0,0.40); color: green;}')
+      #   tags$style(type='text/css', '#log_info {font-size: 80%;}')
+      # )
+      ))
 )
 
 
@@ -95,10 +105,25 @@ server <- function(input, output, session) {
       distinct()
   })
 
-  output$wrong_rec_table <- renderDataTable({
+  output$wrong_rec_table <- DT::renderDataTable({
     anti_join(raw_plan_df(), clean_plan_df())}, 
+    colnames=c('Город'='city', 'Строка'='row_num', 'Канал'='title', 'EPG ID'='epg_id'),
+    rownames = FALSE,
     options=list(pageLength=10, lengthMenu=c(5, 10, 15))
   )
+
+  # Log file визуализация --------------------------------------------------------
+  # This part of the code monitors the file for changes once per
+  # 0.5 second (500 milliseconds).
+  logReader <- reactiveFileReader(500, session, log_name, readLines)
+  output$log_info <- renderText({
+    # Read the text, and make it a consistent number of lines so
+    # that the output box doesn't grow in height.
+    text <- logReader() %>% tail(10)
+    text[is.na(text)] <- ""
+    paste(text, collapse = '\n')
+  })
+  
 }
 
 # Run the application 
