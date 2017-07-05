@@ -6,8 +6,8 @@ library(anytime)
 
 
 pplan <- "./data/Гибрид_КП_DVBC_2017-05-02_small.xlsx"
-#pplan <- "./data/Гибрид_КП_DVBS_2017-04-03.xlsx"
-pplan <- "./data/Гибрид_КП_IPTV_2017-04-03.xlsx"
+pplan <- "./data/Гибрид_КП_DVBS_2017-04-03.xlsx"
+#pplan <- "./data/Гибрид_КП_IPTV_2017-04-03.xlsx"
 
 tmp <- excel_sheets(pplan)
 sheets <- tmp[!stri_detect_fixed(tmp, c('КП', 'AC'))]
@@ -53,7 +53,8 @@ if(ptype == "dvbc") {
 }
 if(ptype == "dvbs") {
   df0 <- read_excel(pplan, sheet="DVB-S", skip=1) %>% # пропускаем шапку
-    select(row_num=`#`, title=`Наименование канала`, epg_id=`EPG ID`, timezone=`Час Зона`) %>%
+    select(row_num=`#`, title=`Наименование канала`, epg_id=`EPG ID`, timezone=`Час Зона`, lcn=`LCN`) %>%
+    filter(!is.na(lcn)) %>% # отсекаем пояснения и легенду внизу таблицы    
     mutate(city='') %>%
     mutate(timezone=as.numeric(stri_extract_first_regex(timezone, pattern="\\d+"))) %>%
     replace_na(list(timezone=0))

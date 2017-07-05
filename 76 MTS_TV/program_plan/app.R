@@ -126,14 +126,19 @@ server <- function(input, output, session) {
     # загрузка dvbs --------------------
     if (ptype() == "dvbs") {
       df0 <- read_excel(pplan(), sheet="DVB-S", skip=1) # пропускаем шапку
-      if (Sys.info()["sysname"] == "Windows") {
-        # под Windows вынуждены преобразовать имена колонок в UTF, поскольку shinyapp в utf
-        flog.info("Платформа Windows. dvbs: конвертация колонок")
-        names(df0) <- names(df0) %>%
-          stri_conv(from="windows-1251", to="UTF-8", to_raw=FALSE)
-      }      
+      repl_df <- tribble(
+        ~pattern, ~replacement,
+        "Наименование канала", "title",
+        "Час Зона", "timezone",
+        "EPG ID", "epg_id",
+        "#", "row_num"
+      )
+      names(df0) <- stri_replace_all_fixed(names(df0),
+                                           pattern = repl_df$pattern,
+                                           replacement = repl_df$replacement,
+                                           vectorize_all = FALSE)
       df0 %<>%
-        select(row_num=`#`, title=`Наименование канала`, epg_id=`EPG ID`, timezone=`Час Зона`) %>%
+        select(row_num, title, epg_id, timezone) %>%
         mutate(city='') %>%
         mutate(timezone=as.numeric(stri_extract_first_regex(timezone, pattern="\\d+"))) %>%
         replace_na(list(timezone=0))
@@ -153,16 +158,6 @@ server <- function(input, output, session) {
                                            pattern = repl_df$pattern,
                                            replacement = repl_df$replacement,
                                            vectorize_all = FALSE)
-      
-      # browser()
-      # # а здесь с кодировкой нормально...
-      # if (Sys.info()["sysname"] == "Windows") {
-      #   # под Windows вынуждены преобразовать имена колонок в UTF, поскольку shinyapp в utf
-      #   flog.info("Платформа Windows. dvbs: конвертация колонок")
-      #   names(df0) <- names(df0) %>%
-      #     stri_conv(from="windows-1251", to="UTF-8", to_raw=FALSE)
-      # }      
-      # browser()
       df0 %<>%
         select(row_num, title, epg_id, lcn) %>%
         filter(!is.na(lcn)) %>% # отсекаем пояснения и легенду внизу таблицы
