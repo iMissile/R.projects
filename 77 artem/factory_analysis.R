@@ -1,12 +1,8 @@
-library(dplyr)
+library(tidyverse)
 library(lubridate)
-library(ggplot2)
-library(tidyr)
 library(magrittr)
-library(purrr)
 library(stringi)
 library(stringr)
-library(tibble)
 library(readxl)
 library(iterators)
 library(foreach)
@@ -16,20 +12,19 @@ library(zoo)
 library(randomForest)
 
 
-datafile <- "./data1/2016.xlsx"
+datafile <- "./data/2015.xlsx"
 
 get_month_data <- function(filename, sheetname="") {
   # хак по считыванию типов колонок
-  ctypes <- readxl:::xlsx_col_types(filename) # не очень красиво, работает для xlsx
-  ctypes <- rep("text", length(ctypes))
-  #tmp <- read_excel(filename, col_names=FALSE, sheet=sheetname)
-  #browser()
-  #ctypes <- rep("text", ncol(tmp))
-
+  raw <- read_excel(filename)
+  ncol(raw)
+  ctypes <- rep("text", 146)
+  cnames <- str_c("grp_", seq_along(ctypes))
   raw <- read_excel(filename,
                    sheet=sheetname,
-                   col_names=TRUE,
-                   col_types=ctypes) #, skip = 1)
+                   #col_names=cnames,
+                   col_types=ctypes,
+                   range = cell_cols("A:EP")) #, skip = 1)
   
   # имеем проблему, колонки с NA вместо имени
   # можно писать в одно преобразование, но специально разбил на шаги
@@ -87,7 +82,7 @@ get_month_data <- function(filename, sheetname="") {
     filter(complete.cases(.)) %>% # удаляем строки, содержащие пустые данные
     distinct() %>% # уберем идентичные строчки
     #http://stackoverflow.com/questions/27027347/mutate-each-summarise-each-in-dplyr-how-do-i-select-certain-columns-and-give
-    mutate_each(funs(as.numeric), -mark_out)
+    mutate_at(vars(-mark_out), funs(as.numeric))
   
   df2
 }
@@ -105,8 +100,12 @@ get_month_data <- function(filename, sheetname="") {
 # browser()
 
 # соберем все страницы вместе
-sheets <- c("Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", 
+mnames <- c("Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", 
             "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь")
+
+tmp <- excel_sheets(datafile)
+sheets <- tmp[tmp %in% mnames]
+
 
 df <- foreach(it=iter(sheets), .combine=rbind, .packages='readxl') %do% {
   temp.df <- get_month_data(datafile, it) %>% mutate(month=it)
