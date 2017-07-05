@@ -6,7 +6,7 @@ library(anytime)
 
 
 pplan <- "./data/Гибрид_КП_DVBC_2017-05-02_small.xlsx"
-pplan <- "./data/Гибрид_КП_DVBS_2017-04-03.xlsx"
+#pplan <- "./data/Гибрид_КП_DVBS_2017-04-03.xlsx"
 #pplan <- "./data/Гибрид_КП_IPTV_2017-04-03.xlsx"
 
 tmp <- excel_sheets(pplan)
@@ -34,7 +34,8 @@ parseSheet <- function(sheet_name, fname){
   
   df0 <- read_excel(pplan, sheet=sheet_name, skip=1) %>% # пропускаем шапку
     # select(title=`Наименование канала`, epg_id=`EPG ID`, genre=`Жанр`) %>%
-    select(row_num=`#`, title=`Наименование канала`, epg_id=`EPG ID`) %>%
+    select(row_num=`#`, title=`Наименование канала`, epg_id=`EPG ID`, lcn=`LCN`) %>%
+    mutate(lcn=as.numeric(lcn)) %>%
     # filter(complete.cases(.)) %>%
     mutate(city=sheet_name)
     #mutate(row_num=row_number()+) %>% # +2 потому что удалили первую строку, а вторая ушла в заголовок

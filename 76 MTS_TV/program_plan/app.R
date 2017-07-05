@@ -52,7 +52,7 @@ ui <- fluidPage(
       fluidRow(
         h3("Список некорректных записей"),
         column(12, div(DT::dataTableOutput('wrong_rec_table')), style="font-size: 90%"),
-        h3("Список выверенных записей"),
+        tags$p(h3("Список выверенных записей")),
         column(12, div(DT::dataTableOutput('clean_rec_table')), style="font-size: 90%")
         # column(12, div(DT::dataTableOutput('clean_rec_table')), style="font-size: 80%; width: 75%")
         # https://stackoverflow.com/questions/31921238/shrink-dtdatatableoutput-size
@@ -131,6 +131,7 @@ server <- function(input, output, session) {
         "Наименование канала", "title",
         "Час Зона", "timezone",
         "EPG ID", "epg_id",
+        "LCN", "lcn",
         "#", "row_num"
       )
       names(df0) <- stri_replace_all_fixed(names(df0),
@@ -138,7 +139,7 @@ server <- function(input, output, session) {
                                            replacement = repl_df$replacement,
                                            vectorize_all = FALSE)
       df0 %<>%
-        select(row_num, title, epg_id, timezone) %>%
+        select(row_num, title, epg_id, timezone, lcn) %>%
         mutate(city='') %>%
         mutate(timezone=as.numeric(stri_extract_first_regex(timezone, pattern="\\d+"))) %>%
         replace_na(list(timezone=0))
@@ -160,8 +161,6 @@ server <- function(input, output, session) {
                                            vectorize_all = FALSE)
       df0 %<>%
         select(row_num, title, epg_id, lcn) %>%
-        filter(!is.na(lcn)) %>% # отсекаем пояснения и легенду внизу таблицы
-        select(-lcn) %>%
         mutate(city='') %>%
         mutate(timezone=0)
     }    
@@ -172,6 +171,8 @@ server <- function(input, output, session) {
       mutate(row_num=as.numeric(row_num)) %>%
       mutate(date=Sys.Date()) %>% # берем после разговора с Кириллом
       mutate(type=ptype()) %>%
+      filter(!is.na(lcn)) %>% # отсекаем пояснения и легенду внизу таблицы   
+      select(-lcn) %>%
       select(date, row_num, epg_id, title, city, everything())    
   })
   
@@ -188,14 +189,14 @@ server <- function(input, output, session) {
     anti_join(raw_plan_df(), clean_plan_df())}, 
     colnames=c('Город'='city', 'Строка'='row_num', 'Канал'='title', 'EPG ID'='epg_id', 'Дата'='date', 'Тип'='type'),
     rownames=FALSE,
-    options=list(pageLength=10, lengthMenu=c(5, 10, 15))
+    options=list(pageLength=5, lengthMenu=c(5, 7))
   )
 
   output$clean_rec_table <- DT::renderDataTable({
     clean_plan_df()}, 
     colnames=c('Город'='city', 'Строка'='row_num', 'Канал'='title', 'EPG ID'='epg_id', 'Дата'='date', 'Тип'='type'),
     rownames=FALSE,
-    options=list(pageLength=10, lengthMenu=c(5, 10, 15))
+    options=list(pageLength=7, lengthMenu=c(5, 7, 10))
   )
   
   output$type_info <- renderText({
