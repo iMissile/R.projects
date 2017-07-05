@@ -90,7 +90,8 @@ server <- function(input, output, session) {
   raw_plan_df <- reactive({
 
     # обойдемся без вложенных else, нет смысла усложнять
-    if (ptype == "dvbc") {
+    # загрузка dvbc --------------------
+    if (ptype() == "dvbc") {
       # парсим закладки файла
       
       progress <- Progress$new(session, min = 1, max = length(sheet_names()))
@@ -110,6 +111,52 @@ server <- function(input, output, session) {
         purrr::map_df(parseSheet, fname = pplan(), progress = progress, .id = NULL) %>%
         mutate(timezone = 0)
     }
+    # загрузка dvbs --------------------
+    if (ptype() == "dvbs") {
+      df0 <- read_excel(pplan(), sheet="DVB-S", skip=1) # пропускаем шапку
+      if (Sys.info()["sysname"] == "Windows") {
+        # под Windows вынуждены преобразовать имена колонок в UTF, поскольку shinyapp в utf
+        flog.info("Платформа Windows. dvbs: конвертация колонок")
+        names(df0) <- names(df0) %>%
+          stri_conv(from="windows-1251", to="UTF-8", to_raw=FALSE)
+      }      
+      df0 %<>%
+        select(row_num=`#`, title=`Наименование канала`, epg_id=`EPG ID`, timezone=`Час Зона`) %>%
+        mutate(city='') %>%
+        mutate(timezone=as.numeric(stri_extract_first_regex(timezone, pattern="\\d+"))) %>%
+        replace_na(list(timezone=0))
+    }
+    # загрузка iptv --------------------
+    if (ptype() == "iptv") {
+      df0 <- read_excel(pplan(), sheet="IPTV", skip=1) # пропускаем шапку
+      
+      repl.df <- tribble(
+        ~pattern, ~replacement,
+        "Название канала", "title",
+        "EPG ID", "epg_id",
+        "Позиция (LCN)", "lcn",
+        "#", "row_num"
+      )
+      names(df0) <- stri_replace_all_fixed(names(df0),
+                                           pattern = repl.df$pattern,
+                                           replacement = repl.df$replacement,
+                                           vectorize_all = FALSE)
+      
+      browser()
+      # а здесь с кодировкой нормально...
+      if (Sys.info()["sysname"] == "Windows") {
+        # под Windows вынуждены преобразовать имена колонок в UTF, поскольку shinyapp в utf
+        flog.info("Платформа Windows. dvbs: конвертация колонок")
+        names(df0) <- names(df0) %>%
+          stri_conv(from="windows-1251", to="UTF-8", to_raw=FALSE)
+      }      
+      browser()
+      df0 %<>%
+        select(row_num=`#`, title=`Название канала`, epg_id=`EPG ID`, lcn=`Позиция (LCN)`) %>%
+        filter(!is.na(lcn)) %>% # отсекаем пояснения и легенду внизу таблицы
+        mutate(city='') %>%
+        mutate(timezone=0)
+    }    
     
     # общий постпроцессинг --------------
     df <- df0 %>%  
@@ -117,8 +164,6 @@ server <- function(input, output, session) {
       mutate(date=Sys.Date()) %>% # берем после разговора с Кириллом
       mutate(type=ptype()) %>%
       select(date, row_num, epg_id, title, city, everything())    
-    
-    
   })
   
   clean_plan_df <- reactive({

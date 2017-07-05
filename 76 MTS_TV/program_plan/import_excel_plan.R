@@ -6,7 +6,7 @@ library(anytime)
 
 
 pplan <- "./data/Гибрид_КП_DVBC_2017-05-02_small.xlsx"
-pplan <- "./data/Гибрид_КП_DVBS_2017-04-03.xlsx"
+#pplan <- "./data/Гибрид_КП_DVBS_2017-04-03.xlsx"
 pplan <- "./data/Гибрид_КП_IPTV_2017-04-03.xlsx"
 
 tmp <- excel_sheets(pplan)
@@ -60,7 +60,8 @@ if(ptype == "dvbs") {
 }
 if(ptype == "iptv") {
   df0 <- read_excel(pplan, sheet="IPTV", skip=1) %>% # пропускаем шапку
-    select(row_num=`#`, title=`Название канала`, epg_id=`EPG ID`) %>%
+    select(row_num=`#`, title=`Название канала`, epg_id=`EPG ID`, lcn=`Позиция (LCN)`) %>%
+    filter(!is.na(lcn)) %>% # отсекаем пояснения и легенду внизу таблицы
     mutate(city='') %>%
     mutate(timezone=0)
 }

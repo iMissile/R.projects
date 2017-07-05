@@ -11,15 +11,11 @@ parseSheet <- function(sheet_name, fname, progress, ...){
 
   if (Sys.info()["sysname"] == "Windows") {
     # под Windows вынуждены преобразовать имена колонок в UTF, поскольку shinyapp в utf
-    flog.info("----------------------------------------")
-    flog.info(paste0("Исходные имена колонок: ", names(df0)))
+    flog.info("Платформа Windows. dvbc: конвертация колонок")
     
     fix_names <- names(df0) %>%
       stri_conv(from="windows-1251", to="UTF-8", to_raw=FALSE)
     names(df0) <- fix_names
-    
-    flog.info("----------------------------------------")
-    flog.info(paste0("Преобразованные имена колонок: ", fix_names))
   }
   
   df <- df0 %>% 
@@ -27,9 +23,8 @@ parseSheet <- function(sheet_name, fname, progress, ...){
     # возникают нюансы с кодировками имен закладок. они в 1251
     select(row_num=`#`, title=`Наименование канала`, epg_id=`EPG ID`) %>%
     # filter(complete.cases(.)) %>%
-    mutate(city=sheet_name) %>%
+    mutate(city=sheet_name)
     #mutate(row_num=row_number()+) %>% # +2 потому что удалили первую строку, а вторая ушла в заголовок
-    select(city, row_num, everything())
   
   df
 } 
