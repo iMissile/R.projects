@@ -1,0 +1,8 @@
+default:
+  datawarehouse:
+    driver: 'PostgreSQL'
+    host: '10.0.0.177'
+    uid: 'puser'
+    pwd: 'puser'  
+    port: 5432
+    database: 'channel_list'

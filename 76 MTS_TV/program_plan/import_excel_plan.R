@@ -3,6 +3,10 @@ library(readxl)
 library(stringi)
 library(profvis)
 library(anytime)
+library(DBI)
+library(RPostgreSQL)
+# library(config)
+packageVersion("dplyr")
 
 
 pplan <- "./data/Гибрид_КП_DVBC_2017-05-02_small.xlsx"
@@ -24,8 +28,9 @@ ptype <- case_when(
 ptype
 
 # теперь вытащим дату ---------------------
-pdate <- stri_extract_first_regex(pplan, pattern="\\d{4}-\\d{2}-\\d{2}")
-pdate <- Sys.Date() # берем после разговора с Кириллом
+timestamp <- stri_extract_first_regex(pplan, pattern="\\d{4}-\\d{2}-\\d{2}")
+timestamp <- Sys.Date() # берем после разговора с Кириллом
+timestamp <- Sys.time()
 # dput(anytime(date))
 
 parseSheet <- function(sheet_name, fname){
@@ -72,9 +77,9 @@ if(ptype == "iptv") {
 # общий постпроцессинг --------------
 df1 <- df0 %>%
   mutate(epg_id=stri_trim_left(epg_id, pattern="\\P{Wspace}")) %>% # убрали лидирующие пробелы
-  mutate(date=pdate) %>%
+  mutate(timestamp=timestamp) %>%
   mutate(type=ptype) %>%
-  select(date, row_num, epg_id, title, city, everything())
+  select(timestamp, row_num, epg_id, title, city, everything())
 
 # определяем полезное подмножество ---------
 # почистим данные от шлака, а потом выясним пересечение
@@ -84,6 +89,65 @@ clean_df <- df1 %>%
   distinct()
 
 bad_df <- anti_join(df1, clean_df)  
+
+
+# делаем экспорт в PostgreSQL ---------------------
+# Connect to a specific postgres database 
+# con <- dbConnect(RPostgres::Postgres(), dbname='channel_list',
+# con <- dbConnect(dbDriver("PostgreSQL"), dbname='channel_list',
+#                  host = '10.0.0.177', # i.e. 'ec2-54-83-201-96.compute-1.amazonaws.com'
+#                  port = 5432, # or any other port specified by your DBA
+#                  user = 'puser',
+#                  password = 'puser')
+
+dw <- config::get("datawarehouse")
+
+# dbConnect из RPostgreSQL
+con <- dbConnect(dbDriver(dw$driver),
+                 host = dw$host,
+                 user = dw$uid,
+                 password = dw$pwd,
+                 port = dw$port,
+                 dbname = dw$database
+)
+
+
+dbWriteTable(con, "tv_list", clean_df, overwrite=TRUE)
+dbListTables(con)
+
+dbListFields(con, "tv_list")
+
+# принудительно загоняем кодировку сгруженных данных в unicode
+m <- dbReadTable(con, "tv_list") %>%
+  mutate_if(is.character, `Encoding<-`, "UTF-8")
+
+# Disconnect from the database
+dbDisconnect(con)
+
+if(FALSE){
+  # https://stackoverflow.com/questions/21392786/utf-8-unicode-text-encoding-with-rpostgresql
+  dbGetQuery(con, "SHOW CLIENT_ENCODING") 
+  dbGetQuery(con, "SHOW CLIENT_ENCODING") 
+
+  dbRemoveTable(con, "tv_list")
+  # dbWriteTable(con, "tv_list", select(clean_df, -date))
+  clean_df$timestamp <- Sys.time()
+  
+    # проверяем мапирование типов данныхЖ https://cran.r-project.org/web/packages/DBI/vignettes/spec.html#_examples_12
+  anytime(Sys.Date())
+  dbDataType(con, 1)
+  dbDataType(con, Sys.Date())
+  dbDataType(con, Sys.time())
+  # postgresqlpqExec(con, "SET client_encoding = 'windows-1251'") # устанавливам кодировку возврата
+
+  # Convert factors to characters
+  m2 <- m %>%
+    mutate_if(is.character, stri_conv, from="UTF-8", to="windows-1251", to_raw=FALSE)
+  # сравним проблемы с кодировкой
+  res <- tibble(before=clean_df$title, after=m2$title) %>%
+    mutate(diff=(before!=after)) %>%
+    filter(diff)
+}
 
 stop()
 

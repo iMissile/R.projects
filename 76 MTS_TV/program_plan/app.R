@@ -55,11 +55,13 @@ ui <- fluidPage(
                 tabPanel("Ошибки", value = "wrong_tab",
                          fluidRow(
                            # h3("Список некорректных записей"),
+                           p(),
                            column(12, div(DT::dataTableOutput('wrong_rec_table')), style="font-size: 90%")
                          )),
                 tabPanel("Корректный план", value = "right_tab",
                          fluidRow(
                            # h3("Список выверенных записей"),
+                           p(),
                            column(12, div(DT::dataTableOutput('clean_rec_table')), style="font-size: 90%")
                          ))
                 
