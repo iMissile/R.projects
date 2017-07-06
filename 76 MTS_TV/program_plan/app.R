@@ -7,6 +7,9 @@ library(shiny)
 library(shinythemes) # https://rstudio.github.io/shinythemes/
 library(shinyBS)
 library(shinyjs)
+library(iterators)
+library(foreach)
+# library(doParallel)
 library(futile.logger)
 
 # /var/lib/rstudio-connect/apps/8
@@ -22,49 +25,47 @@ options(shiny.maxRequestSize=30*1024^2)
 eval(parse("funcs.R", encoding="UTF-8"))
 
 ui <- fluidPage(
-  useShinyjs(),  # Include shinyjs
+  useShinyjs(), 
   
   titlePanel("Канальный план"),
   # Some custom CSS for a smaller font for preformatted text
-  tags$head(
-    tags$style(HTML("
-                    pre, table.table {
-                    font-size: smaller;
-                    }
-                    "))
-    ),
-  
-  theme=shinytheme("united"), #("slate"),
+  tags$head(tags$style(HTML("pre, table.table {font-size: smaller;}"))),
+  theme = shinytheme("united"),
+  #("slate"),
   
   sidebarLayout(
     sidebarPanel(
-      width=2, # обязательно ширины надо взаимно балансировать!!!!
-      fileInput('pplan', 'Выбор .xlsx файла с планом',
-                #accept=c('application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')),
-                accept=c('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')),
+      width = 2,
+      # обязательно ширины надо взаимно балансировать!!!!
+      fileInput(
+        'pplan',
+        'Выбор .xlsx файла с планом',
+        #accept=c('application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')),
+        accept = c('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+      ),
       actionButton("go", "Публиковать"),
       p(),
-      h3(textOutput("type_info", inline=TRUE))
+      h3(textOutput("type_info", inline = TRUE))
     ),
-
-    mainPanel(
-      width=10, # обязательно ширины надо взаимно балансировать!!!!
-      fluidRow(
-        h3("Список некорректных записей"),
-        column(12, div(DT::dataTableOutput('wrong_rec_table')), style="font-size: 90%"),
-        tags$p(h3("Список выверенных записей")),
-        column(12, div(DT::dataTableOutput('clean_rec_table')), style="font-size: 90%")
-        # column(12, div(DT::dataTableOutput('clean_rec_table')), style="font-size: 80%; width: 75%")
-        # https://stackoverflow.com/questions/31921238/shrink-dtdatatableoutput-size
-      )
-      
-      # fluidRow(
-      #   column(12, wellPanel("Лог файл", verbatimTextOutput("log_info"))),
-      #   #tags$style(type='text/css', '#log_info {background-color: rgba(255,255,0,0.40); color: green;}')
-      #   tags$style(type='text/css', '#log_info {font-size: 80%;}')
-      # )
-      ))
-)
+    
+    mainPanel(width = 10, # обязательно ширины надо взаимно балансировать!!!!
+              tabsetPanel(
+                id = "panel_id",
+                #selected="dynamics",
+                tabPanel("Ошибки", value = "wrong_tab",
+                         fluidRow(
+                           # h3("Список некорректных записей"),
+                           column(12, div(DT::dataTableOutput('wrong_rec_table')), style="font-size: 90%")
+                         )),
+                tabPanel("Корректный план", value = "right_tab",
+                         fluidRow(
+                           # h3("Список выверенных записей"),
+                           column(12, div(DT::dataTableOutput('clean_rec_table')), style="font-size: 90%")
+                         ))
+                
+              ))
+    )
+  )
 
 
 server <- function(input, output, session) {
@@ -115,13 +116,22 @@ server <- function(input, output, session) {
       progress$set(message = paste0("Парсинг закладок (", length(sheet_names()), " шт) . . . ."),
                    detail = "...")
       
-      # вариант 2, взят отсюда: http://readxl.tidyverse.org/articles/articles/readxl-workflows.html
-      # так быстрее на 20% и памяти в 3 раза меньше требуется
-      # на больших объемах скорость начинает выигрывать в разы, объем памяти также, в 4-6 раз меньше.
       # browser()
-      df0 <- sheet_names() %>%
-        purrr::map_df(parseSheet, fname = pplan(), progress = progress, .id = NULL) %>%
-        mutate(timezone = 0)
+      if(FALSE){
+        # вариант 2, взят отсюда: http://readxl.tidyverse.org/articles/articles/readxl-workflows.html
+        # так быстрее на 20% и памяти в 3 раза меньше требуется
+        # на больших объемах скорость начинает выигрывать в разы, объем памяти также, в 4-6 раз меньше.
+        df0 <- sheet_names() %>%
+          purrr::map_df(parseSheet, fname=pplan(), progress=progress, .id=NULL) %>%
+          mutate(timezone = 0)
+      }else{
+        # так хоть и чуть медленнее, но можно распараллелить
+        df0 <- foreach(sheet_name=iter(sheet_names()), 
+                .packages=c('tidyverse', 'readxl', 'magrittr', 'stringi', 'futile.logger'), 
+                .combine=rbind) %do% {
+                  parseSheet(sheet_name, fname=pplan(), progress=progress)
+                }        
+      }
     }
     # загрузка dvbs --------------------
     if (ptype() == "dvbs") {
