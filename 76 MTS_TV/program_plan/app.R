@@ -181,11 +181,11 @@ server <- function(input, output, session) {
     df <- df0 %>%  
       mutate(epg_id=stri_trim_left(epg_id, pattern="\\P{Wspace}")) %>% # убрали лидирующие пробелы
       mutate(row_num=as.numeric(row_num)) %>%
-      mutate(date=Sys.Date()) %>% # берем после разговора с Кириллом
+      mutate(timestamp=Sys.time()) %>% # берем после разговора с Кириллом
       mutate(type=ptype()) %>%
       filter(!is.na(lcn)) %>% # отсекаем пояснения и легенду внизу таблицы   
       select(-lcn) %>%
-      select(date, row_num, epg_id, title, city, everything())    
+      select(timestamp, row_num, epg_id, title, city, everything())    
   })
   
   clean_plan_df <- reactive({
@@ -197,18 +197,24 @@ server <- function(input, output, session) {
       distinct()
   })
 
-  output$wrong_rec_table <- DT::renderDataTable({
-    anti_join(raw_plan_df(), clean_plan_df())}, 
-    colnames=c('Город'='city', 'Строка'='row_num', 'Канал'='title', 'EPG ID'='epg_id', 'Дата'='date', 'Тип'='type'),
-    rownames=FALSE,
-    options=list(pageLength=5, lengthMenu=c(5, 7))
+  output$wrong_rec_table <- DT::renderDataTable(
+    # https://rstudio.github.io/DT/functions.html
+    DT::datatable(anti_join(raw_plan_df(), clean_plan_df()),
+                  colnames=c('Город'='city', 'Строка'='row_num', 'Канал'='title', 
+                             'EPG ID'='epg_id', 'Дата'='timestamp', 'Тип'='type'),
+                  rownames=FALSE,
+                  options=list(pageLength=5, lengthMenu=c(5, 7, 10, 15))) %>% 
+      DT::formatDate("Дата", method = "toLocaleString")
   )
 
-  output$clean_rec_table <- DT::renderDataTable({
-    clean_plan_df()}, 
-    colnames=c('Город'='city', 'Строка'='row_num', 'Канал'='title', 'EPG ID'='epg_id', 'Дата'='date', 'Тип'='type'),
-    rownames=FALSE,
-    options=list(pageLength=7, lengthMenu=c(5, 7, 10))
+  output$clean_rec_table <- DT::renderDataTable(
+    DT::datatable(clean_plan_df(),
+                  colnames=c('Город'='city', 'Строка'='row_num', 'Канал'='title', 
+                             'EPG ID'='epg_id', 'Дата'='timestamp', 'Тип'='type'),
+                  rownames=FALSE,
+                  filter = 'down',
+                  options=list(pageLength=7, lengthMenu=c(5, 7, 10, 15))) %>%
+      DT::formatDate("Дата", method = "toLocaleString")
   )
   
   output$type_info <- renderText({
