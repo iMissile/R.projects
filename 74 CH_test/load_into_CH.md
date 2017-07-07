@@ -48,3 +48,19 @@ SHOW CREATE TABLE mtcars
 
 7. Удаляем таблицу
 DROP TABLE mtcars
+
+
+=====================================
+Создаем структуру для большого csv
+CREATE TABLE big_csv
+(
+    shopcode Float32,
+    grpname String,
+    barname String,
+    barcode String,
+    salesitem Float32,
+    salesvalue Float32,
+    adress String
+) ENGINE = Memory
+
+cat big_csv.csv | clickhouse-client --query="INSERT INTO big_csv FORMAT CSV"

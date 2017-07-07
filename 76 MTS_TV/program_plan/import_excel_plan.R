@@ -128,8 +128,14 @@ publishToSQL <- function(clean_df) {
                    dbname = dw$database
   )
   dbWriteTable(con, "tv_list", clean_df, overwrite = TRUE)
+
+  # # принудительно загоняем кодировку сгруженных данных в unicode
+  # m <- dbReadTable(con, "tv_list") %>%
+  # mutate_if(is.character, `Encoding<-`, "UTF-8")
+
   dbDisconnect(con)
 }
+
 
 res <- purrr::safely(publishToSQL)(clean_df)
 if_else(is.null(res$error), "Опубликовано", "Ошибка БД")
