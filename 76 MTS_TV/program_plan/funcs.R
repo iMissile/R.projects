@@ -35,3 +35,24 @@ parseSheet <- function(sheet_name, fname, progress, ...){
 
 # stri_conv("Имя канала", from="", to="UTF-8", to_raw=FALSE)
 # stri_conv("Имя канала", from="windows-1251", to="UTF-8", to_raw=FALSE)
+
+publishToSQL <- function(clean_df) {
+  # делаем экспорт в PostgreSQL ---------------------
+  # Connect to a specific postgres database
+  if (Sys.info()["sysname"] == "Windows") {
+    dw <- config::get("media-tel")
+  }else{
+    dw <- config::get("cti")
+  }
+  
+  # dbConnect из RPostgreSQL
+  con <- dbConnect(dbDriver(dw$driver),
+                   host = dw$host,
+                   user = dw$uid,
+                   password = dw$pwd,
+                   port = dw$port,
+                   dbname = dw$database
+  )
+  dbWriteTable(con, "tv_list", clean_df, overwrite = TRUE)
+  dbDisconnect(con)
+}

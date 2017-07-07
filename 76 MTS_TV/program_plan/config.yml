@@ -1,8 +1,16 @@
 default:
-  datawarehouse:
+  media-tel:
     driver: 'PostgreSQL'
     host: '10.0.0.177'
     uid: 'puser'
     pwd: 'puser'  
     port: 5432
     database: 'channel_list'
+
+  cti:
+    driver: 'PostgreSQL'
+    host: '172.16.33.76'
+    uid: 'stat'
+    pwd: 'stat'  
+    port: 5432
+    database: 'stat'

@@ -9,6 +9,9 @@ library(shinyBS)
 library(shinyjs)
 library(iterators)
 library(foreach)
+library(config)
+library(DBI)
+library(RPostgreSQL)
 # library(doParallel)
 library(futile.logger)
 
@@ -43,9 +46,11 @@ ui <- fluidPage(
         #accept=c('application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')),
         accept = c('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
       ),
-      actionButton("go", "Публиковать"),
+      actionButton("publish_btn", "Публиковать"),
       p(),
-      h3(textOutput("type_info", inline = TRUE))
+      h4(textOutput("type_text", inline = TRUE)),
+      p(),
+      h4(textOutput("info_text", inline = TRUE))
     ),
     
     mainPanel(width = 10, # обязательно ширины надо взаимно балансировать!!!!
@@ -74,9 +79,14 @@ server <- function(input, output, session) {
 
   log_name <- "app.log"
   
+  
   flog.appender(appender.file(log_name))
   flog.threshold(TRACE)
   flog.info("Dashboard started")
+  shinyjs::disable("publish_btn")
+  
+  # обработчики данных --------------------------------
+  values <- reactiveValues(info_str = "zero")
   
   pplan <- reactive({
     fname <- paste(req(input$pplan$datapath), ".xlsx", sep="")
@@ -205,6 +215,11 @@ server <- function(input, output, session) {
       distinct()
   })
 
+  observe({
+    shinyjs::enable("publish_btn", clean_plan_df())
+  })  
+  
+  # таблица ошибок ------------------------------
   output$wrong_rec_table <- DT::renderDataTable(
     # https://rstudio.github.io/DT/functions.html
     DT::datatable(filter(raw_plan_df(), !is.na(error)),
@@ -215,6 +230,7 @@ server <- function(input, output, session) {
       DT::formatDate("Дата", method = "toLocaleString")
   )
 
+  # таблица правильных записей ------------------------------  
   output$clean_rec_table <- DT::renderDataTable(
     DT::datatable(clean_plan_df(),
                   colnames=c('Город'='city', 'Строка'='row_num', 'Канал'='title', 'Час. зона'='timezone',
@@ -225,9 +241,20 @@ server <- function(input, output, session) {
       DT::formatDate("Дата", method = "toLocaleString")
   )
   
-  output$type_info <- renderText({
+  output$type_text <- renderText({
     ptype()
   })
+  
+  output$info_text <- renderText({
+    values$info_str
+  })
+  
+  # публикация в PostgreSQL --------------------
+  observeEvent(input$publish_btn, {
+    res <- purrr::safely(publishToSQL)(clean_plan_df())
+    values$info_str <- if_else(is.null(res$error), "Опубликовано", "Ошибка БД")
+    }
+    )
   
   # Log file визуализация --------------------------------------------------------
   # This part of the code monitors the file for changes once per

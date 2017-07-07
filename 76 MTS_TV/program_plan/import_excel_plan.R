@@ -3,6 +3,7 @@ library(readxl)
 library(stringi)
 library(profvis)
 library(anytime)
+library(config)
 library(DBI)
 library(RPostgreSQL)
 # library(config)
@@ -108,29 +109,30 @@ clean_df <- raw_df %>%
 #                  user = 'puser',
 #                  password = 'puser')
 
-dw <- config::get("datawarehouse")
+publishToSQL <- function(clean_df) {
+  # делаем экспорт в PostgreSQL ---------------------
+  # Connect to a specific postgres database
 
-# dbConnect из RPostgreSQL
-con <- dbConnect(dbDriver(dw$driver),
-                 host = dw$host,
-                 user = dw$uid,
-                 password = dw$pwd,
-                 port = dw$port,
-                 dbname = dw$database
-)
+  if (Sys.info()["sysname"] == "Windows") {
+    dw <- config::get("media-tel")
+  }else{
+    dw <- config::get("cti")
+  }
+  
+  # dbConnect из RPostgreSQL
+  con <- dbConnect(dbDriver(dw$driver),
+                   host = dw$host,
+                   user = dw$uid,
+                   password = dw$pwd,
+                   port = dw$port,
+                   dbname = dw$database
+  )
+  dbWriteTable(con, "tv_list", clean_df, overwrite = TRUE)
+  dbDisconnect(con)
+}
 
-
-dbWriteTable(con, "tv_list", clean_df, overwrite=TRUE)
-dbListTables(con)
-
-dbListFields(con, "tv_list")
-
-# принудительно загоняем кодировку сгруженных данных в unicode
-m <- dbReadTable(con, "tv_list") %>%
-  mutate_if(is.character, `Encoding<-`, "UTF-8")
-
-# Disconnect from the database
-dbDisconnect(con)
+res <- purrr::safely(publishToSQL)(clean_df)
+if_else(is.null(res$error), "Опубликовано", "Ошибка БД")
 
 if(FALSE){
   # https://stackoverflow.com/questions/21392786/utf-8-unicode-text-encoding-with-rpostgresql
