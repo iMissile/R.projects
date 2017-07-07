@@ -75,20 +75,28 @@ if(ptype == "iptv") {
 
 
 # общий постпроцессинг --------------
-df1 <- df0 %>%
-  mutate(epg_id=stri_trim_left(epg_id, pattern="\\P{Wspace}")) %>% # убрали лидирующие пробелы
+raw_df <- df0 %>%
+  # если мы заботимс€ о чистоте мастер данных, то не надо отбрасывать лидирующие пробелы. это ошибка
+  # mutate(epg_id=stri_trim_left(epg_id, pattern="\\P{Wspace}")) %>% # убрали лидирующие пробелы
+  filter(title!="–езерв") %>%
   mutate(timestamp=timestamp) %>%
   mutate(type=ptype) %>%
   select(timestamp, row_num, epg_id, title, city, everything())
 
 # определ€ем полезное подмножество ---------
-# почистим данные от шлака, а потом вы€сним пересечение
-clean_df <- df1 %>%
-  filter(!is.na(epg_id)) %>%
-  filter(stri_startswith_fixed(epg_id, 'epg')) %>%
-  distinct()
+# дл€ улучшени€ диагностики сначала отмаркируем колонку с ошибками
+raw_df %<>%
+  mutate(error=case_when(
+    is.na(epg_id) ~ "ќтсутствует EPG ID",
+    !stri_startswith_fixed(epg_id, 'epg') ~ "EPG id начинаетс€ не с 'epg'"
+  ))
 
-bad_df <- anti_join(df1, clean_df)  
+bad_df <- filter(raw_df, !is.na(error))  
+
+clean_df <- raw_df %>%
+  filter(is.na(error)) %>%
+  select(-error) %>%
+  distinct()
 
 
 # делаем экспорт в PostgreSQL ---------------------

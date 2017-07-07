@@ -124,8 +124,7 @@ server <- function(input, output, session) {
         # так быстрее на 20% и памяти в 3 раза меньше требуется
         # на больших объемах скорость начинает выигрывать в разы, объем памяти также, в 4-6 раз меньше.
         df0 <- sheet_names() %>%
-          purrr::map_df(parseSheet, fname=pplan(), progress=progress, .id=NULL) %>%
-          mutate(timezone = 0)
+          purrr::map_df(parseSheet, fname=pplan(), progress=progress, .id=NULL)
       }else{
         # так хоть и чуть медленнее, но можно распараллелить
         df0 <- foreach(sheet_name=iter(sheet_names()), 
@@ -134,6 +133,8 @@ server <- function(input, output, session) {
                   parseSheet(sheet_name, fname=pplan(), progress=progress)
                 }        
       }
+      
+      df0 %<>% mutate(timezone = 0)
     }
     # загрузка dvbs --------------------
     if (ptype() == "dvbs") {
@@ -179,29 +180,36 @@ server <- function(input, output, session) {
     
     # общий постпроцессинг --------------
     df <- df0 %>%  
-      mutate(epg_id=stri_trim_left(epg_id, pattern="\\P{Wspace}")) %>% # убрали лидирующие пробелы
+      # если мы заботимся о чистоте мастер данных, то не надо отбрасывать лидирующие пробелы. это ошибка
+      # mutate(epg_id=stri_trim_left(epg_id, pattern="\\P{Wspace}")) %>% # убрали лидирующие пробелы
+      filter(title!="Резерв") %>%
       mutate(row_num=as.numeric(row_num)) %>%
       mutate(timestamp=Sys.time()) %>% # берем после разговора с Кириллом
       mutate(type=ptype()) %>%
       filter(!is.na(lcn)) %>% # отсекаем пояснения и легенду внизу таблицы   
       select(-lcn) %>%
-      select(timestamp, row_num, epg_id, title, city, everything())    
+      select(timestamp, row_num, epg_id, title, city, everything()) %>%
+      # определяем полезное подмножество ---------
+      # для улучшения диагностики сначала отмаркируем колонку с ошибками
+      mutate(error=case_when(
+        is.na(epg_id) ~ "Отсутствует EPG ID",
+        !stri_startswith_fixed(epg_id, 'epg') ~ "EPG id начинается не с 'epg'"
+      ))
   })
   
   clean_plan_df <- reactive({
-    # почистим данные от мусора, а потом выясним пересечение с исходным
     raw_plan_df() %>%
-      filter(!is.na(epg_id)) %>%
-      filter(stri_startswith_fixed(epg_id, 'epg')) %>%
-      filter(row_num > 5) %>% # для тестов
+      filter(is.na(error)) %>%
+      select(-error) %>%
+      # filter(row_num > 5) %>% # для тестов
       distinct()
   })
 
   output$wrong_rec_table <- DT::renderDataTable(
     # https://rstudio.github.io/DT/functions.html
-    DT::datatable(anti_join(raw_plan_df(), clean_plan_df()),
-                  colnames=c('Город'='city', 'Строка'='row_num', 'Канал'='title', 
-                             'EPG ID'='epg_id', 'Дата'='timestamp', 'Тип'='type'),
+    DT::datatable(filter(raw_plan_df(), !is.na(error)),
+                  colnames=c('Город'='city', 'Строка'='row_num', 'Канал'='title', 'Час. зона'='timezone',
+                             'EPG ID'='epg_id', 'Дата'='timestamp', 'Тип'='type', 'Ошибка'='error'),
                   rownames=FALSE,
                   options=list(pageLength=5, lengthMenu=c(5, 7, 10, 15))) %>% 
       DT::formatDate("Дата", method = "toLocaleString")
@@ -209,10 +217,10 @@ server <- function(input, output, session) {
 
   output$clean_rec_table <- DT::renderDataTable(
     DT::datatable(clean_plan_df(),
-                  colnames=c('Город'='city', 'Строка'='row_num', 'Канал'='title', 
+                  colnames=c('Город'='city', 'Строка'='row_num', 'Канал'='title', 'Час. зона'='timezone',
                              'EPG ID'='epg_id', 'Дата'='timestamp', 'Тип'='type'),
                   rownames=FALSE,
-                  filter = 'down',
+                  filter = 'bottom',
                   options=list(pageLength=7, lengthMenu=c(5, 7, 10, 15))) %>%
       DT::formatDate("Дата", method = "toLocaleString")
   )
