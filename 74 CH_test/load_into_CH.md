@@ -33,7 +33,10 @@ SHOW TABLES
 
 cat mtcars.csv | clickhouse-client --query="INSERT INTO mtcars FORMAT CSV"
 
-4. Посмотрим таблицу в клиенте
+4. Посмотрим структуру таблицы и ее содержание в клиенте
+DESCRIBE TABLE mtcars
+SELECT * FROM mtcars
+
 SELECT * FROM mtcars
 
 5. Посмотрим таблицу в браузере на клиентской машине:
