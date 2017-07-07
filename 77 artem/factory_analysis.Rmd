@@ -19,6 +19,7 @@ library(iterators)
 library(foreach)
 library(doParallel)
 library(zoo)
+library(tictoc)
 
 datafile <- "./data/2015.xlsx"
 ```
@@ -61,9 +62,11 @@ get_month_data <- function(filename, sheetname="") {
     mutate(name_fix = str_replace_all(name_fix, "\n", " ")) %>% # перевод строки
     mutate(name_fix = str_replace_all(name_fix, "  ", " "))
   
+  # browser()
   df1 <- df0
   repl_df <- tribble(
     ~pattern, ~replacement,
+    "Мастер-технолог", "foreman_tech",
     "Формующая часть: Угол напорного ящика", "angle_in",
     "Формующая часть: Разница скорости струи/сетки", "speed_diff_in",
     "Формующая часть: Открытие щели напорного ящика", "slot_in",
@@ -77,8 +80,6 @@ get_month_data <- function(filename, sheetname="") {
                                        pattern = repl_df$pattern,
                                        replacement = repl_df$replacement,
                                        vectorize_all = FALSE)
-  
-  
   # Все равно кривые имена, дубли
   names_df %>% 
     group_by(name_fix) %>% 
@@ -87,15 +88,20 @@ get_month_data <- function(filename, sheetname="") {
   df1 %<>% repair_names(prefix = "repaired_", sep = "")
   
   # выбираем только интересующие колонки
-  df2 <- df1 %>% select(angle_in, speed_diff_in, slot_in, pressure_in, concentration_in,
-                        performance_out, weight_out, mark_out) %>%
-    filter(row_number() > 6) %>% # удаляем весь верхний шлак
-    filter(complete.cases(.)) %>% # удаляем строки, содержащие пустые данные
-    distinct() %>% # уберем идентичные строчки
-    #http://stackoverflow.com/questions/27027347/mutate-each-summarise-each-in-dplyr-how-do-i-select-certain-columns-and-give
-    mutate_at(vars(-mark_out), funs(as.numeric))
+  df2 <- df1 %>% 
+    select(foreman_tech, angle_in, speed_diff_in, slot_in, pressure_in, concentration_in,
+           performance_out, weight_out, mark_out) %>%
+    filter(row_number() > 6) # удаляем весь верхний шлак
+  # browser()
   
-  df2
+  df3 <- df2 %>%
+    # filter(complete.cases(.)) %>% # удаляем строки, содержащие пустые данные
+    filter(performance_out>0) %>%
+    # distinct() %>% # уберем идентичные строчки
+    #http://stackoverflow.com/questions/27027347/mutate-each-summarise-each-in-dplyr-how-do-i-select-certain-columns-and-give
+    mutate_at(vars(-foreman_tech, -mark_out), funs(as.numeric))
+  
+  df3
 }
 
 ```
@@ -120,9 +126,16 @@ df
 ```
 
 ```{r}
-# уникальные значения
-unq <- map(df, unique)
+tic("Analysis")
+# посчитаем количество уникальных значений в колонках
+dist_cols <- map_df(select(df, everything()), n_distinct)
+# посчитаем и отсортируем словарные уникальные значения
+unq <- map(df, unique) %>% map(sort, decreasing=T)
+toc()
 
+dist_cols
 unq
+
+
 ```
 
