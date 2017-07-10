@@ -122,6 +122,9 @@ df <- foreach(it=iter(sheets), .combine=rbind, .packages='readxl') %do% {
   temp.df
 }
 
+# наверное данные без маркировки выходной продукции не имеют большого смысла
+df %<>% filter(!is.na(mark_out))
+
 df
 ```
 
@@ -136,6 +139,44 @@ toc()
 dist_cols
 unq
 
+
+```
+# Первичная визуализация данных
+Пытаемся понять, что скрывается за имеющимся набором данных.
+
+ - Минимальный удельный вес продукции составляет **`r min(df$weight_out)`** гр/м^2.
+ - Максимальный удельный вес продукции составляет **`r max(df$weight_out)`** гр/м^2.
+
+```{r}
+# распределение весов по марке продукции
+df0 <- df %>% group_by(mark_out) %>% mutate(row=row_number())
+
+gp <- ggplot(df0, aes(x=row, y=weight_out, colour=mark_out)) + 
+  geom_point()# +
+  #facet_wrap(~colour, scales = "free")
+
+gp # так не очень показательно
+
+```
+```{r}
+# распределение весов по марке продукции
+# http://ggplot2.tidyverse.org/reference/geom_dotplot.html
+df0 <- df %>% group_by(mark_out)
+
+gp <- ggplot(df0, aes(x=weight_out, fill=mark_out)) + 
+  theme_bw() +
+  geom_dotplot(alpha=0.5, method = "dotdensity", binpositions = "bygroup") +
+  facet_wrap(~mark_out, scales = "free")
+
+gp
+
+```
+```{r}
+gp <- ggplot(df0, aes(x=mark_out, y=weight_out, fill=mark_out)) +
+  theme_bw() +
+  geom_dotplot(alpha=0.3, binaxis="y", stackdir="center", binwidth=1/3)
+
+gp
 
 ```
 
