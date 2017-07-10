@@ -32,27 +32,13 @@ ui <- fluidPage(
   
   sidebarLayout(
     sidebarPanel(
-      width = 1,
+      width = 2,
       # обязательно ширины надо взаимно балансировать!!!!
-      radioButtons(
-        "CH_IP",
-        "CH IP",
-        choices = c("M-T"="10.0.0.180", "CTI"="172.16.33.74"),
-        selected = "10.0.0.180"
-      ),
-
-      radioButtons(
-        "CH_driver",
-        "Драйвер",
-        choices = c("ODBC", "HTTP"),
-        selected = "ODBC"
-      ),
-      actionButton("conn_btn", "Подключить"),
-      p(""),
+      p("Справка"),
       h4(textOutput("info_text", inline = TRUE))
     ),
     
-    mainPanel(width = 11, # обязательно ширины надо взаимно балансировать!!!!
+    mainPanel(width = 10, # обязательно ширины надо взаимно балансировать!!!!
               tabsetPanel(
                 id = "panel_id",
                 selected="states_tab",
@@ -73,67 +59,55 @@ ui <- fluidPage(
                 p(),
                 column(8, wellPanel("Лог файл", verbatimTextOutput("log_info"))),
                 tags$style(type='text/css', '#log_info {font-size: 80%;}')
-              )
-    )
-    )
+              ))
   )
+)
 
 
 server <- function(input, output, session) {
-
+  
   # статические переменные ------------------------------------------------
   log_name <- "app.log"
-
+  
   flog.appender(appender.file(log_name))
   flog.threshold(TRACE)
   flog.info("Start App")
-
-  # if (Sys.info()["sysname"] == "Windows") {
-  #   # con <- dbConnect(RODBCDBI::ODBC(), dsn='CH_ANSI', believeNRows=FALSE, rows_at_time=1)
-  #   con <- dbConnect(clickhouse(), host="172.16.33.74", port=8123L, user="default", password="")
-  # }else{
-  #   con <- dbConnect(clickhouse(), host="172.16.33.74", port=8123L, user="default", password="")
-  # }
-
+  
+  con <- dbConnect(RODBCDBI::ODBC(), dsn='CH_ANSI', believeNRows=FALSE, rows_at_time=1)
+  # реквизиты для подключения на удаленном стенде
+  # con <- dbConnect(clickhouse(), host="172.16.33.74", port=8123L, user="default", password="")
+  # реквизиты для подключения на локальном стенде
+  # con <- dbConnect(clickhouse(), host="10.0.0.180", port=8123L, user="default", password="")
+  
   # реактивные переменные ------------------------------------------------
-  values <- reactiveValues(info_str="...", req_count=0)
-
-  # db_conn <- eventReactive(input$conn_btn, {
-  #   dbConnect(ifelse(input$CH_driver == "ODBC", RODBCDBI::ODBC(), clickhouse()), 
-  #             host=ip$CH_IP, port=8123L, user="default", password="")
-  # })
+  values <- reactiveValues(info_str = "...")
+  
   
   # poll переменные ------------------------------------------------
-  # если мы хотим еще запускать по кнопке, то придется эмулировать функцию самим
   
-  day_events_df <- reactive({
-    if (input$conn_btn){
-      # нажата кнопка подключения, запускаем процесс
-      invalidateLater(5000, session)
-      # browser()
-      # апдейт делаем в изолированном режиме
-      con <- isolate(if(input$CH_driver == "ODBC"){
-        dbConnect(RODBCDBI::ODBC(), dsn='CH_ANSI', believeNRows=FALSE, rows_at_time=1)
-      }else{
-        dbConnect(clickhouse(), host=ip$CH_IP, port=8123L, user="default", password="")
-      })
-
-      
-      rs <- dbSendQuery(con, "SELECT * FROM states WHERE toDate(begin) >= yesterday() AND begin < now()")
-      df <- dbFetch(rs)
-      
-      if (is.character(df$begin)){
-        df %<>% mutate_at(vars(begin, end), anytime, tz="Europe/Moscow", asUTC=FALSE)
-      }
-      
-      flog.info(paste0("load_events returned ",  capture.output(print(tail(df, 2)))))
-      flog.info(paste0("usefull length = ",  nrow(df), " events"))
-      
-      df
-    }
-  })
+  check_events <- function(){
+    rs <- dbSendQuery(con, "SELECT COUNT() FROM states")
+    t <- dbFetch(rs)
+    ret <- if (is.list(t)) t[[1]] else 0
+    values$info_str <- ret
+    flog.info(paste0("Check_events returned ", ret))
+    
+    ret
+  }
+  
+  load_events <- function(){
+    flog.info(paste0("start load_events"))
+    rs <- dbSendQuery(con, "SELECT * FROM states WHERE toDate(begin) >= yesterday()")
+    ret <- dbFetch(rs)
+    flog.info(paste0("load_events returned ",  capture.output(print(tail(ret, 2)))))
+    
+    ret
+  }
+  
+  day_events_df <- reactivePoll(5000, session, check_events, load_events)
   
   # обработчики данных --------------------------------
+  
   
   # таблица состояний ------------------------------
   output$states_table <- DT::renderDataTable(
@@ -144,7 +118,7 @@ server <- function(input, output, session) {
       DT::formatDate("begin", method = "toLocaleString") %>%
       DT::formatDate("end", method = "toLocaleString")
   )
-
+  
   # таблица событий ------------------------------  
   output$events_table <- DT::renderDataTable(
     DT::datatable(NULL,
@@ -180,7 +154,7 @@ server <- function(input, output, session) {
     text[is.na(text)] <- ""
     paste(text, collapse = '\n')
   })  
-
+  
 }
 
 # Run the application 
