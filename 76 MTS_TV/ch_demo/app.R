@@ -100,9 +100,9 @@ server <- function(input, output, session) {
   
   # poll переменные ------------------------------------------------
   
+  
   check_events <- function(){
-    # browser()
-    rs <- dbSendQuery(req(values$con), "SELECT COUNT() FROM states")
+    rs <- dbSendQuery(values$con, "SELECT COUNT() FROM states")
     t <- dbFetch(rs)
     ret <- if (is.list(t)) t[[1]] else 0
     values$info_str <- ret
@@ -126,6 +126,7 @@ server <- function(input, output, session) {
   }
   
   day_events_df <- reactivePoll(5000, session, check_events, load_events)
+  # если мы хотим еще запускать по кнопке, то придется эмулировать функцию самим
   
   # обработчики данных --------------------------------
   observe({
@@ -137,7 +138,7 @@ server <- function(input, output, session) {
   # таблица состояний ------------------------------
   output$states_table <- DT::renderDataTable(
     # https://rstudio.github.io/DT/functions.html
-    DT::datatable(day_events_df(),
+    DT::datatable(req(day_events_df()),
                   rownames=FALSE,
                   options=list(pageLength=7, lengthMenu=c(5, 7, 10, 15))) %>%
       DT::formatDate("begin", method = "toLocaleString") %>%
@@ -159,7 +160,7 @@ server <- function(input, output, session) {
   
   # гистограмма событий --------------------------
   output$event_plot <- renderPlot({
-    gp <- ggplot(day_events_df(), aes(x=duration)) +
+    gp <- ggplot(req(day_events_df()), aes(x=duration)) +
       # theme_bw() +
       theme_ipsum_rc(base_size=14, axis_title_size=12) +
       geom_histogram(binwidth=2)
