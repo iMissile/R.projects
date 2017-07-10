@@ -1,11 +1,10 @@
 library(tidyverse)
+library(magrittr)
 library(DBI)
 library(anytime)
 library(fasttime)
 library(tictoc)
 # library(debug)
-# library(readr)
-# library(tidyverse)
 # library(clickhouse)
 source("clickhouse.R")
 
@@ -19,11 +18,12 @@ source("clickhouse.R")
 
 # con <- dbConnect(clickhouse::clickhouse(), host="10.0.0.234", port=8123L, user="default", password="")
 # реквизиты для подключения на удаленном стенде
-con <- dbConnect(clickhouse(), host="172.16.33.74", port=8123L, user="default", password="")
+# con <- dbConnect(clickhouse(), host="172.16.33.74", port=8123L, user="default", password="")
 
 # реквизиты для подключения на локальном стенде
 con <- dbConnect(clickhouse(), host="10.0.0.180", port=8123L, user="default", password="")
 
+if (FALSE){
 #dbWriteTable(con, "mtcars", mtcars)
 # dbListTables(con)
 # dbGetQuery(con, "SELECT COUNT(*) FROM mtcars")
@@ -41,7 +41,7 @@ tic()
 tt5 <- dbGetQuery(con, "SELECT * FROM big_csv")  %>%
   mutate_if(is.character, `Encoding<-`, "UTF-8")
 toc()
-
+}
 
 # получим данные через http интерфейс -------------------------------
 tic()
@@ -71,8 +71,7 @@ toc()
 dbListTables(con)
 
 
-t <- dbGetQuery(con, "SELECT *  FROM mtcars")
-
-d <- dbReadTable(con, "mtcars")
+# t <- dbGetQuery(con, "SELECT *  FROM mtcars")
+# d <- dbReadTable(con, "mtcars")
 dbDisconnect(con)
 stop()

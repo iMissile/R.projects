@@ -3,6 +3,8 @@ library(DBI)
 library(RODBC)
 # library(RODBCDBI)
 con <- dbConnect(RODBCDBI::ODBC(), dsn='CH_ANSI', believeNRows=FALSE, rows_at_time=1)
+
+if(FALSE){
 rs <- dbSendQuery(con, 'select 1')
 dbFetch(rs)
 
@@ -17,14 +19,19 @@ t <- dbFetch(rs)
 
 rs <- dbSendQuery(con, "SELECT * FROM states")
 t <- dbFetch(rs)
+}
 
-
+tic()
 # посмотрим, какой ответ будет на функцию проверки изменений
 rs <- dbSendQuery(con, "SELECT COUNT() FROM states")
 t <- dbFetch(rs)
 rs <- dbSendQuery(con, "SELECT * FROM states WHERE toDate(begin) >= yesterday() AND begin < now()")
 # на выходе ожидаем data.frame
 df <- dbFetch(rs)
+toc()
+
+dbClearResult(rs)
+dbDisconnect(con)
 
 gp <- ggplot(df, aes(x=duration)) +
   theme_bw() +
@@ -32,8 +39,6 @@ gp <- ggplot(df, aes(x=duration)) +
 
 gp
 
-dbClearResult(rs)
-dbDisconnect(con)
 
 
 stop()

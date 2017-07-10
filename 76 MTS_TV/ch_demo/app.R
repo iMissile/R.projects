@@ -12,7 +12,7 @@ library(shinyjs)
 library(config)
 library(DBI)
 # library(RPostgreSQL)
-library(RODBC)
+# library(RODBC)
 # library(doParallel)
 library(anytime)
 library(fasttime)
@@ -73,11 +73,11 @@ server <- function(input, output, session) {
   flog.threshold(TRACE)
   flog.info("Start App")
   
-  con <- dbConnect(RODBCDBI::ODBC(), dsn='CH_ANSI', believeNRows=FALSE, rows_at_time=1)
+  # con <- dbConnect(RODBCDBI::ODBC(), dsn='CH_ANSI', believeNRows=FALSE, rows_at_time=1)
   # реквизиты для подключения на удаленном стенде
   # con <- dbConnect(clickhouse(), host="172.16.33.74", port=8123L, user="default", password="")
   # реквизиты для подключения на локальном стенде
-  # con <- dbConnect(clickhouse(), host="10.0.0.180", port=8123L, user="default", password="")
+  con <- dbConnect(clickhouse(), host="10.0.0.180", port=8123L, user="default", password="")
   
   # реактивные переменные ------------------------------------------------
   values <- reactiveValues(info_str = "...")
@@ -86,6 +86,7 @@ server <- function(input, output, session) {
   # poll переменные ------------------------------------------------
   
   check_events <- function(){
+    flog.info(paste0("start check_events", ret))
     rs <- dbSendQuery(con, "SELECT COUNT() FROM states")
     t <- dbFetch(rs)
     ret <- if (is.list(t)) t[[1]] else 0
@@ -97,9 +98,14 @@ server <- function(input, output, session) {
   
   load_events <- function(){
     flog.info(paste0("start load_events"))
-    rs <- dbSendQuery(con, "SELECT * FROM states WHERE toDate(begin) >= yesterday()")
-    ret <- dbFetch(rs)
-    flog.info(paste0("load_events returned ",  capture.output(print(tail(ret, 2)))))
+    rs <- dbSendQuery(con, "SELECT * FROM states WHERE toDate(begin) >= yesterday() AND begin < now()")
+    df <- dbFetch(rs)
+    
+    if (is.character(df$begin)){
+      df %<>% mutate_at(vars(begin, end), anytime, tz="Europe/Moscow", asUTC=TRUE)
+    }
+    
+    flog.info(paste0("load_events returned ",  capture.output(print(tail(df, 2)))))
     
     ret
   }
