@@ -1,0 +1,138 @@
+# приложение для проверки цепочки
+library(tidyverse)
+library(readxl)
+library(magrittr)
+library(stringi)
+library(Cairo)
+library(shiny)
+library(shinythemes) # https://rstudio.github.io/shinythemes/
+library(shinyBS)
+library(shinyjs)
+library(config)
+library(DBI)
+# library(RPostgreSQL)
+library(RODBC)
+# library(doParallel)
+library(futile.logger)
+
+# eval(parse("funcs.R", encoding="UTF-8"))
+
+ui <- fluidPage(
+  useShinyjs(), 
+  
+  titlePanel("Тест цепочки"),
+  # Some custom CSS for a smaller font for preformatted text
+  tags$head(tags$style(HTML("pre, table.table {font-size: smaller;}"))),
+  theme = shinytheme("united"),
+  #("slate"),
+  
+  sidebarLayout(
+    sidebarPanel(
+      width = 2,
+      # обязательно ширины надо взаимно балансировать!!!!
+      p("Справка"),
+      h4(textOutput("info_text", inline = TRUE))
+    ),
+    
+    mainPanel(width = 10, # обязательно ширины надо взаимно балансировать!!!!
+              fluidRow(
+                column(12, wellPanel("Лог файл", verbatimTextOutput("log_info")))
+              ),
+              tabsetPanel(
+                id = "panel_id",
+                selected="states_tab",
+                tabPanel("Events", value = "events_tab",
+                         fluidRow(
+                           p()
+                           # column(12, div(DT::dataTableOutput('events_table')), style="font-size: 90%")
+                         )),
+                tabPanel("States", value = "states_tab",
+                         fluidRow(
+                           p(),
+                           column(12, div(DT::dataTableOutput('states_table')), style="font-size: 90%")
+                         ))
+                
+              ))
+    )
+  )
+
+
+server <- function(input, output, session) {
+
+  # статические переменные ------------------------------------------------
+  log_name <- "app.log"
+
+  flog.appender(appender.file(log_name))
+  flog.threshold(TRACE)
+  flog.info("Start App")
+
+  con <- dbConnect(RODBCDBI::ODBC(), dsn='CH_ANSI', believeNRows=FALSE, rows_at_time=1)
+
+  # реактивные переменные ------------------------------------------------
+  values <- reactiveValues(info_str = "...")
+  
+
+  # poll переменные ------------------------------------------------
+  
+  check_events <- function(){
+    rs <- dbSendQuery(con, "SELECT COUNT() FROM states")
+    t <- dbFetch(rs)
+    ret <- if (is.list(t)) t[[1]] else 0
+    values$info_str <- ret
+    flog.info(paste0("Check_events returned ", ret))
+    
+    ret
+  }
+  
+  load_events <- function(){
+    rs <- dbSendQuery(con, "SELECT * FROM states WHERE toDate(begin) >= yesterday()")
+    ret <- dbFetch(rs)
+    flog.info(paste0("load_events returned ",  capture.output(print(tail(ret, 2)))))
+    
+    ret
+  }
+  
+  day_events_df <- reactivePoll(5000, session, check_events, load_events)
+  
+  # обработчики данных --------------------------------
+
+  
+  # таблица состояний ------------------------------
+  output$states_table <- DT::renderDataTable(
+    # https://rstudio.github.io/DT/functions.html
+    DT::datatable(day_events_df(),
+                  rownames=FALSE,
+                  options=list(pageLength=5, lengthMenu=c(5, 7, 10, 15)))
+  )
+
+  # таблица событий ------------------------------  
+  output$events_table <- DT::renderDataTable(
+    DT::datatable(NULL,
+                  rownames=FALSE,
+                  filter = 'bottom',
+                  options=list(pageLength=7, lengthMenu=c(5, 7, 10, 15)))
+  )
+  
+  # информация для справки --------------------------
+  output$info_text <- renderText({
+    values$info_str
+  })
+  
+  # Log file визуализация --------------------------------------------------------
+  # This part of the code monitors the file for changes once per
+  # 0.5 second (500 milliseconds).
+  logReader <- reactiveFileReader(500, session, log_name, readLines)
+  
+  output$log_info <- renderText({
+    # Read the text, and make it a consistent number of lines so
+    # that the output box doesn't grow in height.
+    text <- logReader() %>% tail(10)
+    text[is.na(text)] <- ""
+    paste(text, collapse = '\n')
+  })  
+
+}
+
+# Run the application 
+shinyApp(ui=ui, server=server)
+

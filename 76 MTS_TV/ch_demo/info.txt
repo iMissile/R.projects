@@ -1,0 +1,14 @@
+Kirill Ratkin [5:36 PM] 
+10.0.0.180    chsrv1
+10.0.0.183    rsrv
+10.0.0.184      psrv
+10.0.0.191      build
+10.0.0.201      test
+
+[5:36] 
+psrv - puser/puser
+rsrv - ruser/ruser
+chsrv1 - ubuntu/ubuntu
+
+[5:37] 
+postgresql user - puser / puser
