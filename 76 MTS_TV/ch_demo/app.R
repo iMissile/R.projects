@@ -52,7 +52,7 @@ ui <- fluidPage(
                          fluidRow(
                            p(),
                            column(8, div(DT::dataTableOutput('states_table')), style="font-size: 90%"),
-                           column(4, plotOutput('event_plot1'))
+                           column(4, plotOutput('event_plot'))
                          )),
                 tabPanel("Log as table", value = "logs_tab",
                          fluidRow(
@@ -95,7 +95,7 @@ server <- function(input, output, session) {
     rs <- dbSendQuery(con, "SELECT COUNT() FROM states")
     t <- dbFetch(rs)
     ret <- if (is.list(t)) t[[1]] else 0
-    values$info_str <- ret
+    # values$info_str <- ret
     flog.info(paste0("check_states returned ", ret))
     
     ret
@@ -104,16 +104,27 @@ server <- function(input, output, session) {
   load_states <- function(){
     flog.info(paste0("start load_states"))
     tic()
+    # rs <- dbSendQuery(con, 
+                      # "SELECT * FROM states WHERE toDate(begin) >= yesterday() AND begin < now() AND serial='46839447975'")
+                      # "SELECT * FROM states WHERE toDate(begin) >= yesterday() AND begin < now()")
     rs <- dbSendQuery(con, 
-                      #"SELECT * FROM states WHERE toDate(begin) >= yesterday() AND begin < now() AND serial='46839447975'")
-                      "SELECT * FROM states WHERE toDate(begin) >= yesterday() AND begin < now()")
+                      "SELECT * FROM view_states WHERE begin >= toUInt32(yesterday()) AND begin < toUInt32(now())")
     df <- dbFetch(rs)
+
+    msg1 <- capture.output(toc())
+    tic()
     
-    if (is.character(df$begin)){
+    # Проверяем из клиента
+    # SELECT * FROM states WHERE toDate(begin) >= yesterday() AND begin < now() ORDER BY begin DESC limit 10
+    #if (is.character(df$begin)){
+    if (is.numeric(df$begin)){
       df %<>% mutate_at(vars(begin, end), anytime, tz="Europe/Moscow", asUTC=FALSE)
     }
     
-    msg <- capture.output(toc())
+    #browser()
+    msg2 <- capture.output(toc())
+    
+    msg <- paste0("Query: ", msg1, ". POSIX processing: ", msg2)
     flog.info(msg)
     values$info_str <- msg
     flog.info(paste0("load_states returned ",  capture.output(print(tail(df, 2)))))
@@ -122,7 +133,7 @@ server <- function(input, output, session) {
     df
   }
   
-  day_states_df <- reactivePoll(5000, session, check_states, load_states)
+  day_states_df <- reactivePoll(10000, session, check_states, load_states)
   
   # обработчики данных --------------------------------
   
@@ -146,6 +157,18 @@ server <- function(input, output, session) {
                   filter = 'bottom',
                   options=list(pageLength=7, lengthMenu=c(5, 7, 10, 15)))
   )
+
+  # таблица лог записей  ------------------------------  
+  output$logs_table  <- DT::renderDataTable(
+    # https://rstudio.github.io/DT/functions.html
+    {df <- as_tibble(req(app_log())) %>% arrange(-row_number()) %>%
+      tidyr::extract(value, into=c("severity", "timestamp", "message"), 
+                     regex="([^[:blank:]]+).+\\[(.+)\\][:blank:]*(.+)"); 
+    DT::datatable(df,
+                  rownames=FALSE,
+                  options=list(pageLength=7, lengthMenu=c(5, 7, 10, 15)))
+    }
+  )
   
   # информация для справки --------------------------
   output$info_text <- renderText({
@@ -165,7 +188,7 @@ server <- function(input, output, session) {
   # Log file визуализация --------------------------------------------------------
   # This part of the code monitors the file for changes once per
   # 0.5 second (500 milliseconds).
-  app_log <- reactiveFileReader(500, session, log_name, readLines)
+  app_log <- reactiveFileReader(30000, session, log_name, readLines)
   
   output$log_info <- renderText({
     # Read the text, and make it a consistent number of lines so
@@ -174,17 +197,6 @@ server <- function(input, output, session) {
     text[is.na(text)] <- ""
     paste(text, collapse = '\n')
   })  
-  
-  output$logs_table  <- DT::renderDataTable(
-    # https://rstudio.github.io/DT/functions.html
-    {df <- as_tibble(req(app_log())) %>% 
-      tidyr::extract(value, into=c("severity", "timestamp", "message"), 
-                     regex="([^[:blank:]]+).+\\[(.+)\\][:blank:]*(.+)"); 
-    DT::datatable(df,
-                  rownames=FALSE,
-                  options=list(pageLength=7, lengthMenu=c(5, 7, 10, 15)))
-      }
-  )
   
 }
 
