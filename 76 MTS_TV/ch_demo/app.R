@@ -14,6 +14,7 @@ library(DBI)
 # library(RPostgreSQL)
 # library(RODBC)
 # library(doParallel)
+library(tictoc)
 library(anytime)
 library(fasttime)
 library(futile.logger)
@@ -51,9 +52,13 @@ ui <- fluidPage(
                          fluidRow(
                            p(),
                            column(8, div(DT::dataTableOutput('states_table')), style="font-size: 90%"),
-                           column(4, plotOutput('event_plot'))
+                           column(4, plotOutput('event_plot1'))
+                         )),
+                tabPanel("Log as table", value = "logs_tab",
+                         fluidRow(
+                           p(),
+                           column(8, div(DT::dataTableOutput('logs_table')), style="font-size: 90%")
                          ))
-                
               ),
               fluidRow(
                 p(),
@@ -75,9 +80,9 @@ server <- function(input, output, session) {
   
   # con <- dbConnect(RODBCDBI::ODBC(), dsn='CH_ANSI', believeNRows=FALSE, rows_at_time=1)
   # реквизиты для подключения на удаленном стенде
-  # con <- dbConnect(clickhouse(), host="172.16.33.74", port=8123L, user="default", password="")
+  con <- dbConnect(clickhouse(), host="172.16.33.74", port=8123L, user="default", password="")
   # реквизиты для подключения на локальном стенде
-  con <- dbConnect(clickhouse(), host="10.0.0.180", port=8123L, user="default", password="")
+  # con <- dbConnect(clickhouse(), host="10.0.0.180", port=8123L, user="default", password="")
   
   # реактивные переменные ------------------------------------------------
   values <- reactiveValues(info_str = "...")
@@ -85,32 +90,39 @@ server <- function(input, output, session) {
   
   # poll переменные ------------------------------------------------
   
-  check_events <- function(){
-    flog.info(paste0("start check_events", ret))
+  check_states <- function(){
+    flog.info(paste0("start check_states"))
     rs <- dbSendQuery(con, "SELECT COUNT() FROM states")
     t <- dbFetch(rs)
     ret <- if (is.list(t)) t[[1]] else 0
     values$info_str <- ret
-    flog.info(paste0("Check_events returned ", ret))
+    flog.info(paste0("check_states returned ", ret))
     
     ret
   }
   
-  load_events <- function(){
-    flog.info(paste0("start load_events"))
-    rs <- dbSendQuery(con, "SELECT * FROM states WHERE toDate(begin) >= yesterday() AND begin < now()")
+  load_states <- function(){
+    flog.info(paste0("start load_states"))
+    tic()
+    rs <- dbSendQuery(con, 
+                      #"SELECT * FROM states WHERE toDate(begin) >= yesterday() AND begin < now() AND serial='46839447975'")
+                      "SELECT * FROM states WHERE toDate(begin) >= yesterday() AND begin < now()")
     df <- dbFetch(rs)
     
     if (is.character(df$begin)){
-      df %<>% mutate_at(vars(begin, end), anytime, tz="Europe/Moscow", asUTC=TRUE)
+      df %<>% mutate_at(vars(begin, end), anytime, tz="Europe/Moscow", asUTC=FALSE)
     }
     
-    flog.info(paste0("load_events returned ",  capture.output(print(tail(df, 2)))))
+    msg <- capture.output(toc())
+    flog.info(msg)
+    values$info_str <- msg
+    flog.info(paste0("load_states returned ",  capture.output(print(tail(df, 2)))))
     
-    ret
+    
+    df
   }
   
-  day_events_df <- reactivePoll(5000, session, check_events, load_events)
+  day_states_df <- reactivePoll(5000, session, check_states, load_states)
   
   # обработчики данных --------------------------------
   
@@ -118,11 +130,13 @@ server <- function(input, output, session) {
   # таблица состояний ------------------------------
   output$states_table <- DT::renderDataTable(
     # https://rstudio.github.io/DT/functions.html
-    DT::datatable(req(day_events_df()),
+    DT::datatable(req(day_states_df()),
                   rownames=FALSE,
-                  options=list(pageLength=7, lengthMenu=c(5, 7, 10, 15))) %>%
-      DT::formatDate("begin", method = "toLocaleString") %>%
-      DT::formatDate("end", method = "toLocaleString")
+                  filter = 'bottom',
+                  options=list(pageLength=7, lengthMenu=c(5, 7, 10, 15),
+                               order=list(list(3, 'desc')))) %>%
+      DT::formatDate("begin", method="toLocaleString") %>%
+      DT::formatDate("end", method="toLocaleString")
   )
   
   # таблица событий ------------------------------  
@@ -140,7 +154,7 @@ server <- function(input, output, session) {
   
   # гистограмма событий --------------------------
   output$event_plot <- renderPlot({
-    gp <- ggplot(req(day_events_df()), aes(x=duration)) +
+    gp <- ggplot(req(day_states_df()), aes(x=duration)) +
       # theme_bw() +
       theme_ipsum_rc(base_size=14, axis_title_size=12) +
       geom_histogram(binwidth=2)
@@ -151,15 +165,26 @@ server <- function(input, output, session) {
   # Log file визуализация --------------------------------------------------------
   # This part of the code monitors the file for changes once per
   # 0.5 second (500 milliseconds).
-  logReader <- reactiveFileReader(500, session, log_name, readLines)
+  app_log <- reactiveFileReader(500, session, log_name, readLines)
   
   output$log_info <- renderText({
     # Read the text, and make it a consistent number of lines so
     # that the output box doesn't grow in height.
-    text <- logReader() %>% tail(10)
+    text <- app_log() %>% tail(10)
     text[is.na(text)] <- ""
     paste(text, collapse = '\n')
   })  
+  
+  output$logs_table  <- DT::renderDataTable(
+    # https://rstudio.github.io/DT/functions.html
+    {df <- as_tibble(req(app_log())) %>% 
+      tidyr::extract(value, into=c("severity", "timestamp", "message"), 
+                     regex="([^[:blank:]]+).+\\[(.+)\\][:blank:]*(.+)"); 
+    DT::datatable(df,
+                  rownames=FALSE,
+                  options=list(pageLength=7, lengthMenu=c(5, 7, 10, 15)))
+      }
+  )
   
 }
 
