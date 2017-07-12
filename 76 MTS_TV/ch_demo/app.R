@@ -45,8 +45,8 @@ ui <- fluidPage(
                 selected="states_tab",
                 tabPanel("Events", value = "events_tab",
                          fluidRow(
-                           p()
-                           # column(12, div(DT::dataTableOutput('events_table')), style="font-size: 90%")
+                           p(),
+                           column(12, div(DT::dataTableOutput('events_table')), style="font-size: 90%")
                          )),
                 tabPanel("States", value = "states_tab",
                          fluidRow(
@@ -88,11 +88,10 @@ server <- function(input, output, session) {
   values <- reactiveValues(info_str = "...")
   
   
-  # poll переменные ------------------------------------------------
+  # poll states переменная ------------------------------------------------
   
   check_states <- function(){
-    flog.info(paste0("start check_states"))
-    rs <- dbSendQuery(con, "SELECT COUNT() FROM states")
+    rs <- dbSendQuery(con, "SELECT COUNT() FROM view_states")
     t <- dbFetch(rs)
     ret <- if (is.list(t)) t[[1]] else 0
     # values$info_str <- ret
@@ -102,7 +101,6 @@ server <- function(input, output, session) {
   }
   
   load_states <- function(){
-    flog.info(paste0("start load_states"))
     tic()
     # rs <- dbSendQuery(con, 
                       # "SELECT * FROM states WHERE toDate(begin) >= yesterday() AND begin < now() AND serial='46839447975'")
@@ -128,20 +126,58 @@ server <- function(input, output, session) {
     flog.info(msg)
     values$info_str <- msg
     flog.info(paste0("load_states returned ",  capture.output(print(tail(df, 2)))))
-    
-    
+
     df
   }
   
-  day_states_df <- reactivePoll(10000, session, check_states, load_states)
+  states_df <- reactivePoll(10000, session, check_states, load_states)
+
+  # poll events переменная ------------------------------------------------
+  check_events <- function(){
+    rs <- dbSendQuery(con, "SELECT COUNT() FROM view_events")
+    t <- dbFetch(rs)
+    ret <- if (is.list(t)) t[[1]] else 0
+    # values$info_str <- ret
+    flog.info(paste0("check_events returned ", ret))
+    
+    ret
+  }
   
+  load_events <- function(){
+    tic()
+    # rs <- dbSendQuery(con, 
+    rs <- dbSendQuery(con, 
+                      "SELECT * FROM view_events WHERE edate >= toUInt32(yesterday()) AND edate < toUInt32(now())")
+    df <- dbFetch(rs)
+    
+    msg1 <- capture.output(toc())
+    tic()
+    
+    # Проверяем из клиента
+    if (is.numeric(df$edate)){
+      df %<>% mutate_at(vars(edate), anytime, tz="Europe/Moscow", asUTC=FALSE)
+    }
+    
+    #browser()
+    msg2 <- capture.output(toc())
+    
+    msg <- paste0("Query: ", msg1, ". POSIX processing: ", msg2)
+    flog.info(msg)
+    values$info_str <- msg
+    flog.info(paste0("load_events returned ",  capture.output(print(tail(df, 2)))))
+
+    df
+  }
+  
+  events_df <- reactivePoll(10000, session, check_events, load_events)
+
   # обработчики данных --------------------------------
   
   
   # таблица состояний ------------------------------
   output$states_table <- DT::renderDataTable(
     # https://rstudio.github.io/DT/functions.html
-    DT::datatable(req(day_states_df()),
+    DT::datatable(req(states_df()),
                   rownames=FALSE,
                   filter = 'bottom',
                   options=list(pageLength=7, lengthMenu=c(5, 7, 10, 15),
@@ -152,10 +188,12 @@ server <- function(input, output, session) {
   
   # таблица событий ------------------------------  
   output$events_table <- DT::renderDataTable(
-    DT::datatable(NULL,
+    DT::datatable(req(events_df()),
                   rownames=FALSE,
                   filter = 'bottom',
-                  options=list(pageLength=7, lengthMenu=c(5, 7, 10, 15)))
+                  options=list(pageLength=7, lengthMenu=c(5, 7, 10, 15),
+                               order=list(list(3, 'desc')))) %>%
+      DT::formatDate("edate", method="toLocaleString")
   )
 
   # таблица лог записей  ------------------------------  
@@ -177,7 +215,7 @@ server <- function(input, output, session) {
   
   # гистограмма событий --------------------------
   output$event_plot <- renderPlot({
-    gp <- ggplot(req(day_states_df()), aes(x=duration)) +
+    gp <- ggplot(req(states_df()), aes(x=duration)) +
       # theme_bw() +
       theme_ipsum_rc(base_size=14, axis_title_size=12) +
       geom_histogram(binwidth=2)
