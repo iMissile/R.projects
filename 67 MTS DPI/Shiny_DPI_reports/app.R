@@ -382,7 +382,10 @@ server <- function(input, output, session) {
       paste0("downlink-data-", Sys.Date(), ".csv", sep="")
     },
     content = function(file) {
-      write_csv(top10_down_df(), file)
+      top10_down_df() %>% arrange(desc(volume)) %>%
+        # write_csv(file)
+        # сделаем вывод в формате, принимаемым Excel
+        write.table(file, na="NA", append=FALSE, col.names=TRUE, row.names=FALSE, sep=";")
     }
   )
 
@@ -391,7 +394,10 @@ server <- function(input, output, session) {
       paste0("uplink-data-", Sys.Date(), ".csv", sep="")
     },
     content = function(file) {
-      write_csv(top10_up_df(), file)
+      top10_up_df() %>% arrange(desc(volume)) %>%
+      # write_csv(file)
+      # сделаем вывод в формате, принимаемым Excel
+      write.table(file, na="NA", append=FALSE, col.names=TRUE, row.names=FALSE, sep=";")
     }
   )
     
