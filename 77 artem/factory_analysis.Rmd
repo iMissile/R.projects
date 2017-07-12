@@ -21,7 +21,7 @@ library(doParallel)
 library(zoo)
 library(tictoc)
 
-datafile <- "./data/2015.xlsx"
+datafile <- "./data/2016.xlsx"
 ```
 
 # Определение функции загрузки
@@ -74,7 +74,8 @@ get_month_data <- function(filename, sheetname="") {
     "Поток: Концентрация при размоле", "concentration_in",
     "Производительность", "performance_out",
     "Вес м2", "weight_out",
-    "Артикул", "mark_out"
+    "Артикул", "mark_out",
+    "Примечание", "notes"
   )
   names(df1) <- stri_replace_all_fixed(names_df$name_fix,
                                        pattern = repl_df$pattern,
@@ -90,7 +91,7 @@ get_month_data <- function(filename, sheetname="") {
   # выбираем только интересующие колонки
   df2 <- df1 %>% 
     select(foreman_tech, angle_in, speed_diff_in, slot_in, pressure_in, concentration_in,
-           performance_out, weight_out, mark_out) %>%
+           performance_out, weight_out, mark_out, notes) %>%
     filter(row_number() > 6) # удаляем весь верхний шлак
   # browser()
   
@@ -99,7 +100,7 @@ get_month_data <- function(filename, sheetname="") {
     filter(performance_out>0) %>%
     # distinct() %>% # уберем идентичные строчки
     #http://stackoverflow.com/questions/27027347/mutate-each-summarise-each-in-dplyr-how-do-i-select-certain-columns-and-give
-    mutate_at(vars(-foreman_tech, -mark_out), funs(as.numeric))
+    mutate_at(vars(-foreman_tech, -mark_out, -notes), funs(as.numeric))
   
   df3
 }
@@ -174,7 +175,8 @@ gp
 ```{r}
 gp <- ggplot(df0, aes(x=mark_out, y=weight_out, fill=mark_out)) +
   theme_bw() +
-  geom_dotplot(alpha=0.3, binaxis="y", stackdir="center", binwidth=1/3)
+  geom_dotplot(alpha=0.3, binaxis="y", stackdir="center", binwidth=1/3) +
+  facet_wrap(~notes, scales = "free")
 
 gp
 
