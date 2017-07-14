@@ -74,9 +74,14 @@ server <- function(input, output, session) {
   # статические переменные ------------------------------------------------
   log_name <- "app.log"
   
-  flog.appender(appender.file(log_name))
+  flog.appender(appender.tee(log_name))
+  # Print log messages to the console
+  # appender.console()
+  # Write log messages to console and a file
+  # appender.tee(file)
   flog.threshold(TRACE)
-  flog.info("Start App")
+  flog.info("App started")
+  # message("App started ", "DEF")
   
   # con <- dbConnect(RODBCDBI::ODBC(), dsn='CH_ANSI', believeNRows=FALSE, rows_at_time=1)
   # реквизиты для подключения на удаленном стенде
@@ -91,6 +96,7 @@ server <- function(input, output, session) {
   # poll states переменная ------------------------------------------------
   
   check_states <- function(){
+    flog.info("check_states started")
     rs <- dbSendQuery(con, "SELECT COUNT() FROM view_states")
     t <- dbFetch(rs)
     ret <- if (is.list(t)) t[[1]] else 0
@@ -101,6 +107,7 @@ server <- function(input, output, session) {
   }
   
   load_states <- function(){
+    flog.info("load_states started")
     tic()
     # rs <- dbSendQuery(con, 
                       # "SELECT * FROM states WHERE toDate(begin) >= yesterday() AND begin < now() AND serial='46839447975'")
@@ -134,6 +141,7 @@ server <- function(input, output, session) {
 
   # poll events переменная ------------------------------------------------
   check_events <- function(){
+    flog.info("check_events started")
     rs <- dbSendQuery(con, "SELECT COUNT() FROM view_events")
     t <- dbFetch(rs)
     ret <- if (is.list(t)) t[[1]] else 0
@@ -144,6 +152,7 @@ server <- function(input, output, session) {
   }
   
   load_events <- function(){
+    flog.info("load_events started")
     tic()
     # rs <- dbSendQuery(con, 
     rs <- dbSendQuery(con, 

@@ -1,3 +1,6 @@
+packrat::repos_add(miniCRAN = "file:///opt/miniCRAN")
+packrat::repos_remove('CRAN')
+
 library(tidyverse)
 library(readxl)
 library(magrittr)
