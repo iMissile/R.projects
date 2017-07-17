@@ -15,7 +15,7 @@ source("funcs.R")
 system.time(raw_df <- readRDS("./data/tvstream4.rds"))
 
 # дополнительный препроцессинг для быстрой отладки + генерация недостающих полей  -------------
-if (FALSE){
+if (TRUE){
   system.time(raw_df <- readRDS("./data/tvstream3.rds"))
   
   # подберем коээфициент растяжения
@@ -30,8 +30,8 @@ if (FALSE){
     # mutate(t=anytime(date/1000, tz="Europe/Moscow"))
     # похоже, что timestamp = date, только формат разный. Поэтому прибьем, чтобы память не забивать
     mutate(timestamp = anytime(date / 1000, tz = "UTC")) %>%
-    # для экспериментов сознательно растяем данные на 10 дней
-    mutate(timestamp = anytime(as.numeric(now()+seconds(as.integer(runif(n(), 0, 10*24*60*60)))))) %>%
+    # для экспериментов сознательно растяем данные на 10 дней назад
+    mutate(timestamp = anytime(as.numeric(now()-seconds(as.integer(runif(n(), 0, 10*24*60*60)))))) %>%
     mutate(timegroup = hgroup.enum(timestamp, min_bin = 60)) %>%
     select(-date) %>%
     mutate(segment=sample(c("IPTV", "DVB-C", "DVB-S"), n(), replace=TRUE))

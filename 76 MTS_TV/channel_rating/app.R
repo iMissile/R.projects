@@ -46,7 +46,7 @@ ui <-
   
   # includeCSS("styles.css"),
   
-  tabPanel("Поле", value="field"),
+  tabPanel("МТС", value="field"),
   tabPanel("About", value="about"),
   
   
@@ -68,27 +68,25 @@ ui <-
                )
              )
       ),
-    
-    fluidRow(
-        column(6, textOutput('info_text')), # 
-        column(6, plotOutput('weather_plot', height = "300px")) # , height = "300px"
-      ),
-    
     fluidRow(
       column(2, uiOutput("choose_segment")),
       column(2, uiOutput("choose_region")),
-      column(2, dateRangeInput("date_range",
-                               label = paste('Date range input 2: range is limited,',
-                                             'dd/mm/yy, language: fr, week starts on day 1 (Monday),',
-                                             'separator is "-", start view is year'),
-                               start = Sys.Date() - 3, end = Sys.Date() + 3,
-                               min = Sys.Date() - 10, max = Sys.Date() + 10,
+      column(2, dateRangeInput("in_date_range",
+                               label = "Диапазон дат",
+                               start = Sys.Date() - 3, end = Sys.Date(),
+                               # min = Sys.Date() - 10, 
+                               max = Sys.Date(),
                                separator = " - ", format = "dd/mm/yy",
                                startview = "month", language = 'ru', weekstart=1)
       ), 
-      column(2, selectInput("history_days", "Глубина истории (дни)", 
-                            choices = c(0, 1, 3, 5, 7), selected = 5)),
-    )    
+      column(2, selectInput("history_depth", "Глубина истории", 
+                            choices = c("1 месяц"=30, "2 недели"=14,
+                                        "1 неделя"=7, "3 дня"=3), selected=30))
+    ),
+    fluidRow(
+      column(6, textOutput('info_text')), # 
+      column(6, plotOutput('weather_plot', height = "300px")) # , height = "300px"
+    )
   )
 )
 
@@ -105,14 +103,25 @@ server <- function(input, output, session) {
   raw_df <- {
     system.time(df <- readRDS("./data/tvstream4.rds"))
     flog.info(paste0("Loaded ", nrow(df), " rows"))
+    flog.info(paste0("Time range [", min(df$timestamp), "; ", max(df$timestamp), "]"))
     
-    df
+    as_tibble(df)
   }  
   
   # реактивные переменные -------------------
   
   cur_df <- reactive({
-    req(raw_df)
+    # browser()
+    flog.info(paste0("Applied time filter [", input$in_date_range[1], "; ", input$in_date_range[2], "]"))
+    t <- req(raw_df) %>%
+      mutate(date=anydate(timestamp))
+    
+    t %<>%
+      filter(input$in_date_range[1] < date  & date < input$in_date_range[2])
+    
+    # browser()
+
+    t
   })
   
   msg <- reactiveVal("")
@@ -145,7 +154,17 @@ server <- function(input, output, session) {
   output$data_tbl <- DT::renderDataTable({
     })
 
-
+  
+  # динамическое управление диапазоном дат ---------
+  observeEvent(input$history_depth, {
+    # browser();
+    # почему-то $history_depth получаем как строку
+    date <- Sys.Date()-as.numeric(input$history_depth)
+    flog.info(paste0("Start date changed to  ", date))
+    updateDateRangeInput(session, "in_date_range", start=date)
+   }
+  )
+  
   # служебный вывод ---------------------  
   output$info_text <- renderText({
     msg()
@@ -153,28 +172,33 @@ server <- function(input, output, session) {
 
   # динамический выбор типа технологии передачи данных (сегмента) ---------
   output$choose_segment <- renderUI({
-    # выделим уникальные типы для выбранного множества данных
-    data <- cur_df() %>% distinct(segment) %>% arrange(segment)
+    # выделим уникальные типы для выбранного множества данных (вектор)
+    data <- cur_df() %>% distinct(segment) %>% arrange(segment) %>% pull(segment)
+    # browser()
     # names(data) <- NULL
     flog.info(paste0("Dynamic segment list ",  capture.output(str(data))))
     
     msg(capture.output(dput(data)))
     
     # создадим элемент
-    selectInput("segment_filter", "Сегмент", choices=as.list(data))
+    selectInput("segment_filter", 
+                paste0("Сегмент (", length(data), ")"), 
+                choices=data)
   })
 
     # динамический выбор региона ---------
   output$choose_region <- renderUI({
     # выделим уникальные типы для выбранного множества данных
-    data <- cur_df() %>% distinct(region) %>% arrange(region)
+    data <- cur_df() %>% distinct(region) %>% arrange(region) %>% pull(region)
     # names(data) <- NULL
     flog.info(paste0("Dynamic region list ",  capture.output(str(data))))
     
     msg(capture.output(dput(data)))
     
     # создадим элемент
-    selectInput("region_filter", "Регион", choices=as.list(data))
+    selectInput("region_filter", 
+                paste0("Регион (", length(data), ")"), 
+                choices=data)
   })
   
 }
