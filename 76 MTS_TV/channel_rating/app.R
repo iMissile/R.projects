@@ -83,6 +83,20 @@ ui <-
 
 # ================================================================
 server <- function(input, output, session) {
+  # статические переменные ------------------------------------------------
+  log_name <- "app.log"
+  
+  flog.appender(appender.tee(log_name))
+  flog.threshold(TRACE)
+  flog.info("App started")
+  
+  # реактивные переменные -------------------
+  raw_df <- reactive({
+    system.time(df <- readRDS("./data/tvstream3.rds"))
+    
+
+    df
+  })  
   
   cweather_df <- reactive({
   })  
