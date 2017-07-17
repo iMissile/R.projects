@@ -1,34 +1,62 @@
+rm(list=ls()) # очистим все переменные
 library(tidyverse)
 library(magrittr)
+library(lubridate)
 library(stringi)
 library(Cairo)
 library(futile.logger)
+library(anytime)
+library(tictoc)
 
 
-eval(parse("funcs.R", encoding="UTF-8"))
+#eval(parse("funcs.R", encoding="UTF-8"))
+source("funcs.R")
 
+system.time(raw_df <- readRDS("./data/tvstream4.rds"))
+
+# дополнительный препроцессинг для быстрой отладки -------------
 if (TRUE){
-system.time(rawdf <- readRDS("./data/tvstream3.rds"))
+  system.time(raw_df <- readRDS("./data/tvstream3.rds"))
+  
+  # подберем коээфициент растяжения
+  anytime(as.numeric(now()+days(1))*1.0005)
 
-# сделаем сэмпл немного поменьше
-df <- rawdf %>%
-  select(-data_date) %>% # data_date вообще почти везде NA
-  filter(complete.cases(.)) %>% # выкинули строки с NA
-  sample_frac(0.2) %>% # и сразу случайным образом урежем объем
-  # mutate(t=as.POSIXct(date, origin='1970-01-01'))
-  # mutate(t=anytime(date/1000, tz="Europe/Moscow"))
-  # похоже, что timestamp = date, только формат разный. Поэтому прибьем, чтобы память не забивать
-  mutate(timestamp=anytime(date/1000, tz="UTC")) %>%
-  mutate(timegroup=hgroup.enum(timestamp, min_bin=60)) %>%
-  select(-date)
+  # сделаем сэмпл немного поменьше
+  df <- raw_df %>%
+    select(-data_date) %>% # data_date вообще почти везде NA
+    filter(complete.cases(.)) %>% # выкинули строки с NA
+    sample_frac(0.2) %>% # и сразу случайным образом урежем объем
+    # mutate(t=as.POSIXct(date, origin='1970-01-01'))
+    # mutate(t=anytime(date/1000, tz="Europe/Moscow"))
+    # похоже, что timestamp = date, только формат разный. Поэтому прибьем, чтобы память не забивать
+    mutate(timestamp = anytime(date / 1000, tz = "UTC")) %>%
+    # для экспериментов сознательно растяем данные на 10 дней
+    mutate(timestamp = anytime(as.numeric(now()+seconds(as.integer(runif(n(), 0, 10*24*60*60)))))) %>%
+    mutate(timegroup = hgroup.enum(timestamp, min_bin = 60)) %>%
+    select(-date) %>%
+    mutate(type=sample(c("IPTV", "DVB-C", "DVB-S"), n(), replace=TRUE))
 
-cut(paste0("Размер объекта, Мб:", object.size(df)/1024/1024))
+  print(paste0("Размер объекта: ", round(as.numeric(object.size(df) / 1024 / 1024), digits = 1), "Мб"))
+  
+  system.time(saveRDS(df, "./data/tvstream4.rds", ascii = FALSE, compress = "gzip"))
+  
+  raw_df <- df
+}
 
-system.time(saveRDS(df, "./data/tvstream4.rds", ascii=FALSE, compress="gzip"))
+# поглядим сводку по данным ---------------------
+if (FALSE) {
+  tic()
+  # посчитаем количество уникальных значений в колонках
+  dist_cols <- map_df(select(raw_df,-timestamp), n_distinct)
+  # посчитаем и отсортируем словарные уникальные значения
+  unq <- map(raw_df, unique) %>% map(sort, decreasing = T)
+  # unq
+  dist_cols
+  toc()
 }
 
 
-unq <- map(select(df, -timestamp), unique)
+stop()
 
 # посмотрим ТОП-5 передач для ТОП-9 регионов =============
 
