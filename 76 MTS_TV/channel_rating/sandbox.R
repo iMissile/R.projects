@@ -14,8 +14,8 @@ source("funcs.R")
 
 system.time(raw_df <- readRDS("./data/tvstream4.rds"))
 
-# дополнительный препроцессинг для быстрой отладки -------------
-if (TRUE){
+# дополнительный препроцессинг для быстрой отладки + генерация недостающих полей  -------------
+if (FALSE){
   system.time(raw_df <- readRDS("./data/tvstream3.rds"))
   
   # подберем коээфициент растяжения
@@ -34,7 +34,7 @@ if (TRUE){
     mutate(timestamp = anytime(as.numeric(now()+seconds(as.integer(runif(n(), 0, 10*24*60*60)))))) %>%
     mutate(timegroup = hgroup.enum(timestamp, min_bin = 60)) %>%
     select(-date) %>%
-    mutate(type=sample(c("IPTV", "DVB-C", "DVB-S"), n(), replace=TRUE))
+    mutate(segment=sample(c("IPTV", "DVB-C", "DVB-S"), n(), replace=TRUE))
 
   print(paste0("Размер объекта: ", round(as.numeric(object.size(df) / 1024 / 1024), digits = 1), "Мб"))
   
