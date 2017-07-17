@@ -13,7 +13,9 @@ library(digest)
 #eval(parse("funcs.R", encoding="UTF-8"))
 source("funcs.R")
 
-system.time(raw_df <- readRDS("./data/tvstream4.rds"))
+system.time(raw_df <- as_tibble(readRDS("./data/tvstream4.rds")))
+raw_df %<>% mutate(title=readr::parse_factor(programId, levels=NULL))
+raw_df %<>% mutate(serial_num=as.numeric(serial))
 
 # дополнительный препроцессинг для быстрой отладки + генерация недостающих полей  -------------
 if (FALSE){
@@ -56,8 +58,71 @@ if (FALSE) {
   toc()
 }
 
+# Отчет №1: "Рейтинг каналов" --------------------
+
+if (FALSE) {
+  tic()
+  df0 <- raw_df %>%
+    mutate(name_hash = map_chr(programId, digest::digest, algo = "xxhash64"))
+  # для 250 тыс. строк на ноутбуке хэш считается ~25 сек
+  toc()
+  
+  print(paste0("Размер объекта: ", round(as.numeric(object.size(df0) / 1024 / 1024), digits = 1), "Мб"))
+  
+  # посчитаем количество уникальных значений в колонках
+  dist_cols <- map_df(select(df0, name_hash, programId), n_distinct)
+}
+
+# посчитаем количество уникальных значений в колонках
+dist_cols <- map_df(select(raw_df, programId, serial, serial_num), n_distinct)
+
+# промежуточные эксперименты со скоростью вычислений ---------------------
+if (FALSE){
+gc()
+tic("unique string") # ~1.9 сек
+microbenchmark::microbenchmark(
+df0 <- raw_df %>%
+  group_by(programId) %>%
+  summarise(unique_box=n_distinct(serial)) %>%
+  arrange(desc(unique_box)), times=10)
+toc()
+  
+# а теперь через факторы
+gc()
+tic("unique factors") # ~1.9 сек
+microbenchmark::microbenchmark(
+  df0 <- raw_df %>%
+  group_by(title) %>%
+  summarise(unique_box=n_distinct(serial)) %>%
+  arrange(desc(unique_box)), times=10)
+toc()
+
+# а теперь с числами вместо строк
+gc()
+tic("unique factors + serial_num") # ~0.1 сек
+microbenchmark::microbenchmark(
+  df0 <- raw_df %>%
+    group_by(title) %>%
+    summarise(unique_box=n_distinct(serial_num)) %>%
+    arrange(desc(unique_box)), times=10)
+toc()
+}
+
+# а теперь с числами вместо строк
+gc()
+tic("unique factors + serial_num") # ~0.1 сек
+df0 <- raw_df %>%
+  group_by(title) %>%
+  summarise(unique_box=n_distinct(serial_num), 
+            total_time=sum(duration),
+            watch_events=n()) %>%
+  arrange(desc(unique_box))
+toc()
+
 
 stop()
+
+
 
 # посмотрим ТОП-5 передач для ТОП-9 регионов =============
 
