@@ -13,10 +13,10 @@ library(shinythemes) # https://rstudio.github.io/shinythemes/
 library(shinyBS)
 library(shinyjs)
 library(config)
-library(DBI)
-library(RPostgreSQL)
 library(futile.logger)
+library(anytime)
 library(tictoc)
+library(digest)
 
 ## ---------
 # library(RColorBrewer)
@@ -59,18 +59,9 @@ ui <-
       # tags$style(type='text/css', 'div {background-color: #000с00;}'), 
       
       column(6, h2("Типовая форма"), h3(textOutput("cweather_text", inline=TRUE))),
-      column(6,
-             fluidRow(
-               column(4, selectInput("predict_days", "Горизонт прогноза (дни)",
-                                     choices = c(1, 2, 3, 5), selected = 2)),
-               column(4, selectInput("time_bin", "Группировка (часы)",
-                                     choices = c(0.5, 1, 2, 3, 4, 6, 12), selected = 1))
-               )
-             )
+      column(6, h2("Заполнитель"))
       ),
     fluidRow(
-      column(2, uiOutput("choose_segment")),
-      column(2, uiOutput("choose_region")),
       column(2, dateRangeInput("in_date_range",
                                label = "Диапазон дат",
                                start = Sys.Date() - 3, end = Sys.Date(),
@@ -81,12 +72,22 @@ ui <-
       ), 
       column(2, selectInput("history_depth", "Глубина истории", 
                             choices = c("1 месяц"=30, "2 недели"=14,
-                                        "1 неделя"=7, "3 дня"=3), selected=30))
+                                        "1 неделя"=7, "3 дня"=3), selected=3)),
+      column(2, uiOutput("choose_segment")),
+      column(2, uiOutput("choose_region")),
+      column(2, selectInput("min_watch_time", "Мин. время просмотра, сек",
+                            choices = c(5, 10, 20, 30), selected = 10)),
+      column(2, selectInput("max_watch_time", "Макс. время просмотра, час",
+                            choices = c(1, 2, 4, 8), selected = 2))
+    ),
+    #tags$style(type='text/css', "#in_date_range { position: absolute; top: 50%; transform: translateY(-80%); }"),
+    fluidRow(
+      column(12, div(DT::dataTableOutput('stat_table')), style="font-size: 90%")
     ),
     fluidRow(
-      column(6, textOutput('info_text')), # 
-      column(6, plotOutput('weather_plot', height = "300px")) # , height = "300px"
+      column(6, textOutput('info_text'))
     )
+    
   )
 )
 
@@ -113,47 +114,26 @@ server <- function(input, output, session) {
   cur_df <- reactive({
     # browser()
     flog.info(paste0("Applied time filter [", input$in_date_range[1], "; ", input$in_date_range[2], "]"))
-    t <- req(raw_df) %>%
-      mutate(date=anydate(timestamp))
-    
-    t %<>%
+    req(raw_df) %>%
+      mutate(date=anydate(timestamp)) %>%
       filter(input$in_date_range[1] < date  & date < input$in_date_range[2])
-    
-    # browser()
-
-    t
   })
   
   msg <- reactiveVal("")
 
-  field_df <- reactive({
-
-  })  
   
-  raw_weather_df <- reactive({
-  })  
+  output$stat_table <- DT::renderDataTable({
+    # https://rstudio.github.io/DT/functions.html
+    DT::datatable(req(cur_df()),
+                  rownames=FALSE,
+                  filter = 'bottom',
+                  options=list(pageLength=7, lengthMenu=c(5, 7, 10, 15),
+                               order=list(list(3, 'desc')))) %>%
+      DT::formatDate("timestamp", method="toLocaleString")
+    }
+    )
+    
   
-  rain_df <- reactive({
-  })  
-
-  weather_df <- reactive({
-  })  
-  
-  output$cweather_plot <- renderPlot({
-  })
-
-  output$cweather_text <- renderText({
-  })
-
-  output$temp_plot <- renderPlot({
-  })
-
-  output$info_text <- renderPlot({
-  })
-  
-  output$data_tbl <- DT::renderDataTable({
-    })
-
   
   # динамическое управление диапазоном дат ---------
   observeEvent(input$history_depth, {
@@ -183,7 +163,7 @@ server <- function(input, output, session) {
     # создадим элемент
     selectInput("segment_filter", 
                 paste0("Сегмент (", length(data), ")"), 
-                choices=data)
+                choices=data, multiple=TRUE)
   })
 
     # динамический выбор региона ---------

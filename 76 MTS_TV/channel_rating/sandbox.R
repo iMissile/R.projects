@@ -7,6 +7,7 @@ library(Cairo)
 library(futile.logger)
 library(anytime)
 library(tictoc)
+library(digest)
 
 
 #eval(parse("funcs.R", encoding="UTF-8"))
@@ -15,7 +16,7 @@ source("funcs.R")
 system.time(raw_df <- readRDS("./data/tvstream4.rds"))
 
 # дополнительный препроцессинг для быстрой отладки + генерация недостающих полей  -------------
-if (TRUE){
+if (FALSE){
   system.time(raw_df <- readRDS("./data/tvstream3.rds"))
   
   # подберем коээфициент растяжения
