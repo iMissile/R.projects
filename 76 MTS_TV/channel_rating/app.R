@@ -38,7 +38,8 @@ eval(parse("funcs.R", encoding="UTF-8"))
 # ================================================================
 ui <- 
   navbarPage("DVT IoT",
-  title=HTML('<div><a href="http://devoteam.com/"><img src="./img/devoteam_176px.png" width="80%"></a></div>'),
+  # title=HTML('<div><a href="http://devoteam.com/"><img src="./img/devoteam_176px.png" width="80%"></a></div>'),
+  title = "Статистика телесмотрения",
   # windowTitle="CC4L",
   collapsible=TRUE,
   id="tsp",
@@ -71,7 +72,7 @@ ui <-
                                separator = " - ", format = "dd/mm/yy",
                                startview = "month", language = 'ru', weekstart=1)
       ), 
-      column(1, selectInput("history_depth", "Глубина истории", 
+      column(1, selectInput("history_depth", "История", 
                             choices = c("1 месяц"=30, "2 недели"=14,
                                         "1 неделя"=7, "3 дня"=3), selected=3)),
       column(1, selectInput("min_watch_time", "Мин. время",
@@ -84,12 +85,24 @@ ui <-
       column(2, uiOutput("choose_region"))
     ),
     #tags$style(type='text/css', "#in_date_range { position: absolute; top: 50%; transform: translateY(-80%); }"),
-    fluidRow(
-      column(12, div(DT::dataTableOutput('stat_table')), style="font-size: 90%")
-    ),
-    fluidRow(
-      column(6, textOutput('info_text'))
-    )
+    tabsetPanel(
+      id = "panel_id",
+      selected="table_tab",
+      tabPanel("Таблица", value = "table_tab",
+               fluidRow(
+                 p(),
+                 column(12, div(DT::dataTableOutput('stat_table')), style="font-size: 90%")
+                 )),
+      tabPanel("График", value = "graph_tab",
+               fluidRow(
+                 p(),
+                 column(12, div(plotOutput('stat_plot')), style="font-size: 90%")
+               ))
+      )
+    #,
+    #fluidRow(
+    #  column(6, textOutput('info_text'))
+    #)
     
   )
 )
@@ -104,21 +117,22 @@ server <- function(input, output, session) {
   flog.info("App started")
 
   # пока подгружаем 1 раз
-  raw_df <- {
+  
+  # реактивные переменные -------------------
+  
+  raw_df <- reactive({
     system.time(df <- readRDS("./data/tvstream4.rds"))
     flog.info(paste0("Loaded ", nrow(df), " rows"))
     flog.info(paste0("Time range [", min(df$timestamp), "; ", max(df$timestamp), "]"))
     
     as_tibble(df)
-  }  
-  
-  # реактивные переменные -------------------
-  
+  })  
+
   cur_df <- reactive({
     # browser()
     # t <- input$min_watch_time
     flog.info(paste0("Applied time filter [", input$in_date_range[1], "; ", input$in_date_range[2], "]"))
-    req(raw_df) %>%
+    req(raw_df()) %>%
       mutate(date=anydate(timestamp)) %>%
       filter(input$in_date_range[1] < date  & date < input$in_date_range[2])
   })
@@ -167,6 +181,7 @@ server <- function(input, output, session) {
     # создадим элемент
     selectInput("segment_filter", 
                 paste0("Сегмент (", length(data), ")"), 
+                # choices=data, multiple=TRUE)
                 choices=data, multiple=TRUE)
   })
 
