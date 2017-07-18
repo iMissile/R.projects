@@ -16,7 +16,7 @@ local_repo <- path.expand("d:/temp/miniCRAN")
 # List the packages to get. Do not specify dependencies.
 # pkgs_needed <- c("ggplot2", "purrr")
 pkgs_needed <- c("knitr", "rmarkdown", "rsconnect", "packrat", 
-                 "tidyverse", "readxl", "magrittr", "stringi", "hrbrthemes", "Cairo", 
+                 "tidyverse", "lubridate", "readxl", "magrittr", "stringi", "hrbrthemes", "Cairo", 
                  "shiny", "shinythemes", "shinyBS", "shinyjs", "config", "DBI", "RODBC", "RPostgreSQL", 
                  "tictoc", "anytime", "fasttime", "futile.logger", "iterators", "foreach", "doParallel",
                  "DT")
