@@ -1,6 +1,7 @@
 # Single-file Shiny apps (http://shiny.rstudio.com/articles/single-file.html)
 # Обязательно в кодировке UTF-8
 rm(list=ls()) # очистим все переменные
+gc()
 
 library(tidyverse)
 library(lubridate)
@@ -46,14 +47,14 @@ ui <-
   
   # includeCSS("styles.css"),
   
-  tabPanel("МТС", value="field"),
+  tabPanel("Рейтинг каналов", value="channel_rating"),
   tabPanel("About", value="about"),
   
   
-  # titlePanel("Контроль орошения полей"),
+  # titlePanel("Статистика телесмотрения"),
   # ----------------
   conditionalPanel(
-    "input.tsp=='field'",
+    condition = "input.tsp == 'channel_rating'",
     fluidRow(
       tags$style(type='text/css', '#cweather_text {white-space:pre;}'),
       # tags$style(type='text/css', 'div {background-color: #000с00;}'), 
@@ -70,15 +71,17 @@ ui <-
                                separator = " - ", format = "dd/mm/yy",
                                startview = "month", language = 'ru', weekstart=1)
       ), 
-      column(2, selectInput("history_depth", "Глубина истории", 
+      column(1, selectInput("history_depth", "Глубина истории", 
                             choices = c("1 месяц"=30, "2 недели"=14,
                                         "1 неделя"=7, "3 дня"=3), selected=3)),
+      column(1, selectInput("min_watch_time", "Мин. время",
+                            choices = c("5 сек"=5, "10 сек"=10, 
+                                        "20 сек"=20, "30 сек"=30), selected = 10)),
+      column(1, selectInput("max_watch_time", "Макс. время",
+                            choices = c("1 час"=1, "2 часа"=2, 
+                                        "3 часа"=3, "4 часа"=4), selected = 2)),
       column(2, uiOutput("choose_segment")),
-      column(2, uiOutput("choose_region")),
-      column(2, selectInput("min_watch_time", "Мин. время просмотра, сек",
-                            choices = c(5, 10, 20, 30), selected = 10)),
-      column(2, selectInput("max_watch_time", "Макс. время просмотра, час",
-                            choices = c(1, 2, 4, 8), selected = 2))
+      column(2, uiOutput("choose_region"))
     ),
     #tags$style(type='text/css', "#in_date_range { position: absolute; top: 50%; transform: translateY(-80%); }"),
     fluidRow(
@@ -113,6 +116,7 @@ server <- function(input, output, session) {
   
   cur_df <- reactive({
     # browser()
+    # t <- input$min_watch_time
     flog.info(paste0("Applied time filter [", input$in_date_range[1], "; ", input$in_date_range[2], "]"))
     req(raw_df) %>%
       mutate(date=anydate(timestamp)) %>%

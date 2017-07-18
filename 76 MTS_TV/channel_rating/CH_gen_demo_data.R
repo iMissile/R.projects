@@ -32,7 +32,7 @@ object.size(df$segment)
 n_distinct(df$duration)
 summary(df)
 
-if (TRUE){
+if (FALSE){
   # сделаем выгрузки для Кирилла
   tic("Поиск уникальных значений")
   unq <- map(select(raw_df, -timestamp, -date, -switchEvent, - data_date, -duration), unique) %>% 
@@ -42,8 +42,6 @@ if (TRUE){
   for (i in names(unq)){
     fname <- paste0("./output/", i, ".csv")
     print(fname)
-    browser()
-    m <- unq[[i]]
     write_csv(as_tibble(unq[[i]]), fname, col_names=FALSE)
   }
   toc()
@@ -52,9 +50,9 @@ if (TRUE){
 # сделаем сэмпл большего размера
 tic()
 recs <- 10^7
-end_time <- now() + months(1)
+end_time <- as.numeric(now() + months(1))
 # df_out <- tibble(timestamp=end_time-seconds(as.integer(runif(recs, 0, 3*30*24*60*60))))
-df_out <- tibble(timestamp=as.integer(runif(recs, 0, 3*30*24*60*60)))
+df_out <- tibble(timestamp=end_time - as.integer(runif(recs, 0, 3*30*24*60*60)))
 
 df <- raw_df %>%
   select(-data_date) %>% # data_date вообще почти везде NA
