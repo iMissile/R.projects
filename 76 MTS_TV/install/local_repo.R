@@ -19,7 +19,7 @@ pkgs_needed <- c("knitr", "rmarkdown", "rsconnect", "packrat",
                  "tidyverse", "lubridate", "readxl", "magrittr", "stringi", "hrbrthemes", "Cairo", 
                  "shiny", "shinythemes", "shinyBS", "shinyjs", "config", "DBI", "RODBC", "RPostgreSQL", 
                  "tictoc", "anytime", "fasttime", "futile.logger", "iterators", "foreach", "doParallel",
-                 "DT")
+                 "DT", "rJava","ReporteRs")
 # Plot the dependency graph 
 plot(makeDepGraph(pkgs_needed))
 

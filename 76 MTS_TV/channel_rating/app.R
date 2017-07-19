@@ -18,6 +18,9 @@ library(futile.logger)
 library(anytime)
 library(tictoc)
 library(digest)
+library(rJava)
+library(ReporteRs)
+
 
 ## ---------
 # library(RColorBrewer)
@@ -40,16 +43,18 @@ ui <-
   navbarPage("DVT IoT",
   # title=HTML('<div><a href="http://devoteam.com/"><img src="./img/devoteam_176px.png" width="80%"></a></div>'),
   title = "Статистика телесмотрения",
+  tabPanel("Рейтинг каналов", value="channel_rating"),
+  tabPanel("About", value="about"),
   # windowTitle="CC4L",
-  collapsible=TRUE,
+  # collapsible=TRUE,
   id="tsp",
   theme=shinytheme("flatly"),
   # shinythemes::themeSelector(),
-  
   # includeCSS("styles.css"),
+
+  # http://stackoverflow.com/questions/25387844/right-align-elements-in-shiny-mainpanel/25390164
+  tags$head(tags$style(".rightAlign{float:right;}")), 
   
-  tabPanel("Рейтинг каналов", value="channel_rating"),
-  tabPanel("About", value="about"),
   
   
   # titlePanel("Статистика телесмотрения"),
@@ -98,7 +103,11 @@ ui <-
                  p(),
                  column(12, div(plotOutput('stat_plot')), style="font-size: 90%")
                ))
-      )
+      ),
+    fluidRow(
+      column(6, downloadButton("top_downlink_download", class = 'rightAlign')),
+      column(6, downloadButton("top_uplink_download", class = 'rightAlign'))
+    )
     #,
     #fluidRow(
     #  column(6, textOutput('info_text'))
