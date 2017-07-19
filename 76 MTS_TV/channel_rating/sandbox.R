@@ -1,22 +1,32 @@
 rm(list=ls()) # очистим все переменные
 library(tidyverse)
 library(magrittr)
+library(forcats)
 library(lubridate)
 library(stringi)
 library(Cairo)
+library(RColorBrewer)
 library(futile.logger)
 library(anytime)
 library(tictoc)
 library(digest)
+library(rJava)
+library(ReporteRs)
+library(extrafont)
+library(hrbrthemes)
 
 
 #eval(parse("funcs.R", encoding="UTF-8"))
 source("funcs.R")
 
+# очистим все warnings():
+assign("last.warning", NULL, envir = baseenv())
+
 system.time(raw_df <- as_tibble(readRDS("./data/tvstream4.rds")))
 raw_df %<>% mutate(title=readr::parse_factor(programId, levels=NULL))
 raw_df %<>% mutate(serial_num=as.numeric(serial))
 
+# ====================================================================
 # дополнительный препроцессинг для быстрой отладки + генерация недостающих полей  -------------
 if (FALSE){
   system.time(raw_df <- readRDS("./data/tvstream3.rds"))
@@ -58,8 +68,50 @@ if (FALSE) {
   toc()
 }
 
-# Отчет №1: "Рейтинг каналов" --------------------
 
+# ====================================================================
+# Генерация word файла для выгрузки
+if(TRUE){
+  doc <- docx(title='Рейтинг каналов', template="./TV_report_template.docx" )
+  s <- as_tibble(styles(doc)) %>% rownames_to_column()
+  # browser()
+  
+  # doc <- addSection(doc, landscape=TRUE)
+  doc <- addTitle(doc, 'Первые 80 строк данных', level = 1)
+  out_df <- raw_df[1:80, ] %>% select(timestamp, region, programId, segment)
+  doc <- addFlexTable(doc, vanilla.table(out_df))
+  
+  # выберем наиболее активные регионы c позиции эфирного времени
+  reg_df <- raw_df %>%
+    group_by(region) %>%
+    summarise(duration=sum(duration), n=n()) %>%
+    top_n(9, duration) %>%
+    arrange(desc(duration))
+  
+  gp <- ggplot(reg_df, aes(fct_reorder(as.factor(region), duration, .desc=FALSE), duration)) +
+    geom_bar(fill=brewer.pal(n=9, name="Greens")[4], alpha=0.5, stat="identity") +
+    #geom_text(aes(label=order), hjust=+0.5, colour="red") + # для вертикальных
+    # scale_x_discrete("Передача", breaks=df2$order, labels=df2$channelId) +
+    scale_y_log10() +
+    theme_ipsum_rc(base_size=14, axis_title_size=12) +  
+    theme(axis.text.x = element_text(angle=90)) +
+    ylab("Суммарное количество минут") +
+    xlab("Регион") +
+    ggtitle("Статистика телесмотрения", subtitle="Топ 9 регионов") +
+    coord_flip()  
+
+  # browser()
+  
+  doc <- addParagraph(doc, value="Небольшая картинка")# , stylename = "Normal")
+  doc <- addPlot(doc, function(){print(gp)}, width=6)
+  
+  
+  writeDoc(doc, file="word_report.docx")
+  
+}
+
+# ====================================================================
+# Отчет №1: "Рейтинг каналов" --------------------
 if (FALSE) {
   tic()
   df0 <- raw_df %>%
@@ -76,6 +128,7 @@ if (FALSE) {
 # посчитаем количество уникальных значений в колонках
 dist_cols <- map_df(select(raw_df, programId, serial, serial_num), n_distinct)
 
+# ====================================================================
 # промежуточные эксперименты со скоростью вычислений ---------------------
 if (FALSE){
 gc()

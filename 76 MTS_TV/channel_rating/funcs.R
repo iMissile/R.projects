@@ -23,3 +23,39 @@ hgroup.enum <- function(date, hour_bin=NULL, min_bin=5){
   
   dt
 }
+
+
+# Генерация word файла для выгрузки
+gen_word_report <- function(raw_df, template_fname){
+  doc <- docx(title='Рейтинг каналов', template=template_fname)
+  # browser()
+  
+  doc <- addTitle(doc, 'Первые 80 строк данных', level = 1)
+  out_df <- raw_df[1:80, ] %>% select(timestamp, region, programId, segment)
+  doc <- addFlexTable(doc, vanilla.table(out_df))
+  
+  # выберем наиболее активные регионы c позиции эфирного времени
+  reg_df <- raw_df %>%
+    group_by(region) %>%
+    summarise(duration=sum(duration), n=n()) %>%
+    top_n(9, duration) %>%
+    arrange(desc(duration))
+  
+  gp <- ggplot(reg_df, aes(fct_reorder(as.factor(region), duration, .desc=FALSE), duration)) +
+    geom_bar(fill=brewer.pal(n=9, name="Greens")[4], alpha=0.5, stat="identity") +
+    #geom_text(aes(label=order), hjust=+0.5, colour="red") + # для вертикальных
+    # scale_x_discrete("Передача", breaks=df2$order, labels=df2$channelId) +
+    scale_y_log10() +
+    theme_ipsum_rc(base_size=14, axis_title_size=12) +  
+    theme(axis.text.x = element_text(angle=90)) +
+    ylab("Суммарное количество минут") +
+    xlab("Регион") +
+    ggtitle("Статистика телесмотрения", subtitle="Топ 9 регионов") +
+    coord_flip()  
+  
+  # browser()
+  
+  doc <- addParagraph(doc, value="Небольшая картинка")# , stylename = "Normal")
+  doc <- addPlot(doc, function(){print(gp)}, width=6)
+
+}

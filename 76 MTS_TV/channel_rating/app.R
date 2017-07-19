@@ -38,6 +38,9 @@ options(shiny.reactlog=TRUE)
 
 eval(parse("funcs.R", encoding="UTF-8"))
 
+# очистим все warnings():
+assign("last.warning", NULL, envir = baseenv())
+
 # ================================================================
 ui <- 
   navbarPage("DVT IoT",
@@ -104,9 +107,11 @@ ui <-
                  column(12, div(plotOutput('stat_plot')), style="font-size: 90%")
                ))
       ),
+    p(),
     fluidRow(
-      column(6, downloadButton("top_downlink_download", class = 'rightAlign')),
-      column(6, downloadButton("top_uplink_download", class = 'rightAlign'))
+      column(8, {}),
+      column(2, downloadButton("csv_download_btn", label="Download CSV", class = 'rightAlign')),
+      column(2, downloadButton("word_download_btn", label="Download Word", class = 'rightAlign'))
     )
     #,
     #fluidRow(
@@ -208,6 +213,35 @@ server <- function(input, output, session) {
                 paste0("Регион (", length(data), ")"), 
                 choices=data)
   })
+
+  # обработчики кнопок выгрузки файлов --------------------------------------------------
+  output$csv_download_btn <- downloadHandler(
+    filename = function() {
+      paste0("channel_rating_data-", Sys.Date(), ".csv", sep="")
+    },
+    content = function(file) {
+      # browser()
+      cur_df() %>% arrange(desc(timestamp)) %>%
+        # write_csv(file)
+        # сделаем вывод в формате, принимаемым Excel
+        write.table(file, na="NA", append=FALSE, col.names=TRUE, row.names=FALSE, sep=";")
+    }
+  )
+  
+  output$word_download_btn <- downloadHandler(
+    filename = function() {
+      name <- paste0("channel_rating_report-", Sys.Date(), ".docx", sep="")
+      flog.info(paste0("Word report: '", name, "'"))
+      name
+    },
+    content = function(file) {
+      doc <- cur_df() %>% 
+        arrange(desc(timestamp)) %>%
+        gen_word_report(template_fname="./TV_report_template.docx")
+
+      writeDoc(doc, file)
+    }
+  )  
   
 }
 
