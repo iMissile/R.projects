@@ -1,10 +1,15 @@
 ---
-title: "R Notebook"
+title: "Анализ данных с производства"
+author: ""
+date: '`r Sys.Date()`'
+fontsize: 12pt
 output:
-  html_notebook: default
-  pdf_document: default
-editor_options:
-  chunk_output_type: inline
+  pdf_document:
+    dev: cairo_pdf
+    keep_tex: yes
+    latex_engine: xelatex
+    includes:
+        in_header: mystyles.sty
 ---
 
 
