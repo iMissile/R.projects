@@ -1,14 +1,19 @@
 ---
 title: "R Notebook"
-output: html_notebook
-editor_options: 
+output:
+  html_notebook: default
+  pdf_document: default
+editor_options:
   chunk_output_type: inline
 ---
 
 
-# Инициализация пакетов
+# РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РїР°РєРµС‚РѕРІ
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, message=FALSE, fig.width=7)
+```
 
-```{r}
+```{r echo=FALSE}
 library(tidyverse)
 library(lubridate)
 library(magrittr)
@@ -20,14 +25,16 @@ library(foreach)
 library(doParallel)
 library(zoo)
 library(tictoc)
+library(extrafont)
+library(hrbrthemes)
 
 datafile <- "./data/2016.xlsx"
 ```
 
-# Определение функции загрузки
-```{r echo=FALSE}
+# РћРїСЂРµРґРµР»РµРЅРёРµ С„СѓРЅРєС†РёРё Р·Р°РіСЂСѓР·РєРё
+```{r}
 get_month_data <- function(filename, sheetname="") {
-  # хак по считыванию типов колонок
+  # С…Р°Рє РїРѕ СЃС‡РёС‚С‹РІР°РЅРёСЋ С‚РёРїРѕРІ РєРѕР»РѕРЅРѕРє
   raw <- read_excel(filename)
   ncol(raw)
   ctypes <- rep("text", 146)
@@ -38,67 +45,73 @@ get_month_data <- function(filename, sheetname="") {
                    col_types=ctypes,
                    range = cell_cols("A:EP")) #, skip = 1)
   
-  # имеем проблему, колонки с NA вместо имени
-  # можно писать в одно преобразование, но специально разбил на шаги
-  # трансформируем колонки
+  # РёРјРµРµРј РїСЂРѕР±Р»РµРјСѓ, РєРѕР»РѕРЅРєРё СЃ NA РІРјРµСЃС‚Рѕ РёРјРµРЅРё
+  # РјРѕР¶РЅРѕ РїРёСЃР°С‚СЊ РІ РѕРґРЅРѕ РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ, РЅРѕ СЃРїРµС†РёР°Р»СЊРЅРѕ СЂР°Р·Р±РёР» РЅР° С€Р°РіРё
+  # С‚СЂР°РЅСЃС„РѕСЂРјРёСЂСѓРµРј РєРѕР»РѕРЅРєРё
   df0 <- raw %>%
     repair_names(prefix="repaired_", sep="")
   
-  # названия колонок размазаны по строкам 2-3. 2-ая -- группирующая, 3-я -- детализирующая
-  # Надо их слить и переименовать колонки, причем приоритет имеет строка 3, как уточняющая
-  #name_c2 <- tidyr::gather(df0[1, ], key = name, value = name_c2) # 1-ая колонка ушла в имена
-  #name_c3 <- tidyr::gather(df0[2, ], key = name, value = name_c3) # 1-ая колонка ушла в имена
+  # РЅР°Р·РІР°РЅРёСЏ РєРѕР»РѕРЅРѕРє СЂР°Р·РјР°Р·Р°РЅС‹ РїРѕ СЃС‚СЂРѕРєР°Рј 2-3. 2-Р°СЏ -- РіСЂСѓРїРїРёСЂСѓСЋС‰Р°СЏ, 3-СЏ -- РґРµС‚Р°Р»РёР·РёСЂСѓСЋС‰Р°СЏ
+  # РќР°РґРѕ РёС… СЃР»РёС‚СЊ Рё РїРµСЂРµРёРјРµРЅРѕРІР°С‚СЊ РєРѕР»РѕРЅРєРё, РїСЂРёС‡РµРј РїСЂРёРѕСЂРёС‚РµС‚ РёРјРµРµС‚ СЃС‚СЂРѕРєР° 3, РєР°Рє СѓС‚РѕС‡РЅСЏСЋС‰Р°СЏ
+  #name_c2 <- tidyr::gather(df0[1, ], key = name, value = name_c2) # 1-Р°СЏ РєРѕР»РѕРЅРєР° СѓС€Р»Р° РІ РёРјРµРЅР°
+  #name_c3 <- tidyr::gather(df0[2, ], key = name, value = name_c3) # 1-Р°СЏ РєРѕР»РѕРЅРєР° СѓС€Р»Р° РІ РёРјРµРЅР°
   
-  # различные виды join не подойдут, поскольку мы хотим оставить все строки, вне зависимости от результата
-  # сливать по именам опасно, вдруг есть дубли
+  # СЂР°Р·Р»РёС‡РЅС‹Рµ РІРёРґС‹ join РЅРµ РїРѕРґРѕР№РґСѓС‚, РїРѕСЃРєРѕР»СЊРєСѓ РјС‹ С…РѕС‚РёРј РѕСЃС‚Р°РІРёС‚СЊ РІСЃРµ СЃС‚СЂРѕРєРё, РІРЅРµ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ СЂРµР·СѓР»СЊС‚Р°С‚Р°
+  # СЃР»РёРІР°С‚СЊ РїРѕ РёРјРµРЅР°Рј РѕРїР°СЃРЅРѕ, РІРґСЂСѓРі РµСЃС‚СЊ РґСѓР±Р»Рё
   # names.df <- dplyr::full_join(name_c2, name_c3, by = "name")
   names_df <- tibble(name_c2=tidyr::gather(df0[1, ], key=name, value=v)$v,
                      name_c3=tidyr::gather(df0[2, ], key=name, value=v)$v) %>%
     # http://www.markhneedham.com/blog/2015/06/28/r-dplyr-update-rows-with-earlierprevious-rows-values/
     mutate(name_c2 = na.locf(name_c2)) %>%
-    # если name_c3 = NA, то результат объединения строк также будет NA, нас это не очень устраивает
+    # РµСЃР»Рё name_c3 = NA, С‚Рѕ СЂРµР·СѓР»СЊС‚Р°С‚ РѕР±СЉРµРґРёРЅРµРЅРёСЏ СЃС‚СЂРѕРє С‚Р°РєР¶Рµ Р±СѓРґРµС‚ NA, РЅР°СЃ СЌС‚Рѕ РЅРµ РѕС‡РµРЅСЊ СѓСЃС‚СЂР°РёРІР°РµС‚
     mutate(name_fix = ifelse(is.na(name_c3), name_c2, str_c(name_c2, name_c3, sep=": "))) %>%
-    mutate(name_fix = str_replace_all(name_fix, "\r", " ")) %>% # перевод строки
-    mutate(name_fix = str_replace_all(name_fix, "\n", " ")) %>% # перевод строки
+    mutate(name_fix = str_replace_all(name_fix, "\r", " ")) %>% # РїРµСЂРµРІРѕРґ СЃС‚СЂРѕРєРё
+    mutate(name_fix = str_replace_all(name_fix, "\n", " ")) %>% # РїРµСЂРµРІРѕРґ СЃС‚СЂРѕРєРё
     mutate(name_fix = str_replace_all(name_fix, "  ", " "))
   
   # browser()
   df1 <- df0
   repl_df <- tribble(
     ~pattern, ~replacement,
-    "Мастер-технолог", "foreman_tech",
-    "Формующая часть: Угол напорного ящика", "angle_in",
-    "Формующая часть: Разница скорости струи/сетки", "speed_diff_in",
-    "Формующая часть: Открытие щели напорного ящика", "slot_in",
-    "Формующая часть: Давление на напорном ящике", "pressure_in",
-    "Поток: Концентрация при размоле", "concentration_in",
-    "Производительность", "performance_out",
-    "Вес м2", "weight_out",
-    "Артикул", "mark_out",
-    "Примечание", "notes"
+    "РњР°СЃС‚РµСЂ-С‚РµС…РЅРѕР»РѕРі", "foreman_tech",
+    "Р¤РѕСЂРјСѓСЋС‰Р°СЏ С‡Р°СЃС‚СЊ: РЈРіРѕР» РЅР°РїРѕСЂРЅРѕРіРѕ СЏС‰РёРєР°", "angle_in",
+    "Р¤РѕСЂРјСѓСЋС‰Р°СЏ С‡Р°СЃС‚СЊ: Р Р°Р·РЅРёС†Р° СЃРєРѕСЂРѕСЃС‚Рё СЃС‚СЂСѓРё/СЃРµС‚РєРё", "speed_diff_in",
+    "Р¤РѕСЂРјСѓСЋС‰Р°СЏ С‡Р°СЃС‚СЊ: РћС‚РєСЂС‹С‚РёРµ С‰РµР»Рё РЅР°РїРѕСЂРЅРѕРіРѕ СЏС‰РёРєР°", "slot_in",
+    "Р¤РѕСЂРјСѓСЋС‰Р°СЏ С‡Р°СЃС‚СЊ: Р”Р°РІР»РµРЅРёРµ РЅР° РЅР°РїРѕСЂРЅРѕРј СЏС‰РёРєРµ", "pressure_in",
+    "Р¤РѕСЂРјСѓСЋС‰Р°СЏ С‡Р°СЃС‚СЊ: РЎРєРѕСЂРѕСЃС‚СЊ СЃРјРµСЃРёС‚РµР»СЊРЅРѕРіРѕ РЅР°СЃРѕСЃР°", "mix_pump_in",
+    "РџСЂРµСЃСЃРѕРІР°СЏ С‡Р°СЃС‚СЊ: РќР°С‚СЏР¶РµРЅРёРµ СЃСѓРєРЅР°", "cloth_tension",
+    "РџСЂРµСЃСЃРѕРІР°СЏ С‡Р°СЃС‚СЊ: Р’Р°РєСѓСѓРј 1-СЏ СЃСѓРєРЅРѕРјРѕР№РєР°", "vacuum_1",
+    "РџРѕС‚РѕРє: РљРѕРЅС†РµРЅС‚СЂР°С†РёСЏ РїСЂРё СЂР°Р·РјРѕР»Рµ", "concentration_in",
+    "1-РѕР№ СЂР°С„РёРЅРµСЂ: РЈРґРµР»СЊРЅРѕРµ РїРѕС‚СЂРµР±Р»РµРЅРёРµ СЌРЅРµСЂРіРёРё", "energy_per_rafiner1",
+    "РЇРЅРєРё-С†РёР»Р»РёРЅРґСЂ: Р”Р°РІР»РµРЅРёРµ РїР°СЂР° РЇРЅРєРё С†РёР»РёРЅРґСЂР°", "yanki_steam",
+    "РџСЂРѕРёР·РІРѕРґРёС‚РµР»СЊРЅРѕСЃС‚СЊ", "performance_out",
+    "Р’РµСЃ Рј2", "weight_out",
+    "РђСЂС‚РёРєСѓР»", "mark_out",
+    "РџСЂРёРјРµС‡Р°РЅРёРµ", "notes"
   )
   names(df1) <- stri_replace_all_fixed(names_df$name_fix,
                                        pattern = repl_df$pattern,
                                        replacement = repl_df$replacement,
                                        vectorize_all = FALSE)
-  # Все равно кривые имена, дубли
+  # Р’СЃРµ СЂР°РІРЅРѕ РєСЂРёРІС‹Рµ РёРјРµРЅР°, РґСѓР±Р»Рё
   names_df %>% 
     group_by(name_fix) %>% 
     filter(n()>1)
   
   df1 %<>% repair_names(prefix = "repaired_", sep = "")
   
-  # выбираем только интересующие колонки
+  # РІС‹Р±РёСЂР°РµРј С‚РѕР»СЊРєРѕ РёРЅС‚РµСЂРµСЃСѓСЋС‰РёРµ РєРѕР»РѕРЅРєРё
   df2 <- df1 %>% 
     select(foreman_tech, angle_in, speed_diff_in, slot_in, pressure_in, concentration_in,
-           performance_out, weight_out, mark_out, notes) %>%
-    filter(row_number() > 6) # удаляем весь верхний шлак
+           performance_out, weight_out, mark_out, notes, mix_pump_in, yanki_steam, cloth_tension,
+           vacuum_1, energy_per_rafiner1) %>%
+    filter(row_number() > 6) # СѓРґР°Р»СЏРµРј РІРµСЃСЊ РІРµСЂС…РЅРёР№ С€Р»Р°Рє
   # browser()
   
   df3 <- df2 %>%
-    # filter(complete.cases(.)) %>% # удаляем строки, содержащие пустые данные
+    # filter(complete.cases(.)) %>% # СѓРґР°Р»СЏРµРј СЃС‚СЂРѕРєРё, СЃРѕРґРµСЂР¶Р°С‰РёРµ РїСѓСЃС‚С‹Рµ РґР°РЅРЅС‹Рµ
     filter(performance_out>0) %>%
-    # distinct() %>% # уберем идентичные строчки
+    # distinct() %>% # СѓР±РµСЂРµРј РёРґРµРЅС‚РёС‡РЅС‹Рµ СЃС‚СЂРѕС‡РєРё
     #http://stackoverflow.com/questions/27027347/mutate-each-summarise-each-in-dplyr-how-do-i-select-certain-columns-and-give
     mutate_at(vars(-foreman_tech, -mark_out, -notes), funs(as.numeric))
   
@@ -109,10 +122,10 @@ get_month_data <- function(filename, sheetname="") {
 
 
 
-# Cоберем все закладки Excel файла вместе
+# РљРѕРЅСЃРѕР»РёРґР°С†РёСЏ Excel С„Р°Р№Р»Р°
 ```{r}
-mnames <- c("Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", 
-            "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь")
+mnames <- c("РЇРЅРІР°СЂСЊ", "Р¤РµРІСЂР°Р»СЊ", "РњР°СЂС‚", "РђРїСЂРµР»СЊ", "РњР°Р№", "РСЋРЅСЊ", 
+            "РСЋР»СЊ", "РђРІРіСѓСЃС‚", "РЎРµРЅС‚СЏР±СЂСЊ", "РћРєС‚СЏР±СЂСЊ", "РќРѕСЏР±СЂСЊ", "Р”РµРєР°Р±СЂСЊ")
 
 tmp <- excel_sheets(datafile)
 sheets <- tmp[tmp %in% mnames]
@@ -123,17 +136,17 @@ df <- foreach(it=iter(sheets), .combine=rbind, .packages='readxl') %do% {
   temp.df
 }
 
-# наверное данные без маркировки выходной продукции не имеют большого смысла
+# РЅР°РІРµСЂРЅРѕРµ РґР°РЅРЅС‹Рµ Р±РµР· РјР°СЂРєРёСЂРѕРІРєРё РІС‹С…РѕРґРЅРѕР№ РїСЂРѕРґСѓРєС†РёРё РЅРµ РёРјРµСЋС‚ Р±РѕР»СЊС€РѕРіРѕ СЃРјС‹СЃР»Р°
 df %<>% filter(!is.na(mark_out))
 
 df
 ```
 
-```{r}
+```{r eval=FALSE}
 tic("Analysis")
-# посчитаем количество уникальных значений в колонках
+# РїРѕСЃС‡РёС‚Р°РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ СѓРЅРёРєР°Р»СЊРЅС‹С… Р·РЅР°С‡РµРЅРёР№ РІ РєРѕР»РѕРЅРєР°С…
 dist_cols <- map_df(select(df, everything()), n_distinct)
-# посчитаем и отсортируем словарные уникальные значения
+# РїРѕСЃС‡РёС‚Р°РµРј Рё РѕС‚СЃРѕСЂС‚РёСЂСѓРµРј СЃР»РѕРІР°СЂРЅС‹Рµ СѓРЅРёРєР°Р»СЊРЅС‹Рµ Р·РЅР°С‡РµРЅРёСЏ
 unq <- map(df, unique) %>% map(sort, decreasing=T)
 toc()
 
@@ -142,25 +155,140 @@ unq
 
 
 ```
-# Первичная визуализация данных
-Пытаемся понять, что скрывается за имеющимся набором данных.
 
- - Минимальный удельный вес продукции составляет **`r min(df$weight_out)`** гр/м^2.
- - Максимальный удельный вес продукции составляет **`r max(df$weight_out)`** гр/м^2.
+# Р’РёР·СѓР°Р»РёР·Р°С†РёСЏ РґР°РЅРЅС‹С… РїРѕ СЂРµР·СѓР»СЊС‚Р°С‚Р°Рј РїСЂРµРґРІР°СЂРёС‚РµР»СЊРЅРѕР№ РєРѕРјРјСѓРЅРёРєР°С†РёРё СЃ СЌРєСЃРїРµСЂС‚Р°РјРё
+```{r eval=FALSE}
+extrafont::loadfonts()
+extrafont::fonttable()
+extrafont::fonts()
+```
+
 
 ```{r}
-# распределение весов по марке продукции
+df0 <- df %>% 
+  group_by(mark_out, month, foreman_tech) %>% 
+  summarise(performance = mean(performance_out)) %>%
+  arrange(desc(mark_out)) %>%
+  top_n(1, wt=performance)
+  # mutate(num=row_number()) 
+
+# df0
+
+# Р›СѓС‡С€РёР№ РјР°СЃС‚РµСЂ РїРѕ РїСЂРѕРёР·РІРѕРґРёС‚РµР»СЊРЅРѕСЃС‚Рё РЅР° РєР°Р¶РґС‹Р№ РІРёРґ Р±СѓРјР°РіРё
+gp <- ggplot(df0, aes(x=month, y=performance, fill=foreman_tech)) + 
+  geom_col() +
+  theme_ipsum_rc(base_size = 11.5) +
+  facet_wrap(~mark_out) +
+  ggtitle("Р›СѓС‡С€РёР№ РјР°СЃС‚РµСЂ РїРѕ РїСЂРѕРёР·РІРѕРґРёС‚РµР»СЊРЅРѕСЃС‚Рё")
+
+gp
+
+```
+
+```{r}
+# РЎСЂРµРґРЅСЏСЏ speed_diff_in РґР»СЏ РєР°Р¶РґРѕРіРѕ РІРёРґР° Р±СѓРјР°РіРё
+
+gp <- ggplot(df, aes(x=mark_out, y=speed_diff_in)) + 
+  geom_point() +
+  # theme_ipsum_rc(base_family="Roboto Condensed", base_size = 11.5)
+  theme_ipsum_rc(base_size = 11.5) +
+  ggtitle("Р Р°Р·РЅРёС†Р° СЃРєРѕСЂРѕСЃС‚Рё СЃС‚СЂСѓРё/СЃРµС‚РєРё РѕС‚ РІРёРґР° Р±СѓРјР°РіРё",
+          subtitle="Р”Р»СЏ СЂР°Р·Р»РёС‡РЅС‹С… РІРёРґРѕРІ Р±СѓРјР°РіРё")
+
+gp
+
+```
+
+```{r}
+# РџСЂРѕРёР·РІРѕРґРёС‚РµР»СЊРЅРѕСЃС‚СЊ РјР°С€РёРЅС‹ РїРѕ РјРµСЃСЏС†Р°Рј
+gp <- ggplot(df, aes(x=month, y=performance_out, fill=foreman_tech)) + 
+  geom_col() +
+  theme_ipsum_rc(base_size = 11.5) +
+  ggtitle("РџСЂРѕРёР·РІРѕРґРёС‚РµР»СЊРЅРѕСЃС‚СЊ РјР°С€РёРЅС‹")
+
+gp
+
+```
+
+
+```{r}
+# Р—Р°РІРёСЃРёРјРѕСЃС‚СЊ speed_diff_in РѕС‚ slot_in
+gp <- ggplot(df, aes(x=slot_in, y=speed_diff_in, colour=mark_out)) + 
+  geom_point() +
+  # theme_ipsum_rc(base_family="Roboto Condensed", base_size = 11.5)
+  theme_ipsum_rc(base_size = 11.5) +
+  facet_wrap(~mark_out, scales = "free") +
+  ggtitle("Р Р°Р·РЅРёС†Р° СЃРєРѕСЂРѕСЃС‚Рё СЃС‚СЂСѓРё/СЃРµС‚РєРё РѕС‚ С‰РµР»Рё РѕС‚РєСЂС‹С‚РёСЏ",
+          subtitle="Р”Р»СЏ СЂР°Р·Р»РёС‡РЅС‹С… РІРёРґРѕРІ Р±СѓРјР°РіРё")
+
+gp
+
+```
+
+```{r}
+# Р”Р°РІР»РµРЅРёРµ РїР°СЂР° РЅР° СЏРЅРєРё-С†РёР»РёРЅРґСЂРµ РѕС‚ СѓРґРµР»СЊРЅРѕРіРѕ РїРѕС‚СЂРµР±Р»РµРЅРёСЏ СЌРЅРµСЂРіРёРё РЅР° СЂР°С„РёРЅС‘СЂРµ в„–1 + РєРѕРЅС†РµРЅС‚СЂР°С†РёСЏ РїСЂРё СЂР°Р·РјРѕР»Рµ РєР°Рє С„Р°РєС‚РѕСЂ
+
+gp <- ggplot(df, aes(x=energy_per_rafiner1, y=yanki_steam, colour=concentration_in)) + 
+  geom_point() +
+  theme_ipsum_rc(base_size=11.5) +
+  # facet_wrap(~concentration_in, scales = "free") +
+  ggtitle("Р”Р°РІР»РµРЅРёРµ РїР°СЂР° РЅР° СЏРЅРєРё-С†РёР»РёРЅРґСЂРµ", 
+          subtitle="Р’ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ СѓРґРµР»СЊРЅРѕРіРѕ РїРѕС‚СЂРµР±Р»РµРЅРёСЏ СЌРЅРµСЂРіРёРё РЅР° СЂР°С„РёРЅС‘СЂРµ в„–1")
+
+gp
+
+```
+
+
+```{r}
+# Р’Р°РєСѓСѓРј РѕС‚ РЅР°С‚СЏР¶РµРЅРёСЏ СЃСѓРєРѕРЅ
+
+gp <- ggplot(df, aes(x=cloth_tension, y=vacuum_1)) + 
+  geom_point() +
+  # geom_smooth(method="lm", span=0.8) +
+  # geom_smooth(span=0.8) +
+  # theme_ipsum_rc(base_family="Roboto Condensed", base_size = 11.5)
+  theme_ipsum_rc(base_size=11.5) +
+  ggtitle("Р’Р°РєСѓСѓРј РІ 1-РѕР№ СЃСѓРєРЅРѕРјРѕР№РєРµ", 
+          subtitle="Р’ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ РЅР°С‚СЏР¶РµРЅРёСЏ СЃСѓРєРЅР°")
+
+gp
+
+```
+```{r}
+gp <- ggplot(df, aes(x=pressure_in, y=mix_pump_in)) + 
+  geom_point() +
+  # geom_smooth(method="lm", span=0.8) +
+  geom_smooth(span=0.8) +
+  # theme_ipsum_rc(base_family="Roboto Condensed", base_size = 11.5)
+  theme_ipsum_rc(base_size=11.5) +
+  ggtitle("Р”Р°РІР»РµРЅРёРµ РІ РЅР°РїРѕСЂРЅРѕРј СЏС‰РёРєРµ", 
+          subtitle="Р’ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ СЃРєРѕСЂРѕСЃС‚Рё СЃРјРµСЃРёС‚РµР»СЊРЅРѕРіРѕ РЅР°СЃРѕСЃР°")
+
+gp
+
+```
+
+
+# РџРµСЂРІРёС‡РЅР°СЏ РІРёР·СѓР°Р»РёР·Р°С†РёСЏ РґР°РЅРЅС‹С…
+РџС‹С‚Р°РµРјСЃСЏ РїРѕРЅСЏС‚СЊ, С‡С‚Рѕ СЃРєСЂС‹РІР°РµС‚СЃСЏ Р·Р° РёРјРµСЋС‰РёРјСЃСЏ РЅР°Р±РѕСЂРѕРј РґР°РЅРЅС‹С….
+
+ - РњРёРЅРёРјР°Р»СЊРЅС‹Р№ СѓРґРµР»СЊРЅС‹Р№ РІРµСЃ РїСЂРѕРґСѓРєС†РёРё СЃРѕСЃС‚Р°РІР»СЏРµС‚ **`r min(df$weight_out)`** РіСЂ/Рј^2.
+ - РњР°РєСЃРёРјР°Р»СЊРЅС‹Р№ СѓРґРµР»СЊРЅС‹Р№ РІРµСЃ РїСЂРѕРґСѓРєС†РёРё СЃРѕСЃС‚Р°РІР»СЏРµС‚ **`r max(df$weight_out)`** РіСЂ/Рј^2.
+
+```{r}
+# СЂР°СЃРїСЂРµРґРµР»РµРЅРёРµ РІРµСЃРѕРІ РїРѕ РјР°СЂРєРµ РїСЂРѕРґСѓРєС†РёРё
 df0 <- df %>% group_by(mark_out) %>% mutate(row=row_number())
 
 gp <- ggplot(df0, aes(x=row, y=weight_out, colour=mark_out)) + 
   geom_point()# +
   #facet_wrap(~colour, scales = "free")
 
-gp # так не очень показательно
+gp # С‚Р°Рє РЅРµ РѕС‡РµРЅСЊ РїРѕРєР°Р·Р°С‚РµР»СЊРЅРѕ
 
 ```
 ```{r}
-# распределение весов по марке продукции
+# СЂР°СЃРїСЂРµРґРµР»РµРЅРёРµ РІРµСЃРѕРІ РїРѕ РјР°СЂРєРµ РїСЂРѕРґСѓРєС†РёРё
 # http://ggplot2.tidyverse.org/reference/geom_dotplot.html
 df0 <- df %>% group_by(mark_out)
 
