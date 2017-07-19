@@ -25,8 +25,8 @@ hgroup.enum <- function(date, hour_bin=NULL, min_bin=5){
 }
 
 
-# Генерация word файла для выгрузки
-gen_word_report <- function(raw_df, template_fname){
+# Генерация word файла для выгрузки средтвами ReporteRs ----------
+gen_word_report_old <- function(raw_df, template_fname){
   doc <- docx(title='Рейтинг каналов', template=template_fname)
   # browser()
   
@@ -57,5 +57,41 @@ gen_word_report <- function(raw_df, template_fname){
   
   doc <- addParagraph(doc, value="Небольшая картинка")# , stylename = "Normal")
   doc <- addPlot(doc, function(){print(gp)}, width=6)
-
 }
+
+# Генерация word файла для выгрузки средтвами officer -------------
+gen_word_report <- function(raw_df, template_fname){
+  # считаем данные для вставки -----------------------------------
+  # выберем наиболее активные регионы c позиции эфирного времени
+  reg_df <- raw_df %>%
+    group_by(region) %>%
+    summarise(duration=sum(duration), n=n()) %>%
+    top_n(9, duration) %>%
+    arrange(desc(duration))
+  
+  gp <- ggplot(reg_df, aes(fct_reorder(as.factor(region), duration, .desc=FALSE), duration)) +
+    geom_bar(fill=brewer.pal(n=9, name="Greens")[4], alpha=0.5, stat="identity") +
+    #geom_text(aes(label=order), hjust=+0.5, colour="red") + # для вертикальных
+    # scale_x_discrete("Передача", breaks=df2$order, labels=df2$channelId) +
+    scale_y_log10() +
+    theme_ipsum_rc(base_size=14, axis_title_size=12) +  
+    theme(axis.text.x = element_text(angle=90)) +
+    ylab("Суммарное количество минут") +
+    xlab("Регион") +
+    ggtitle("Статистика телесмотрения", subtitle="Топ 9 регионов") +
+    coord_flip()  
+  
+  out_df <- raw_df[1:80, ] %>% select(timestamp, region, programId, segment)
+  
+  # создаем файл ------------------------------------------
+  doc <- read_docx() %>% # read_docx(path="./TV_report_template.docx") %>%
+    body_add_par(value='Первые 80 строк данных', style="heading 1") %>%
+    body_add_table(value=out_df, style="table_template") %>% 
+    body_add_par(value="Небольшая картинка", style="heading 1") %>%
+    body_add_gg(value=gp, style = "centered")
+  
+  doc
+  
+  }
+
+

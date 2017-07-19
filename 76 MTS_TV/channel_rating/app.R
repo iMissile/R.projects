@@ -22,9 +22,10 @@ library(config)
 library(anytime)
 library(tictoc)
 library(digest)
+library(officer)
 #library(rJava)
 #library(ReporteRsjars)
-library(ReporteRs)
+#library(ReporteRs)
 
 
 ## ---------
@@ -243,8 +244,7 @@ server <- function(input, output, session) {
       doc <- cur_df() %>% 
         arrange(desc(timestamp)) %>%
         gen_word_report(template_fname="./TV_report_template.docx")
-
-      writeDoc(doc, file)
+      print(doc, target=file)  
     }
   )  
   
