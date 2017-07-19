@@ -16,6 +16,7 @@ output:
 ```{r setup, include=FALSE}
 # Инициализация пакетов
 knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE, fig.width=7)
+knitr::opts_chunk$set(dev='cairo_pdf') # решили проблему с генерацией русского текста в графиках
 ```
 
 ```{r echo=FALSE}
