@@ -24,8 +24,34 @@ hgroup.enum <- function(date, hour_bin=NULL, min_bin=5){
   dt
 }
 
+# построение запроса для отчета 'Рейтинг по каналам'
+buildReq <- function(begin, end, regs){
+  # bigin, end -- даты; regs -- вектор регионов
+  plain_regs <- stri_join(regs %>% map_chr(~stri_join("'", .x, "'", sep="")), 
+                          sep = " ", collapse=",")
+  # cat(plain_regs)
+  
+  paste(
+    "SELECT ",
+    # 1. Название канала
+    "channelId, ",
+    # 2. Кол-во уникальных приставок по каналу
+    "uniq(serial) AS unique_tvbox, ",
+    # Кол-во уникальных приставок по всем каналам
+    "( SELECT uniq(serial) ",
+    "  FROM genstates ",
+    "  WHERE toDate(begin) >= toDate('", begin, "') AND toDate(end) <= toDate('", end, "') AND region IN (", plain_regs, ") ",
+    ") AS total_unique_tvbox, ",  
+    # 4. Суммарное время просмотра всеми приставками, мин
+    "sum(duration) AS channel_duration, ",
+    # 8. Кол-во событий просмотра
+    "count() AS watch_events ",
+    "FROM genstates ",
+    "WHERE toDate(begin) >= toDate('", begin, "') AND toDate(end) <= toDate('", end, "') AND region IN (", plain_regs, ") ",
+    "GROUP BY channelId", sep="")
+}
 
-# Генерация word файла для выгрузки средтвами ReporteRs ----------
+# Генерация word файла для выгрузки средcтвами ReporteRs ----------
 gen_word_report_old <- function(raw_df, template_fname){
   doc <- docx(title='Рейтинг каналов', template=template_fname)
   # browser()
@@ -59,7 +85,7 @@ gen_word_report_old <- function(raw_df, template_fname){
   doc <- addPlot(doc, function(){print(gp)}, width=6)
 }
 
-# Генерация word файла для выгрузки средтвами officer -------------
+# Генерация word файла для выгрузки средcтвами officer -------------
 gen_word_report <- function(raw_df, template_fname){
   # считаем данные для вставки -----------------------------------
   # выберем наиболее активные регионы c позиции эфирного времени

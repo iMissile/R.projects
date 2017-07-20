@@ -18,6 +18,7 @@ library(shiny)
 library(shinythemes) # https://rstudio.github.io/shinythemes/
 library(shinyBS)
 library(shinyjs)
+library(shinycssloaders)
 library(config)
 library(anytime)
 library(tictoc)
@@ -26,7 +27,9 @@ library(officer)
 
 options(shiny.usecairo=TRUE)
 options(shiny.reactlog=TRUE)
+options(spinner.type=4)
 
+source("clickhouse.R")
 eval(parse("funcs.R", encoding="UTF-8"))
 
 # очистим все warnings():
@@ -73,7 +76,7 @@ ui <-
       ), 
       column(1, selectInput("history_depth", "История", 
                             choices = c("1 месяц"=30, "2 недели"=14,
-                                        "1 неделя"=7, "3 дня"=3), selected=3)),
+                                        "1 неделя"=7, "3 дня"=3, "1 день"=1), selected=1)),
       column(1, selectInput("min_watch_time", "Мин. время",
                             choices = c("5 сек"=5, "10 сек"=10, 
                                         "20 сек"=20, "30 сек"=30), selected = 10)),
@@ -90,7 +93,7 @@ ui <-
       tabPanel("Таблица", value = "table_tab",
                fluidRow(
                  p(),
-                 column(12, div(DT::dataTableOutput('stat_table')), style="font-size: 90%")
+                 column(12, div(withSpinner(DT::dataTableOutput('stat_table'))), style="font-size: 90%")
                  )),
       tabPanel("График", value = "graph_tab",
                fluidRow(
@@ -121,15 +124,48 @@ server <- function(input, output, session) {
   flog.threshold(TRACE)
   flog.info("App started")
 
-  # пока подгружаем 1 раз
+  # подгрузим таблицу преобразования транслита в русские названия городов
+  cities_df <- {
+    flog.info("Loading cities translit table")
+    # подгрузим ограниченный список городов
+    city_subset <- read_csv("region.csv")
+    
+    con <- dbConnect(clickhouse(), host="10.0.0.44", port=8123L, user="default", password="")
+    df <- req(dbGetQuery(con, "SELECT * FROM regnames")  %>%
+                mutate_if(is.character, `Encoding<-`, "UTF-8") %>%
+                filter(translit %in% pull(city_subset)))
+    flog.info(paste0("Cities translit table loaded ", nrow(df), " rows"))
+    dbDisconnect(con)
+    df
+  }
+  
   
   # реактивные переменные -------------------
-  
   raw_df <- reactive({
-    system.time(df <- readRDS("./data/tvstream4.rds"))
-    flog.info(paste0("Loaded ", nrow(df), " rows"))
-    flog.info(paste0("Time range [", min(df$timestamp), "; ", max(df$timestamp), "]"))
+    con <- dbConnect(clickhouse(), host="10.0.0.44", port=8123L, user="default", password="")
     
+    # regions <- c("Moskva", "Barnaul")
+    regions <- req(input$region_filter)
+    # browser()
+    
+    r <- buildReq(begin=today(), end=today()+days(1), regions)
+    
+    df <- dbGetQuery(con, r) %>%
+      as_tibble() %>%
+      # 6. Среднее время просмотра, мин
+      mutate(mean_duration=round(channel_duration/watch_events, 0)) %>%
+      # 3. % уникальных приставок
+      mutate(ratio_per_tv_box=round(unique_tvbox/total_unique_tvbox, 3)) %>%
+      # 5. % времени просмотра
+      mutate(watch_ratio=round(channel_duration/sum(channel_duration),5)) %>%
+      # 7. Среднее суммарное время просмотра одной приставкой за период, мин
+      mutate(duration_per_tvbox=round(channel_duration/unique_tvbox, 0))
+      # %>% mutate_at(vars(mean_duration, ratio_per_tv_box, watch_ratio, duration_per_tvbox), funs(round), digits=1)
+    
+    # system.time(df <- readRDS("./data/tvstream4.rds"))
+    flog.info(paste0("Loaded ", nrow(df), " rows"))
+
+    dbDisconnect(con)
     as_tibble(df)
   })  
 
@@ -137,9 +173,10 @@ server <- function(input, output, session) {
     # browser()
     # t <- input$min_watch_time
     flog.info(paste0("Applied time filter [", input$in_date_range[1], "; ", input$in_date_range[2], "]"))
-    req(raw_df()) %>%
-      mutate(date=anydate(timestamp)) %>%
-      filter(input$in_date_range[1] < date  & date < input$in_date_range[2])
+    # req(raw_df()) %>%
+    #  mutate(date=anydate(timestamp)) %>%
+    #  filter(input$in_date_range[1] < date  & date < input$in_date_range[2])
+    raw_df()
   })
   
   msg <- reactiveVal("")
@@ -149,10 +186,9 @@ server <- function(input, output, session) {
     # https://rstudio.github.io/DT/functions.html
     DT::datatable(req(cur_df()),
                   rownames=FALSE,
-                  filter = 'bottom',
-                  options=list(pageLength=7, lengthMenu=c(5, 7, 10, 15),
-                               order=list(list(3, 'desc')))) %>%
-      DT::formatDate("timestamp", method="toLocaleString")
+                  filter = 'none',
+                  options=list(dom='lti', pageLength=7, lengthMenu=c(5, 7, 10, 15),
+                               order=list(list(3, 'desc'))))
     }
     )
     
@@ -175,29 +211,21 @@ server <- function(input, output, session) {
 
   # динамический выбор типа технологии передачи данных (сегмента) ---------
   output$choose_segment <- renderUI({
-    # выделим уникальные типы для выбранного множества данных (вектор)
-    data <- cur_df() %>% distinct(segment) %>% arrange(segment) %>% pull(segment)
-    # browser()
-    # names(data) <- NULL
-    flog.info(paste0("Dynamic segment list ",  capture.output(str(data))))
     
-    msg(capture.output(dput(data)))
-    
-    # создадим элемент
-    selectInput("segment_filter", 
-                paste0("Сегмент (", length(data), ")"), 
-                # choices=data, multiple=TRUE)
-                choices=data, multiple=TRUE)
+    # # создадим элемент
+    # selectInput("segment_filter", 
+    #             paste0("Сегмент (", length(data), ")"), 
+    #             # choices=data, multiple=TRUE)
+    #             choices=data, multiple=TRUE)
   })
 
     # динамический выбор региона ---------
   output$choose_region <- renderUI({
-    # выделим уникальные типы для выбранного множества данных
-    data <- cur_df() %>% distinct(region) %>% arrange(region) %>% pull(region)
-    # names(data) <- NULL
-    flog.info(paste0("Dynamic region list ",  capture.output(str(data))))
     
-    msg(capture.output(dput(data)))
+    data <- as.list(cities_df$translit)
+    names(data) <- cities_df$russian
+    
+    # browser()
     
     # создадим элемент
     selectInput("region_filter", 
