@@ -31,28 +31,36 @@ buildReq <- function(begin, end, regs){
   
   paste(
   "SELECT ",
+  # 1. Название канала
   "channelId, ",
-  "uniq(serial) AS unique_tv_box, ",
-  "sum(duration) AS total_duration, ",
-  "uniq(serial) / count() AS ratio_tv_box, ",
-  "sum(duration) / ",
-  "( ",
-  "   SELECT sum(duration) ",
-  "   FROM genstates ",
-  " ) AS ratio_duration, ",
-  "avg(duration) AS mean_duration, ",
-  "avg(duration) / uniq(serial) AS parameter3, ",
-  "count(serial) AS total_tv_box ",
+  # 2. Кол-во уникальных приставок по каналу
+  "uniq(serial) AS unique_tvbox, ",
+  # Кол-во уникальных приставок по всем каналам
+  "( SELECT uniq(serial) ",
+  "  FROM genstates ",
+  "  WHERE toDate(begin) >= toDate('", begin, "') AND toDate(end) <= toDate('", end, "') AND region IN (", plain_regs, ") ",
+  ") AS total_unique_tvbox, ",  
+  # 4. Суммарное время просмотра всеми приставками, мин
+  "sum(duration) AS channel_duration, ",
+  # 8. Кол-во событий просмотра
+  "count() AS watch_events ",
   "FROM genstates ",
-  "WHERE toDate(begin) >= toDate('", begin, "') AND toDate(end) <= toDate('", end, "') AND ",
-  "region IN (", plain_regs, ") ",
+  "WHERE toDate(begin) >= toDate('", begin, "') AND toDate(end) <= toDate('", end, "') AND region IN (", plain_regs, ") ",
   "GROUP BY channelId", sep="")
 }
 
 regions <- c("Moskva", "Barnaul")
 
 r <- buildReq(begin=today(), end=today()+days(1), regions)
-tt <- dbGetQuery(con, r)
+df <- dbGetQuery(con, r) %>%
+  # 6. Среднее время просмотра, мин
+  mutate(mean_duration=channel_duration/watch_events) %>%
+  # 3. % уникальных приставок
+  mutate(ratio_per_tv_box=unique_tvbox/total_unique_tvbox) %>%
+  # 5. % времени просмотра
+  mutate(watch_ratio=channel_duration/sum(channel_duration)) %>%
+  # 7. Среднее суммарное время просмотра одной приставкой за период, мин
+  mutate(duration_per_tvbox=channel_duration/unique_tvbox)
 
 
 
