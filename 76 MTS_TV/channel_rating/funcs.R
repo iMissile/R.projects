@@ -24,7 +24,7 @@ hgroup.enum <- function(date, hour_bin=NULL, min_bin=5){
   dt
 }
 
-# построение запроса для отчета 'Рейтинг по каналам'
+# построение запроса для отчета 'Рейтинг по каналам' ----------------
 buildReq <- function(begin, end, regs){
   # bigin, end -- даты; regs -- вектор регионов
   plain_regs <- stri_join(regs %>% map_chr(~stri_join("'", .x, "'", sep="")), 
@@ -51,70 +51,63 @@ buildReq <- function(begin, end, regs){
     "GROUP BY channelId", sep="")
 }
 
-# Генерация word файла для выгрузки средcтвами ReporteRs ----------
-gen_word_report_old <- function(raw_df, template_fname){
-  doc <- docx(title='Рейтинг каналов', template=template_fname)
-  # browser()
+# построение гистограммы ТОП 10 по времени просмотра для отчета 'Рейтинг по каналам' ----------------
+plotTop10Duration <- function(df){
+  # выберем наиболее программы c позиции эфирного времени
+  reg_df <- df %>%
+    top_n(10, channel_duration) %>%
+    arrange(desc(channel_duration))
   
-  doc <- addTitle(doc, 'Первые 80 строк данных', level = 1)
-  out_df <- raw_df[1:80, ] %>% select(timestamp, region, programId, segment)
-  doc <- addFlexTable(doc, vanilla.table(out_df))
-  
-  # выберем наиболее активные регионы c позиции эфирного времени
-  reg_df <- raw_df %>%
-    group_by(region) %>%
-    summarise(duration=sum(duration), n=n()) %>%
-    top_n(9, duration) %>%
-    arrange(desc(duration))
-  
-  gp <- ggplot(reg_df, aes(fct_reorder(as.factor(region), duration, .desc=FALSE), duration)) +
+  gp <- ggplot(reg_df, aes(fct_reorder(as.factor(channelId), channel_duration, .desc=FALSE), channel_duration)) +
     geom_bar(fill=brewer.pal(n=9, name="Greens")[4], alpha=0.5, stat="identity") +
-    #geom_text(aes(label=order), hjust=+0.5, colour="red") + # для вертикальных
+    geom_text(aes(label=format(channel_duration, big.mark=" ")), hjust=+1, colour="red") + # для вертикальных
     # scale_x_discrete("Передача", breaks=df2$order, labels=df2$channelId) +
     scale_y_log10() +
-    theme_ipsum_rc(base_size=14, axis_title_size=12) +  
+    theme_ipsum_rc(base_size=20, axis_title_size=18) +  
     theme(axis.text.x = element_text(angle=90)) +
     ylab("Суммарное количество минут") +
-    xlab("Регион") +
-    ggtitle("Статистика телесмотрения", subtitle="Топ 9 регионов") +
-    coord_flip()  
+    xlab("Канал") +
+    ggtitle("Топ 10 каналов", subtitle="По времени телесмотрения") +
+    coord_flip() 
   
-  # browser()
+  gp
+}
+
+# построение гистограммы ТОП 10 по количеству уникальных приставок для отчета 'Рейтинг по каналам' ----------------
+plotTop10Unique <- function(df){
+  # выберем наиболее программы c позиции эфирного времени
+  reg_df <- df %>%
+    top_n(10, unique_tvbox) %>%
+    arrange(desc(unique_tvbox))
   
-  doc <- addParagraph(doc, value="Небольшая картинка")# , stylename = "Normal")
-  doc <- addPlot(doc, function(){print(gp)}, width=6)
+  gp <- ggplot(reg_df, aes(fct_reorder(as.factor(channelId), unique_tvbox, .desc=FALSE), unique_tvbox)) +
+    geom_bar(fill=brewer.pal(n=9, name="Blues")[4], alpha=0.5, stat="identity") +
+    geom_text(aes(label=format(unique_tvbox, big.mark=" ")), hjust=+1, colour="red") + # для вертикальных
+    # scale_x_discrete("Передача", breaks=df2$order, labels=df2$channelId) +
+    scale_y_log10() +
+    theme_ipsum_rc(base_size=20, axis_title_size=18) +  
+    theme(axis.text.x = element_text(angle=90)) +
+    ylab("Количество уникальных приставок") +
+    xlab("Канал") +
+    ggtitle("Топ 10 каналов", subtitle="По количеству уникальных приставок") +
+    coord_flip() 
+  
+  gp
 }
 
 # Генерация word файла для выгрузки средcтвами officer -------------
 gen_word_report <- function(raw_df, template_fname){
   # считаем данные для вставки -----------------------------------
-  # выберем наиболее активные регионы c позиции эфирного времени
-  reg_df <- raw_df %>%
-    group_by(region) %>%
-    summarise(duration=sum(duration), n=n()) %>%
-    top_n(9, duration) %>%
-    arrange(desc(duration))
-  
-  gp <- ggplot(reg_df, aes(fct_reorder(as.factor(region), duration, .desc=FALSE), duration)) +
-    geom_bar(fill=brewer.pal(n=9, name="Greens")[4], alpha=0.5, stat="identity") +
-    #geom_text(aes(label=order), hjust=+0.5, colour="red") + # для вертикальных
-    # scale_x_discrete("Передача", breaks=df2$order, labels=df2$channelId) +
-    scale_y_log10() +
-    theme_ipsum_rc(base_size=14, axis_title_size=12) +  
-    theme(axis.text.x = element_text(angle=90)) +
-    ylab("Суммарное количество минут") +
-    xlab("Регион") +
-    ggtitle("Статистика телесмотрения", subtitle="Топ 9 регионов") +
-    coord_flip()  
-  
-  out_df <- raw_df[1:80, ] %>% select(timestamp, region, programId, segment)
+  out_df <- raw_df[1:80, ] %>% select(everything())
   
   # создаем файл ------------------------------------------
   doc <- read_docx() %>% # read_docx(path="./TV_report_template.docx") %>%
     body_add_par(value='Первые 80 строк данных', style="heading 1") %>%
     body_add_table(value=out_df, style="table_template") %>% 
-    body_add_par(value="Небольшая картинка", style="heading 1") %>%
-    body_add_gg(value=gp, style = "centered")
+    body_add_par(value="ТОП 10 по времени просмотра", style="heading 2") %>%
+    body_add_gg(value=plotTop10Duration(raw_df), style = "centered") %>%
+    body_add_par(value="ТОП 10 по количеству уникальных приставок", style="heading 2") %>%
+    body_add_gg(value=plotTop10Unique(raw_df), width=8, style="centered")
   
   doc
   

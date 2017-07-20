@@ -94,19 +94,21 @@ ui <-
                fluidRow(
                  p(),
                  column(12, div(withSpinner(DT::dataTableOutput('stat_table'))), style="font-size: 90%")
-                 )),
+               ),
+               p(),
+               fluidRow(
+                 column(8, {}),
+                 column(2, downloadButton("csv_download_btn", label="Download CSV", class = 'rightAlign')),
+                 column(2, downloadButton("word_download_btn", label="Download Word", class = 'rightAlign'))
+               )
+      ),
       tabPanel("График", value = "graph_tab",
                fluidRow(
                  p(),
-                 column(12, div(plotOutput('stat_plot')), style="font-size: 90%")
+                 column(6, div(plotOutput('top10_duration_plot')), style="font-size: 90%"),
+                 column(6, div(plotOutput('top10_unique_plot')), style="font-size: 90%")
                ))
-      ),
-    p(),
-    fluidRow(
-      column(8, {}),
-      column(2, downloadButton("csv_download_btn", label="Download CSV", class = 'rightAlign')),
-      column(2, downloadButton("word_download_btn", label="Download Word", class = 'rightAlign'))
-    )
+      )
     #,
     #fluidRow(
     #  column(6, textOutput('info_text'))
@@ -148,8 +150,13 @@ server <- function(input, output, session) {
     regions <- req(input$region_filter)
     # browser()
     
-    r <- buildReq(begin=today(), end=today()+days(1), regions)
+    # r <- buildReq(begin=today(), end=today()+days(1), regions)
+    flog.info(paste0("Applied time filter [", input$in_date_range[1], "; ", input$in_date_range[2], "]"))
+    r <- buildReq(begin=input$in_date_range[1], end=input$in_date_range[2], regions)
     
+    browser()
+
+    tic()
     df <- dbGetQuery(con, r) %>%
       as_tibble() %>%
       # 6. Среднее время просмотра, мин
@@ -162,6 +169,7 @@ server <- function(input, output, session) {
       mutate(duration_per_tvbox=round(channel_duration/unique_tvbox, 0))
       # %>% mutate_at(vars(mean_duration, ratio_per_tv_box, watch_ratio, duration_per_tvbox), funs(round), digits=1)
     
+    flog.info(paste0("Query: ", capture.output(toc())))
     # system.time(df <- readRDS("./data/tvstream4.rds"))
     flog.info(paste0("Loaded ", nrow(df), " rows"))
 
@@ -172,7 +180,6 @@ server <- function(input, output, session) {
   cur_df <- reactive({
     # browser()
     # t <- input$min_watch_time
-    flog.info(paste0("Applied time filter [", input$in_date_range[1], "; ", input$in_date_range[2], "]"))
     # req(raw_df()) %>%
     #  mutate(date=anydate(timestamp)) %>%
     #  filter(input$in_date_range[1] < date  & date < input$in_date_range[2])
@@ -181,7 +188,7 @@ server <- function(input, output, session) {
   
   msg <- reactiveVal("")
 
-  
+  # таблица с выборкой по каналам
   output$stat_table <- DT::renderDataTable({
     # https://rstudio.github.io/DT/functions.html
     DT::datatable(req(cur_df()),
@@ -189,11 +196,18 @@ server <- function(input, output, session) {
                   filter = 'none',
                   options=list(dom='lti', pageLength=7, lengthMenu=c(5, 7, 10, 15),
                                order=list(list(3, 'desc'))))
-    }
-    )
-    
+    })
   
+  # график Топ10 каналов по суммарному времени просмотра -------------
+  output$top10_duration_plot <-renderPlot({
+    plotTop10Duration(cur_df())
+  })
   
+  # график Топ10 каналов по количеству уникальных приставок --------------
+  output$top10_unique_plot <-renderPlot({
+    plotTop10Unique(cur_df())
+  })  
+
   # динамическое управление диапазоном дат ---------
   observeEvent(input$history_depth, {
     # browser();
@@ -239,9 +253,7 @@ server <- function(input, output, session) {
       paste0("channel_rating_data-", Sys.Date(), ".csv", sep="")
     },
     content = function(file) {
-      # browser()
-      cur_df() %>% arrange(desc(timestamp)) %>%
-        # write_csv(file)
+      cur_df() %>%
         # сделаем вывод в формате, принимаемым Excel
         write.table(file, na="NA", append=FALSE, col.names=TRUE, row.names=FALSE, sep=";")
     }
@@ -254,9 +266,8 @@ server <- function(input, output, session) {
       name
     },
     content = function(file) {
-      doc <- cur_df() %>% 
-        arrange(desc(timestamp)) %>%
-        gen_word_report(template_fname="./TV_report_template.docx")
+      doc <- cur_df() %>% select(-total_unique_tvbox) %>%
+        gen_word_report()
       print(doc, target=file)  
     }
   )  
