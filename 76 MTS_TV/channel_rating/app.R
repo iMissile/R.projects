@@ -154,11 +154,13 @@ server <- function(input, output, session) {
     flog.info(paste0("Applied time filter [", input$in_date_range[1], "; ", input$in_date_range[2], "]"))
     r <- buildReq(begin=input$in_date_range[1], end=input$in_date_range[2], regions)
     
-    browser()
+    # browser()
 
     tic()
     df <- dbGetQuery(con, r) %>%
       as_tibble() %>%
+      # переводим время смотрения в часы
+      mutate(channel_duration=round(as.numeric(channel_duration/60), 1)) %>%
       # 6. Среднее время просмотра, мин
       mutate(mean_duration=round(channel_duration/watch_events, 0)) %>%
       # 3. % уникальных приставок
