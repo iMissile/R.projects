@@ -53,8 +53,9 @@ buildReq <- function(begin, end, regs){
 }
 
 # построение гистограммы ТОП 10 по времени просмотра для отчета 'Рейтинг по каналам' ----------------
-plotTop10Duration <- function(df, publish_type="screen"){
+plotTop10Duration <- function(df, publish_set){
   
+  flog.info(paste0("publish_set is ", capture.output(str(publish_set))))
   # выберем наиболее программы c позиции эфирного времени
   reg_df <- df %>%
     top_n(10, channel_duration) %>%
@@ -68,8 +69,8 @@ plotTop10Duration <- function(df, publish_type="screen"){
     # geom_text_repel(aes(label=label), fontface = 'bold', color = 'blue', nudge_y=0) +
     # scale_x_discrete("Передача", breaks=df2$order, labels=df2$channelId) +
     scale_y_log10() +
-    theme_ipsum_rc(base_size=font_sizes[[publish_type]][["base_size"]], 
-                   axis_title_size=font_sizes[[publish_type]][["axis_title_size"]]) +  
+    theme_ipsum_rc(base_size=publish_set[["base_size"]], 
+                   axis_title_size=publish_set[["axis_title_size"]]) +  
     theme(axis.text.x = element_text(angle=90)) +
     ylab("Суммарное количество минут") +
     xlab("Канал") +
@@ -80,7 +81,9 @@ plotTop10Duration <- function(df, publish_type="screen"){
 }
 
 # построение гистограммы ТОП 10 по количеству уникальных приставок для отчета 'Рейтинг по каналам' ----------------
-plotTop10Unique <- function(df, publish_type="screen"){
+plotTop10Unique <- function(df, publish_set){
+  
+  flog.info(paste0("publish_set is ", capture.output(str(publish_set))))
   # выберем наиболее программы c позиции эфирного времени
   reg_df <- df %>%
     top_n(10, unique_tvbox) %>%
@@ -94,8 +97,8 @@ plotTop10Unique <- function(df, publish_type="screen"){
     # geom_text_repel(aes(label=label), fontface = 'bold', color = 'blue', nudge_y=0) +
     # scale_x_discrete("Передача", breaks=df2$order, labels=df2$channelId) +
     scale_y_log10() +
-    theme_ipsum_rc(base_size=font_sizes[[publish_type]][["base_size"]], 
-                   axis_title_size=font_sizes[[publish_type]][["axis_title_size"]]) +  
+    theme_ipsum_rc(base_size=publish_set[["base_size"]], 
+                   axis_title_size=publish_set[["axis_title_size"]]) +  
     theme(axis.text.x = element_text(angle=90)) +
     ylab("Количество уникальных приставок") +
     xlab("Канал") +
@@ -106,7 +109,11 @@ plotTop10Unique <- function(df, publish_type="screen"){
 }
 
 # Генерация word файла для выгрузки средcтвами officer -------------
-gen_word_report <- function(raw_df, template_fname){
+gen_word_report <- function(raw_df, template_fname, publish_set=NULL){
+  if(is.na(publish_set)){
+    flog.error("publish_set is NULL")
+    return(NULL)
+  }
   # считаем данные для вставки -----------------------------------
   out_df <- raw_df[1:80, ] %>% select(everything())
   
@@ -115,9 +122,9 @@ gen_word_report <- function(raw_df, template_fname){
     body_add_par(value='Первые 80 строк данных', style="heading 1") %>%
     body_add_table(value=out_df, style="table_template") %>% 
     body_add_par(value="ТОП 10 по времени просмотра", style="heading 2") %>%
-    body_add_gg(value=plotTop10Duration(raw_df, publish_type="word_A4"), style = "centered") %>%
+    body_add_gg(value=plotTop10Duration(raw_df, publish_set=publish_set), style = "centered") %>%
     body_add_par(value="ТОП 10 по количеству уникальных приставок", style="heading 2") %>%
-    body_add_gg(value=plotTop10Unique(raw_df, publish_type="word_A4"), style="centered")
+    body_add_gg(value=plotTop10Unique(raw_df, publish_set=publish_set), style="centered")
   
   doc
   

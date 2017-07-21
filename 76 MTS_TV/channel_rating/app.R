@@ -90,8 +90,10 @@ ui <-
                             choices = c("1 час"=1, "2 часа"=2, 
                                         "3 часа"=3, "4 часа"=4), selected = 2)),
       column(2, uiOutput("choose_region")),
-      column(2, uiOutput("choose_segment"))
+      column(2, selectInput("segment_filter", "Сегмент",
+                            choices = c("DVB-C", "IPTV", "DVB-S"), selected="DVB-C"))
     ),
+
     #tags$style(type='text/css', "#in_date_range { position: absolute; top: 50%; transform: translateY(-80%); }"),
     tabsetPanel(
       id = "panel_id",
@@ -208,7 +210,8 @@ server <- function(input, output, session) {
     #  mutate(date=anydate(timestamp)) %>%
     #  filter(input$in_date_range[1] < date  & date < input$in_date_range[2])
     req(raw_df() %>%
-      filter(segment==input$segment_filter))
+      filter(segment==input$segment_filter)) %>%
+      select(channelId, region, segment, everything())
   })
   
   msg <- reactiveVal("")
@@ -216,21 +219,24 @@ server <- function(input, output, session) {
   # таблица с выборкой по каналам
   output$stat_table <- DT::renderDataTable({
     # https://rstudio.github.io/DT/functions.html
+    # browser()
     DT::datatable(req(cur_df()),
+                  colnames=c('Канал'='channelId', 'Сегмент'='segment', 'Регион'='region', 'Дата'='date'),
                   rownames=FALSE,
                   filter = 'bottom',
-                  options=list(dom='flti', pageLength=7, lengthMenu=c(5, 7, 10, 15),
-                               order=list(list(3, 'desc'))))
+                  options=list(dom='fltip', pageLength=7, lengthMenu=c(5, 7, 10, 15),
+                               order=list(list(3, 'desc')))) %>%
+      DT::formatPercentage('watch_ratio', 2)
     })
   
   # график Топ10 каналов по суммарному времени просмотра -------------
   output$top10_duration_plot <-renderPlot({
-    plotTop10Duration(cur_df(), publish_type="screen")
+    plotTop10Duration(cur_df(), publish_set=font_sizes[["screen"]])
   })
   
   # график Топ10 каналов по количеству уникальных приставок --------------
   output$top10_unique_plot <-renderPlot({
-    plotTop10Unique(cur_df(), publish_type="screen")
+    plotTop10Unique(cur_df(), publish_set=font_sizes[["screen"]])
   })  
 
   # динамическое управление диапазоном дат ---------
@@ -248,20 +254,6 @@ server <- function(input, output, session) {
     msg()
   })
 
-  # динамический выбор типа технологии передачи данных (сегмента) ---------
-  output$choose_segment <- renderUI({
-    # выделим уникальные типы для выбранного множества данных (вектор)
-    data <- raw_df() %>% distinct(segment) %>% arrange(segment) %>% pull(segment)
-    # browser()
-    # names(data) <- NULL
-    flog.info(paste0("Dynamic segment list ",  capture.output(str(data))))
-    
-    # создадим элемент
-    selectInput("segment_filter", 
-               paste0("Сегмент (", length(data), ")"), 
-               # choices=data, multiple=TRUE)
-               choices=data)
-  })
 
   # динамический выбор региона ---------
   output$choose_region <- renderUI({
@@ -300,7 +292,7 @@ server <- function(input, output, session) {
     },
     content = function(file) {
       doc <- cur_df() %>% select(-total_unique_tvbox) %>%
-        gen_word_report()
+        gen_word_report(publish_set=font_sizes[["word_A4"]])
       print(doc, target=file)  
     }
   )  
