@@ -14,6 +14,9 @@ library(Cairo)
 library(RColorBrewer)
 library(extrafont)
 library(hrbrthemes)
+library(DBI)
+library(RPostgreSQL)
+library(config)
 library(shiny)
 library(shinythemes) # https://rstudio.github.io/shinythemes/
 library(shinyBS)
@@ -59,16 +62,19 @@ ui <-
   conditionalPanel(
     condition = "input.tsp == 'channel_rating'",
     fluidRow(
-      tags$style(type='text/css', '#cweather_text {white-space:pre;}'),
+      tags$style(type='text/css', '#cweather_text {white-space:pre;}')
       # tags$style(type='text/css', 'div {background-color: #000с00;}'), 
       
-      column(6, h2("Типовая форма"), h3(textOutput("cweather_text", inline=TRUE))),
-      column(6, h2("Заполнитель"))
+      #column(6, h2("Типовая форма"), h3(textOutput("cweather_text", inline=TRUE))),
+      #column(6, h2("Заполнитель"))
       ),
     fluidRow(
       column(2, dateRangeInput("in_date_range",
                                label = "Диапазон дат",
-                               start = Sys.Date() - 3, end = Sys.Date(),
+                               # start = Sys.Date() - 3, end = Sys.Date(),
+                               # на время отладки
+                               start  = "2017-06-28",
+                               end    = "2017-06-30",
                                # min = Sys.Date() - 10, 
                                max = Sys.Date(),
                                separator = " - ", format = "dd/mm/yy",
@@ -83,8 +89,8 @@ ui <-
       column(1, selectInput("max_watch_time", "Макс. время",
                             choices = c("1 час"=1, "2 часа"=2, 
                                         "3 часа"=3, "4 часа"=4), selected = 2)),
-      column(2, uiOutput("choose_segment")),
-      column(2, uiOutput("choose_region"))
+      column(2, uiOutput("choose_region")),
+      column(2, uiOutput("choose_segment"))
     ),
     #tags$style(type='text/css', "#in_date_range { position: absolute; top: 50%; transform: translateY(-80%); }"),
     tabsetPanel(
@@ -98,15 +104,15 @@ ui <-
                p(),
                fluidRow(
                  column(8, {}),
-                 column(2, downloadButton("csv_download_btn", label="Download CSV", class = 'rightAlign')),
-                 column(2, downloadButton("word_download_btn", label="Download Word", class = 'rightAlign'))
+                 column(2, downloadButton("csv_download_btn", label="Выгрузка Excel", class = 'rightAlign')),
+                 column(2, downloadButton("word_download_btn", label="Выгрузка Word", class = 'rightAlign'))
                )
       ),
       tabPanel("График", value = "graph_tab",
                fluidRow(
                  p(),
-                 column(6, div(plotOutput('top10_duration_plot')), style="font-size: 90%"),
-                 column(6, div(plotOutput('top10_unique_plot')), style="font-size: 90%")
+                 column(6, div(plotOutput('top10_duration_plot', height="500px"))),
+                 column(6, div(plotOutput('top10_unique_plot', height="500px")))
                ))
       )
     #,
@@ -126,6 +132,12 @@ server <- function(input, output, session) {
   flog.threshold(TRACE)
   flog.info("App started")
 
+  # создание параметров оформления для различных видов графиков (screen\publish)
+  font_sizes <- list(
+    "screen"=list(base_size=20, axis_title_size=18),
+    "word_A4"=list(base_size=16, axis_title_size=14)
+  )
+  
   # подгрузим таблицу преобразования транслита в русские названия городов
   cities_df <- {
     flog.info("Loading cities translit table")
@@ -133,6 +145,7 @@ server <- function(input, output, session) {
     city_subset <- read_csv("region.csv")
     
     con <- dbConnect(clickhouse(), host="10.0.0.44", port=8123L, user="default", password="")
+    
     df <- req(dbGetQuery(con, "SELECT * FROM regnames")  %>%
                 mutate_if(is.character, `Encoding<-`, "UTF-8") %>%
                 filter(translit %in% pull(city_subset)))
@@ -152,13 +165,21 @@ server <- function(input, output, session) {
     
     # r <- buildReq(begin=today(), end=today()+days(1), regions)
     flog.info(paste0("Applied time filter [", input$in_date_range[1], "; ", input$in_date_range[2], "]"))
+    flog.info(paste0("Applied region filter [", regions, "]"))
     r <- buildReq(begin=input$in_date_range[1], end=input$in_date_range[2], regions)
     
     # browser()
 
     tic()
-    df <- dbGetQuery(con, r) %>%
-      as_tibble() %>%
+    temp_df <- dbGetQuery(con, r) %>%
+      as_tibble()
+
+    flog.info(paste0("Query: ", capture.output(toc())))
+    # system.time(df <- readRDS("./data/tvstream4.rds"))
+    flog.info(paste0("Loaded ", nrow(temp_df), " rows"))
+    
+    # browser()
+    df <- temp_df %>%
       # переводим время смотрения в часы
       mutate(channel_duration=round(as.numeric(channel_duration/60), 1)) %>%
       # 6. Среднее время просмотра, мин
@@ -168,13 +189,14 @@ server <- function(input, output, session) {
       # 5. % времени просмотра
       mutate(watch_ratio=round(channel_duration/sum(channel_duration),5)) %>%
       # 7. Среднее суммарное время просмотра одной приставкой за период, мин
-      mutate(duration_per_tvbox=round(channel_duration/unique_tvbox, 0))
+      mutate(duration_per_tvbox=round(channel_duration/unique_tvbox, 0)) %>%
       # %>% mutate_at(vars(mean_duration, ratio_per_tv_box, watch_ratio, duration_per_tvbox), funs(round), digits=1)
+      # удалим транслит и будем далее использовать русское название
+      left_join(cities_df, by=c("region"="translit")) %>%
+      select(-region) %>% 
+      rename(region=russian)
     
-    flog.info(paste0("Query: ", capture.output(toc())))
-    # system.time(df <- readRDS("./data/tvstream4.rds"))
-    flog.info(paste0("Loaded ", nrow(df), " rows"))
-
+    # browser()
     dbDisconnect(con)
     as_tibble(df)
   })  
@@ -185,7 +207,8 @@ server <- function(input, output, session) {
     # req(raw_df()) %>%
     #  mutate(date=anydate(timestamp)) %>%
     #  filter(input$in_date_range[1] < date  & date < input$in_date_range[2])
-    raw_df()
+    req(raw_df() %>%
+      filter(segment==input$segment_filter))
   })
   
   msg <- reactiveVal("")
@@ -195,28 +218,28 @@ server <- function(input, output, session) {
     # https://rstudio.github.io/DT/functions.html
     DT::datatable(req(cur_df()),
                   rownames=FALSE,
-                  filter = 'none',
-                  options=list(dom='lti', pageLength=7, lengthMenu=c(5, 7, 10, 15),
+                  filter = 'bottom',
+                  options=list(dom='flti', pageLength=7, lengthMenu=c(5, 7, 10, 15),
                                order=list(list(3, 'desc'))))
     })
   
   # график Топ10 каналов по суммарному времени просмотра -------------
   output$top10_duration_plot <-renderPlot({
-    plotTop10Duration(cur_df())
+    plotTop10Duration(cur_df(), publish_type="screen")
   })
   
   # график Топ10 каналов по количеству уникальных приставок --------------
   output$top10_unique_plot <-renderPlot({
-    plotTop10Unique(cur_df())
+    plotTop10Unique(cur_df(), publish_type="screen")
   })  
 
   # динамическое управление диапазоном дат ---------
   observeEvent(input$history_depth, {
-    # browser();
+    
     # почему-то $history_depth получаем как строку
     date <- Sys.Date()-as.numeric(input$history_depth)
     flog.info(paste0("Start date changed to  ", date))
-    updateDateRangeInput(session, "in_date_range", start=date)
+    # updateDateRangeInput(session, "in_date_range", start=date)
    }
   )
   
@@ -227,15 +250,20 @@ server <- function(input, output, session) {
 
   # динамический выбор типа технологии передачи данных (сегмента) ---------
   output$choose_segment <- renderUI({
+    # выделим уникальные типы для выбранного множества данных (вектор)
+    data <- raw_df() %>% distinct(segment) %>% arrange(segment) %>% pull(segment)
+    # browser()
+    # names(data) <- NULL
+    flog.info(paste0("Dynamic segment list ",  capture.output(str(data))))
     
-    # # создадим элемент
-    # selectInput("segment_filter", 
-    #             paste0("Сегмент (", length(data), ")"), 
-    #             # choices=data, multiple=TRUE)
-    #             choices=data, multiple=TRUE)
+    # создадим элемент
+    selectInput("segment_filter", 
+               paste0("Сегмент (", length(data), ")"), 
+               # choices=data, multiple=TRUE)
+               choices=data)
   })
 
-    # динамический выбор региона ---------
+  # динамический выбор региона ---------
   output$choose_region <- renderUI({
     
     data <- as.list(cities_df$translit)
@@ -245,11 +273,13 @@ server <- function(input, output, session) {
     
     # создадим элемент
     selectInput("region_filter", 
-                paste0("Регион (", length(data), ")"), 
+                paste0("Регион (", length(data), ")"),
+                multiple=TRUE,
                 choices=data)
   })
 
   # обработчики кнопок выгрузки файлов --------------------------------------------------
+  # выгрузка таблицы в CSV -----------------------  
   output$csv_download_btn <- downloadHandler(
     filename = function() {
       paste0("channel_rating_data-", Sys.Date(), ".csv", sep="")
@@ -261,6 +291,7 @@ server <- function(input, output, session) {
     }
   )
   
+  # выгрузка таблицы в Word -----------------------
   output$word_download_btn <- downloadHandler(
     filename = function() {
       name <- paste0("channel_rating_report-", Sys.Date(), ".docx", sep="")

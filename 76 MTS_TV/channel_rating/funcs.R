@@ -33,8 +33,8 @@ buildReq <- function(begin, end, regs){
   
   paste(
     "SELECT ",
-    # 1. Название канала
-    "channelId, ",
+    # 1. Название канала и регион (важно для множественного выбора)
+    "channelId, region, segment, ",
     # 2. Кол-во уникальных приставок по каналу
     "uniq(serial) AS unique_tvbox, ",
     # Кол-во уникальных приставок по всем каналам
@@ -47,23 +47,29 @@ buildReq <- function(begin, end, regs){
     # 8. Кол-во событий просмотра
     "count() AS watch_events ",
     "FROM genstates ",
+    "SAMPLE 0.1 ",
     "WHERE toDate(begin) >= toDate('", begin, "') AND toDate(end) <= toDate('", end, "') AND region IN (", plain_regs, ") ",
-    "GROUP BY channelId", sep="")
+    "GROUP BY channelId, region, segment", sep="")
 }
 
 # построение гистограммы ТОП 10 по времени просмотра для отчета 'Рейтинг по каналам' ----------------
-plotTop10Duration <- function(df){
+plotTop10Duration <- function(df, publish_type="screen"){
+  
   # выберем наиболее программы c позиции эфирного времени
   reg_df <- df %>%
     top_n(10, channel_duration) %>%
-    arrange(desc(channel_duration))
-  
+    arrange(desc(channel_duration)) %>%
+    mutate(label=format(channel_duration, big.mark=" "))
+
   gp <- ggplot(reg_df, aes(fct_reorder(as.factor(channelId), channel_duration, .desc=FALSE), channel_duration)) +
     geom_bar(fill=brewer.pal(n=9, name="Greens")[4], alpha=0.5, stat="identity") +
-    geom_text(aes(label=format(channel_duration, big.mark=" ")), hjust=+1, colour="red") + # для вертикальных
+    # geom_text(aes(label=label), hjust=+1.1, colour="blue") + # для вертикальных
+    geom_label(aes(label=label), fill="white", colour="black", fontface="bold", hjust=+1.1) +
+    # geom_text_repel(aes(label=label), fontface = 'bold', color = 'blue', nudge_y=0) +
     # scale_x_discrete("Передача", breaks=df2$order, labels=df2$channelId) +
     scale_y_log10() +
-    theme_ipsum_rc(base_size=20, axis_title_size=18) +  
+    theme_ipsum_rc(base_size=font_sizes[[publish_type]][["base_size"]], 
+                   axis_title_size=font_sizes[[publish_type]][["axis_title_size"]]) +  
     theme(axis.text.x = element_text(angle=90)) +
     ylab("Суммарное количество минут") +
     xlab("Канал") +
@@ -74,18 +80,22 @@ plotTop10Duration <- function(df){
 }
 
 # построение гистограммы ТОП 10 по количеству уникальных приставок для отчета 'Рейтинг по каналам' ----------------
-plotTop10Unique <- function(df){
+plotTop10Unique <- function(df, publish_type="screen"){
   # выберем наиболее программы c позиции эфирного времени
   reg_df <- df %>%
     top_n(10, unique_tvbox) %>%
-    arrange(desc(unique_tvbox))
+    arrange(desc(unique_tvbox)) %>%
+    mutate(label=format(unique_tvbox, big.mark=" "))    
   
   gp <- ggplot(reg_df, aes(fct_reorder(as.factor(channelId), unique_tvbox, .desc=FALSE), unique_tvbox)) +
     geom_bar(fill=brewer.pal(n=9, name="Blues")[4], alpha=0.5, stat="identity") +
-    geom_text(aes(label=format(unique_tvbox, big.mark=" ")), hjust=+1, colour="red") + # для вертикальных
+    # geom_text(aes(label=label), hjust=+1.1, colour="blue") + # для вертикальных
+    geom_label(aes(label=label), fill="white", colour="black", fontface="bold", hjust=+1.1) +
+    # geom_text_repel(aes(label=label), fontface = 'bold', color = 'blue', nudge_y=0) +
     # scale_x_discrete("Передача", breaks=df2$order, labels=df2$channelId) +
     scale_y_log10() +
-    theme_ipsum_rc(base_size=20, axis_title_size=18) +  
+    theme_ipsum_rc(base_size=font_sizes[[publish_type]][["base_size"]], 
+                   axis_title_size=font_sizes[[publish_type]][["axis_title_size"]]) +  
     theme(axis.text.x = element_text(angle=90)) +
     ylab("Количество уникальных приставок") +
     xlab("Канал") +
@@ -105,9 +115,9 @@ gen_word_report <- function(raw_df, template_fname){
     body_add_par(value='Первые 80 строк данных', style="heading 1") %>%
     body_add_table(value=out_df, style="table_template") %>% 
     body_add_par(value="ТОП 10 по времени просмотра", style="heading 2") %>%
-    body_add_gg(value=plotTop10Duration(raw_df), style = "centered") %>%
+    body_add_gg(value=plotTop10Duration(raw_df, publish_type="word_A4"), style = "centered") %>%
     body_add_par(value="ТОП 10 по количеству уникальных приставок", style="heading 2") %>%
-    body_add_gg(value=plotTop10Unique(raw_df), width=8, style="centered")
+    body_add_gg(value=plotTop10Unique(raw_df, publish_type="word_A4"), style="centered")
   
   doc
   
