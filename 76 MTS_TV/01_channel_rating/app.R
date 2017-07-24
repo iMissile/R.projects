@@ -115,7 +115,7 @@ ui <-
                fluidRow(
                  p(),
                  column(6, div(plotOutput('top10_duration_plot', height="500px"))),
-                 column(6, div(plotOutput('top10_unique_plot', height="500px")))
+                 column(6, div(plotOutput('top10_stb_plot', height="500px")))
                ))
       )
     #,
@@ -137,8 +137,8 @@ server <- function(input, output, session) {
 
   # создание параметров оформления для различных видов графиков (screen\publish)
   font_sizes <- list(
-    "screen"=list(base_size=20, axis_title_size=18),
-    "word_A4"=list(base_size=16, axis_title_size=14)
+    "screen"=list(base_size=20, axis_title_size=18, subtitle_size=15),
+    "word_A4"=list(base_size=16, axis_title_size=14, subtitle_size=13)
   )
   
   # подгрузим таблицу преобразования транслита в русские названия городов
@@ -183,21 +183,21 @@ server <- function(input, output, session) {
     
     # browser()
     df <- temp_df %>%
-      # переводим время смотрения в часы
-      mutate(channel_duration=round(as.numeric(channel_duration/60), 1)) %>%
+      # время смотрения, мин
+      mutate(channel_duration=round(as.numeric(channel_duration), 1)) %>%
       # 6. Среднее время просмотра, мин
       mutate(mean_duration=round(channel_duration/watch_events, 0)) %>%
       # 3. % уникальных приставок
-      mutate(ratio_per_tvbox=round(unique_tvbox/total_unique_tvbox, 3)) %>%
+      mutate(stb_ratio=round(unique_stb/total_unique_stb, 3)) %>%
       # 5. % времени просмотра
       mutate(watch_ratio=round(channel_duration/sum(channel_duration),5)) %>%
       # 7. Среднее суммарное время просмотра одной приставкой за период, мин
-      mutate(duration_per_tvbox=round(channel_duration/unique_tvbox, 0)) %>%
-      # %>% mutate_at(vars(mean_duration, ratio_per_tvbox, watch_ratio, duration_per_tvbox), funs(round), digits=1)
+      mutate(duration_per_stb=round(channel_duration/unique_stb, 0)) %>%
+      # %>% mutate_at(vars(mean_duration, ratio_per_stb, watch_ratio, duration_per_stb), funs(round), digits=1)
       # удалим транслит и будем далее использовать русское название
       left_join(cities_df, by=c("region"="translit")) %>%
       select(-region) %>% 
-      rename(region=russian)
+      select(region=russian, everything())
 
     # browser()
     dbDisconnect(con)
@@ -236,8 +236,8 @@ server <- function(input, output, session) {
   })
   
   # график Топ10 каналов по количеству уникальных приставок --------------
-  output$top10_unique_plot <-renderPlot({
-    plotTop10Unique(cur_df(), publish_set=font_sizes[["screen"]])
+  output$top10_stb_plot <-renderPlot({
+    plotTop10STB(cur_df(), publish_set=font_sizes[["screen"]])
   })  
 
   # динамическое управление диапазоном дат ---------
@@ -292,7 +292,7 @@ server <- function(input, output, session) {
       name
     },
     content = function(file) {
-      doc <- cur_df() %>% select(-total_unique_tvbox) %>%
+      doc <- cur_df() %>% select(-total_unique_stb) %>%
         gen_word_report(publish_set=font_sizes[["word_A4"]])
       print(doc, target=file)  
     }
