@@ -140,8 +140,17 @@ colNamesToRus <- function(df){
   # используется исключительно перед выводом
   # локализовано, чтобы гибко подстраивать под возможные пожелания
   # browser()
-  df %>% select(-date, 'Канал'=channelId, 'Сегмент'=segment, 
-                'Регион'=region, 'Кол-во просмотров'=watch_events, 
-                "Ну просто очень-очень длинный заголовок"=duration_per_tvbox)
+  df %>% select(-date, -region, -segment,
+                "канал"=channelId, 
+                # 'Сегмент'=segment, 
+                # 'Регион'=region, 
+                "кол-во уник. STB"=unique_tvbox,
+                "всего уник. STB"=total_unique_tvbox,
+                "суммарное время"=channel_duration,
+                "кол-во просмотров"=watch_events, 
+                "ср. время просмотра"=mean_duration,
+                "% уник. STB"=ratio_per_tvbox,
+                "% врем. просмотра"=watch_ratio,
+                "ср. время просм. 1 STB за период"=duration_per_tvbox)
   
 }

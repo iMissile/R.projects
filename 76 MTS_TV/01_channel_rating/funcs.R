@@ -109,25 +109,48 @@ plotTop10Unique <- function(df, publish_set){
 }
 
 # Генерация word файла для выгрузки средcтвами officer -------------
-gen_word_report <- function(raw_df, template_fname, publish_set=NULL){
+gen_word_report <- function(df, template_fname, publish_set=NULL){
   if(is.na(publish_set)){
     flog.error("publish_set is NULL")
     return(NULL)
   }
   # считаем данные для вставки -----------------------------------
-  out_df <- raw_df[1:80, ] %>% select(everything())
+  out_df <- df[1:80, ]
+
+  flog.info(paste0("Word Report generation under ", Sys.info()["sysname"]))
+  if (Sys.info()["sysname"] == "Linux") {
+    out_df %<>% colNamesToRus()
+  }
   
   # создаем файл ------------------------------------------
   doc <- read_docx() %>% # read_docx(path="./TV_report_template.docx") %>%
     body_add_par(value='Первые 80 строк данных', style="heading 1") %>%
     body_add_table(value=out_df, style="table_template") %>% 
     body_add_par(value="ТОП 10 по времени просмотра", style="heading 2") %>%
-    body_add_gg(value=plotTop10Duration(raw_df, publish_set=publish_set), style = "centered") %>%
+    body_add_gg(value=plotTop10Duration(df, publish_set=publish_set), style = "centered") %>%
     body_add_par(value="ТОП 10 по количеству уникальных приставок", style="heading 2") %>%
-    body_add_gg(value=plotTop10Unique(raw_df, publish_set=publish_set), style="centered")
+    body_add_gg(value=plotTop10Unique(df, publish_set=publish_set), style="centered")
   
   doc
   
   }
 
-
+# Локализация названий колонок в датасете --------------
+colNamesToRus <- function(df){
+  # используется исключительно перед выводом
+  # локализовано, чтобы гибко подстраивать под возможные пожелания
+  # browser()
+  df %>% select(-date, -region, -segment,
+                "канал"=channelId, 
+                # 'Сегмент'=segment, 
+                # 'Регион'=region, 
+                "кол-во уник. STB"=unique_tvbox,
+                "всего уник. STB"=total_unique_tvbox,
+                "суммарное время"=channel_duration,
+                "кол-во просмотров"=watch_events, 
+                "ср. время просмотра"=mean_duration,
+                "% уник. STB"=ratio_per_tvbox,
+                "% врем. просмотра"=watch_ratio,
+                "ср. время просм. 1 STB за период"=duration_per_tvbox)
+  
+}

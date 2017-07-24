@@ -43,7 +43,7 @@ ui <-
   navbarPage("DVT IoT",
   # title=HTML('<div><a href="http://devoteam.com/"><img src="./img/devoteam_176px.png" width="80%"></a></div>'),
   title = "Статистика телесмотрения",
-  tabPanel("Рейтинг каналов", value="channel_rating"),
+  tabPanel("Рейтинг пользовательской активности", value="general_panel"),
   tabPanel("About", value="about"),
   # windowTitle="CC4L",
   # collapsible=TRUE,
@@ -61,7 +61,7 @@ ui <-
   # titlePanel("Статистика телесмотрения"),
   # ----------------
   conditionalPanel(
-    condition = "input.tsp == 'channel_rating'",
+    condition = "input.tsp == 'general_panel'",
     fluidRow(
       tags$style(type='text/css', '#cweather_text {white-space:pre;}')
       # tags$style(type='text/css', 'div {background-color: #000с00;}'), 
@@ -107,8 +107,8 @@ ui <-
                p(),
                fluidRow(
                  column(8, {}),
-                 column(2, downloadButton("csv_download_btn", label="Выгрузка Excel", class = 'rightAlign')),
-                 column(2, downloadButton("word_download_btn", label="Выгрузка Word", class = 'rightAlign'))
+                 column(2, downloadButton("csv_download_btn", label="Экспорт (Excel)", class = 'rightAlign')),
+                 column(2, downloadButton("word_download_btn", label="Экспорт (Word)", class = 'rightAlign'))
                )
       ),
       tabPanel("График", value = "graph_tab",
@@ -188,12 +188,12 @@ server <- function(input, output, session) {
       # 6. Среднее время просмотра, мин
       mutate(mean_duration=round(channel_duration/watch_events, 0)) %>%
       # 3. % уникальных приставок
-      mutate(ratio_per_tv_box=round(unique_tvbox/total_unique_tvbox, 3)) %>%
+      mutate(ratio_per_tvbox=round(unique_tvbox/total_unique_tvbox, 3)) %>%
       # 5. % времени просмотра
       mutate(watch_ratio=round(channel_duration/sum(channel_duration),5)) %>%
       # 7. Среднее суммарное время просмотра одной приставкой за период, мин
       mutate(duration_per_tvbox=round(channel_duration/unique_tvbox, 0)) %>%
-      # %>% mutate_at(vars(mean_duration, ratio_per_tv_box, watch_ratio, duration_per_tvbox), funs(round), digits=1)
+      # %>% mutate_at(vars(mean_duration, ratio_per_tvbox, watch_ratio, duration_per_tvbox), funs(round), digits=1)
       # удалим транслит и будем далее использовать русское название
       left_join(cities_df, by=c("region"="translit")) %>%
       select(-region) %>% 
@@ -227,7 +227,7 @@ server <- function(input, output, session) {
                   filter = 'bottom',
                   options=list(dom='fltip', pageLength=7, lengthMenu=c(5, 7, 10, 15),
                                order=list(list(3, 'desc')))) %>%
-      DT::formatPercentage('watch_ratio', 2)
+      DT::formatPercentage("% врем. просмотра", 2)
     })
   
   # график Топ10 каналов по суммарному времени просмотра -------------
