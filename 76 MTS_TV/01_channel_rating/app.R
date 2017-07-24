@@ -84,17 +84,21 @@ ui <-
       column(1, selectInput("history_depth", "История", 
                             choices = c("1 месяц"=30, "2 недели"=14,
                                         "1 неделя"=7, "3 дня"=3, "1 день"=1), selected=1)),
-      column(1, selectInput("min_watch_time", "Мин. время",
-                            choices = c("5 сек"=5, "10 сек"=10, 
-                                        "20 сек"=20, "30 сек"=30), selected = 10)),
-      column(1, selectInput("max_watch_time", "Макс. время",
-                            choices = c("1 час"=1, "2 часа"=2, 
-                                        "3 часа"=3, "4 часа"=4), selected = 2)),
-      column(2, uiOutput("choose_region")),
+      #column(1, selectInput("min_watch_time", "Мин. время",
+      #                      choices = c("5 сек"=5, "10 сек"=10, 
+      #                                  "20 сек"=20, "30 сек"=30), selected = 10)),
+      #column(1, selectInput("max_watch_time", "Макс. время",
+      #                      choices = c("1 час"=1, "2 часа"=2, 
+      #                                  "3 часа"=3, "4 часа"=4), selected = 2)),
+      column(6, uiOutput("choose_region")),
       column(2, selectInput("segment_filter", "Сегмент",
                             choices = c("DVB-C", "IPTV", "DVB-S"), selected="DVB-C"))
     ),
+    fluidRow(
+      column(12, actionButton("process_btn", "Применить", class = 'rightAlign'))
+      ),
 
+    
     #tags$style(type='text/css', "#in_date_range { position: absolute; top: 50%; transform: translateY(-80%); }"),
     tabsetPanel(
       id = "panel_id",
@@ -160,16 +164,19 @@ server <- function(input, output, session) {
   
   # реактивные переменные -------------------
   raw_df <- reactive({
-    con <- dbConnect(clickhouse(), host="10.0.0.44", port=8123L, user="default", password="")
+    input$process_btn # обновлять будем вручную
+    isolate({
+      con <- dbConnect(clickhouse(), host="10.0.0.44", port=8123L, user="default", password="")
     
-    # regions <- c("Moskva", "Barnaul")
-    regions <- req(input$region_filter)
-    # browser()
+      # regions <- c("Moskva", "Barnaul")
+      regions <- req(input$region_filter)
+      # browser()
     
-    # r <- buildReq(begin=today(), end=today()+days(1), regions)
-    flog.info(paste0("Applied time filter [", input$in_date_range[1], "; ", input$in_date_range[2], "]"))
-    flog.info(paste0("Applied region filter [", regions, "]"))
-    r <- buildReq(begin=input$in_date_range[1], end=input$in_date_range[2], regions)
+      # r <- buildReq(begin=today(), end=today()+days(1), regions)
+      flog.info(paste0("Applied time filter [", input$in_date_range[1], "; ", input$in_date_range[2], "]"))
+      flog.info(paste0("Applied region filter [", regions, "]"))
+      r <- buildReq(begin=input$in_date_range[1], end=input$in_date_range[2], regions)
+    })
     
     # browser()
 
@@ -205,13 +212,8 @@ server <- function(input, output, session) {
   })  
 
   cur_df <- reactive({
-    # browser()
-    # t <- input$min_watch_time
-    # req(raw_df()) %>%
-    #  mutate(date=anydate(timestamp)) %>%
-    #  filter(input$in_date_range[1] < date  & date < input$in_date_range[2])
-    req(raw_df() %>%
-      filter(segment==input$segment_filter)) %>%
+    req(raw_df()) %>%
+      # filter(segment==input$segment_filter) %>%
       select(channelId, region, segment, everything())
   })
   
@@ -268,7 +270,7 @@ server <- function(input, output, session) {
     selectInput("region_filter", 
                 paste0("Регион (", length(data), ")"),
                 multiple=TRUE,
-                choices=data)
+                choices=data, width = "100%")
   })
 
   # обработчики кнопок выгрузки файлов --------------------------------------------------

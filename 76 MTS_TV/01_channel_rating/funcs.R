@@ -25,8 +25,10 @@ hgroup.enum <- function(date, hour_bin=NULL, min_bin=5){
 }
 
 # построение запроса для отчета 'Рейтинг по каналам' ----------------
-buildReq <- function(begin, end, regs){
-  # bigin, end -- даты; regs -- вектор регионов
+buildReq <- function(begin, end, regs, segment=NULL){
+  # begin, end -- даты; 
+  # regs -- вектор регионов, если NULL -- то все регионы;
+  # segment -- регион (строка), если NULL -- то все сегменты;
   plain_regs <- stri_join(regs %>% map_chr(~stri_join("'", .x, "'", sep="")), 
                           sep = " ", collapse=",")
   # cat(plain_regs)
@@ -40,15 +42,19 @@ buildReq <- function(begin, end, regs){
     # Кол-во уникальных приставок по всем каналам
     "( SELECT uniq(serial) ",
     "  FROM genstates ",
-    "  WHERE toDate(begin) >= toDate('", begin, "') AND toDate(end) <= toDate('", end, "') AND region IN (", plain_regs, ") ",
+    "  WHERE toDate(begin) >= toDate('", begin, "') AND toDate(end) <= toDate('", end, "') ",
+    "  AND region IN (", plain_regs, ") ",
+    "  AND duration>5*60 AND duration <2*60*60 ", # укзали жестко длительность, в секундах
     ") AS total_unique_stb, ",  
     # 4. Суммарное время просмотра всеми приставками, мин
-    "sum(duration) AS channel_duration, ",
+    "sum(duration)/60 AS channel_duration, ",
     # 8. Кол-во событий просмотра
     "count() AS watch_events ",
     "FROM genstates ",
     "SAMPLE 0.1 ",
-    "WHERE toDate(begin) >= toDate('", begin, "') AND toDate(end) <= toDate('", end, "') AND region IN (", plain_regs, ") ",
+    "WHERE toDate(begin) >= toDate('", begin, "') AND toDate(end) <= toDate('", end, "') ",
+    "AND region IN (", plain_regs, ") ",
+    "AND duration>5*60 AND duration <2*60*60 ", # укзали жестко длительность, в секундах
     "GROUP BY channelId, region, segment", sep="")
 }
 
