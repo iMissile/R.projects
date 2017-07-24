@@ -10,11 +10,12 @@ library(futile.logger)
 library(anytime)
 library(tictoc)
 library(digest)
-library(rJava)
-library(ReporteRs)
+#library(rJava)
+#library(ReporteRs)
 library(officer)
 library(extrafont)
 library(hrbrthemes)
+library(Unicode)
 
 
 #eval(parse("funcs.R", encoding="UTF-8"))
@@ -133,7 +134,26 @@ if(TRUE){
     ggtitle("Статистика телесмотрения", subtitle="Топ 9 регионов") +
     coord_flip()  
 
-  out_df <- raw_df[1:80, ] %>% select(timestamp, region, programId, segment)
+  out_df <- as_tibble(raw_df[1:80, ]) %>%
+    # select(timestamp, 'Яанал'=channelId)
+    select("Канал"=channelId)
+    #select(timestamp, stri_enc_toutf8('Канал')=channelId, 'Сегмент'=segment, 
+    #       'Регион'=region, "Ну просто очень-очень длинный заголовок"=programId)
+
+  # browser()
+  # имена колонок надо превратить в unicode
+  # nm <- names(out_df) %>% stri_conv(from="windws-1251", to="UTF-8", to_raw=FALSE)
+  nm <- names(out_df)
+  #stri_enc_mark(nm)
+  #nm <- names(out_df) %>% 
+  #  stri_conv(from="windows-1251", to="UTF-8", to_raw=FALSE) %>% 
+  #  map(`Encoding<-`, "UTF-8")
+  
+  stri_enc_mark(nm)
+  
+  names(out_df) <- nm
+
+  # browser()
   
   # создаем файл ------------------------------------------
   doc <- read_docx() %>% # read_docx(path="./TV_report_template.docx") %>%
@@ -144,6 +164,7 @@ if(TRUE){
     print(target = "word_report_officer.docx")
 }
 
+stop()
 
 # ====================================================================
 # Отчет №1: "Рейтинг каналов" --------------------

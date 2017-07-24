@@ -48,7 +48,8 @@ ui <-
   # windowTitle="CC4L",
   # collapsible=TRUE,
   id="tsp",
-  theme=shinytheme("flatly"),
+  # theme=shinytheme("flatly"),
+  theme=shinytheme("yeti"),
   # shinythemes::themeSelector(),
   # includeCSS("styles.css"),
 
@@ -220,8 +221,8 @@ server <- function(input, output, session) {
   output$stat_table <- DT::renderDataTable({
     # https://rstudio.github.io/DT/functions.html
     # browser()
-    DT::datatable(req(cur_df()),
-                  colnames=c('Канал'='channelId', 'Сегмент'='segment', 'Регион'='region', 'Дата'='date'),
+    DT::datatable({req(cur_df()); colNamesToRus(cur_df())},
+                  # colnames=c('Канал'='channelId', 'Сегмент'='segment', 'Регион'='region', 'Дата'='date'),
                   rownames=FALSE,
                   filter = 'bottom',
                   options=list(dom='fltip', pageLength=7, lengthMenu=c(5, 7, 10, 15),
