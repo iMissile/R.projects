@@ -1,0 +1,13 @@
+name: channel_rating
+title: channel_rating
+username: admin
+account: admin
+server: 172.16.33.39
+hostUrl: http://172.16.33.39:3939/__api__
+appId: 11
+bundleId: 79
+url: http://172.16.33.39:3939/content/11/
+when: 1500886514.56901
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: app.log|sandbox.R

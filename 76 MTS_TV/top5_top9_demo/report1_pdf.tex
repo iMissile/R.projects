@@ -1,0 +1,195 @@
+\documentclass[12pt,]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\hypersetup{unicode=true,
+            pdftitle={Анализ статистики телесмотрения},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{longtable,booktabs}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\newcommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+  \title{Анализ статистики телесмотрения}
+  \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+  \author{}
+  \preauthor{}\postauthor{}
+  \predate{\centering\large\emph}
+  \postdate{\par}
+  \date{2017-06-15}
+
+\usepackage{fontspec}
+\usepackage[english,russian]{babel}
+\setmainfont{Linux Libertine O}
+
+% https://tex.stackexchange.com/questions/110013/russian-language-within-figure-captions-in-unicode-aware-systems
+% https://tex.stackexchange.com/questions/55090/renewcommand-tablenamename-does-not-work
+\AtBeginDocument{%
+  %\renewcommand\tablename{new}
+  \def\tablename{Таблица. }
+}
+
+\begin{document}
+\maketitle
+
+\section{Аналитический отчет}\label{-}
+
+\subsection{Загрузка исходных данных}\label{--}
+
+\begin{verbatim}
+##    user  system elapsed 
+##   12.27    0.19   12.51
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  Объем данных: 18.9 Мб.
+\item
+  Количество записей для анализа: 232295
+\item
+  Временной период для анализа: {[}2017-03-01 13:09:34; 2017-03-02
+  02:48:50{]}
+\end{itemize}
+
+\subsection{Данные по ТОП-9 регионам}\label{---9-}
+
+\subsubsection{\texorpdfstring{Представление
+\texttt{kable}}{Представление kable}}\label{-kable}
+
+\begin{longtable}[]{@{}llrrr@{}}
+\caption{Данные по ТОП-9 регионам}\tabularnewline
+\toprule
+region & channelId & duration & total\_duration & order\tabularnewline
+\midrule
+\endfirsthead
+\toprule
+region & channelId & duration & total\_duration & order\tabularnewline
+\midrule
+\endhead
+Moskva & Teatr\_SD & 56647 & 275730644 & 155\tabularnewline
+Krasnodar & A-one\_SD & 79 & 215108 & 559\tabularnewline
+Izhevsk & Dom\_kino\_SD & 1473 & 131051 & 799\tabularnewline
+Kurgan & Rossija\_HD & 1282 & 259627 & 503\tabularnewline
+Rostov-na-Donu & SONY\_SET\_SD & 60 & 163409 & 783\tabularnewline
+Kurgan & Zdorovoe\_TV\_SD & 113 & 259627 & 518\tabularnewline
+Kirov & 2h2\_SD & 1928 & 176357 & 685\tabularnewline
+Moskva & RBK\_TV\_SD\_ADSL & 1206 & 275730644 & 354\tabularnewline
+Kirov & Eurosport\_HD & 68 & 176357 & 724\tabularnewline
+Sankt-Peterburg & Kultura\_SD & 4386 & 181514 & 626\tabularnewline
+Moskva & Promo\_MTS\_SD & 152 & 275730644 & 398\tabularnewline
+Moskva & TV\_Centr\_4\_SD & 1937 & 275730644 & 336\tabularnewline
+Kirov & MUZ\_SD & 183 & 176357 & 708\tabularnewline
+Moskva & TNT\_IJVSK\_SD & 1293 & 275730644 & 349\tabularnewline
+Moskva & Disney\_SD & 50766 & 275730644 & 166\tabularnewline
+Moskva & OTS\_SD & 37081 & 275730644 & 185\tabularnewline
+Moskva & Pjatnica\_EKTBG\_SD & 478 & 275730644 & 380\tabularnewline
+Moskva & russia\_1\_SRTV\_SD & 30108 & 275730644 & 205\tabularnewline
+Moskva & 2h2\_SD & 1740376 & 275730644 & 34\tabularnewline
+Novosibirsk & LifeNews\_SD & 96 & 342976 & 480\tabularnewline
+\bottomrule
+\end{longtable}
+
+\subsubsection{\texorpdfstring{Представление
+\texttt{xtable}}{Представление xtable}}\label{-xtable}
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{rllrrr}
+  \hline
+ & region & channelId & duration & total\_duration & order \\ 
+  \hline
+1 & Moskva & Teatr\_SD & 56647 & 275730644 & 155 \\ 
+  2 & Krasnodar & A-one\_SD &  79 & 215108 & 559 \\ 
+  3 & Izhevsk & Dom\_kino\_SD & 1473 & 131051 & 799 \\ 
+  4 & Kurgan & Rossija\_HD & 1282 & 259627 & 503 \\ 
+  5 & Rostov-na-Donu & SONY\_SET\_SD &  60 & 163409 & 783 \\ 
+  6 & Kurgan & Zdorovoe\_TV\_SD & 113 & 259627 & 518 \\ 
+  7 & Kirov & 2h2\_SD & 1928 & 176357 & 685 \\ 
+  8 & Moskva & RBK\_TV\_SD\_ADSL & 1206 & 275730644 & 354 \\ 
+  9 & Kirov & Eurosport\_HD &  68 & 176357 & 724 \\ 
+  10 & Sankt-Peterburg & Kultura\_SD & 4386 & 181514 & 626 \\ 
+  11 & Moskva & Promo\_MTS\_SD & 152 & 275730644 & 398 \\ 
+  12 & Moskva & TV\_Centr\_4\_SD & 1937 & 275730644 & 336 \\ 
+  13 & Kirov & MUZ\_SD & 183 & 176357 & 708 \\ 
+  14 & Moskva & TNT\_IJVSK\_SD & 1293 & 275730644 & 349 \\ 
+  15 & Moskva & Disney\_SD & 50766 & 275730644 & 166 \\ 
+  16 & Moskva & OTS\_SD & 37081 & 275730644 & 185 \\ 
+  17 & Moskva & Pjatnica\_EKTBG\_SD & 478 & 275730644 & 380 \\ 
+  18 & Moskva & russia\_1\_SRTV\_SD & 30108 & 275730644 & 205 \\ 
+  19 & Moskva & 2h2\_SD & 1740376 & 275730644 &  34 \\ 
+  20 & Novosibirsk & LifeNews\_SD &  96 & 342976 & 480 \\ 
+   \hline
+\end{tabular}
+\end{table}
+
+\subsection{TOP-5 программ для ТОП-9 регионов}\label{top-5----9-}
+
+\includegraphics{report1_pdf_files/figure-latex/unnamed-chunk-6-1.pdf}
+
+
+\end{document}

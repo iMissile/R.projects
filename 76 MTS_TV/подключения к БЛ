@@ -1,0 +1,8 @@
+[ctiuser@mts-stat-spool-01 ~]$ sudo su - postgres
+Last login: Fri Jul 21 16:33:05 MSK 2017
+-bash-4.2$ psql stat
+
+\? -- помощь
+
+\dt -- показать таблицы
+\d+ programs -- печать структуры таблицы

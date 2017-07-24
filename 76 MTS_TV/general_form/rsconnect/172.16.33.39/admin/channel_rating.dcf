@@ -1,0 +1,11 @@
+name: channel_rating
+title: channel_rating
+account: admin
+server: 172.16.33.39
+appId: 11
+bundleId: 78
+url: http://172.16.33.39:3939/content/11/
+when: 1500481498.72552
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: app.log|CH_gen_demo_data.R|data.csv.gz|ReporteRs_demo.R|sandbox.R|TV_report_template.docx|word_report.docx|word_report_officer.docx|data/tvstream3.rds|output
