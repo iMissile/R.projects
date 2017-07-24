@@ -20,6 +20,8 @@ library(config)
 
 
 source("clickhouse.R")
+# getwd()
+eval(parse("funcs.R", encoding="UTF-8"))
 
 con <- dbConnect(clickhouse(), host="10.0.0.44", port=8123L, user="default", password="")
 
@@ -40,42 +42,67 @@ cities_df <- req(
 # m <- as.list(cities_df$translit)
 # names(m) <- cities_df$russian
 
-buildReq <- function(begin, end, regs){
+buildReq0 <- function(begin, end, regs){
   # bigin, end -- даты; regs -- вектор регионов
-  plain_regs <- stri_join(regions %>% map_chr(~stri_join("'", .x, "'", sep="")), 
+  plain_regs <- stri_join(reg %>% map_chr(~stri_join("'", .x, "'", sep="")), 
                           sep = " ", collapse=",")
   cat(plain_regs)
   
   paste(
   "SELECT ",
-  # 1. Название канала и регион (важно для множественного выбора)
-  "channelId, region, ",
+  # 1. Регион,  сегмент
+  "region, segment, ",
   # 2. Кол-во уникальных приставок по каналу
-  "uniq(serial) AS unique_tvbox, ",
-  # Кол-во уникальных приставок по всем каналам
+  "uniq(serial) AS unique_stb, ",
+  # Кол-во уникальных приставок по всем каналам выбранных регионов
   "( SELECT uniq(serial) ",
   "  FROM genstates ",
   "  WHERE toDate(begin) >= toDate('", begin, "') AND toDate(end) <= toDate('", end, "') AND region IN (", plain_regs, ") ",
-  ") AS total_unique_tvbox, ",  
+  ") AS total_unique_stb, ",  
   # 4. Суммарное время просмотра всеми приставками, мин
-  "sum(duration) AS channel_duration, ",
+  "sum(duration) AS total_duration, ",
   # 8. Кол-во событий просмотра
   "count() AS watch_events ",
   "FROM genstates ",
   "WHERE toDate(begin) >= toDate('", begin, "') AND toDate(end) <= toDate('", end, "') AND region IN (", plain_regs, ") ",
-  "GROUP BY channelId, region", sep="")
+  "GROUP BY region, segment", sep="")
 }
 
 regions <- c("Moskva", "Barnaul")
 
-r <- buildReq(begin=today(), end=today()+days(1), regions)
+# r <- buildReq(begin=today(), end=today()+days(1), regions)
+r <- buildReq(begin="2017-06-28", end="2017-06-30", regions)
+
+
 df <- dbGetQuery(con, r) %>%
-  # 6. Среднее время просмотра, мин
-  mutate(mean_duration=channel_duration/watch_events) %>%
+  # время смотрения, мин
+  mutate(total_duration=round(as.numeric(total_duration), 1)) %>%
   # 3. % уникальных приставок
-  mutate(ratio_per_tv_box=unique_tvbox/total_unique_tvbox) %>%
-  # 5. % времени просмотра
-  mutate(watch_ratio=channel_duration/sum(channel_duration)) %>%
-  # 7. Среднее суммарное время просмотра одной приставкой за период, мин
-  mutate(duration_per_tvbox=channel_duration/unique_tvbox) %>%
-  left_join(cities_df, by=c("region"="translit"))
+  mutate(ratio_per_stb=round(unique_stb/total_unique_stb, 3)) %>%
+  left_join(cities_df, by=c("region"="translit")) %>%
+  select(-region) %>%
+  select(region=russian, everything())
+
+# рисуем графики --------------
+# Топ N по времени телесмотрения
+reg_df <- df %>%
+  top_n(10, total_duration) %>%
+  arrange(desc(total_duration)) %>%
+  mutate(label=format(total_duration, big.mark=" "))    
+
+gp <- ggplot(reg_df, aes(fct_reorder(as.factor(region), total_duration, .desc=FALSE), total_duration)) +
+  geom_bar(fill=brewer.pal(n=9, name="Blues")[4], alpha=0.5, stat="identity") +
+  # geom_text(aes(label=label), hjust=+1.1, colour="blue") + # для вертикальных
+  geom_label(aes(label=label), fill="white", colour="black", fontface="bold", hjust=+1.1) +
+  # geom_text_repel(aes(label=label), fontface = 'bold', color = 'blue', nudge_y=0) +
+  # scale_x_discrete("Передача", breaks=df2$order, labels=df2$channelId) +
+  scale_y_log10() +
+#  theme_ipsum_rc(base_size=publish_set[["base_size"]], 
+#                 axis_title_size=publish_set[["axis_title_size"]]) +  
+  theme(axis.text.x = element_text(angle=90)) +
+  ylab("Время телесмотрения") +
+  xlab("Регион") +
+  ggtitle("Топ N регионов", subtitle="По суммарному времени телесмотрения, мин") +
+  coord_flip() 
+
+gp

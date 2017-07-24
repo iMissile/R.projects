@@ -171,7 +171,7 @@ server <- function(input, output, session) {
     flog.info(paste0("Applied region filter [", regions, "]"))
     r <- buildReq(begin=input$in_date_range[1], end=input$in_date_range[2], regions)
     
-    # browser()
+    browser()
 
     tic()
     temp_df <- dbGetQuery(con, r) %>%
@@ -183,21 +183,13 @@ server <- function(input, output, session) {
     
     # browser()
     df <- temp_df %>%
-      # переводим время смотрения в часы
-      mutate(channel_duration=round(as.numeric(channel_duration/60), 1)) %>%
-      # 6. Среднее время просмотра, мин
-      mutate(mean_duration=round(channel_duration/watch_events, 0)) %>%
+      # время смотрения, мин
+      mutate(total_duration=round(as.numeric(total_duration), 1)) %>%
       # 3. % уникальных приставок
-      mutate(ratio_per_tvbox=round(unique_tvbox/total_unique_tvbox, 3)) %>%
-      # 5. % времени просмотра
-      mutate(watch_ratio=round(channel_duration/sum(channel_duration),5)) %>%
-      # 7. Среднее суммарное время просмотра одной приставкой за период, мин
-      mutate(duration_per_tvbox=round(channel_duration/unique_tvbox, 0)) %>%
-      # %>% mutate_at(vars(mean_duration, ratio_per_tvbox, watch_ratio, duration_per_tvbox), funs(round), digits=1)
-      # удалим транслит и будем далее использовать русское название
+      mutate(ratio_per_stb=round(unique_stb/total_unique_stb, 3)) %>%
       left_join(cities_df, by=c("region"="translit")) %>%
-      select(-region) %>% 
-      rename(region=russian)
+      select(-region) %>%
+      select(region=russian, everything())
     
     # browser()
     dbDisconnect(con)
@@ -212,7 +204,7 @@ server <- function(input, output, session) {
     #  filter(input$in_date_range[1] < date  & date < input$in_date_range[2])
     req(raw_df() %>%
       filter(segment==input$segment_filter)) %>%
-      select(channelId, region, segment, everything())
+      select(region, segment, everything())
   })
   
   msg <- reactiveVal("")
@@ -292,7 +284,7 @@ server <- function(input, output, session) {
       name
     },
     content = function(file) {
-      doc <- cur_df() %>% select(-total_unique_tvbox) %>%
+      doc <- cur_df() %>% select(-total_unique_stb) %>%
         gen_word_report(publish_set=font_sizes[["word_A4"]])
       print(doc, target=file)  
     }
