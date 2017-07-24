@@ -115,7 +115,7 @@ ui <-
                fluidRow(
                  p(),
                  column(6, div(plotOutput('top10_duration_plot', height="500px"))),
-                 column(6, div(plotOutput('top10_unique_plot', height="500px")))
+                 column(6, div(plotOutput('top10_stb_plot', height="500px")))
                ))
       )
     #,
@@ -137,8 +137,8 @@ server <- function(input, output, session) {
 
   # создание параметров оформления для различных видов графиков (screen\publish)
   font_sizes <- list(
-    "screen"=list(base_size=20, axis_title_size=18),
-    "word_A4"=list(base_size=16, axis_title_size=14)
+    "screen"=list(base_size=20, axis_title_size=18, subtitle_size=15),
+    "word_A4"=list(base_size=16, axis_title_size=14, subtitle_size=13)
   )
   
   # подгрузим таблицу преобразования транслита в русские названия городов
@@ -171,7 +171,7 @@ server <- function(input, output, session) {
     flog.info(paste0("Applied region filter [", regions, "]"))
     r <- buildReq(begin=input$in_date_range[1], end=input$in_date_range[2], regions)
     
-    browser()
+    # browser()
 
     tic()
     temp_df <- dbGetQuery(con, r) %>%
@@ -186,7 +186,7 @@ server <- function(input, output, session) {
       # время смотрения, мин
       mutate(total_duration=round(as.numeric(total_duration), 1)) %>%
       # 3. % уникальных приставок
-      mutate(ratio_per_stb=round(unique_stb/total_unique_stb, 3)) %>%
+      mutate(stb_ratio=round(unique_stb/total_unique_stb, 3)) %>%
       left_join(cities_df, by=c("region"="translit")) %>%
       select(-region) %>%
       select(region=russian, everything())
@@ -218,8 +218,8 @@ server <- function(input, output, session) {
                   rownames=FALSE,
                   filter = 'bottom',
                   options=list(dom='fltip', pageLength=7, lengthMenu=c(5, 7, 10, 15),
-                               order=list(list(3, 'desc')))) %>%
-      DT::formatPercentage("% врем. просмотра", 2)
+                               order=list(list(3, 'desc'))))# %>%
+      # DT::formatPercentage("% врем. просмотра", 2)
     })
   
   # график Топ10 каналов по суммарному времени просмотра -------------
@@ -228,8 +228,8 @@ server <- function(input, output, session) {
   })
   
   # график Топ10 каналов по количеству уникальных приставок --------------
-  output$top10_unique_plot <-renderPlot({
-    plotTop10Unique(cur_df(), publish_set=font_sizes[["screen"]])
+  output$top10_stb_plot <-renderPlot({
+    plotTop10STB(cur_df(), publish_set=font_sizes[["screen"]])
   })  
 
   # динамическое управление диапазоном дат ---------
@@ -267,7 +267,7 @@ server <- function(input, output, session) {
   # выгрузка таблицы в CSV -----------------------  
   output$csv_download_btn <- downloadHandler(
     filename = function() {
-      paste0("channel_rating_data-", Sys.Date(), ".csv", sep="")
+      paste0("user_activity_data-", Sys.Date(), ".csv", sep="")
     },
     content = function(file) {
       cur_df() %>%
@@ -279,7 +279,7 @@ server <- function(input, output, session) {
   # выгрузка таблицы в Word -----------------------
   output$word_download_btn <- downloadHandler(
     filename = function() {
-      name <- paste0("channel_rating_report-", Sys.Date(), ".docx", sep="")
+      name <- paste0("user_activity_report-", Sys.Date(), ".docx", sep="")
       flog.info(paste0("Word report: '", name, "'"))
       name
     },
