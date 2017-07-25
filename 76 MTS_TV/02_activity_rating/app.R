@@ -227,11 +227,28 @@ server <- function(input, output, session) {
   # таблица с выборкой по каналам ----------------------------
   output$stat_table <- DT::renderDataTable({
     # https://rstudio.github.io/DT/functions.html
+    # https://stackoverflow.com/questions/39970097/tooltip-or-popover-in-shiny-datatables-for-row-names
+    colnames_with_tooltip <- tribble(
+      ~colname, ~collabel,
+      "регион", "подсказка по региону",
+      "кол-во уник. STB", "подсказка по колонке 2",
+      "всего уник. STB", "подсказка по колонке 3",
+      "суммарное время, мин",	"подсказка по колонке 4",
+      "кол-во просмотров","подсказка по колонке 5",
+      "% уник. STB", "подсказка по колонке 6")
+
     # browser()
     DT::datatable({req(cur_df()); colNamesToRus(cur_df())},
                   # colnames=c('Канал'='channelId', 'Сегмент'='segment', 'Регион'='region', 'Дата'='date'),
                   rownames=FALSE,
                   filter = 'bottom',
+                  # только после жесткой фиксации колонок
+                  container = htmltools::withTags(table(class = 'display',
+                    thead(
+                      tr(apply(colnames_with_tooltip, 1,
+                               function(x) th(title=x[2], x[1])))
+                    )
+                  )),
                   options=list(dom='fltip', pageLength=7, lengthMenu=c(5, 7, 10, 15),
                                order=list(list(3, 'desc')))) %>%
       DT::formatPercentage("% уник. STB", 2)
