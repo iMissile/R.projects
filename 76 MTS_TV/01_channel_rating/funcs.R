@@ -25,20 +25,23 @@ hgroup.enum <- function(date, hour_bin=NULL, min_bin=5){
 }
 
 # построение запроса для отчета 'Рейтинг по каналам' ----------------
-buildReq <- function(begin, end, regions, segment=NULL){
+buildReq <- function(begin, end, regions, segment="all"){
   # begin, end -- даты; 
-  # regs -- вектор регионов, если NULL -- то все регионы;
+  # regs -- вектор регионов, если NULL -- то все регионы (в т.ч. на этапе инициализации);
   # segment -- регион (строка), если "all" -- то все сегменты;
+  # browser()
   
   # базисная SQL конструкция для ограничения дат
   limit_dates <- paste0(" toDate(begin) >= toDate('", begin, "') AND toDate(end) <= toDate('", end, "') ")
   
   # добавочная SQL конструкция для ограничения регионов
-  limit_regions <- stri_join(" AND region IN (", 
+  
+  limit_regions <- ifelse(is.null(regions), " ",
+                          stri_join(" AND region IN (", 
                              stri_join(regions %>% map_chr(~stri_join("'", .x, "'", sep="")),
                                        sep = " ", collapse=","),
-                             ") ", sep = "", collapse="")
-  
+                                    ") ", sep = "", collapse=""))
+
   # добавочная SQL конструкция для ограничения сегментов
   limit_segments <- ifelse(segment=="all", " ", 
                             stri_join(" AND segment IN (", 
@@ -52,7 +55,7 @@ buildReq <- function(begin, end, regions, segment=NULL){
     "channelId, ",
     # 2. Кол-во уникальных приставок по каналу
     "uniq(serial) AS unique_stb, ",
-    # Кол-во уникальных приставок по всем каналам
+    # Кол-во уникальных приставок по всем каналам выбранных регионов
     "( SELECT uniq(serial) ",
     "  FROM genstates ",
     "  WHERE ", limit_dates, limit_regions, limit_segments, 
@@ -63,7 +66,7 @@ buildReq <- function(begin, end, regions, segment=NULL){
     # 8. Кол-во событий просмотра
     "count() AS watch_events ",
     "FROM genstates ",
-    "SAMPLE 0.1 ",
+    # "SAMPLE 0.1 ",
     "WHERE ", limit_dates, limit_regions, limit_segments,
     "AND duration>5*60 AND duration <2*60*60 ", # указали жестко длительность, в секундах
     "GROUP BY channelId", sep="")
@@ -164,11 +167,11 @@ colNamesToRus <- function(df){
                 # 'Регион'=region, 
                 "кол-во уник. STB"=unique_stb,
                 "всего уник. STB"=total_unique_stb,
-                "суммарное время"=channel_duration,
+                "суммарное время, мин"=channel_duration,
                 "кол-во просмотров"=watch_events, 
-                "ср. время просмотра"=mean_duration,
+                "ср. время просмотра, мин"=mean_duration,
                 "% уник. STB"=stb_ratio,
                 "% врем. просмотра"=watch_ratio,
-                "ср. время просм. 1 STB за период"=duration_per_stb)
+                "ср. время просм. 1 STB за период, мин"=duration_per_stb)
   
 }

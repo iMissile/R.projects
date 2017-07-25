@@ -173,7 +173,7 @@ server <- function(input, output, session) {
       con <- dbConnect(clickhouse(), host="10.0.0.44", port=8123L, user="default", password="")
     
       # regions <- c("Moskva", "Barnaul")
-      regions <- req(input$region_filter)
+      regions <- input$region_filter
       # browser()
     
       # r <- buildReq(begin=today(), end=today()+days(1), regions)
