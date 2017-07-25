@@ -72,11 +72,10 @@ ui <-
       ),
     fluidRow(
       column(2, dateRangeInput("in_date_range",
-                               label = "Диапазон дат",
-                               # start = Sys.Date() - 3, end = Sys.Date(),
+                               label="Диапазон дат",
+                               start=Sys.Date()-1, end=Sys.Date(),
                                # на время отладки
-                               start  = "2017-06-28",
-                               end    = "2017-06-30",
+                               # start="2017-06-28", end="2017-06-30",
                                # min = Sys.Date() - 10, 
                                max = Sys.Date(),
                                separator = " - ", format = "dd/mm/yy",
@@ -99,7 +98,8 @@ ui <-
                                         "DVB-S"="DVB-S"), selected="all"))
     ),
     fluidRow(
-      column(12, actionButton("process_btn", "Применить", class = 'rightAlign'))
+      column(10, actionButton("set_test_dates_btn", "Вкл. демо дату", class = 'rightAlign')),
+      column(2, actionButton("process_btn", "Применить", class = 'rightAlign'))
     ),
 
     #tags$style(type='text/css', "#in_date_range { position: absolute; top: 50%; transform: translateY(-80%); }"),
@@ -129,8 +129,8 @@ ui <-
                ),
                fluidRow(
                  p(),
-                 column(6, div(plotOutput('top10_duration_plot', height="500px"))),
-                 column(6, div(plotOutput('top10_stb_plot', height="500px")))
+                 column(6, div(withSpinner(plotOutput('top10_duration_plot', height="500px")))),
+                 column(6, div(withSpinner(plotOutput('top10_stb_plot', height="500px"))))
                )
                )
       )
@@ -139,7 +139,8 @@ ui <-
     #  column(6, textOutput('info_text'))
     #)
     
-  )
+  ),
+  shinyjs::useShinyjs()  # Include shinyjs
 )
 
 
@@ -158,19 +159,26 @@ server <- function(input, output, session) {
     "word_A4"=list(base_size=16, axis_title_size=14, subtitle_size=13)
   )
   
+  # создаем коннект к инстансу CH -----------
+  if (Sys.info()["sysname"] == "Linux") {
+    # CTI стенд
+    con <- dbConnect(clickhouse(), host="172.16.33.74", port=8123L, user="default", password="")
+  }else{
+    # MT стенд
+    con <- dbConnect(clickhouse(), host="10.0.0.44", port=8123L, user="default", password="")
+  }      
+  
   # подгрузим таблицу преобразования транслита в русские названия городов
   cities_df <- {
     flog.info("Loading cities translit table")
     # подгрузим ограниченный список городов
     city_subset <- read_csv("region.csv")
     
-    con <- dbConnect(clickhouse(), host="10.0.0.44", port=8123L, user="default", password="")
-    
     df <- req(dbGetQuery(con, "SELECT * FROM regnames")  %>%
                 mutate_if(is.character, `Encoding<-`, "UTF-8") %>%
                 filter(translit %in% pull(city_subset)))
     flog.info(paste0("Cities translit table loaded ", nrow(df), " rows"))
-    dbDisconnect(con)
+    # dbDisconnect(con)
     df
   }
   
@@ -179,7 +187,7 @@ server <- function(input, output, session) {
   raw_df <- reactive({
     input$process_btn # обновлять будем вручную
     isolate({
-      con <- dbConnect(clickhouse(), host="10.0.0.44", port=8123L, user="default", password="")
+      
       # regions <- c("Moskva", "Barnaul")
       regions <- input$region_filter
       # browser()
@@ -207,12 +215,13 @@ server <- function(input, output, session) {
       mutate(total_duration=round(as.numeric(total_duration), 0)) %>%
       # 3. % уникальных приставок
       mutate(stb_ratio=round(unique_stb/total_unique_stb, 3)) %>%
+      mutate(region=as.character(region)) %>% # при пустом значении решает, что logi
       left_join(cities_df, by=c("region"="translit")) %>%
       select(-region) %>%
       select(region=russian, everything())
     
     # browser()
-    dbDisconnect(con)
+    # dbDisconnect(con)
     as_tibble(df)
   })  
 
@@ -275,6 +284,24 @@ server <- function(input, output, session) {
     # updateDateRangeInput(session, "in_date_range", start=date)
    }
   )
+
+  # фиксим даты на демо диапазон ---------  
+  observeEvent(input$set_test_dates_btn, {
+    updateDateRangeInput(session, "in_date_range", start="2017-05-28", end="2017-05-30")
+    }
+  )
+  
+  # управляем визуализацией кнопок выгрузки ----- 
+  observe({
+    # browser()
+    if(nrow(cur_df())>0) {
+      shinyjs::enable("csv_download_btn")
+      shinyjs::enable("word_download_btn")
+    } else {
+      shinyjs::disable("csv_download_btn")
+      shinyjs::disable("word_download_btn")
+    }
+  })  
   
   # служебный вывод ---------------------  
   output$info_text <- renderText({
@@ -318,7 +345,7 @@ server <- function(input, output, session) {
       name
     },
     content = function(file) {
-      doc <- cur_df() %>% select(-total_unique_stb) %>%
+      doc <- cur_df() %>% # select(-total_unique_stb) %>% # пока убираем, чтобы была консистентная подстановка
         gen_word_report(publish_set=font_sizes[["word_A4"]])
       print(doc, target=file)  
     }

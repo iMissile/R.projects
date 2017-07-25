@@ -81,7 +81,7 @@ plotTop10Duration <- function(df, publish_set, ntop=10){
   reg_df <- df %>%
     top_n(ntop, total_duration) %>%
     # может возникнуть ситуация, когда все значения top_n одинаковы. тогда надо брать выборку
-    sample_n(ntop) %>%
+    filter(row_number()<=ntop) %>%
     arrange(desc(total_duration)) %>%
     mutate(label=format(total_duration, big.mark=" ")) 
 
@@ -111,8 +111,7 @@ plotTop10STB <- function(df, publish_set, ntop=10){
   # выберем наиболее программы c позиции эфирного времени
   reg_df <- df %>%
     top_n(ntop, unique_stb) %>%
-    # может возникнуть ситуация, когда все значения top_n одинаковы. тогда надо брать выборку
-    sample_n(ntop) %>%
+    filter(row_number()<=ntop) %>% # на случай одинаковых значений
     arrange(desc(unique_stb)) %>%
     mutate(label=format(unique_stb, big.mark=" "))    
   
@@ -143,7 +142,8 @@ gen_word_report <- function(df, template_fname, publish_set=NULL){
     return(NULL)
   }
   # считаем данные для вставки -----------------------------------
-  out_df <- df[1:80, ]
+  n_out <- ifelse(nrow(df)<80, nrow(df), 80)
+  out_df <- df %>% filter(row_number() < n_out) 
 
   flog.info(paste0("Word Report generation under ", Sys.info()["sysname"]))
   if (Sys.info()["sysname"] == "Linux") {
@@ -152,7 +152,7 @@ gen_word_report <- function(df, template_fname, publish_set=NULL){
   
   # создаем файл ------------------------------------------
   doc <- read_docx() %>% # read_docx(path="./TV_report_template.docx") %>%
-    body_add_par(value='Первые 80 строк данных', style="heading 1") %>%
+    body_add_par(value=paste0("Первые ", n_out, " строк данных"), style="heading 1") %>%
     body_add_table(value=out_df, style="table_template") %>% 
     body_add_par(value="ТОП 10 по времени просмотра", style="heading 2") %>%
     body_add_gg(value=plotTop10Duration(df, publish_set=publish_set), style = "centered") %>%

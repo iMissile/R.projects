@@ -121,8 +121,8 @@ ui <-
       tabPanel("График", value = "graph_tab",
                fluidRow(
                  p(),
-                 column(6, div(plotOutput('top10_duration_plot', height="500px"))),
-                 column(6, div(plotOutput('top10_stb_plot', height="500px")))
+                 column(6, div(withSpinner(plotOutput('top10_duration_plot', height="500px")))),
+                 column(6, div(withSpinner(plotOutput('top10_stb_plot', height="500px"))))
                ))
       )
     #,
@@ -130,7 +130,8 @@ ui <-
     #  column(6, textOutput('info_text'))
     #)
     
-  )
+  ),
+  shinyjs::useShinyjs()  # Include shinyjs
 )
 
 
@@ -149,26 +150,26 @@ server <- function(input, output, session) {
     "word_A4"=list(base_size=16, axis_title_size=14, subtitle_size=13)
   )
   
+  # создаем коннект к инстансу CH
+  if (Sys.info()["sysname"] == "Linux") {
+    # CTI стенд
+    con <- dbConnect(clickhouse(), host="172.16.33.74", port=8123L, user="default", password="")
+  }else{
+    # MT стенд
+    con <- dbConnect(clickhouse(), host="10.0.0.44", port=8123L, user="default", password="")
+  }      
+  
   # подгрузим таблицу преобразования транслита в русские названия городов
   cities_df <- {
     flog.info("Loading cities translit table")
     # подгрузим ограниченный список городов
     city_subset <- read_csv("region.csv")
     
-    if (Sys.info()["sysname"] == "Linux") {
-      # CTI стенд
-      con <- dbConnect(clickhouse(), host="172.16.33.74", port=8123L, user="default", password="")
-    }else{
-      # MT стенд
-      con <- dbConnect(clickhouse(), host="10.0.0.44", port=8123L, user="default", password="")
-    }    
-    
-    
     df <- req(dbGetQuery(con, "SELECT * FROM regnames")  %>%
                 mutate_if(is.character, `Encoding<-`, "UTF-8") %>%
                 filter(translit %in% pull(city_subset)))
     flog.info(paste0("Cities translit table loaded ", nrow(df), " rows"))
-    dbDisconnect(con)
+    # dbDisconnect(con)
     df
   }
   
@@ -177,13 +178,6 @@ server <- function(input, output, session) {
   raw_df <- reactive({
     input$process_btn # обновлять будем вручную
     isolate({
-      if (Sys.info()["sysname"] == "Linux") {
-        # CTI стенд
-        con <- dbConnect(clickhouse(), host="172.16.33.74", port=8123L, user="default", password="")
-      }else{
-        # MT стенд
-        con <- dbConnect(clickhouse(), host="10.0.0.44", port=8123L, user="default", password="")
-      }    
       
       # regions <- c("Moskva", "Barnaul")
       regions <- input$region_filter
@@ -225,7 +219,7 @@ server <- function(input, output, session) {
       # select(region=russian, everything())
 
     # browser()
-    dbDisconnect(con)
+    # dbDisconnect(con)
     as_tibble(df)
   })  
 
@@ -276,6 +270,18 @@ server <- function(input, output, session) {
     }
   )
   
+  # управляем визуализацией кнопок выгрузки ----- 
+  observe({
+    # browser()
+    if(nrow(cur_df())>0) {
+      shinyjs::enable("csv_download_btn")
+      shinyjs::enable("word_download_btn")
+    } else {
+      shinyjs::disable("csv_download_btn")
+      shinyjs::disable("word_download_btn")
+    }
+  })  
+  
   # служебный вывод ---------------------  
   output$info_text <- renderText({
     msg()
@@ -318,7 +324,8 @@ server <- function(input, output, session) {
       name
     },
     content = function(file) {
-      doc <- cur_df() %>% select(-total_unique_stb) %>%
+      # browser();
+      doc <- cur_df() %>% # select(-total_unique_stb) %>% # пока убираем, чтобы была консистентная подстановка
         gen_word_report(publish_set=font_sizes[["word_A4"]])
       print(doc, target=file)  
     }

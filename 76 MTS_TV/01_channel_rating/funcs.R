@@ -73,12 +73,14 @@ buildReq <- function(begin, end, regions, segment="all"){
 }
 
 # построение гистограммы ТОП 10 по времени просмотра для отчета 'Рейтинг по каналам' ----------------
-plotTop10Duration <- function(df, publish_set){
+plotTop10Duration <- function(df, publish_set, ntop=10){
   
   flog.info(paste0("publish_set is ", capture.output(str(publish_set))))
   # выберем наиболее программы c позиции эфирного времени
   reg_df <- df %>%
-    top_n(10, channel_duration) %>%
+    top_n(ntop, channel_duration) %>%
+# может возникнуть ситуация, когда все значения top_n одинаковы. тогда надо брать выборку
+    filter(row_number()<=ntop) %>%
     arrange(desc(channel_duration)) %>%
     mutate(label=format(channel_duration, big.mark=" "))
 
@@ -102,12 +104,13 @@ plotTop10Duration <- function(df, publish_set){
 }
 
 # построение гистограммы ТОП 10 по количеству уникальных приставок для отчета 'Рейтинг по каналам' ----------------
-plotTop10STB <- function(df, publish_set){
+plotTop10STB <- function(df, publish_set, ntop=10){
   
   flog.info(paste0("publish_set is ", capture.output(str(publish_set))))
   # выберем наиболее программы c позиции эфирного времени
   reg_df <- df %>%
-    top_n(10, unique_stb) %>%
+    top_n(ntop, unique_stb) %>%
+    filter(row_number()<=ntop) %>% # на случай одинаковых значений
     arrange(desc(unique_stb)) %>%
     mutate(label=format(unique_stb, big.mark=" "))    
   
@@ -137,7 +140,8 @@ gen_word_report <- function(df, template_fname, publish_set=NULL){
     return(NULL)
   }
   # считаем данные для вставки -----------------------------------
-  out_df <- df[1:80, ]
+  n_out <- ifelse(nrow(df)<80, nrow(df), 80)
+  out_df <- df %>% filter(row_number() < n_out) 
 
   flog.info(paste0("Word Report generation under ", Sys.info()["sysname"]))
   if (Sys.info()["sysname"] == "Linux") {
@@ -146,7 +150,7 @@ gen_word_report <- function(df, template_fname, publish_set=NULL){
   
   # создаем файл ------------------------------------------
   doc <- read_docx() %>% # read_docx(path="./TV_report_template.docx") %>%
-    body_add_par(value='Первые 80 строк данных', style="heading 1") %>%
+    body_add_par(value=paste0("Первые ", n_out, " строк данных"), style="heading 1") %>%
     body_add_table(value=out_df, style="table_template") %>% 
     body_add_par(value="ТОП 10 по времени просмотра", style="heading 2") %>%
     body_add_gg(value=plotTop10Duration(df, publish_set=publish_set), style = "centered") %>%
