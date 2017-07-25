@@ -25,41 +25,63 @@ hgroup.enum <- function(date, hour_bin=NULL, min_bin=5){
 }
 
 # построение запроса для отчета 'Активность пользователей по регионам' ----------------
-buildReq <- function(begin, end, regs){
-  # bigin, end -- даты; regs -- вектор регионов
-  plain_regs <- stri_join(regs %>% map_chr(~stri_join("'", .x, "'", sep="")), 
-                          sep = " ", collapse=",")
-  # cat(plain_regs)
+buildReq <- function(begin, end, regions, segment="all"){
+  # begin, end -- даты; 
+  # regs -- вектор регионов, если NULL -- то все регионы (в т.ч. на этапе инициализации);
+  # segment -- регион (строка), если "all" -- то все сегменты;
+  # browser()
+  
+  # базисная SQL конструкция для ограничения дат
+  limit_dates <- paste0(" toDate(begin) >= toDate('", begin, "') AND toDate(end) <= toDate('", end, "') ")
+  
+  # добавочная SQL конструкция для ограничения регионов
+  
+  limit_regions <- ifelse(is.null(regions), " ",
+                          stri_join(" AND region IN (", 
+                                    stri_join(regions %>% map_chr(~stri_join("'", .x, "'", sep="")),
+                                              sep = " ", collapse=","),
+                                    ") ", sep = "", collapse=""))
+
+  # добавочная SQL конструкция для ограничения сегментов
+  limit_segments <- ifelse(segment=="all", " ", 
+                            stri_join(" AND segment IN (", 
+                             stri_join(segment %>% map_chr(~stri_join("'", .x, "'", sep="")),
+                                       sep = " ", collapse=","),
+                             ") ", sep = "", collapse=""))
   
   paste(
     "SELECT ",
     # 1. Регион
-    "region, segment, ",
+    "region, ",
     # 2. Кол-во уникальных приставок по каналу
     "uniq(serial) AS unique_stb, ",
     # Кол-во уникальных приставок по всем каналам выбранных регионов
     "( SELECT uniq(serial) ",
     "  FROM genstates ",
-    "  WHERE toDate(begin) >= toDate('", begin, "') AND toDate(end) <= toDate('", end, "') AND region IN (", plain_regs, ") ",
+    "  WHERE ", limit_dates, limit_regions, limit_segments, 
+    "  AND duration>5*60 AND duration <2*60*60 ", # указали жестко длительность, в секундах
     ") AS total_unique_stb, ",  
     # 4. Суммарное время просмотра всеми приставками, мин
-    "sum(duration) AS total_duration, ",
+    "sum(duration)/60 AS total_duration, ",
     # 8. Кол-во событий просмотра
     "count() AS watch_events ",
     "FROM genstates ",
-    "SAMPLE 0.1 ",
-    "WHERE toDate(begin) >= toDate('", begin, "') AND toDate(end) <= toDate('", end, "') AND region IN (", plain_regs, ") ",
-    "GROUP BY region, segment", sep="")
+    # "SAMPLE 0.1 ",
+    "WHERE ", limit_dates, limit_regions, limit_segments,
+    "AND duration>5*60 AND duration <2*60*60 ", # указали жестко длительность, в секундах
+    "GROUP BY region", sep="")
 }
 
 # построение гистограммы ТОП N по времени телесмотрения ----------------
 # для отчета 'Рейтинг пользователей по регионам' 
-plotTop10Duration <- function(df, publish_set){
+plotTop10Duration <- function(df, publish_set, ntop=10){
   
   flog.info(paste0("publish_set is ", capture.output(str(publish_set))))
   # выберем наиболее программы c позиции эфирного времени
   reg_df <- df %>%
-    top_n(10, total_duration) %>%
+    top_n(ntop, total_duration) %>%
+    # может возникнуть ситуация, когда все значения top_n одинаковы. тогда надо брать выборку
+    sample_n(ntop) %>%
     arrange(desc(total_duration)) %>%
     mutate(label=format(total_duration, big.mark=" ")) 
 
@@ -83,15 +105,18 @@ plotTop10Duration <- function(df, publish_set){
 }
 
 # построение гистограммы ТОП 10 по количеству уникальных приставок для отчета 'Рейтинг по каналам' ----------------
-plotTop10STB <- function(df, publish_set){
+plotTop10STB <- function(df, publish_set, ntop=10){
   
   flog.info(paste0("publish_set is ", capture.output(str(publish_set))))
   # выберем наиболее программы c позиции эфирного времени
   reg_df <- df %>%
-    top_n(10, unique_stb) %>%
+    top_n(ntop, unique_stb) %>%
+    # может возникнуть ситуация, когда все значения top_n одинаковы. тогда надо брать выборку
+    sample_n(ntop) %>%
     arrange(desc(unique_stb)) %>%
     mutate(label=format(unique_stb, big.mark=" "))    
   
+  # browser()
   gp <- ggplot(reg_df, aes(fct_reorder(as.factor(region), unique_stb, .desc=FALSE), unique_stb)) +
     geom_bar(fill=brewer.pal(n=9, name="Blues")[4], alpha=0.5, stat="identity") +
     # geom_text(aes(label=label), hjust=+1.1, colour="blue") + # для вертикальных
@@ -143,10 +168,10 @@ colNamesToRus <- function(df){
   # используется исключительно перед выводом
   # локализовано, чтобы гибко подстраивать под возможные пожелания
   # browser()
-  df %>% select(-date, 
+  df %>% select("регион"=region,
                 "кол-во уник. STB"=unique_stb,
                 "всего уник. STB"=total_unique_stb,
-                "суммарное время"=total_duration,
+                "суммарное время, мин"=total_duration,
                 "кол-во просмотров"=watch_events, 
                 "% уник. STB"=stb_ratio
                 )

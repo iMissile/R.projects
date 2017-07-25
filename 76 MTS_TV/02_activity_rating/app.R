@@ -61,6 +61,7 @@ ui <-
   # titlePanel("Статистика телесмотрения"),
   # ----------------
   conditionalPanel(
+    # general panel -----------------------
     condition = "input.tsp == 'general_panel'",
     fluidRow(
       tags$style(type='text/css', '#cweather_text {white-space:pre;}')
@@ -84,15 +85,21 @@ ui <-
       column(1, selectInput("history_depth", "История", 
                             choices = c("1 месяц"=30, "2 недели"=14,
                                         "1 неделя"=7, "3 дня"=3, "1 день"=1), selected=1)),
-      column(1, selectInput("min_watch_time", "Мин. время",
-                            choices = c("5 сек"=5, "10 сек"=10, 
-                                        "20 сек"=20, "30 сек"=30), selected = 10)),
-      column(1, selectInput("max_watch_time", "Макс. время",
-                            choices = c("1 час"=1, "2 часа"=2, 
-                                        "3 часа"=3, "4 часа"=4), selected = 2)),
-      column(2, uiOutput("choose_region")),
+      #column(1, selectInput("min_watch_time", "Мин. время",
+      #                      choices = c("5 сек"=5, "10 сек"=10, 
+      #                                  "20 сек"=20, "30 сек"=30), selected = 10)),
+      #column(1, selectInput("max_watch_time", "Макс. время",
+      #                      choices = c("1 час"=1, "2 часа"=2, 
+      #                                  "3 часа"=3, "4 часа"=4), selected = 2)),
+      column(6, uiOutput("choose_region")),
       column(2, selectInput("segment_filter", "Сегмент",
-                            choices = c("DVB-C", "IPTV", "DVB-S"), selected="DVB-C"))
+                            choices = c("Все"="all",
+                                        "DVB-C"="DVB-C", 
+                                        "IPTV"="IPTV", 
+                                        "DVB-S"="DVB-S"), selected="all"))
+    ),
+    fluidRow(
+      column(12, actionButton("process_btn", "Применить", class = 'rightAlign'))
     ),
 
     #tags$style(type='text/css', "#in_date_range { position: absolute; top: 50%; transform: translateY(-80%); }"),
@@ -114,9 +121,18 @@ ui <-
       tabPanel("График", value = "graph_tab",
                fluidRow(
                  p(),
+                 #column(11, {}),
+                 column(12, div(selectInput("top_num", "Кол-во в ТОП:", 
+                                        choices=c(3, 5, 7, 10, 20), 
+                                         selected=5), 
+                               class='rightAlign'))
+               ),
+               fluidRow(
+                 p(),
                  column(6, div(plotOutput('top10_duration_plot', height="500px"))),
                  column(6, div(plotOutput('top10_stb_plot', height="500px")))
-               ))
+               )
+               )
       )
     #,
     #fluidRow(
@@ -125,6 +141,7 @@ ui <-
     
   )
 )
+
 
 # ================================================================
 server <- function(input, output, session) {
@@ -135,7 +152,7 @@ server <- function(input, output, session) {
   flog.threshold(TRACE)
   flog.info("App started")
 
-  # создание параметров оформления для различных видов графиков (screen\publish)
+  # создание параметров оформления для различных видов графиков (screen\publish) ------
   font_sizes <- list(
     "screen"=list(base_size=20, axis_title_size=18, subtitle_size=15),
     "word_A4"=list(base_size=16, axis_title_size=14, subtitle_size=13)
@@ -160,16 +177,19 @@ server <- function(input, output, session) {
   
   # реактивные переменные -------------------
   raw_df <- reactive({
-    con <- dbConnect(clickhouse(), host="10.0.0.44", port=8123L, user="default", password="")
+    input$process_btn # обновлять будем вручную
+    isolate({
+      con <- dbConnect(clickhouse(), host="10.0.0.44", port=8123L, user="default", password="")
+      # regions <- c("Moskva", "Barnaul")
+      regions <- input$region_filter
+      # browser()
     
-    # regions <- c("Moskva", "Barnaul")
-    regions <- req(input$region_filter)
-    # browser()
-    
-    # r <- buildReq(begin=today(), end=today()+days(1), regions)
-    flog.info(paste0("Applied time filter [", input$in_date_range[1], "; ", input$in_date_range[2], "]"))
-    flog.info(paste0("Applied region filter [", regions, "]"))
-    r <- buildReq(begin=input$in_date_range[1], end=input$in_date_range[2], regions)
+      # r <- buildReq(begin=today(), end=today()+days(1), regions)
+      flog.info(paste0("Applied time filter [", input$in_date_range[1], "; ", input$in_date_range[2], "]"))
+      flog.info(paste0("Applied region filter [", regions, "]"))
+      r <- buildReq(begin=input$in_date_range[1], end=input$in_date_range[2], 
+                    regions=regions, segment=input$segment_filter)
+    })
     
     # browser()
 
@@ -184,7 +204,7 @@ server <- function(input, output, session) {
     # browser()
     df <- temp_df %>%
       # время смотрения, мин
-      mutate(total_duration=round(as.numeric(total_duration), 1)) %>%
+      mutate(total_duration=round(as.numeric(total_duration), 0)) %>%
       # 3. % уникальных приставок
       mutate(stb_ratio=round(unique_stb/total_unique_stb, 3)) %>%
       left_join(cities_df, by=c("region"="translit")) %>%
@@ -197,19 +217,14 @@ server <- function(input, output, session) {
   })  
 
   cur_df <- reactive({
-    # browser()
-    # t <- input$min_watch_time
-    # req(raw_df()) %>%
-    #  mutate(date=anydate(timestamp)) %>%
-    #  filter(input$in_date_range[1] < date  & date < input$in_date_range[2])
-    req(raw_df() %>%
-      filter(segment==input$segment_filter)) %>%
-      select(region, segment, everything())
+    req(raw_df()) %>%
+      # filter(segment==input$segment_filter) %>%
+      select(region, everything())
   })
   
   msg <- reactiveVal("")
 
-  # таблица с выборкой по каналам
+  # таблица с выборкой по каналам ----------------------------
   output$stat_table <- DT::renderDataTable({
     # https://rstudio.github.io/DT/functions.html
     # browser()
@@ -218,18 +233,20 @@ server <- function(input, output, session) {
                   rownames=FALSE,
                   filter = 'bottom',
                   options=list(dom='fltip', pageLength=7, lengthMenu=c(5, 7, 10, 15),
-                               order=list(list(3, 'desc'))))# %>%
-      # DT::formatPercentage("% врем. просмотра", 2)
+                               order=list(list(3, 'desc')))) %>%
+      DT::formatPercentage("% уник. STB", 2)
     })
   
   # график Топ10 каналов по суммарному времени просмотра -------------
   output$top10_duration_plot <-renderPlot({
-    plotTop10Duration(cur_df(), publish_set=font_sizes[["screen"]])
+    plotTop10Duration(cur_df(), publish_set=font_sizes[["screen"]], 
+                      ntop=as.integer(input$top_num))
   })
   
   # график Топ10 каналов по количеству уникальных приставок --------------
   output$top10_stb_plot <-renderPlot({
-    plotTop10STB(cur_df(), publish_set=font_sizes[["screen"]])
+    plotTop10STB(cur_df(), publish_set=font_sizes[["screen"]], 
+                 ntop=as.integer(input$top_num))
   })  
 
   # динамическое управление диапазоном дат ---------
@@ -260,7 +277,7 @@ server <- function(input, output, session) {
     selectInput("region_filter", 
                 paste0("Регион (", length(data), ")"),
                 multiple=TRUE,
-                choices=data)
+                choices=data, width = "100%")
   })
 
   # обработчики кнопок выгрузки файлов --------------------------------------------------
