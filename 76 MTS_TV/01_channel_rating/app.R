@@ -61,6 +61,7 @@ ui <-
   # titlePanel("Статистика телесмотрения"),
   # ----------------
   conditionalPanel(
+    # general panel -----------------------
     condition = "input.tsp == 'general_panel'",
     fluidRow(
       tags$style(type='text/css', '#cweather_text {white-space:pre;}')
@@ -92,13 +93,15 @@ ui <-
       #                                  "3 часа"=3, "4 часа"=4), selected = 2)),
       column(6, uiOutput("choose_region")),
       column(2, selectInput("segment_filter", "Сегмент",
-                            choices = c("DVB-C", "IPTV", "DVB-S"), selected="DVB-C"))
+                            choices = c("Все"="all",
+                                        "DVB-C"="DVB-C", 
+                                        "IPTV"="IPTV", 
+                                        "DVB-S"="DVB-S"), selected="all"))
     ),
     fluidRow(
       column(12, actionButton("process_btn", "Применить", class = 'rightAlign'))
       ),
 
-    
     #tags$style(type='text/css', "#in_date_range { position: absolute; top: 50%; transform: translateY(-80%); }"),
     tabsetPanel(
       id = "panel_id",
@@ -130,6 +133,7 @@ ui <-
   )
 )
 
+
 # ================================================================
 server <- function(input, output, session) {
   # статические переменные ------------------------------------------------
@@ -139,7 +143,7 @@ server <- function(input, output, session) {
   flog.threshold(TRACE)
   flog.info("App started")
 
-  # создание параметров оформления для различных видов графиков (screen\publish)
+  # создание параметров оформления для различных видов графиков (screen\publish) ------
   font_sizes <- list(
     "screen"=list(base_size=20, axis_title_size=18, subtitle_size=15),
     "word_A4"=list(base_size=16, axis_title_size=14, subtitle_size=13)
@@ -175,7 +179,8 @@ server <- function(input, output, session) {
       # r <- buildReq(begin=today(), end=today()+days(1), regions)
       flog.info(paste0("Applied time filter [", input$in_date_range[1], "; ", input$in_date_range[2], "]"))
       flog.info(paste0("Applied region filter [", regions, "]"))
-      r <- buildReq(begin=input$in_date_range[1], end=input$in_date_range[2], regions)
+      r <- buildReq(begin=input$in_date_range[1], end=input$in_date_range[2], 
+                    regions=regions, segment=input$segment_filter)
     })
     
     # browser()
@@ -191,20 +196,20 @@ server <- function(input, output, session) {
     # browser()
     df <- temp_df %>%
       # время смотрения, мин
-      mutate(channel_duration=round(as.numeric(channel_duration), 1)) %>%
+      mutate(channel_duration=round(as.numeric(channel_duration), 0)) %>%
       # 6. Среднее время просмотра, мин
       mutate(mean_duration=round(channel_duration/watch_events, 0)) %>%
       # 3. % уникальных приставок
       mutate(stb_ratio=round(unique_stb/total_unique_stb, 3)) %>%
       # 5. % времени просмотра
-      mutate(watch_ratio=round(channel_duration/sum(channel_duration),5)) %>%
+      mutate(watch_ratio=round(channel_duration/sum(channel_duration), 5)) %>%
       # 7. Среднее суммарное время просмотра одной приставкой за период, мин
-      mutate(duration_per_stb=round(channel_duration/unique_stb, 0)) %>%
+      mutate(duration_per_stb=round(channel_duration/unique_stb, 0))
       # %>% mutate_at(vars(mean_duration, ratio_per_stb, watch_ratio, duration_per_stb), funs(round), digits=1)
       # удалим транслит и будем далее использовать русское название
-      left_join(cities_df, by=c("region"="translit")) %>%
-      select(-region) %>% 
-      select(region=russian, everything())
+      # left_join(cities_df, by=c("region"="translit")) %>%
+      # select(-region) %>% 
+      # select(region=russian, everything())
 
     # browser()
     dbDisconnect(con)
@@ -214,7 +219,7 @@ server <- function(input, output, session) {
   cur_df <- reactive({
     req(raw_df()) %>%
       # filter(segment==input$segment_filter) %>%
-      select(channelId, region, segment, everything())
+      select(channelId, everything())
   })
   
   msg <- reactiveVal("")
@@ -229,7 +234,8 @@ server <- function(input, output, session) {
                   filter = 'bottom',
                   options=list(dom='fltip', pageLength=7, lengthMenu=c(5, 7, 10, 15),
                                order=list(list(3, 'desc')))) %>%
-      DT::formatPercentage("% врем. просмотра", 2)
+      DT::formatPercentage("% врем. просмотра", 2) %>%
+      DT::formatPercentage("% уник. STB", 2)
     })
   
   # график Топ10 каналов по суммарному времени просмотра -------------
