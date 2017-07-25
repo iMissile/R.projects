@@ -81,12 +81,12 @@ buildReq <- function(begin, end, regs){
   # 1. Ќазвание канала и регион (важно дл€ множественного выбора)
   "channelId, region, ",
   # 2.  ол-во уникальных приставок по каналу
-  "uniq(serial) AS unique_tvbox, ",
+  "uniq(serial) AS unique_stb, ",
   #  ол-во уникальных приставок по всем каналам
   "( SELECT uniq(serial) ",
   "  FROM genstates ",
   "  WHERE toDate(begin) >= toDate('", begin, "') AND toDate(end) <= toDate('", end, "') AND region IN (", plain_regs, ") ",
-  ") AS total_unique_tvbox, ",  
+  ") AS total_unique_stb, ",  
   # 4. —уммарное врем€ просмотра всеми приставками, мин
   "sum(duration) AS channel_duration, ",
   # 8.  ол-во событий просмотра
@@ -103,11 +103,11 @@ df <- dbGetQuery(con, r) %>%
   # 6. —реднее врем€ просмотра, мин
   mutate(mean_duration=channel_duration/watch_events) %>%
   # 3. % уникальных приставок
-  mutate(ratio_per_tv_box=unique_tvbox/total_unique_tvbox) %>%
+  mutate(ratio_per_tv_box=unique_stb/total_unique_stb) %>%
   # 5. % времени просмотра
   mutate(watch_ratio=channel_duration/sum(channel_duration)) %>%
   # 7. —реднее суммарное врем€ просмотра одной приставкой за период, мин
-  mutate(duration_per_tvbox=channel_duration/unique_tvbox) %>%
+  mutate(duration_per_stb=channel_duration/unique_stb) %>%
   left_join(cities_df, by=c("region"="translit"))
 }
 

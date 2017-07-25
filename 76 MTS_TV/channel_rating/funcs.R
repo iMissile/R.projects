@@ -36,12 +36,12 @@ buildReq <- function(begin, end, regs){
     # 1. Название канала и регион (важно для множественного выбора)
     "channelId, region, segment, ",
     # 2. Кол-во уникальных приставок по каналу
-    "uniq(serial) AS unique_tvbox, ",
+    "uniq(serial) AS unique_stb, ",
     # Кол-во уникальных приставок по всем каналам
     "( SELECT uniq(serial) ",
     "  FROM genstates ",
     "  WHERE toDate(begin) >= toDate('", begin, "') AND toDate(end) <= toDate('", end, "') AND region IN (", plain_regs, ") ",
-    ") AS total_unique_tvbox, ",  
+    ") AS total_unique_stb, ",  
     # 4. Суммарное время просмотра всеми приставками, мин
     "sum(duration) AS channel_duration, ",
     # 8. Кол-во событий просмотра
@@ -86,11 +86,11 @@ plotTop10Unique <- function(df, publish_set){
   flog.info(paste0("publish_set is ", capture.output(str(publish_set))))
   # выберем наиболее программы c позиции эфирного времени
   reg_df <- df %>%
-    top_n(10, unique_tvbox) %>%
-    arrange(desc(unique_tvbox)) %>%
-    mutate(label=format(unique_tvbox, big.mark=" "))    
+    top_n(10, unique_stb) %>%
+    arrange(desc(unique_stb)) %>%
+    mutate(label=format(unique_stb, big.mark=" "))    
   
-  gp <- ggplot(reg_df, aes(fct_reorder(as.factor(channelId), unique_tvbox, .desc=FALSE), unique_tvbox)) +
+  gp <- ggplot(reg_df, aes(fct_reorder(as.factor(channelId), unique_stb, .desc=FALSE), unique_stb)) +
     geom_bar(fill=brewer.pal(n=9, name="Blues")[4], alpha=0.5, stat="identity") +
     # geom_text(aes(label=label), hjust=+1.1, colour="blue") + # для вертикальных
     geom_label(aes(label=label), fill="white", colour="black", fontface="bold", hjust=+1.1) +
@@ -144,13 +144,13 @@ colNamesToRus <- function(df){
                 "канал"=channelId, 
                 # 'Сегмент'=segment, 
                 # 'Регион'=region, 
-                "кол-во уник. STB"=unique_tvbox,
-                "всего уник. STB"=total_unique_tvbox,
+                "кол-во уник. STB"=unique_stb,
+                "всего уник. STB"=total_unique_stb,
                 "суммарное время"=channel_duration,
                 "кол-во просмотров"=watch_events, 
                 "ср. время просмотра"=mean_duration,
-                "% уник. STB"=ratio_per_tvbox,
+                "% уник. STB"=ratio_per_stb,
                 "% врем. просмотра"=watch_ratio,
-                "ср. время просм. 1 STB за период"=duration_per_tvbox)
+                "ср. время просм. 1 STB за период"=duration_per_stb)
   
 }
