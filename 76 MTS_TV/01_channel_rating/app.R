@@ -72,11 +72,10 @@ ui <-
       ),
     fluidRow(
       column(2, dateRangeInput("in_date_range",
-                               label = "Диапазон дат",
-                               # start = Sys.Date() - 3, end = Sys.Date(),
+                               label="Диапазон дат",
+                               start=Sys.Date()-1, end=Sys.Date(),
                                # на время отладки
-                               start  = "2017-06-28",
-                               end    = "2017-06-30",
+                               # start="2017-06-28", end="2017-06-30",
                                # min = Sys.Date() - 10, 
                                max = Sys.Date(),
                                separator = " - ", format = "dd/mm/yy",
@@ -99,7 +98,8 @@ ui <-
                                         "DVB-S"="DVB-S"), selected="all"))
     ),
     fluidRow(
-      column(12, actionButton("process_btn", "Применить", class = 'rightAlign'))
+      column(10, actionButton("set_test_dates_btn", "Вкл. демо дату", class = 'rightAlign')),
+      column(2, actionButton("process_btn", "Применить", class = 'rightAlign'))
       ),
 
     #tags$style(type='text/css', "#in_date_range { position: absolute; top: 50%; transform: translateY(-80%); }"),
@@ -155,7 +155,14 @@ server <- function(input, output, session) {
     # подгрузим ограниченный список городов
     city_subset <- read_csv("region.csv")
     
-    con <- dbConnect(clickhouse(), host="10.0.0.44", port=8123L, user="default", password="")
+    if (Sys.info()["sysname"] == "Linux") {
+      # CTI стенд
+      con <- dbConnect(clickhouse(), host="172.16.33.74", port=8123L, user="default", password="")
+    }else{
+      # MT стенд
+      con <- dbConnect(clickhouse(), host="10.0.0.44", port=8123L, user="default", password="")
+    }    
+    
     
     df <- req(dbGetQuery(con, "SELECT * FROM regnames")  %>%
                 mutate_if(is.character, `Encoding<-`, "UTF-8") %>%
@@ -170,8 +177,14 @@ server <- function(input, output, session) {
   raw_df <- reactive({
     input$process_btn # обновлять будем вручную
     isolate({
-      con <- dbConnect(clickhouse(), host="10.0.0.44", port=8123L, user="default", password="")
-    
+      if (Sys.info()["sysname"] == "Linux") {
+        # CTI стенд
+        con <- dbConnect(clickhouse(), host="172.16.33.74", port=8123L, user="default", password="")
+      }else{
+        # MT стенд
+        con <- dbConnect(clickhouse(), host="10.0.0.44", port=8123L, user="default", password="")
+      }    
+      
       # regions <- c("Moskva", "Barnaul")
       regions <- input$region_filter
       # browser()
@@ -250,12 +263,17 @@ server <- function(input, output, session) {
 
   # динамическое управление диапазоном дат ---------
   observeEvent(input$history_depth, {
-    
-    # почему-то $history_depth получаем как строку
+    # $history_depth получаем как строку
     date <- Sys.Date()-as.numeric(input$history_depth)
     flog.info(paste0("Start date changed to  ", date))
     # updateDateRangeInput(session, "in_date_range", start=date)
-   }
+    }
+  )
+
+  # фиксим даты на демо диапазон ---------  
+  observeEvent(input$set_test_dates_btn, {
+    updateDateRangeInput(session, "in_date_range", start="2017-05-28", end="2017-05-30")
+    }
   )
   
   # служебный вывод ---------------------  
