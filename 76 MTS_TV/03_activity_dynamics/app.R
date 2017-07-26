@@ -5,6 +5,7 @@ gc()
 
 library(tidyverse)
 library(lubridate)
+library(scales)
 library(forcats)
 library(readxl)
 library(magrittr)
@@ -96,7 +97,11 @@ ui <-
                             choices = c("Все"="all",
                                         "DVB-C"="DVB-C", 
                                         "IPTV"="IPTV", 
-                                        "DVB-S"="DVB-S"), selected="all"))
+                                        "DVB-S"="DVB-S"), selected="all")),
+      column(1, selectInput("top_num", "Кол-во в ТОП:", 
+                            choices=c(3, 5, 7, 10, 20), selected=5)
+             )
+      
     ),
     fluidRow(
       column(10, actionButton("set_test_dates_btn", "Вкл. демо дату", class = 'rightAlign')),
@@ -110,6 +115,10 @@ ui <-
       tabPanel("Таблица", value = "table_tab",
                fluidRow(
                  p(),
+                 column(12, div(checkboxInput("long_wide_cbx", "Long форма", TRUE), 
+                                class='rightAlign'))
+               ),
+               fluidRow(
                  column(12, div(withSpinner(DT::dataTableOutput('stat_table'))), style="font-size: 90%")
                ),
                p(),
@@ -122,17 +131,9 @@ ui <-
       tabPanel("График", value = "graph_tab",
                fluidRow(
                  p(),
-                 #column(11, {}),
-                 column(12, div(selectInput("top_num", "Кол-во в ТОП:", 
-                                        choices=c(3, 5, 7, 10, 20), 
-                                         selected=5), 
-                               class='rightAlign'))
-               ),
-               fluidRow(
-                 p(),
-                 column(6, div(withSpinner(plotOutput('top10_duration_plot', height="500px")))),
-                 column(6, div(withSpinner(plotOutput('top10_stb_plot', height="500px"))))
-               )
+                 column(6, div(withSpinner(plotOutput('top10_left_plot', height="500px")))),
+                 column(6, div(withSpinner(plotOutput('top10_right_plot', height="500px"))))
+                 )
                )
       )
     #,
@@ -157,7 +158,7 @@ server <- function(input, output, session) {
   # создание параметров оформления для различных видов графиков (screen\publish) ------
   font_sizes <- list(
     "screen"=list(base_size=20, axis_title_size=18, subtitle_size=15),
-    "word_A4"=list(base_size=16, axis_title_size=14, subtitle_size=13)
+    "word_A4"=list(base_size=14, axis_title_size=12, subtitle_size=11)
   )
   
   # создаем коннект к инстансу CH -----------
@@ -189,6 +190,7 @@ server <- function(input, output, session) {
     input$process_btn # обновлять будем вручную
     
     isolate({
+      top_num <- input$top_num
       # regions <- c("Moskva", "Barnaul")
       # browser()
       regions <- input$region_filter
@@ -197,13 +199,13 @@ server <- function(input, output, session) {
       flog.info(paste0("Applied region filter [", regions, "]"))
       # сначала запрашиваем ТОП 20 каналов
       r <- buildReqGetTop(begin=input$in_date_range[1], end=input$in_date_range[2],
-                          regions=regions, segment=input$segment_filter)
+                          regions=regions, segment=input$segment_filter, top=top_num)
     
-      # запрос Топ-20 каналов
+      # запрос Топ-N каналов
       tic()
       temp_df <- dbGetQuery(con, r) %>%
         as_tibble()
-      flog.info(paste0("Query Top 20: ", capture.output(toc())))
+      flog.info(paste0("Query for Top ", top_num, " channels: ", capture.output(toc())))
       flog.info(paste0("Loaded ", nrow(temp_df), " rows"))
       
       # если каналов вообще нет, выбрасываем NULL
@@ -222,8 +224,9 @@ server <- function(input, output, session) {
                            segment=input$segment_filter)
 
       tic()
+      browser()
       temp_df <- dbGetQuery(con, r)
-      flog.info(paste0("Query by Top 20 channels: ", capture.output(toc())))
+      flog.info(paste0("Query by specific Top ", top_num, " channels: ", capture.output(toc())))
       flog.info(paste0("Loaded ", nrow(temp_df), " rows"))    
     })
     
@@ -251,6 +254,12 @@ server <- function(input, output, session) {
   output$stat_table <- DT::renderDataTable({
     df <- req(cur_df())
     
+    # проверяем форму представления и модифицируем, если надо
+    if(!input$long_wide_cbx){
+      df %<>% select(-timestamp, -channel_duration) %>%
+        spread(timegroup, watch_events)
+    }
+    
     colnames_df <- getRusColnames(df)
     # https://stackoverflow.com/questions/39970097/tooltip-or-popover-in-shiny-datatables-for-row-names
     colheader <- htmltools::withTags(
@@ -262,25 +271,31 @@ server <- function(input, output, session) {
     
     # browser()
     # https://rstudio.github.io/DT/functions.html
-    DT::datatable(df,
+    dt <- DT::datatable(df,
                   rownames=FALSE,
                   filter='bottom',
                   # только после жесткой фиксации колонок
                   container=colheader,
                   options=list(dom='fltip', pageLength=7, lengthMenu=c(5, 7, 10, 15),
-                               order=list(list(3, 'desc'))))#  %>%
-      # DT::formatPercentage("stb_ratio", 2)
+                               order=list(list(2, 'desc'))))
+    
+    # проверяем форму представления и модифицируем, если надо
+    if(input$long_wide_cbx){
+      dt %<>% DT::formatDate("timegroup", method="toLocaleString")
+      }
+    
+      dt
     })
   
-  # график Топ10 каналов по суммарному времени просмотра -------------
-  output$top10_duration_plot <- renderPlot({
-    plotTop10Duration(cur_df(), publish_set=font_sizes[["screen"]], 
+  # левый график  -------------
+  output$top10_left_plot <- renderPlot({
+    plotLineplotActivity(cur_df(), publish_set=font_sizes[["screen"]], 
                       ntop=as.integer(input$top_num))
   })
   
-  # график Топ10 каналов по количеству уникальных приставок --------------
-  output$top10_stb_plot <-renderPlot({
-    plotTop10STB(cur_df(), publish_set=font_sizes[["screen"]], 
+  # правый график --------------
+  output$top10_right_plot <-renderPlot({
+    plotAreaplotActivity(cur_df(), publish_set=font_sizes[["screen"]], 
                  ntop=as.integer(input$top_num))
   })  
 
@@ -295,7 +310,7 @@ server <- function(input, output, session) {
 
   # фиксим даты на демо диапазон ---------  
   observeEvent(input$set_test_dates_btn, {
-    updateDateRangeInput(session, "in_date_range", start="2017-05-28", end="2017-05-30")
+    updateDateRangeInput(session, "in_date_range", start="2017-06-15", end="2017-06-16")
     }
   )
   
@@ -336,7 +351,7 @@ server <- function(input, output, session) {
   # выгрузка таблицы в CSV -----------------------  
   output$csv_download_btn <- downloadHandler(
     filename = function() {
-      paste0("user_activity_data-", Sys.Date(), ".csv", sep="")
+      paste0("user_dynamics_data-", Sys.Date(), ".csv", sep="")
     },
     content = function(file) {
       cur_df() %>%
@@ -348,7 +363,7 @@ server <- function(input, output, session) {
   # выгрузка таблицы в Word -----------------------
   output$word_download_btn <- downloadHandler(
     filename = function() {
-      name <- paste0("user_activity_report-", Sys.Date(), ".docx", sep="")
+      name <- paste0("user_dynamics_report-", Sys.Date(), ".docx", sep="")
       flog.info(paste0("Word report: '", name, "'"))
       name
     },
