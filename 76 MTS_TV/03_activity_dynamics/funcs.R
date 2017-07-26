@@ -24,52 +24,78 @@ hgroup.enum <- function(date, hour_bin=NULL, min_bin=5){
   dt
 }
 
-# построение запроса для отчета 'Рейтинг по каналам' ----------------
-buildReq <- function(begin, end, regions, segment="all"){
+# конструирование ограничений запроса по данным фильтров
+buildReqLimits <- function(begin, end, regions, segment) {
+  # базисная SQL конструкция для ограничения дат ----
+  limit_dates <- paste0(" toDate(begin) >= toDate('", begin, "') AND toDate(end) <= toDate('", end, "') ")
+  
+  # добавочная SQL конструкция для ограничения регионов -----
+  
+  limit_regions <- ifelse(is.null(regions), " ",
+                          stri_join(" AND region IN (", 
+                                    stri_join(regions %>% map_chr(~stri_join("'", .x, "'", sep="")),
+                                              sep = " ", collapse=","),
+                                    ") ", sep = "", collapse=""))
+  
+  # добавочная SQL конструкция для ограничения сегментов -----
+  limit_segments <- ifelse(segment=="all", " ", 
+                           stri_join(" AND segment IN (", 
+                                     stri_join(segment %>% map_chr(~stri_join("'", .x, "'", sep="")),
+                                               sep = " ", collapse=","),
+                                     ") ", sep = "", collapse=""))
+  
+  paste0(limit_dates, limit_regions, limit_segments)
+}
+
+# построение запроса для отчета 'Динамика пользовательской активности' ----------------
+buildReqGetTop <- function(begin, end, regions, segment="all"){
+  #' считаем ТОП 20 каналов по общему количеству событий при заданных фильтрах
   # begin, end -- даты; 
   # regs -- вектор регионов, если NULL -- то все регионы (в т.ч. на этапе инициализации);
   # segment -- регион (строка), если "all" -- то все сегменты;
   # browser()
   
-  # базисная SQL конструкция для ограничения дат
-  limit_dates <- paste0(" toDate(begin) >= toDate('", begin, "') AND toDate(end) <= toDate('", end, "') ")
-  
-  # добавочная SQL конструкция для ограничения регионов
-  
-  limit_regions <- ifelse(is.null(regions), " ",
-                          stri_join(" AND region IN (", 
-                             stri_join(regions %>% map_chr(~stri_join("'", .x, "'", sep="")),
-                                       sep = " ", collapse=","),
-                                    ") ", sep = "", collapse=""))
-
-  # добавочная SQL конструкция для ограничения сегментов
-  limit_segments <- ifelse(segment=="all", " ", 
-                            stri_join(" AND segment IN (", 
-                             stri_join(segment %>% map_chr(~stri_join("'", .x, "'", sep="")),
-                                       sep = " ", collapse=","),
-                             ") ", sep = "", collapse=""))
+  limits <- buildReqLimits(begin, end, regions, segment)
   
   paste(
     "SELECT ",
-    # 1. Название канала
-    "channelId, ",
-    # 2. Кол-во уникальных приставок по каналу
-    "uniq(serial) AS unique_stb, ",
-    # Кол-во уникальных приставок по всем каналам выбранных регионов
-    "( SELECT uniq(serial) ",
-    "  FROM genstates ",
-    "  WHERE ", limit_dates, limit_regions, limit_segments, 
-    "  AND duration>5*60 AND duration <2*60*60 ", # указали жестко длительность, в секундах
-    ") AS total_unique_stb, ",  
-    # 4. Суммарное время просмотра всеми приставками, мин
-    "sum(duration)/60 AS channel_duration, ",
-    # 8. Кол-во событий просмотра
+    # 1. Временной интервал (как строка)
+    "toDateTime(intDiv(toUInt32(begin), ", interval*60, ") *", interval*60, ") AS timestamp, ",
+    # 2. Временной интервал (как целое)
+    "toUInt32(timestamp) AS timegroup, ",
+    # 3. Кол-во событий телесмотрения
     "count() AS watch_events ",
     "FROM genstates ",
     # "SAMPLE 0.1 ",
-    "WHERE ", limit_dates, limit_regions, limit_segments,
+    "WHERE ", limits,
     "AND duration>5*60 AND duration <2*60*60 ", # указали жестко длительность, в секундах
-    "GROUP BY channelId", sep="")
+    "GROUP BY timestamp ",
+    "ORDER BY timestamp DESC", sep="")
+}
+
+buildReq <- function(begin, end, interval=5, regions, segment="all"){
+  # begin, end -- даты; 
+  # interval -- временной интервал агрегации, в минутах
+  # regs -- вектор регионов, если NULL -- то все регионы (в т.ч. на этапе инициализации);
+  # segment -- регион (строка), если "all" -- то все сегменты;
+  # browser()
+  
+  limits <- buildReqLimits(begin, end, regions, segment)
+
+  paste(
+    "SELECT ",
+    # 1. Временной интервал (как строка)
+    "toDateTime(intDiv(toUInt32(begin), ", interval*60, ") *", interval*60, ") AS timestamp, ",
+    # 2. Временной интервал (как целое)
+    "toUInt32(timestamp) AS timegroup, ",
+    # 3. Кол-во событий телесмотрения
+    "count() AS watch_events ",
+    "FROM genstates ",
+    # "SAMPLE 0.1 ",
+    "WHERE ", limits,
+    "AND duration>5*60 AND duration <2*60*60 ", # указали жестко длительность, в секундах
+    "GROUP BY timestamp ",
+    "ORDER BY timestamp DESC", sep="")
 }
 
 # построение гистограммы ТОП 10 по времени просмотра для отчета 'Рейтинг по каналам' ----------------

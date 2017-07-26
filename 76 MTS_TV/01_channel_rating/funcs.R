@@ -24,6 +24,29 @@ hgroup.enum <- function(date, hour_bin=NULL, min_bin=5){
   dt
 }
 
+# конструирование ограничений запроса по данным фильтров
+buildReqLimits <- function(begin, end, regions, segment) {
+  # базисная SQL конструкция для ограничения дат ----
+  limit_dates <- paste0(" toDate(begin) >= toDate('", begin, "') AND toDate(end) <= toDate('", end, "') ")
+  
+  # добавочная SQL конструкция для ограничения регионов -----
+  
+  limit_regions <- ifelse(is.null(regions), " ",
+                          stri_join(" AND region IN (", 
+                                    stri_join(regions %>% map_chr(~stri_join("'", .x, "'", sep="")),
+                                              sep = " ", collapse=","),
+                                    ") ", sep = "", collapse=""))
+  
+  # добавочная SQL конструкция для ограничения сегментов -----
+  limit_segments <- ifelse(segment=="all", " ", 
+                           stri_join(" AND segment IN (", 
+                                     stri_join(segment %>% map_chr(~stri_join("'", .x, "'", sep="")),
+                                               sep = " ", collapse=","),
+                                     ") ", sep = "", collapse=""))
+  
+  paste0(limit_dates, limit_regions, limit_segments)
+}
+
 # построение запроса для отчета 'Рейтинг по каналам' ----------------
 buildReq <- function(begin, end, regions, segment="all"){
   # begin, end -- даты; 
@@ -31,24 +54,8 @@ buildReq <- function(begin, end, regions, segment="all"){
   # segment -- регион (строка), если "all" -- то все сегменты;
   # browser()
   
-  # базисная SQL конструкция для ограничения дат
-  limit_dates <- paste0(" toDate(begin) >= toDate('", begin, "') AND toDate(end) <= toDate('", end, "') ")
-  
-  # добавочная SQL конструкция для ограничения регионов
-  
-  limit_regions <- ifelse(is.null(regions), " ",
-                          stri_join(" AND region IN (", 
-                             stri_join(regions %>% map_chr(~stri_join("'", .x, "'", sep="")),
-                                       sep = " ", collapse=","),
-                                    ") ", sep = "", collapse=""))
+  limits <- buildReqLimits(begin, end, regions, segment)
 
-  # добавочная SQL конструкция для ограничения сегментов
-  limit_segments <- ifelse(segment=="all", " ", 
-                            stri_join(" AND segment IN (", 
-                             stri_join(segment %>% map_chr(~stri_join("'", .x, "'", sep="")),
-                                       sep = " ", collapse=","),
-                             ") ", sep = "", collapse=""))
-  
   paste(
     "SELECT ",
     # 1. Название канала
@@ -58,7 +65,7 @@ buildReq <- function(begin, end, regions, segment="all"){
     # Кол-во уникальных приставок по всем каналам выбранных регионов
     "( SELECT uniq(serial) ",
     "  FROM genstates ",
-    "  WHERE ", limit_dates, limit_regions, limit_segments, 
+    "  WHERE ", limits, 
     "  AND duration>5*60 AND duration <2*60*60 ", # указали жестко длительность, в секундах
     ") AS total_unique_stb, ",  
     # 4. Суммарное время просмотра всеми приставками, мин
@@ -67,7 +74,7 @@ buildReq <- function(begin, end, regions, segment="all"){
     "count() AS watch_events ",
     "FROM genstates ",
     # "SAMPLE 0.1 ",
-    "WHERE ", limit_dates, limit_regions, limit_segments,
+    "WHERE ", limits,
     "AND duration>5*60 AND duration <2*60*60 ", # указали жестко длительность, в секундах
     "GROUP BY channelId", sep="")
 }

@@ -1,5 +1,6 @@
 library(tidyverse)
 library(lubridate)
+library(scales)
 library(magrittr)
 library(forcats)
 library(ggrepel)
@@ -20,37 +21,9 @@ library(config)
 
 
 source("clickhouse.R")
+# getwd()
+eval(parse("funcs.R", encoding="UTF-8"))
 
-# загрузка 
-publishToSQL <- function(clean_df) {
-  # делаем экспорт в PostgreSQL ---------------------
-  # Connect to a specific postgres database
-  
-  if (Sys.info()["sysname"] == "Windows") {
-    dw <- config::get("media-tel")
-  }else{
-    dw <- config::get("cti")
-  }
-  
-  # dbConnect из RPostgreSQL
-  con <- dbConnect(dbDriver(dw$driver),
-                   host = dw$host,
-                   user = dw$uid,
-                   password = dw$pwd,
-                   port = dw$port,
-                   dbname = dw$database
-  )
-  dbWriteTable(con, "tv_list", clean_df, overwrite = TRUE)
-  
-  # # принудительно загоняем кодировку сгруженных данных в unicode
-  # m <- dbReadTable(con, "tv_list") %>%
-  # mutate_if(is.character, `Encoding<-`, "UTF-8")
-  
-  dbDisconnect(con)
-}
-
-# подгружаем тестовые данные из CH
-if (TRUE){
 con <- dbConnect(clickhouse(), host="10.0.0.44", port=8123L, user="default", password="")
 
 tt4 <- dbGetQuery(con, "SHOW TABLES")
@@ -70,99 +43,112 @@ cities_df <- req(
 # m <- as.list(cities_df$translit)
 # names(m) <- cities_df$russian
 
-buildReq <- function(begin, end, regs){
-  # bigin, end -- даты; regs -- вектор регионов
-  plain_regs <- stri_join(regions %>% map_chr(~stri_join("'", .x, "'", sep="")), 
-                          sep = " ", collapse=",")
-  cat(plain_regs)
-  
-  paste(
-  "SELECT ",
-  # 1. Название канала и регион (важно для множественного выбора)
-  "channelId, region, ",
-  # 2. Кол-во уникальных приставок по каналу
-  "uniq(serial) AS unique_stb, ",
-  # Кол-во уникальных приставок по всем каналам
-  "( SELECT uniq(serial) ",
-  "  FROM genstates ",
-  "  WHERE toDate(begin) >= toDate('", begin, "') AND toDate(end) <= toDate('", end, "') AND region IN (", plain_regs, ") ",
-  ") AS total_unique_stb, ",  
-  # 4. Суммарное время просмотра всеми приставками, мин
-  "sum(duration) AS channel_duration, ",
-  # 8. Кол-во событий просмотра
-  "count() AS watch_events ",
-  "FROM genstates ",
-  "WHERE toDate(begin) >= toDate('", begin, "') AND toDate(end) <= toDate('", end, "') AND region IN (", plain_regs, ") ",
-  "GROUP BY channelId, region", sep="")
-}
-
 regions <- c("Moskva", "Barnaul")
 
-r <- buildReq(begin=today(), end=today()+days(1), regions)
-df <- dbGetQuery(con, r) %>%
-  # 6. Среднее время просмотра, мин
-  mutate(mean_duration=channel_duration/watch_events) %>%
-  # 3. % уникальных приставок
-  mutate(ratio_per_tv_box=unique_stb/total_unique_stb) %>%
-  # 5. % времени просмотра
-  mutate(watch_ratio=channel_duration/sum(channel_duration)) %>%
-  # 7. Среднее суммарное время просмотра одной приставкой за период, мин
-  mutate(duration_per_stb=channel_duration/unique_stb) %>%
-  left_join(cities_df, by=c("region"="translit"))
-}
+# r <- buildReq(begin=today(), end=today()+days(1), regions)
+r <- buildReq(begin="2017-06-28", end="2017-06-30", interval=15,
+              regions, segment="all")
+
+df <- dbGetQuery(con, r)
+df %<>%
+  # превращаем временной маркер в POSIX
+  mutate(timegroup=anytime(timegroup, tz="Europe/Moscow"))
+
+# сделаем wide таблицу и проверим отображение с помощью DT ----------
+df0 <- df %>%
+  spread(timegroup, watch_events)
+
+DT::datatable(df0) # вроде рисует
 
 
-# считаем данные для вставки -----------------------------------
-# выберем наиболее программы c позиции эфирного времени
+
+# нарисуем график (не более 50 столбиков) --------------------
 reg_df <- df %>%
-  top_n(10, channel_duration) %>%
-  arrange(desc(channel_duration)) %>%
-  mutate(label=format(channel_duration, big.mark=" "))
+  filter(row_number() <=50)
 
-gp <- ggplot(reg_df, aes(fct_reorder(as.factor(channelId), channel_duration, .desc=FALSE), channel_duration)) +
-  geom_bar(fill=brewer.pal(n=9, name="Greens")[4], alpha=0.5, stat="identity", width=0.8) +
+gp <- ggplot(reg_df, aes(timegroup, watch_events)) +
+  geom_line(color=brewer.pal(n=9, name="Blues")[4], lwd=2, alpha=0.5) +
+  geom_point(color=brewer.pal(n=9, name="Blues")[4], shape=1, size=4, alpha=1) +
+  # geom_text(aes(label=label), hjust=+1.1, colour="blue") + # для вертикальных
+  # geom_label(aes(label=label), fill="white", colour="black", fontface="bold", hjust=+1.1) +
+  # geom_text_repel(aes(label=label), fontface = 'bold', color = 'blue', nudge_y=0) +
+  scale_x_datetime(labels=date_format(format="%d.%m.%y%n%H:%M", tz="Europe/Moscow"),
+                   breaks=date_breaks("2 hours"), 
+                   minor_breaks=date_breaks("1 hours")
+  ) +
+  # coord_cartesian(ylim=c(0.9*min(reg_df$watch_events), NA)) +
+  scale_y_continuous(limits=c(0.9*min(reg_df$watch_events), NA), oob=rescale_none) +
+  # scale_x_discrete("Передача", breaks=df2$order, labels=df2$channelId) +
+  # scale_y_log10() +
+  theme_ipsum_rc() + 
+  #  theme_ipsum_rc(base_size=publish_set[["base_size"]], 
+  #                 axis_title_size=publish_set[["axis_title_size"]]) +  
+  # theme(axis.text.x = element_text(angle=90)) +
+  ylab("Количество событий") +
+  xlab("Временной интервал") # +
+# ggtitle("Топ N регионов", subtitle="По суммарному времени телесмотрения, мин") +
+# coord_flip()
+
+gp
+
+
+if(FALSE){
+# изначальный отчет
+gp <- ggplot(reg_df, aes(timegroup, watch_events)) +
+  geom_bar(fill=brewer.pal(n=9, name="Blues")[4], alpha=0.5, stat="identity") +
+  # geom_text(aes(label=label), hjust=+1.1, colour="blue") + # для вертикальных
+  # geom_label(aes(label=label), fill="white", colour="black", fontface="bold", hjust=+1.1) +
+  # geom_text_repel(aes(label=label), fontface = 'bold', color = 'blue', nudge_y=0) +
+  scale_x_datetime(labels=date_format(format="%d.%m.%y%n%H:%M", tz="Europe/Moscow"),
+                   breaks=date_breaks("2 hours"), 
+                   minor_breaks=date_breaks("1 hours")
+                   ) +
+  # coord_cartesian(ylim=c(0.9*min(reg_df$watch_events), NA)) +
+  scale_y_continuous(limits=c(0.98*min(reg_df$watch_events), NA), oob=rescale_none) +
+  # scale_x_discrete("Передача", breaks=df2$order, labels=df2$channelId) +
+  # scale_y_log10() +
+  theme_ipsum_rc() +
+  #  theme_ipsum_rc(base_size=publish_set[["base_size"]], 
+  #                 axis_title_size=publish_set[["axis_title_size"]]) +  
+  # theme(axis.text.x = element_text(angle=90)) +
+  ylab("Количество событий") +
+  xlab("Временной интервал") # +
+  # ggtitle("Топ N регионов", subtitle="По суммарному времени телесмотрения, мин") +
+  # coord_flip()
+
+gp
+}
+stop()
+
+
+
+
+  # 3. % уникальных приставок
+  mutate(ratio_per_stb=round(unique_stb/total_unique_stb, 3)) %>%
+  left_join(cities_df, by=c("region"="translit")) %>%
+  select(-region) %>%
+  select(region=russian, everything())
+
+# рисуем графики --------------
+# Топ N по времени телесмотрения
+reg_df <- df %>%
+  top_n(10, total_duration) %>%
+  arrange(desc(total_duration)) %>%
+  mutate(label=format(total_duration, big.mark=" "))    
+
+gp <- ggplot(reg_df, aes(fct_reorder(as.factor(region), total_duration, .desc=FALSE), total_duration)) +
+  geom_bar(fill=brewer.pal(n=9, name="Blues")[4], alpha=0.5, stat="identity") +
   # geom_text(aes(label=label), hjust=+1.1, colour="blue") + # для вертикальных
   geom_label(aes(label=label), fill="white", colour="black", fontface="bold", hjust=+1.1) +
   # geom_text_repel(aes(label=label), fontface = 'bold', color = 'blue', nudge_y=0) +
   # scale_x_discrete("Передача", breaks=df2$order, labels=df2$channelId) +
   scale_y_log10() +
-  theme_ipsum_rc(base_size=14, axis_title_size=12) +  
+#  theme_ipsum_rc(base_size=publish_set[["base_size"]], 
+#                 axis_title_size=publish_set[["axis_title_size"]]) +  
   theme(axis.text.x = element_text(angle=90)) +
-  ylab("Суммарное количество минут") +
-  xlab("Канал") +
-  ggtitle("Статистика телесмотрения", subtitle="Топ 10 каналов") +
-  coord_flip()  
+  ylab("Время телесмотрения") +
+  xlab("Регион") +
+  ggtitle("Топ N регионов", subtitle="По суммарному времени телесмотрения, мин") +
+  coord_flip() 
 
 gp
-
-if (FALSE){
-  format(reg_df$channel_duration, big.mark=" ")
-
-  # stri_join(regions %>% map_chr(~stri_join("-+", .x, "+-", sep=",")), sep = " ", collapse=" ")
-  stri_join(regions %>% map_chr(~stri_join("'", .x, "'", sep="")), sep = " ", collapse=",")
-}
-
-if (FALSE){
-# протестируем работу с временем
-e <- now()
-b <- now() - days(3)
-
-e-b
-m <- interval (b, e)
-m/days(1)
-
-# ---
-e <- today()
-b <- today() - days(3)
-
-e-b
-m <- interval (b, e)
-m/days(1)
-
-
-
-today<-mdy(08312015)
-dob<-mdy(09071982)
-
-interval(dob, today) / years(1)
-}
