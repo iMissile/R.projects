@@ -219,7 +219,7 @@ server <- function(input, output, session) {
       mutate(region=as.character(region))
     # возникает ситуация, когда в данных могут быть города, которых нет в ограниченном подмножестве
     # (типа выбор "всех регионов"). Тогда в рамках join могут возникнуть NA. Надо делать санацию поля
-    browser()
+    # browser()
     
     df %<>% # при пустом значении решает, что logi
       left_join(cities_df, by=c("region"="translit")) %>%
@@ -241,7 +241,7 @@ server <- function(input, output, session) {
   
   msg <- reactiveVal("")
 
-  # таблица с выборкой по каналам ----------------------------
+  # таблица с выборкой по регионам ----------------------------
   output$stat_table <- DT::renderDataTable({
     df <- req(cur_df())
     
@@ -257,7 +257,6 @@ server <- function(input, output, session) {
     # browser()
     # https://rstudio.github.io/DT/functions.html
     DT::datatable(df,
-                  # colnames=c('Канал'='channelId', 'Сегмент'='segment', 'Регион'='region', 'Дата'='date'),
                   rownames=FALSE,
                   filter='bottom',
                   # только после жесткой фиксации колонок
@@ -281,8 +280,7 @@ server <- function(input, output, session) {
 
   # динамическое управление диапазоном дат ---------
   observeEvent(input$history_depth, {
-    
-    # почему-то $history_depth получаем как строку
+    # $history_depth получаем как строку
     date <- Sys.Date()-as.numeric(input$history_depth)
     flog.info(paste0("Start date changed to  ", date))
     # updateDateRangeInput(session, "in_date_range", start=date)

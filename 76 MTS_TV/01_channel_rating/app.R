@@ -9,6 +9,7 @@ library(forcats)
 library(readxl)
 library(magrittr)
 library(stringi)
+library(stringr)
 library(futile.logger)
 library(Cairo)
 library(RColorBrewer)
@@ -150,7 +151,7 @@ server <- function(input, output, session) {
     "word_A4"=list(base_size=16, axis_title_size=14, subtitle_size=13)
   )
   
-  # создаем коннект к инстансу CH
+  # создаем коннект к инстансу CH -----------
   if (Sys.info()["sysname"] == "Linux") {
     # CTI стенд
     con <- dbConnect(clickhouse(), host="172.16.33.74", port=8123L, user="default", password="")
@@ -213,10 +214,6 @@ server <- function(input, output, session) {
       # 7. Среднее суммарное время просмотра одной приставкой за период, мин
       mutate(duration_per_stb=round(channel_duration/unique_stb, 0))
       # %>% mutate_at(vars(mean_duration, ratio_per_stb, watch_ratio, duration_per_stb), funs(round), digits=1)
-      # удалим транслит и будем далее использовать русское название
-      # left_join(cities_df, by=c("region"="translit")) %>%
-      # select(-region) %>% 
-      # select(region=russian, everything())
 
     # browser()
     # dbDisconnect(con)
@@ -231,18 +228,30 @@ server <- function(input, output, session) {
   
   msg <- reactiveVal("")
 
-  # таблица с выборкой по каналам
+  # таблица с выборкой по каналам ----------------------------
   output$stat_table <- DT::renderDataTable({
-    # https://rstudio.github.io/DT/functions.html
+    df <- req(cur_df())
+    
+    colnames_df <- getRusColnames(df)
+    # https://stackoverflow.com/questions/39970097/tooltip-or-popover-in-shiny-datatables-for-row-names
+    colheader <- htmltools::withTags(
+      table(class = 'display',
+            thead(
+              tr(colnames_df %>%
+                   {purrr::map2(.$col_label, .$col_runame_screen, ~th(title=.x, .y))})
+              )))
+    
     # browser()
-    DT::datatable({req(cur_df()); colNamesToRus(cur_df())},
-                  # colnames=c('Канал'='channelId', 'Сегмент'='segment', 'Регион'='region', 'Дата'='date'),
+    # https://rstudio.github.io/DT/functions.html
+    DT::datatable(df,
                   rownames=FALSE,
-                  filter = 'bottom',
+                  filter='bottom',
+                  # только после жесткой фиксации колонок
+                  container=colheader,
                   options=list(dom='fltip', pageLength=7, lengthMenu=c(5, 7, 10, 15),
                                order=list(list(3, 'desc')))) %>%
-      DT::formatPercentage("% врем. просмотра", 2) %>%
-      DT::formatPercentage("% уник. STB", 2)
+      DT::formatPercentage("watch_ratio", 2) %>%
+      DT::formatPercentage("stb_ratio", 2)
     })
   
   # график Топ10 каналов по суммарному времени просмотра -------------

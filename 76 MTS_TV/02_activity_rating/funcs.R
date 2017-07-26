@@ -193,6 +193,7 @@ getRusColnames <- function(df) {
     "segment", "сегмент", "сегмент", "подсказка (segment)",
     "channelId", "канал", "канал", "подсказка (channelId)",
     "channel_duration", "суммарное время, мин", "суммарное время, мин", "подсказка (channel_duration)",
+    "mean_duration", "ср. время просмотра, мин", "ср. время просмотра, мин", "подсказка (mean_duration)",
     "watch_ratio", "% врем. просмотра", "% врем. просмотра", "подсказка (watch_ratio)",
     "duration_per_stb", "ср. время просм. 1 STB за период, мин", "ср. время просм. 1 STB за период, мин", "подсказка (duration_per_stb)",
     "date", "дата", "дата", "подсказка (date)"
