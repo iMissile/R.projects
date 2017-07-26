@@ -9,6 +9,7 @@ library(forcats)
 library(readxl)
 library(magrittr)
 library(stringi)
+library(stringr)
 library(futile.logger)
 library(Cairo)
 library(RColorBrewer)
@@ -43,7 +44,7 @@ ui <-
   navbarPage("DVT IoT",
   # title=HTML('<div><a href="http://devoteam.com/"><img src="./img/devoteam_176px.png" width="80%"></a></div>'),
   title = "Статистика телесмотрения",
-  tabPanel("Рейтинг каналов", value="general_panel"),
+  tabPanel("Рейтинг пользовательской активности", value="general_panel"),
   tabPanel("About", value="about"),
   # windowTitle="CC4L",
   # collapsible=TRUE,
@@ -100,7 +101,7 @@ ui <-
     fluidRow(
       column(10, actionButton("set_test_dates_btn", "Вкл. демо дату", class = 'rightAlign')),
       column(2, actionButton("process_btn", "Применить", class = 'rightAlign'))
-      ),
+    ),
 
     #tags$style(type='text/css', "#in_date_range { position: absolute; top: 50%; transform: translateY(-80%); }"),
     tabsetPanel(
@@ -121,9 +122,18 @@ ui <-
       tabPanel("График", value = "graph_tab",
                fluidRow(
                  p(),
+                 #column(11, {}),
+                 column(12, div(selectInput("top_num", "Кол-во в ТОП:", 
+                                        choices=c(3, 5, 7, 10, 20), 
+                                         selected=5), 
+                               class='rightAlign'))
+               ),
+               fluidRow(
+                 p(),
                  column(6, div(withSpinner(plotOutput('top10_duration_plot', height="500px")))),
                  column(6, div(withSpinner(plotOutput('top10_stb_plot', height="500px"))))
-               ))
+               )
+               )
       )
     #,
     #fluidRow(
@@ -150,7 +160,7 @@ server <- function(input, output, session) {
     "word_A4"=list(base_size=16, axis_title_size=14, subtitle_size=13)
   )
   
-  # создаем коннект к инстансу CH
+  # создаем коннект к инстансу CH -----------
   if (Sys.info()["sysname"] == "Linux") {
     # CTI стенд
     con <- dbConnect(clickhouse(), host="172.16.33.74", port=8123L, user="default", password="")
@@ -203,21 +213,21 @@ server <- function(input, output, session) {
     # browser()
     df <- temp_df %>%
       # время смотрения, мин
-      mutate(channel_duration=round(as.numeric(channel_duration), 0)) %>%
-      # 6. Среднее время просмотра, мин
-      mutate(mean_duration=round(channel_duration/watch_events, 0)) %>%
+      mutate(total_duration=round(as.numeric(total_duration), 0)) %>%
       # 3. % уникальных приставок
       mutate(stb_ratio=round(unique_stb/total_unique_stb, 3)) %>%
-      # 5. % времени просмотра
-      mutate(watch_ratio=round(channel_duration/sum(channel_duration), 5)) %>%
-      # 7. Среднее суммарное время просмотра одной приставкой за период, мин
-      mutate(duration_per_stb=round(channel_duration/unique_stb, 0))
-      # %>% mutate_at(vars(mean_duration, ratio_per_stb, watch_ratio, duration_per_stb), funs(round), digits=1)
-      # удалим транслит и будем далее использовать русское название
-      # left_join(cities_df, by=c("region"="translit")) %>%
-      # select(-region) %>% 
-      # select(region=russian, everything())
-
+      mutate(region=as.character(region))
+    # возникает ситуация, когда в данных могут быть города, которых нет в ограниченном подмножестве
+    # (типа выбор "всех регионов"). Тогда в рамках join могут возникнуть NA. Надо делать санацию поля
+    # browser()
+    
+    df %<>% # при пустом значении решает, что logi
+      left_join(cities_df, by=c("region"="translit")) %>%
+      # санация
+      mutate(russian=if_else(is.na(russian), str_c("_", region, "_"), russian)) %>%
+      select(-region, -date) %>%
+      select(region=russian, everything())
+    
     # browser()
     # dbDisconnect(con)
     as_tibble(df)
@@ -226,33 +236,46 @@ server <- function(input, output, session) {
   cur_df <- reactive({
     req(raw_df()) %>%
       # filter(segment==input$segment_filter) %>%
-      select(channelId, everything())
+      select(region, everything())
   })
   
   msg <- reactiveVal("")
 
-  # таблица с выборкой по каналам
+  # таблица с выборкой по регионам ----------------------------
   output$stat_table <- DT::renderDataTable({
-    # https://rstudio.github.io/DT/functions.html
+    df <- req(cur_df())
+    
+    colnames_df <- getRusColnames(df)
+    # https://stackoverflow.com/questions/39970097/tooltip-or-popover-in-shiny-datatables-for-row-names
+    colheader <- htmltools::withTags(
+      table(class = 'display',
+            thead(
+              tr(colnames_df %>%
+                   {purrr::map2(.$col_label, .$col_runame_screen, ~th(title=.x, .y))})
+              )))
+    
     # browser()
-    DT::datatable({req(cur_df()); colNamesToRus(cur_df())},
-                  # colnames=c('Канал'='channelId', 'Сегмент'='segment', 'Регион'='region', 'Дата'='date'),
+    # https://rstudio.github.io/DT/functions.html
+    DT::datatable(df,
                   rownames=FALSE,
-                  filter = 'bottom',
+                  filter='bottom',
+                  # только после жесткой фиксации колонок
+                  container=colheader,
                   options=list(dom='fltip', pageLength=7, lengthMenu=c(5, 7, 10, 15),
                                order=list(list(3, 'desc')))) %>%
-      DT::formatPercentage("% врем. просмотра", 2) %>%
-      DT::formatPercentage("% уник. STB", 2)
+      DT::formatPercentage("stb_ratio", 2)
     })
   
   # график Топ10 каналов по суммарному времени просмотра -------------
   output$top10_duration_plot <-renderPlot({
-    plotTop10Duration(cur_df(), publish_set=font_sizes[["screen"]])
+    plotTop10Duration(cur_df(), publish_set=font_sizes[["screen"]], 
+                      ntop=as.integer(input$top_num))
   })
   
   # график Топ10 каналов по количеству уникальных приставок --------------
   output$top10_stb_plot <-renderPlot({
-    plotTop10STB(cur_df(), publish_set=font_sizes[["screen"]])
+    plotTop10STB(cur_df(), publish_set=font_sizes[["screen"]], 
+                 ntop=as.integer(input$top_num))
   })  
 
   # динамическое управление диапазоном дат ---------
@@ -261,7 +284,7 @@ server <- function(input, output, session) {
     date <- Sys.Date()-as.numeric(input$history_depth)
     flog.info(paste0("Start date changed to  ", date))
     # updateDateRangeInput(session, "in_date_range", start=date)
-    }
+   }
   )
 
   # фиксим даты на демо диапазон ---------  
@@ -307,7 +330,7 @@ server <- function(input, output, session) {
   # выгрузка таблицы в CSV -----------------------  
   output$csv_download_btn <- downloadHandler(
     filename = function() {
-      paste0("channel_rating_data-", Sys.Date(), ".csv", sep="")
+      paste0("user_activity_data-", Sys.Date(), ".csv", sep="")
     },
     content = function(file) {
       cur_df() %>%
@@ -319,12 +342,11 @@ server <- function(input, output, session) {
   # выгрузка таблицы в Word -----------------------
   output$word_download_btn <- downloadHandler(
     filename = function() {
-      name <- paste0("channel_rating_report-", Sys.Date(), ".docx", sep="")
+      name <- paste0("user_activity_report-", Sys.Date(), ".docx", sep="")
       flog.info(paste0("Word report: '", name, "'"))
       name
     },
     content = function(file) {
-      # browser();
       doc <- cur_df() %>% # select(-total_unique_stb) %>% # пока убираем, чтобы была консистентная подстановка
         gen_word_report(publish_set=font_sizes[["word_A4"]])
       print(doc, target=file)  

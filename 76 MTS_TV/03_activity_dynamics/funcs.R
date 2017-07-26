@@ -30,7 +30,6 @@ buildReqLimits <- function(begin, end, regions, segment) {
   limit_dates <- paste0(" toDate(begin) >= toDate('", begin, "') AND toDate(end) <= toDate('", end, "') ")
   
   # добавочная SQL конструкция для ограничения регионов -----
-  
   limit_regions <- ifelse(is.null(regions), " ",
                           stri_join(" AND region IN (", 
                                     stri_join(regions %>% map_chr(~stri_join("'", .x, "'", sep="")),
@@ -48,7 +47,7 @@ buildReqLimits <- function(begin, end, regions, segment) {
 }
 
 # построение запроса для отчета 'Динамика пользовательской активности' ----------------
-buildReqGetTop <- function(begin, end, regions, segment="all"){
+buildReqGetTop <- function(begin, end, regions=NULL, segment="all"){
   #' считаем ТОП 20 каналов по общему количеству событий при заданных фильтрах
   # begin, end -- даты; 
   # regs -- вектор регионов, если NULL -- то все регионы (в т.ч. на этапе инициализации);
@@ -56,24 +55,57 @@ buildReqGetTop <- function(begin, end, regions, segment="all"){
   # browser()
   
   limits <- buildReqLimits(begin, end, regions, segment)
-  
+
   paste(
     "SELECT ",
-    # 1. Временной интервал (как строка)
-    "toDateTime(intDiv(toUInt32(begin), ", interval*60, ") *", interval*60, ") AS timestamp, ",
-    # 2. Временной интервал (как целое)
-    "toUInt32(timestamp) AS timegroup, ",
-    # 3. Кол-во событий телесмотрения
-    "count() AS watch_events ",
+    # 1. канал, общее время телесмотрения в минутах
+    # "channelId, sum(duration)/60 AS range_var ",
+    "channelId, count() AS range_var ",
     "FROM genstates ",
     # "SAMPLE 0.1 ",
     "WHERE ", limits,
     "AND duration>5*60 AND duration <2*60*60 ", # указали жестко длительность, в секундах
-    "GROUP BY timestamp ",
-    "ORDER BY timestamp DESC", sep="")
-}
+    "GROUP BY channelId ",
+    "ORDER BY range_var ASC ", 
+    "LIMIT 20", sep="")
+  }
 
-buildReq <- function(begin, end, interval=5, regions, segment="all"){
+buildReqDynamic <- function(begin, end, regions=NULL, interval=60, channels=NULL, segment="all"){
+  #`
+  # begin, end -- даты; 
+  # interval -- временной интервал агрегации, в минутах
+  # channels -- вектор каналов
+  # regions -- вектор регионов, если NULL -- то все регионы (в т.ч. на этапе инициализации);
+  # segment -- регион (строка), если "all" -- то все сегменты;
+  # browser()
+  
+  limits <- buildReqLimits(begin, end, regions, segment)
+  # добавочная SQL конструкция для ограничения каналов -----
+  limit_channels <- ifelse(is.null(channels), " ",
+                          stri_join(" AND channelId IN (", 
+                                    stri_join(channels %>% map_chr(~stri_join("'", .x, "'", sep="")),
+                                              sep = " ", collapse=","),
+                                    ") ", sep = "", collapse=""))
+
+  paste(
+    "SELECT ",
+    # 1. временной интервал (как строка)
+    "toDateTime(intDiv(toUInt32(begin), ", interval*60, ") *", interval*60, ") AS timestamp, ",
+    # 2. временной интервал (как целое)
+    "toUInt32(timestamp) AS timegroup, ",
+    # 3. канал 
+    "channelId, ", 
+    # 4. длительность телесмотрения в минутах и кол-во событий телесмотрения
+    "sum(duration)/60 AS channel_duration, count() AS watch_events ",
+    "FROM genstates ",
+    # "SAMPLE 0.1 ",
+    "WHERE ", limits, limit_channels,
+    "AND duration>5*60 AND duration <2*60*60 ", # указали жестко длительность, в секундах
+    "GROUP BY timestamp, channelId ",
+    "ORDER BY timestamp DESC", sep="")
+  }
+
+buildReq <- function(begin, end, interval=60, regions, segment="all"){
   # begin, end -- даты; 
   # interval -- временной интервал агрегации, в минутах
   # regs -- вектор регионов, если NULL -- то все регионы (в т.ч. на этапе инициализации);
@@ -167,11 +199,14 @@ gen_word_report <- function(df, template_fname, publish_set=NULL){
   }
   # считаем данные для вставки -----------------------------------
   n_out <- ifelse(nrow(df)<80, nrow(df), 80)
-  out_df <- df %>% filter(row_number() < n_out) 
+  out_df <- df %>% 
+    filter(row_number() < n_out) %>%
+    select(-total_unique_stb)
 
-  flog.info(paste0("Word Report generation under ", Sys.info()["sysname"]))
+  flog.info(paste0("Word report generation under ", Sys.info()["sysname"]))
   if (Sys.info()["sysname"] == "Linux") {
-    out_df %<>% colNamesToRus()
+    names_df <- getRusColnames(out_df)
+    names(out_df) <- names_df$col_runame_office
   }
   
   # создаем файл ------------------------------------------
@@ -188,20 +223,24 @@ gen_word_report <- function(df, template_fname, publish_set=NULL){
   }
 
 # Локализация названий колонок в датасете --------------
-colNamesToRus <- function(df){
-  # используется исключительно перед выводом
-  # локализовано, чтобы гибко подстраивать под возможные пожелания
-  # browser()
-  df %>% select("канал"=channelId, 
-                # 'Сегмент'=segment, 
-                # 'Регион'=region, 
-                "кол-во уник. STB"=unique_stb,
-                "всего уник. STB"=total_unique_stb,
-                "суммарное время, мин"=channel_duration,
-                "кол-во просмотров"=watch_events, 
-                "ср. время просмотра, мин"=mean_duration,
-                "% уник. STB"=stb_ratio,
-                "% врем. просмотра"=watch_ratio,
-                "ср. время просм. 1 STB за период, мин"=duration_per_stb)
+getRusColnames <- function(df) {
+  colnames_df <- tribble(
+    ~col_name, ~col_runame_screen, ~col_runame_office, ~col_label, 
+    "region", "регион", "регион","подсказка (region)",
+    "unique_stb", "кол-во уник. STB", "кол-во уник. STB", "подсказка (unique_stb)",
+    "total_unique_stb", "всего уник. STB", "всего уник. STB", "подсказка (total_unique_stb)",
+    "total_duration", "суммарное время, мин",	"суммарное время, мин",	"подсказка (total_duration)",
+    "watch_events", "кол-во просмотров", "кол-во просмотров", "подсказка (watch_events)",
+    "stb_ratio", "% уник. STB", "% уник. STB", "подсказка (stb_ratio)",
+    "segment", "сегмент", "сегмент", "подсказка (segment)",
+    "channelId", "канал", "канал", "подсказка (channelId)",
+    "channel_duration", "суммарное время, мин", "суммарное время, мин", "подсказка (channel_duration)",
+    "mean_duration", "ср. время просмотра, мин", "ср. время просмотра, мин", "подсказка (mean_duration)",
+    "watch_ratio", "% врем. просмотра", "% врем. просмотра", "подсказка (watch_ratio)",
+    "duration_per_stb", "ср. время просм. 1 STB за период, мин", "ср. время просм. 1 STB за период, мин", "подсказка (duration_per_stb)",
+    "date", "дата", "дата", "подсказка (date)"
+  )
   
+  tibble(name=names(df)) %>%
+    left_join(colnames_df, by=c("name"="col_name"))
 }
