@@ -224,7 +224,7 @@ server <- function(input, output, session) {
                            segment=input$segment_filter)
 
       tic()
-      browser()
+      # browser()
       temp_df <- dbGetQuery(con, r)
       flog.info(paste0("Query by specific Top ", top_num, " channels: ", capture.output(toc())))
       flog.info(paste0("Loaded ", nrow(temp_df), " rows"))    
@@ -277,7 +277,7 @@ server <- function(input, output, session) {
                   # только после жесткой фиксации колонок
                   container=colheader,
                   options=list(dom='fltip', pageLength=7, lengthMenu=c(5, 7, 10, 15),
-                               order=list(list(2, 'desc'))))
+                               order=list(list(1, 'asc'))))
     
     # проверяем форму представления и модифицируем, если надо
     if(input$long_wide_cbx){
@@ -310,7 +310,7 @@ server <- function(input, output, session) {
 
   # фиксим даты на демо диапазон ---------  
   observeEvent(input$set_test_dates_btn, {
-    updateDateRangeInput(session, "in_date_range", start="2017-06-15", end="2017-06-16")
+    updateDateRangeInput(session, "in_date_range", start="2017-06-28", end="2017-06-30")
     }
   )
   
