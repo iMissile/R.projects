@@ -143,11 +143,14 @@ gen_word_report <- function(df, template_fname, publish_set=NULL){
   }
   # считаем данные для вставки -----------------------------------
   n_out <- ifelse(nrow(df)<80, nrow(df), 80)
-  out_df <- df %>% filter(row_number() < n_out) 
+  out_df <- df %>% 
+    filter(row_number() < n_out) %>%
+    select(-total_unique_stb)
 
-  flog.info(paste0("Word Report generation under ", Sys.info()["sysname"]))
+  flog.info(paste0("Word report generation under ", Sys.info()["sysname"]))
   if (Sys.info()["sysname"] == "Linux") {
-    out_df %<>% colNamesToRus()
+    names_df <- getRusColnames(out_df)
+    names(out_df) <- names_df$col_runame_office
   }
   
   # создаем файл ------------------------------------------
@@ -176,4 +179,25 @@ colNamesToRus <- function(df){
                 "% уник. STB"=stb_ratio
                 )
   
+}
+
+getRusColnames <- function(df) {
+  colnames_df <- tribble(
+    ~col_name, ~col_runame_screen, ~col_runame_office, ~col_label, 
+    "region", "регион", "регион","подсказка (region)",
+    "unique_stb", "кол-во уник. STB", "кол-во уник. STB", "подсказка (unique_stb)",
+    "total_unique_stb", "всего уник. STB", "всего уник. STB", "подсказка (total_unique_stb)",
+    "total_duration", "суммарное время, мин",	"суммарное время, мин",	"подсказка (total_duration)",
+    "watch_events", "кол-во просмотров", "кол-во просмотров", "подсказка (watch_events)",
+    "stb_ratio", "% уник. STB", "% уник. STB", "подсказка (stb_ratio)",
+    "segment", "сегмент", "сегмент", "подсказка (segment)",
+    "channelId", "канал", "канал", "подсказка (channelId)",
+    "channel_duration", "суммарное время, мин", "суммарное время, мин", "подсказка (channel_duration)",
+    "watch_ratio", "% врем. просмотра", "% врем. просмотра", "подсказка (watch_ratio)",
+    "duration_per_stb", "ср. время просм. 1 STB за период, мин", "ср. время просм. 1 STB за период, мин", "подсказка (duration_per_stb)",
+    "date", "дата", "дата", "подсказка (date)"
+  )
+  
+  tibble(name=names(df)) %>%
+    left_join(colnames_df, by=c("name"="col_name"))
 }

@@ -21,6 +21,12 @@ library(config)
 
 source("clickhouse.R")
 
+# отработка фукции по переименованию колонок
+
+
+stop()
+
+
 # загрузка 
 publishToSQL <- function(clean_df) {
   # делаем экспорт в PostgreSQL ---------------------

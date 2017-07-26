@@ -9,6 +9,7 @@ library(forcats)
 library(readxl)
 library(magrittr)
 library(stringi)
+library(stringr)
 library(futile.logger)
 library(Cairo)
 library(RColorBrewer)
@@ -215,9 +216,16 @@ server <- function(input, output, session) {
       mutate(total_duration=round(as.numeric(total_duration), 0)) %>%
       # 3. % уникальных приставок
       mutate(stb_ratio=round(unique_stb/total_unique_stb, 3)) %>%
-      mutate(region=as.character(region)) %>% # при пустом значении решает, что logi
+      mutate(region=as.character(region))
+    # возникает ситуация, когда в данных могут быть города, которых нет в ограниченном подмножестве
+    # (типа выбор "всех регионов"). Тогда в рамках join могут возникнуть NA. Надо делать санацию поля
+    browser()
+    
+    df %<>% # при пустом значении решает, что logi
       left_join(cities_df, by=c("region"="translit")) %>%
-      select(-region) %>%
+      # санация
+      mutate(russian=if_else(is.na(russian), str_c("_", region, "_"), russian)) %>%
+      select(-region, -date) %>%
       select(region=russian, everything())
     
     # browser()
@@ -235,32 +243,28 @@ server <- function(input, output, session) {
 
   # таблица с выборкой по каналам ----------------------------
   output$stat_table <- DT::renderDataTable({
-    # https://rstudio.github.io/DT/functions.html
+    df <- req(cur_df())
+    
+    colnames_df <- getRusColnames(df)
     # https://stackoverflow.com/questions/39970097/tooltip-or-popover-in-shiny-datatables-for-row-names
-    colnames_with_tooltip <- tribble(
-      ~colname, ~collabel,
-      "регион", "подсказка по региону",
-      "кол-во уник. STB", "подсказка по колонке 2",
-      "всего уник. STB", "подсказка по колонке 3",
-      "суммарное время, мин",	"подсказка по колонке 4",
-      "кол-во просмотров","подсказка по колонке 5",
-      "% уник. STB", "подсказка по колонке 6")
-
+    colheader <- htmltools::withTags(
+      table(class = 'display',
+            thead(
+              tr(colnames_df %>%
+                   {purrr::map2(.$col_label, .$col_runame_screen, ~th(title=.x, .y))})
+              )))
+    
     # browser()
-    DT::datatable({req(cur_df()); colNamesToRus(cur_df())},
+    # https://rstudio.github.io/DT/functions.html
+    DT::datatable(df,
                   # colnames=c('Канал'='channelId', 'Сегмент'='segment', 'Регион'='region', 'Дата'='date'),
                   rownames=FALSE,
-                  filter = 'bottom',
+                  filter='bottom',
                   # только после жесткой фиксации колонок
-                  container = htmltools::withTags(table(class = 'display',
-                    thead(
-                      tr(apply(colnames_with_tooltip, 1,
-                               function(x) th(title=x[2], x[1])))
-                    )
-                  )),
+                  container=colheader,
                   options=list(dom='fltip', pageLength=7, lengthMenu=c(5, 7, 10, 15),
                                order=list(list(3, 'desc')))) %>%
-      DT::formatPercentage("% уник. STB", 2)
+      DT::formatPercentage("stb_ratio", 2)
     })
   
   # график Топ10 каналов по суммарному времени просмотра -------------
