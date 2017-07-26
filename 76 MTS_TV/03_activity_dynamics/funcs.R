@@ -81,7 +81,9 @@ buildReqDynamic <- function(begin, end, regions=NULL, interval=60, channels=NULL
   
   limits <- buildReqLimits(begin, end, regions, segment)
   # добавочная SQL конструкция для ограничения каналов -----
-  limit_channels <- ifelse(is.null(channels), " ",
+  # прежде чем строить мы должны действительно убедиться, что мы получили вектор строк в качестве channels
+  
+  limit_channels <- ifelse(is.null(channels) | any(is.na(channels)) | identical(channels, character(0)), " ",
                           stri_join(" AND channelId IN (", 
                                     stri_join(channels %>% map_chr(~stri_join("'", .x, "'", sep="")),
                                               sep = " ", collapse=","),
@@ -238,7 +240,9 @@ getRusColnames <- function(df) {
     "mean_duration", "ср. время просмотра, мин", "ср. время просмотра, мин", "подсказка (mean_duration)",
     "watch_ratio", "% врем. просмотра", "% врем. просмотра", "подсказка (watch_ratio)",
     "duration_per_stb", "ср. время просм. 1 STB за период, мин", "ср. время просм. 1 STB за период, мин", "подсказка (duration_per_stb)",
-    "date", "дата", "дата", "подсказка (date)"
+    "date", "дата", "дата", "подсказка (date)",
+    "timstamp", "время", "время", "подсказка (timstamp)",
+    "timegroup", "группа", "группа", "подсказка (timegroup)"
   )
   
   tibble(name=names(df)) %>%

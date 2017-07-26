@@ -54,6 +54,11 @@ r <- buildReqGetTop(begin="2017-06-28", end="2017-06-30",
 
 df0 <- dbGetQuery(con, r)
 
+# делаем проверку на состав вектора с регионами ---
+v <- c(NA, "2")
+any(is.na(v)) 
+is.null(v)
+
 # подрезали ТОП выборку
 channels <- df0 %>% 
   filter(row_number()<=5) %>% 

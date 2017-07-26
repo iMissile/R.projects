@@ -44,7 +44,7 @@ ui <-
   navbarPage("DVT IoT",
   # title=HTML('<div><a href="http://devoteam.com/"><img src="./img/devoteam_176px.png" width="80%"></a></div>'),
   title = "Статистика телесмотрения",
-  tabPanel("Рейтинг пользовательской активности", value="general_panel"),
+  tabPanel("Динамика пользовательской активности", value="general_panel"),
   tabPanel("About", value="about"),
   # windowTitle="CC4L",
   # collapsible=TRUE,
@@ -187,56 +187,62 @@ server <- function(input, output, session) {
   # реактивные переменные -------------------
   raw_df <- reactive({
     input$process_btn # обновлять будем вручную
+    
     isolate({
-      
       # regions <- c("Moskva", "Barnaul")
+      # browser()
       regions <- input$region_filter
       # browser()
-    
-      # r <- buildReq(begin=today(), end=today()+days(1), regions)
       flog.info(paste0("Applied time filter [", input$in_date_range[1], "; ", input$in_date_range[2], "]"))
       flog.info(paste0("Applied region filter [", regions, "]"))
-      r <- buildReq(begin=input$in_date_range[1], end=input$in_date_range[2], 
-                    regions=regions, segment=input$segment_filter)
+      # сначала запрашиваем ТОП 20 каналов
+      r <- buildReqGetTop(begin=input$in_date_range[1], end=input$in_date_range[2],
+                          regions=regions, segment=input$segment_filter)
+    
+      # запрос Топ-20 каналов
+      tic()
+      temp_df <- dbGetQuery(con, r) %>%
+        as_tibble()
+      flog.info(paste0("Query Top 20: ", capture.output(toc())))
+      flog.info(paste0("Loaded ", nrow(temp_df), " rows"))
+      
+      # если каналов вообще нет, выбрасываем NULL
+      # if(nrow(temp_df)<=0) return(NULL)
+
+      # вытаскиваем каналы, выборку подрезать на изменяемую глубину будем потом
+      channels <- temp_df %>% 
+        # исключим возможные несисмвольные типы, например, logical(0)
+        mutate(channelId=as.character(channelId)) %>%
+        # filter(row_number()<=5) %>% 
+        pull(channelId)
+    
+      # запрос конкретных данных
+      r <- buildReqDynamic(begin=input$in_date_range[1], end=input$in_date_range[2],
+                           regions=regions, interval=60, channels=channels, 
+                           segment=input$segment_filter)
+
+      tic()
+      temp_df <- dbGetQuery(con, r)
+      flog.info(paste0("Query by Top 20 channels: ", capture.output(toc())))
+      flog.info(paste0("Loaded ", nrow(temp_df), " rows"))    
     })
     
-    # browser()
 
-    tic()
-    temp_df <- dbGetQuery(con, r) %>%
-      as_tibble()
-
-    flog.info(paste0("Query: ", capture.output(toc())))
-    # system.time(df <- readRDS("./data/tvstream4.rds"))
-    flog.info(paste0("Loaded ", nrow(temp_df), " rows"))
-    
-    # browser()
+    # df <- NULL
     df <- temp_df %>%
       # время смотрения, мин
-      mutate(total_duration=round(as.numeric(total_duration), 0)) %>%
-      # 3. % уникальных приставок
-      mutate(stb_ratio=round(unique_stb/total_unique_stb, 3)) %>%
-      mutate(region=as.character(region))
-    # возникает ситуация, когда в данных могут быть города, которых нет в ограниченном подмножестве
-    # (типа выбор "всех регионов"). Тогда в рамках join могут возникнуть NA. Надо делать санацию поля
-    # browser()
+      mutate(channel_duration=round(as.numeric(channel_duration), 0)) %>%
+      # превращаем временной маркер в POSIX
+      mutate(timegroup=anytime(as.numeric(timegroup), tz="Europe/Moscow")) %>%
+      as_tibble()
     
-    df %<>% # при пустом значении решает, что logi
-      left_join(cities_df, by=c("region"="translit")) %>%
-      # санация
-      mutate(russian=if_else(is.na(russian), str_c("_", region, "_"), russian)) %>%
-      select(-region, -date) %>%
-      select(region=russian, everything())
-    
-    # browser()
-    # dbDisconnect(con)
-    as_tibble(df)
+    df
   })  
 
   cur_df <- reactive({
-    req(raw_df()) %>%
+    req(raw_df()) # %>%
       # filter(segment==input$segment_filter) %>%
-      select(region, everything())
+      # select(region, everything())
   })
   
   msg <- reactiveVal("")
@@ -262,12 +268,12 @@ server <- function(input, output, session) {
                   # только после жесткой фиксации колонок
                   container=colheader,
                   options=list(dom='fltip', pageLength=7, lengthMenu=c(5, 7, 10, 15),
-                               order=list(list(3, 'desc')))) %>%
-      DT::formatPercentage("stb_ratio", 2)
+                               order=list(list(3, 'desc'))))#  %>%
+      # DT::formatPercentage("stb_ratio", 2)
     })
   
   # график Топ10 каналов по суммарному времени просмотра -------------
-  output$top10_duration_plot <-renderPlot({
+  output$top10_duration_plot <- renderPlot({
     plotTop10Duration(cur_df(), publish_set=font_sizes[["screen"]], 
                       ntop=as.integer(input$top_num))
   })
@@ -296,7 +302,7 @@ server <- function(input, output, session) {
   # управляем визуализацией кнопок выгрузки ----- 
   observe({
     # browser()
-    if(nrow(cur_df())>0) {
+    if(!is.null(cur_df()) & nrow(cur_df())>0) {
       shinyjs::enable("csv_download_btn")
       shinyjs::enable("word_download_btn")
     } else {
