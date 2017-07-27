@@ -93,15 +93,15 @@ ui <-
       #                      choices = c("1 час"=1, "2 часа"=2, 
       #                                  "3 часа"=3, "4 часа"=4), selected = 2)),
       column(6, uiOutput("choose_region")),
-      column(2, selectInput("segment_filter", "Сегмент",
+      column(1, selectInput("segment_filter", "Сегмент",
                             choices = c("Все"="all",
                                         "DVB-C"="DVB-C", 
                                         "IPTV"="IPTV", 
                                         "DVB-S"="DVB-S"), selected="all")),
-      column(1, selectInput("top_num", "Кол-во в ТОП:", 
-                            choices=c(3, 5, 7, 10, 20), selected=5)
-             )
-      
+      column(1, selectInput("top_num", "Кол-во в ТОП", 
+                            choices=c(3, 5, 7, 10, 20), selected=5)),
+      column(1, selectInput("time_bin", "Период агрегации", 
+                            choices=c("1 час"=60, "1 сутки"=24*60), selected=60))
     ),
     fluidRow(
       column(10, actionButton("set_test_dates_btn", "Вкл. демо дату", class = 'rightAlign')),
@@ -200,6 +200,7 @@ server <- function(input, output, session) {
       # сначала запрашиваем ТОП 20 каналов
       r <- buildReqGetTop(begin=input$in_date_range[1], end=input$in_date_range[2],
                           regions=regions, segment=input$segment_filter, top=top_num)
+      flog.info(paste0("DB request: ", r))
     
       # запрос Топ-N каналов
       tic()
@@ -220,8 +221,11 @@ server <- function(input, output, session) {
     
       # запрос конкретных данных
       r <- buildReqDynamic(begin=input$in_date_range[1], end=input$in_date_range[2],
-                           regions=regions, interval=60, channels=channels, 
+                           regions=regions, 
+                           interval=as.numeric(input$time_bin), 
+                           channels=channels, 
                            segment=input$segment_filter)
+      flog.info(paste0("DB request: ", r))    
 
       tic()
       # browser()
@@ -277,7 +281,14 @@ server <- function(input, output, session) {
                   # только после жесткой фиксации колонок
                   container=colheader,
                   options=list(dom='fltip', pageLength=7, lengthMenu=c(5, 7, 10, 15),
-                               order=list(list(1, 'asc'))))
+                               order=list(list(1, 'asc')),
+                               # columnDefs=list(list(width="160px", targets="_all"),
+                               #                 list(className='dt-center', targets="_all")),
+                  #autoWidth=TRUE,
+                  #scrollCollapse=TRUE,
+                  scrollX=TRUE
+                  )
+                  )
     
     # проверяем форму представления и модифицируем, если надо
     if(input$long_wide_cbx){

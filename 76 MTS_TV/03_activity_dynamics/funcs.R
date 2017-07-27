@@ -132,8 +132,8 @@ buildReq <- function(begin, end, interval=60, regions, segment="all"){
     "ORDER BY timestamp DESC", sep="")
 }
 
-#  ----------------
-plotLineplotActivity <- function(df, publish_set, ntop=10){
+
+plotAreaplotActivity <- function(df, publish_set, ntop=10){ 
   
   flog.info(paste0("publish_set is ", capture.output(str(publish_set))))
   
@@ -160,8 +160,7 @@ plotLineplotActivity <- function(df, publish_set, ntop=10){
   gp
   }
 
-# ----------------
-plotAreaplotActivity <- function(df, publish_set, ntop=10){
+plotLineplotActivity <- function(df, publish_set, ntop=10){
 
   flog.info(paste0("publish_set is ", capture.output(str(publish_set))))
   
@@ -196,8 +195,7 @@ gen_word_report <- function(df, template_fname, publish_set=NULL){
   # считаем данные для вставки -----------------------------------
   n_out <- ifelse(nrow(df)<80, nrow(df), 80)
   out_df <- df %>% 
-    filter(row_number() < n_out) %>%
-    select(-total_unique_stb)
+    filter(row_number() < n_out)
 
   flog.info(paste0("Word report generation under ", Sys.info()["sysname"]))
   if (Sys.info()["sysname"] == "Linux") {
@@ -210,9 +208,9 @@ gen_word_report <- function(df, template_fname, publish_set=NULL){
     body_add_par(value=paste0("Первые ", n_out, " строк данных"), style="heading 1") %>%
     body_add_table(value=out_df, style="table_template") %>% 
     body_add_par(value="ТОП 10 по времени просмотра", style="heading 2") %>%
-    body_add_gg(value=plotTop10Duration(df, publish_set=publish_set), style = "centered") %>%
+    body_add_gg(value=plotAreaplotActivity(df, publish_set=publish_set), style = "centered") %>%
     body_add_par(value="ТОП 10 по количеству уникальных приставок", style="heading 2") %>%
-    body_add_gg(value=plotTop10STB(df, publish_set=publish_set), style="centered")
+    body_add_gg(value=plotLineplotActivity(df, publish_set=publish_set), style="centered")
   
   doc
   
