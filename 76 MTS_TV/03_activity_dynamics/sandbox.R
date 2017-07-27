@@ -76,10 +76,14 @@ df <- dbGetQuery(con, r) %>%
 
 # нарисуем lineplot
 # gp <- ggplot(df, aes(timegroup, watch_events, color=channelId)) +
+g <- guide_legend("Каналы")
 gp <- ggplot(df, aes(timegroup, channel_duration, color=channelId)) +
   # geom_line(lwd=1.2, alpha=0.5) +
   # geom_point(shape=21, size=4, alpha=0.5) +
   geom_area(aes(colour=channelId, fill=channelId), alpha=0.5, position="stack") +
+  guides(colour=g, fill=g) +
+  #scale_fill_discrete(name="Experimental\nCondition") +
+  #scale_colour_discrete(name="colour") +
   # geom_text(aes(label=label), hjust=+1.1, colour="blue") + # для вертикальных
   # geom_label(aes(label=label), fill="white", colour="black", fontface="bold", hjust=+1.1) +
   # geom_text_repel(aes(label=label), fontface = 'bold', color = 'blue', nudge_y=0) +

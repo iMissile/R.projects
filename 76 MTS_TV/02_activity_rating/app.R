@@ -11,6 +11,7 @@ library(magrittr)
 library(stringi)
 library(stringr)
 library(futile.logger)
+library(jsonlite)
 library(Cairo)
 library(RColorBrewer)
 library(extrafont)
@@ -172,7 +173,7 @@ server <- function(input, output, session) {
     con <- dbConnect(clickhouse(), host="10.0.0.44", port=8123L, user="default", password="")
   }      
   
-  # подгрузим таблицу преобразования транслита в русские названия городов
+  # подгрузим таблицу преобразования транслита в русские названия городов -------
   cities_df <- {
     flog.info("Loading cities translit table")
     # подгрузим ограниченный список городов

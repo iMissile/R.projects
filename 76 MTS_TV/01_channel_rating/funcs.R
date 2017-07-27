@@ -91,12 +91,12 @@ plotTop10Duration <- function(df, publish_set, ntop=10){
     arrange(desc(channel_duration)) %>%
     mutate(label=format(channel_duration, big.mark=" "))
 
-  gp <- ggplot(reg_df, aes(fct_reorder(as.factor(channelId), channel_duration, .desc=FALSE), channel_duration)) +
+  gp <- ggplot(reg_df, aes(fct_reorder(as.factor(channelName), channel_duration, .desc=FALSE), channel_duration)) +
     geom_bar(fill=brewer.pal(n=9, name="Greens")[4], alpha=0.5, stat="identity") +
     # geom_text(aes(label=label), hjust=+1.1, colour="blue") + # для вертикальных
     geom_label(aes(label=label), fill="white", colour="black", fontface="bold", hjust=+1.1) +
     # geom_text_repel(aes(label=label), fontface = 'bold', color = 'blue', nudge_y=0) +
-    # scale_x_discrete("Передача", breaks=df2$order, labels=df2$channelId) +
+    # scale_x_discrete("Передача", breaks=df2$order, labels=df2$channelName) +
     scale_y_log10() +
     theme_ipsum_rc(base_size=publish_set[["base_size"]],
                    subtitle_size=publish_set[["subtitle_size"]],
@@ -121,12 +121,12 @@ plotTop10STB <- function(df, publish_set, ntop=10){
     arrange(desc(unique_stb)) %>%
     mutate(label=format(unique_stb, big.mark=" "))    
   
-  gp <- ggplot(reg_df, aes(fct_reorder(as.factor(channelId), unique_stb, .desc=FALSE), unique_stb)) +
+  gp <- ggplot(reg_df, aes(fct_reorder(as.factor(channelName), unique_stb, .desc=FALSE), unique_stb)) +
     geom_bar(fill=brewer.pal(n=9, name="Blues")[4], alpha=0.5, stat="identity") +
     # geom_text(aes(label=label), hjust=+1.1, colour="blue") + # для вертикальных
     geom_label(aes(label=label), fill="white", colour="black", fontface="bold", hjust=+1.1) +
     # geom_text_repel(aes(label=label), fontface = 'bold', color = 'blue', nudge_y=0) +
-    # scale_x_discrete("Передача", breaks=df2$order, labels=df2$channelId) +
+    # scale_x_discrete("Передача", breaks=df2$order, labels=df2$channelName) +
     scale_y_log10() +
     theme_ipsum_rc(base_size=publish_set[["base_size"]], 
                    subtitle_size=publish_set[["subtitle_size"]],
@@ -182,7 +182,8 @@ getRusColnames <- function(df) {
     "watch_events", "кол-во просмотров", "кол-во просмотров", "подсказка (watch_events)",
     "stb_ratio", "% уник. STB", "% уник. STB", "подсказка (stb_ratio)",
     "segment", "сегмент", "сегмент", "подсказка (segment)",
-    "channelId", "канал", "канал", "подсказка (channelId)",
+    "channelId", "канал (ID)", "канал  (ID)", "подсказка (channelId)",
+    "channelName", "канал", "канал", "подсказка (channelName)",
     "channel_duration", "суммарное время, мин", "суммарное время, мин", "подсказка (channel_duration)",
     "mean_duration", "ср. время просмотра, мин", "ср. время просмотра, мин", "подсказка (mean_duration)",
     "watch_ratio", "% врем. просмотра", "% врем. просмотра", "подсказка (watch_ratio)",

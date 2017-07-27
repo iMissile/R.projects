@@ -5,12 +5,14 @@ gc()
 
 library(tidyverse)
 library(lubridate)
+library(scales)
 library(forcats)
 library(readxl)
 library(magrittr)
 library(stringi)
 library(stringr)
 library(futile.logger)
+library(jsonlite)
 library(Cairo)
 library(RColorBrewer)
 library(extrafont)
@@ -57,11 +59,9 @@ ui <-
 
   # http://stackoverflow.com/questions/25387844/right-align-elements-in-shiny-mainpanel/25390164
   tags$head(tags$style(".rightAlign{float:right;}")), 
-  
-  
-  
+
   # titlePanel("Статистика телесмотрения"),
-  # ----------------
+  
   conditionalPanel(
     # general panel -----------------------
     condition = "input.tsp == 'general_panel'",
@@ -164,7 +164,7 @@ server <- function(input, output, session) {
     con <- dbConnect(clickhouse(), host="10.0.0.44", port=8123L, user="default", password="")
   }      
   
-  # подгрузим таблицу преобразования транслита в русские названия городов
+  # подгрузим таблицу преобразования транслита в русские названия городов -------
   cities_df <- {
     flog.info("Loading cities translit table")
     # подгрузим ограниченный список городов
@@ -178,6 +178,11 @@ server <- function(input, output, session) {
     df
   }
   
+  
+  
+  # подгрузим таблицу преобразования идентификатора канала в русское название ----
+  progs_df <- jsonlite::fromJSON("./channels.json", simplifyDataFrame=TRUE) %>% 
+    select(channelId, channelName=name)
   
   # реактивные переменные -------------------
   raw_df <- reactive({
@@ -227,15 +232,21 @@ server <- function(input, output, session) {
 
   cur_df <- reactive({
     req(raw_df()) %>%
-      # filter(segment==input$segment_filter) %>%
-      select(channelId, everything())
+      mutate_at(vars(channelId), as.character) %>%
+      left_join(progs_df, by=c("channelId")) %>%
+      # санация
+      mutate(channelName=if_else(is.na(channelName), 
+                                 str_c("_", channelId, "_"), 
+                                 channelName)) %>%
+      select(channelName, channelId, everything())
   })
   
   msg <- reactiveVal("")
 
   # таблица с выборкой по каналам ----------------------------
   output$stat_table <- DT::renderDataTable({
-    df <- req(cur_df())
+    df <- req(cur_df()) %>%
+      select(-channelId)
     
     colnames_df <- getRusColnames(df)
     # https://stackoverflow.com/questions/39970097/tooltip-or-popover-in-shiny-datatables-for-row-names

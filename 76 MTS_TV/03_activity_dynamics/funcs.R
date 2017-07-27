@@ -141,16 +141,18 @@ plotAreaplotActivity <- function(df, publish_set, ntop=10){
   # browser()
   reg_df <- df %>%
     rename(value=watch_events) # обезличили
-#     group_by(channelId)
+#     group_by(channelName)
 #     top_n(ntop, value) %>%
 # # может возникнуть ситуация, когда все значения top_n одинаковы. тогда надо брать выборку
 #     filter(row_number()<=ntop) %>%
 #     arrange(desc(value))
 
-  gp <- ggplot(reg_df, aes(timegroup, value, color=channelId)) +
+  g <- guide_legend("Каналы")
+  gp <- ggplot(reg_df, aes(timegroup, value, color=channelName)) +
     # geom_line(lwd=1.2, alpha=0.5) +
     # geom_point(shape=21, size=4, alpha=0.5) +
-    geom_area(aes(colour=channelId, fill=channelId), alpha=0.5, position="stack") +
+    geom_area(aes(colour=channelName, fill=channelName), alpha=0.5, position="stack") +
+    guides(colour=g, fill=g) +
     scale_x_datetime(labels=date_format(format="%d.%m.%y%n%H:%M", tz="Europe/Moscow")) +
     theme_ipsum_rc(base_size=publish_set[["base_size"]], 
                    axis_title_size=publish_set[["axis_title_size"]]) +  
@@ -173,10 +175,12 @@ plotLineplotActivity <- function(df, publish_set, ntop=10){
   #   filter(row_number()<=ntop) %>%
   #   arrange(desc(value))
   
-  gp <- ggplot(reg_df, aes(timegroup, value, color=channelId)) +
+  g <- guide_legend("Каналы")
+  gp <- ggplot(reg_df, aes(timegroup, value, color=channelName)) +
     geom_line(lwd=1.2, alpha=0.5) +
     geom_point(shape=21, size=4, alpha=0.5) +
-    # geom_area(aes(colour=channelId, fill=channelId), alpha=0.5, position="stack") +
+    guides(colour=g, fill=g) +
+    # geom_area(aes(colour=channelName, fill=channelName), alpha=0.5, position="stack") +
     scale_x_datetime(labels=date_format(format="%d.%m.%y%n%H:%M", tz="Europe/Moscow")) +
     theme_ipsum_rc(base_size=publish_set[["base_size"]], 
                    axis_title_size=publish_set[["axis_title_size"]]) +  
@@ -228,7 +232,8 @@ getRusColnames <- function(df) {
     "watch_events", "кол-во просмотров", "кол-во просмотров", "подсказка (watch_events)",
     "stb_ratio", "% уник. STB", "% уник. STB", "подсказка (stb_ratio)",
     "segment", "сегмент", "сегмент", "подсказка (segment)",
-    "channelId", "канал", "канал", "подсказка (channelId)",
+    "channelId", "канал (ID)", "канал  (ID)", "подсказка (channelId)",
+    "channelName", "канал", "канал", "подсказка (channelName)",
     "channel_duration", "суммарное время, мин", "суммарное время, мин", "подсказка (channel_duration)",
     "mean_duration", "ср. время просмотра, мин", "ср. время просмотра, мин", "подсказка (mean_duration)",
     "watch_ratio", "% врем. просмотра", "% врем. просмотра", "подсказка (watch_ratio)",

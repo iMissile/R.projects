@@ -4,6 +4,7 @@ library(magrittr)
 library(forcats)
 library(jsonlite)
 library(stringi)
+library(stringr)
 library(tictoc)
 library(profvis)
 library(microbenchmark)
@@ -22,11 +23,18 @@ fname <- "./data/channels.json"
 
 df0 <- jsonlite::fromJSON(fname, simplifyDataFrame=TRUE)
 
-df <- df0 %>% select(channelId, ch_name=name)
+prog_df <- df0 %>% select(channelId, ch_name=name)
 
-cur_df <- readRDS("./data/cur_df_report2.rds") %>%
+df <- readRDS("./data/channels_report1.rds") %>%
   filter(complete.cases(.))
 
+df %<>% # при пустом значении решает, что logi
+  left_join(prog_df, by=c("channelId")) %>%
+  # санация
+  # mutate_at(vars(ch_name), ~if_else(is.na(.x), str_c("_", .$channelId, "_"), .x)) %>%
+  mutate(ch_name=if_else(is.na(ch_name), str_c("_", channelId, "_"), ch_name)) %>%
+  select(-channelId) %>%
+  select(channelId=ch_name, everything())
 stop()
 
 
