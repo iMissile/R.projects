@@ -27,10 +27,10 @@ hgroup.enum <- function(date, hour_bin=NULL, min_bin=5){
 # конструирование ограничений запроса по данным фильтров
 buildReqLimits <- function(begin, end, regions, segment) {
   # базисная SQL конструкция для ограничения дат ----
-  limit_dates <- paste0(" toDate(begin) >= toDate('", begin, "') AND toDate(end) <= toDate('", end, "') ")
+  # limit_dates <- paste0(" toDate(begin) >= toDate('", begin, "') AND toDate(end) <= toDate('", end, "') ")
+  limit_dates <- paste0(" date >= '", begin, "' AND date <= '", end, "' ")
   
   # добавочная SQL конструкция для ограничения регионов -----
-  
   limit_regions <- ifelse(is.null(regions), " ",
                           stri_join(" AND region IN (", 
                                     stri_join(regions %>% map_chr(~stri_join("'", .x, "'", sep="")),
@@ -172,24 +172,6 @@ gen_word_report <- function(df, template_fname, publish_set=NULL){
   }
 
 # Локализация названий колонок в датасете --------------
-colNamesToRus <- function(df){
-  # используется исключительно перед выводом
-  # локализовано, чтобы гибко подстраивать под возможные пожелания
-  # browser()
-  df %>% select("канал"=channelId, 
-                # 'Сегмент'=segment, 
-                # 'Регион'=region, 
-                "кол-во уник. STB"=unique_stb,
-                "всего уник. STB"=total_unique_stb,
-                "суммарное время, мин"=channel_duration,
-                "кол-во просмотров"=watch_events, 
-                "ср. время просмотра, мин"=mean_duration,
-                "% уник. STB"=stb_ratio,
-                "% врем. просмотра"=watch_ratio,
-                "ср. время просм. 1 STB за период, мин"=duration_per_stb)
-  
-}
-
 getRusColnames <- function(df) {
   colnames_df <- tribble(
     ~col_name, ~col_runame_screen, ~col_runame_office, ~col_label, 
@@ -205,9 +187,15 @@ getRusColnames <- function(df) {
     "mean_duration", "ср. время просмотра, мин", "ср. время просмотра, мин", "подсказка (mean_duration)",
     "watch_ratio", "% врем. просмотра", "% врем. просмотра", "подсказка (watch_ratio)",
     "duration_per_stb", "ср. время просм. 1 STB за период, мин", "ср. время просм. 1 STB за период, мин", "подсказка (duration_per_stb)",
-    "date", "дата", "дата", "подсказка (date)"
+    "date", "дата", "дата", "подсказка (date)",
+    "timestamp", "время", "время", "подсказка (timestamp)",
+    "timegroup", "группа", "группа", "подсказка (timegroup)"
   )
   
   tibble(name=names(df)) %>%
-    left_join(colnames_df, by=c("name"="col_name"))
+    left_join(colnames_df, by=c("name"="col_name")) %>%
+    # санация
+    mutate(col_runame_screen=if_else(is.na(col_runame_screen), name, col_runame_screen)) %>%
+    mutate(col_runame_office=if_else(is.na(col_runame_office), name, col_runame_office)) %>%
+    mutate(col_label=if_else(is.na(col_label), name, col_label))
 }

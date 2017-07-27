@@ -19,6 +19,7 @@ library(DBI)
 library(RPostgreSQL)
 library(config)
 library(shiny)
+library(shinyjqui)
 library(shinythemes) # https://rstudio.github.io/shinythemes/
 library(shinyBS)
 library(shinyjs)
@@ -130,9 +131,11 @@ ui <-
                ),
                fluidRow(
                  p(),
-                 column(6, div(withSpinner(plotOutput('top10_duration_plot', height="500px")))),
-                 column(6, div(withSpinner(plotOutput('top10_stb_plot', height="500px"))))
-               )
+                 jqui_sortabled(
+                   div(id='top10_plots',
+                       column(6, div(withSpinner(plotOutput('top10_duration_plot', height="500px")))),
+                       column(6, div(withSpinner(plotOutput('top10_stb_plot', height="500px"))))
+                       )))
                )
       )
     #,
@@ -157,7 +160,7 @@ server <- function(input, output, session) {
   # создание параметров оформления для различных видов графиков (screen\publish) ------
   font_sizes <- list(
     "screen"=list(base_size=20, axis_title_size=18, subtitle_size=15),
-    "word_A4"=list(base_size=16, axis_title_size=14, subtitle_size=13)
+    "word_A4"=list(base_size=14, axis_title_size=12, subtitle_size=11)
   )
   
   # создаем коннект к инстансу CH -----------
@@ -198,6 +201,7 @@ server <- function(input, output, session) {
       flog.info(paste0("Applied region filter [", regions, "]"))
       r <- buildReq(begin=input$in_date_range[1], end=input$in_date_range[2], 
                     regions=regions, segment=input$segment_filter)
+      flog.info(paste0("DB request: ", r))
     })
     
     # browser()
@@ -262,18 +266,27 @@ server <- function(input, output, session) {
                   # только после жесткой фиксации колонок
                   container=colheader,
                   options=list(dom='fltip', pageLength=7, lengthMenu=c(5, 7, 10, 15),
-                               order=list(list(3, 'desc')))) %>%
+                               order=list(list(3, 'desc')))) %>% # нумерация с 0
       DT::formatPercentage("stb_ratio", 2)
     })
   
   # график Топ10 каналов по суммарному времени просмотра -------------
   output$top10_duration_plot <-renderPlot({
+    shiny::validate(
+      need(!is.null(cur_df()), "NULL value can't be renederd"),
+      need(nrow(cur_df())>0, "0 rows -- nothing to draw") 
+    )
+    
     plotTop10Duration(cur_df(), publish_set=font_sizes[["screen"]], 
                       ntop=as.integer(input$top_num))
   })
   
   # график Топ10 каналов по количеству уникальных приставок --------------
   output$top10_stb_plot <-renderPlot({
+    shiny::validate(
+      need(!is.null(cur_df()), "NULL value can't be renederd"),
+      need(nrow(cur_df())>0, "0 rows -- nothing to draw") 
+    )
     plotTop10STB(cur_df(), publish_set=font_sizes[["screen"]], 
                  ntop=as.integer(input$top_num))
   })  
@@ -296,7 +309,7 @@ server <- function(input, output, session) {
   # управляем визуализацией кнопок выгрузки ----- 
   observe({
     # browser()
-    if(nrow(cur_df())>0) {
+    if(!is.null(cur_df()) & nrow(cur_df())>0) {
       shinyjs::enable("csv_download_btn")
       shinyjs::enable("word_download_btn")
     } else {

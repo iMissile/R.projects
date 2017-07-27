@@ -2,12 +2,8 @@ library(tidyverse)
 library(lubridate)
 library(magrittr)
 library(forcats)
-library(ggrepel)
+library(jsonlite)
 library(stringi)
-library(shiny)
-library(DBI)
-library(RPostgreSQL)
-library(anytime)
 library(tictoc)
 library(profvis)
 library(microbenchmark)
@@ -15,14 +11,31 @@ library(Cairo)
 library(RColorBrewer)
 library(extrafont)
 library(hrbrthemes)
-# library(debug)
-library(config)
-library(htmltools)
 
 getwd() # чтобы видеть, какая директория является рабочей
 
-source("clickhouse.R")
-eval(parse("funcs.R", encoding="UTF-8"))
+#source("clickhouse.R")
+#eval(parse("funcs.R", encoding="UTF-8"))
+
+
+fname <- "./data/channels.json"
+
+df0 <- jsonlite::fromJSON(fname, simplifyDataFrame=TRUE)
+
+df <- df0 %>% select(channelId, ch_name=name)
+
+cur_df <- readRDS("./data/cur_df_report2.rds") %>%
+  filter(complete.cases(.))
+
+stop()
+
+
+
+
+
+
+
+
 
 cur_df <- readRDS("./data/cur_df_report2.rds") %>%
   filter(complete.cases(.))

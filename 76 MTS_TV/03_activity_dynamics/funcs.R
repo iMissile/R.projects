@@ -27,7 +27,8 @@ hgroup.enum <- function(date, hour_bin=NULL, min_bin=5){
 # конструирование ограничений запроса по данным фильтров
 buildReqLimits <- function(begin, end, regions, segment) {
   # базисная SQL конструкция для ограничения дат ----
-  limit_dates <- paste0(" toDate(begin) >= toDate('", begin, "') AND toDate(end) <= toDate('", end, "') ")
+  # limit_dates <- paste0(" toDate(begin) >= toDate('", begin, "') AND toDate(end) <= toDate('", end, "') ")
+  limit_dates <- paste0(" date >= '", begin, "' AND date <= '", end, "' ")
   
   # добавочная SQL конструкция для ограничения регионов -----
   limit_regions <- ifelse(is.null(regions), " ",

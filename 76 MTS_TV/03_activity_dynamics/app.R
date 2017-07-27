@@ -20,6 +20,7 @@ library(DBI)
 library(RPostgreSQL)
 library(config)
 library(shiny)
+library(shinyjqui)
 library(shinythemes) # https://rstudio.github.io/shinythemes/
 library(shinyBS)
 library(shinyjs)
@@ -131,9 +132,11 @@ ui <-
       tabPanel("График", value = "graph_tab",
                fluidRow(
                  p(),
+                 jqui_sortabled(
+                   div(id='top10_plots',
                  column(6, div(withSpinner(plotOutput('top10_left_plot', height="500px")))),
                  column(6, div(withSpinner(plotOutput('top10_right_plot', height="500px"))))
-                 )
+                 )))
                )
       )
     #,
@@ -281,7 +284,7 @@ server <- function(input, output, session) {
                   # только после жесткой фиксации колонок
                   container=colheader,
                   options=list(dom='fltip', pageLength=7, lengthMenu=c(5, 7, 10, 15),
-                               order=list(list(1, 'asc')),
+                               order=list(list(1, 'asc')), # нумерация с 0
                                # columnDefs=list(list(width="160px", targets="_all"),
                                #                 list(className='dt-center', targets="_all")),
                   #autoWidth=TRUE,
@@ -300,13 +303,21 @@ server <- function(input, output, session) {
   
   # левый график  -------------
   output$top10_left_plot <- renderPlot({
-    plotLineplotActivity(cur_df(), publish_set=font_sizes[["screen"]], 
+    shiny::validate(
+      need(!is.null(cur_df()), "NULL value can't be renederd"),
+      need(nrow(cur_df())>0, "0 rows -- nothing to draw") 
+    )
+    plotAreaplotActivity(cur_df(), publish_set=font_sizes[["screen"]], 
                       ntop=as.integer(input$top_num))
   })
   
   # правый график --------------
   output$top10_right_plot <-renderPlot({
-    plotAreaplotActivity(cur_df(), publish_set=font_sizes[["screen"]], 
+    shiny::validate(
+      need(!is.null(cur_df()), "NULL value can't be renederd"),
+      need(nrow(cur_df())>0, "0 rows -- nothing to draw") 
+    )
+    plotLineplotActivity(cur_df(), publish_set=font_sizes[["screen"]], 
                  ntop=as.integer(input$top_num))
   })  
 
