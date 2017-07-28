@@ -65,11 +65,13 @@ plotTop10Uplink <- function(df) {
 
 plotFacetTraffic <- function(df, pal="Set1", wrap=FALSE, point_labes=FALSE) {
 
+  # g <- guide_legend("Трафик")
   gp <- ggplot(df, aes(timegroup, volume)) + 
     # geom_line(aes(colour=direction), alpha=0.4, lwd=1) +
     # geom_point(aes(colour=direction), alpha=0.4, shape=1, size=2) +
     geom_line(aes(y=global_meanr, group=direction), alpha=0.85, linetype="longdash", lwd=1, colour="black") +
     scale_y_continuous(trans='log10') +
+    # guides(colour=g, fill=g, shape=g) +
     #scale_y_log10(breaks=trans_breaks("log10", function(x) 10^x),
     #              labels=trans_format("log10", math_format(10^.x))) +
     #annotation_logticks() +
@@ -86,7 +88,7 @@ plotFacetTraffic <- function(df, pal="Set1", wrap=FALSE, point_labes=FALSE) {
       # http://www.sthda.com/english/wiki/ggplot2-colors-how-to-change-colors-automatically-and-manually
       # http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/
       scale_color_brewer(palette=pal,
-                         name="Трафик",
+                         name="Направление",
                          breaks=c("up", "down"),
                          labels=c("Uplink", "Downlink")
       ) +
@@ -97,7 +99,8 @@ plotFacetTraffic <- function(df, pal="Set1", wrap=FALSE, point_labes=FALSE) {
     # http://stackoverflow.com/questions/6910988/change-both-legend-titles-in-a-ggplot-with-two-legends
     gp <- gp + 
       scale_color_brewer(palette=pal) +
-      labs(colour="Площадка", linetype="Трафик", shape="Направление") +
+      # labs(colour="Площадка", linetype="Трафик", shape="Направление") +
+      labs(colour="Площадка", linetype="Направление", shape="Направление") +
       geom_point(aes(colour=site, shape=direction), alpha=0.85, size=3) +
       geom_line(aes(y=volume_meanr, colour=site, linetype=direction), alpha=0.85, lwd=1)
   } 

@@ -27,10 +27,16 @@ library(shiny)
 library(plotly)
 library(shinythemes) # https://rstudio.github.io/shinythemes/
 library(shinyBS)
+library(shinyjqui)
+library(shinycssloaders)
 library(shinyjs)
 library(futile.logger)
 library(RcppRoll)
 library(fuzzyjoin)
+
+options(shiny.usecairo=TRUE)
+options(shiny.reactlog=TRUE)
+options(spinner.type=4)
 
 # В DataTable поиск работает только для UNICODE!!!!!!
 
@@ -103,10 +109,10 @@ ui <- fluidPage(
                                   div(
                                     style = "position:relative; font-size:smaller;",
                                     # column(12, plotOutput("dynamic_plot", height = "600px"))
-                                    plotOutput("dynamic_plot", 
+                                    withSpinner(plotOutput("dynamic_plot", 
                                                height="600px",
                                                hover=hoverOpts("plot_hover", delay=100, delayType = "debounce")
-                                               ),
+                                               )),
                                     uiOutput("hover_info")
                                   )
                            )
@@ -122,12 +128,15 @@ ui <- fluidPage(
                          ),
                 tabPanel("Топ N", value="top_n",
                          fluidRow(
-                           column(6, plotOutput("top_downlink_plot")),
-                           column(6, plotOutput("top_uplink_plot"))
+                           jqui_sortabled(
+                             div(id='top10_plots',
+                                 column(6, withSpinner(plotOutput("top_downlink_plot"))),
+                                 column(6, withSpinner(plotOutput("top_uplink_plot")))
+                             ))
                            ),
                          fluidRow(
-                           column(6, downloadButton("top_downlink_download", class = 'rightAlign')),
-                           column(6, downloadButton("top_uplink_download", class = 'rightAlign'))
+                           column(6, downloadButton("top_downlink_download", label="Экспорт down (Excel)", class = 'rightAlign')),
+                           column(6, downloadButton("top_uplink_download", label="Экспорт up (Excel)", class = 'rightAlign'))
                            ),
                          fluidRow(
                            column(12, selectInput("site", "Площадки", regions, 
@@ -146,7 +155,7 @@ ui <- fluidPage(
                          ),
                 tabPanel("'Соц. сети'", value="http_category", 
                          fluidRow(
-                           column(12, plotOutput("http_category_plot"))
+                           column(12, withSpinner(plotOutput("http_category_plot")))
                            ),
                          fluidRow(
                            column(12, dataTableOutput("http_category_table"))
@@ -385,7 +394,8 @@ server <- function(input, output, session) {
       top10_down_df() %>% arrange(desc(volume)) %>%
         # write_csv(file)
         # сделаем вывод в формате, принимаемым Excel
-        write.table(file, na="NA", append=FALSE, col.names=TRUE, row.names=FALSE, sep=";")
+        write.table(file, na="NA", append=FALSE, col.names=TRUE, 
+                    row.names=FALSE, sep=";", fileEncoding="windows-1251")
     }
   )
 
@@ -397,7 +407,8 @@ server <- function(input, output, session) {
       top10_up_df() %>% arrange(desc(volume)) %>%
       # write_csv(file)
       # сделаем вывод в формате, принимаемым Excel
-      write.table(file, na="NA", append=FALSE, col.names=TRUE, row.names=FALSE, sep=";")
+        write.table(file, na="NA", append=FALSE, col.names=TRUE, 
+                    row.names=FALSE, sep=";", fileEncoding="windows-1251")
     }
   )
     
