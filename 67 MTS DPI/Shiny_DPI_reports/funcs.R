@@ -87,11 +87,17 @@ plotFacetTraffic <- function(df, pal="Set1", wrap=FALSE, point_labes=FALSE) {
       facet_wrap(~site, scales="free", nrow=2) +
       # http://www.sthda.com/english/wiki/ggplot2-colors-how-to-change-colors-automatically-and-manually
       # http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/
-      scale_color_brewer(palette=pal,
-                         name="Направление",
-                         breaks=c("up", "down"),
-                         labels=c("Uplink", "Downlink")
+      scale_color_brewer(palette=pal
+                         # name="Направление",
+                         # breaks=c("up", "down")
+                         #labels=c("Uplink", "Downlink")
       ) +
+      # guides(colour=guide_legend("Направление"), size=guide_legend("title"),
+      #        shape=guide_legend("Направление"), group=guide_legend("Направление")) +
+      labs(colour="Направление", 
+           color="Направление2",
+           shape="Направление"
+           ) +
       geom_point(aes(colour=direction, shape=direction), alpha=0.85, size=3) +
       geom_line(aes(y=volume_meanr, colour=direction), alpha=0.85, lwd=1)
   }else{
@@ -100,9 +106,9 @@ plotFacetTraffic <- function(df, pal="Set1", wrap=FALSE, point_labes=FALSE) {
     gp <- gp + 
       scale_color_brewer(palette=pal) +
       # labs(colour="Площадка", linetype="Трафик", shape="Направление") +
-      labs(colour="Площадка", linetype="Направление", shape="Направление") +
       geom_point(aes(colour=site, shape=direction), alpha=0.85, size=3) +
-      geom_line(aes(y=volume_meanr, colour=site, linetype=direction), alpha=0.85, lwd=1)
+      geom_line(aes(y=volume_meanr, colour=site, linetype=direction), alpha=0.85, lwd=1) +
+      labs(colour="Площадка", linetype="Направление", shape="Направление")
   } 
 
   if(point_labes){
