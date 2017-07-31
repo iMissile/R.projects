@@ -37,32 +37,6 @@ cities_df <- req(
     mutate_if(is.character, `Encoding<-`, "UTF-8") %>%
     filter(translit %in% pull(city_subset)))
 
-getProgramName <- function(clean_df) {
-  # делаем экспорт в PostgreSQL ---------------------
-  # Connect to a specific postgres database
-  
-  if (Sys.info()["sysname"] == "Windows") {
-    dw <- config::get("media-tel")
-  }else{
-    dw <- config::get("cti")
-  }
-  
-  # dbConnect из RPostgreSQL
-  con <- dbConnect(dbDriver(dw$driver),
-                   host = dw$host,
-                   user = dw$uid,
-                   password = dw$pwd,
-                   port = dw$port,
-                   dbname = dw$database
-  )
-  dbWriteTable(con, "tv_list", clean_df, overwrite = TRUE)
-  
-  # # принудительно загоняем кодировку сгруженных данных в unicode
-  # m <- dbReadTable(con, "tv_list") %>%
-  # mutate_if(is.character, `Encoding<-`, "UTF-8")
-  
-  dbDisconnect(con)
-}
 
 # а теперь из этого надо сделать list для листбокса. Имя -- русское название, значение -- транслит
 # m <- cities_df %>% column_to_rownames(var="russian") %>% select(translit)
@@ -71,6 +45,11 @@ getProgramName <- function(clean_df) {
 # names(m) <- cities_df$russian
 
 regions <- c("Moskva", "Barnaul")
+
+tic()
+df <- getTvProgramm()
+toc()
+pryr::object_size(df)
 
 
 # запрашиваем ТОП 20 передач по общему времени телесмотрения по заданным фильтрам

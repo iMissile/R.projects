@@ -47,7 +47,7 @@ ui <-
   navbarPage("DVT IoT",
   # title=HTML('<div><a href="http://devoteam.com/"><img src="./img/devoteam_176px.png" width="80%"></a></div>'),
   title = "Статистика телесмотрения",
-  tabPanel("Динамика пользовательской активности", value="general_panel"),
+  tabPanel("Статистика по телепередачам", value="general_panel"),
   tabPanel("About", value="about"),
   # windowTitle="CC4L",
   # collapsible=TRUE,
@@ -59,9 +59,7 @@ ui <-
 
   # http://stackoverflow.com/questions/25387844/right-align-elements-in-shiny-mainpanel/25390164
   tags$head(tags$style(".rightAlign{float:right;}")), 
-  
-  
-  
+
   # titlePanel("Статистика телесмотрения"),
   # ----------------
   conditionalPanel(
@@ -85,9 +83,9 @@ ui <-
                                separator = " - ", format = "dd/mm/yy",
                                startview = "month", language = 'ru', weekstart=1)
       ), 
-      column(1, selectInput("history_depth", "История", 
-                            choices = c("1 месяц"=30, "2 недели"=14,
-                                        "1 неделя"=7, "3 дня"=3, "1 день"=1), selected=1)),
+      # column(1, selectInput("history_depth", "История", 
+      #                       choices = c("1 месяц"=30, "2 недели"=14,
+      #                                   "1 неделя"=7, "3 дня"=3, "1 день"=1), selected=1)),
       #column(1, selectInput("min_watch_time", "Мин. время",
       #                      choices = c("5 сек"=5, "10 сек"=10, 
       #                                  "20 сек"=20, "30 сек"=30), selected = 10)),
@@ -101,7 +99,7 @@ ui <-
                                         "DVB-C"="DVB-C", 
                                         "IPTV"="IPTV", 
                                         "DVB-S"="DVB-S"), selected="all")),
-      column(1, selectInput("time_bin", "Период агрегации", 
+      column(1, selectInput("time_bin", "Детализация", 
                             choices=c("1 час"=60, "1 сутки"=24*60), selected=60))
     ),
     fluidRow(
@@ -116,28 +114,24 @@ ui <-
       tabPanel("Таблица", value = "table_tab",
                fluidRow(
                  p(),
-                 column(12, div(checkboxInput("long_wide_cbx", "Long форма", TRUE), 
-                                class='rightAlign'))
-               ),
-               fluidRow(
                  column(12, div(withSpinner(DT::dataTableOutput('stat_table'))), style="font-size: 90%")
-               ),
-               p(),
-               fluidRow(
-                 column(8, {}),
-                 column(2, downloadButton("csv_download_btn", label="Экспорт (Excel)", class = 'rightAlign')),
-                 column(2, downloadButton("word_download_btn", label="Экспорт (Word)", class = 'rightAlign'))
                )
-      ),
-      tabPanel("График", value = "graph_tab",
-               fluidRow(
-                 p(),
-                 jqui_sortabled(
-                   div(id='top10_plots',
-                 column(6, div(withSpinner(plotOutput('top10_left_plot', height="500px")))),
-                 column(6, div(withSpinner(plotOutput('top10_right_plot', height="500px"))))
-                 )))
-               )
+               # p(),
+               # fluidRow(
+               #   column(8, {}),
+               #   column(2, downloadButton("csv_download_btn", label="Экспорт (Excel)", class = 'rightAlign')),
+               #   column(2, downloadButton("word_download_btn", label="Экспорт (Word)", class = 'rightAlign'))
+               # )
+      )
+      # tabPanel("График", value = "graph_tab",
+      #          fluidRow(
+      #            p(),
+      #            jqui_sortabled(
+      #              div(id='top10_plots',
+      #            column(6, div(withSpinner(plotOutput('top10_left_plot', height="500px")))),
+      #            column(6, div(withSpinner(plotOutput('top10_right_plot', height="500px"))))
+      #            )))
+      #          )
       )
     #,
     #fluidRow(
@@ -187,10 +181,24 @@ server <- function(input, output, session) {
     df
   }
 
+  # подгрузим собранную программу телепередач -------
+  tvplan_df <- {
+    flog.info("Loading TV plan table")
+
+    tic()
+    df <- getTvProgramm()
+    flog.info(paste0("Query TV plan: ", capture.output(toc())))
+    flog.info(paste0("TV plan table loaded, ", nrow(df), " rows"))
+    # dbDisconnect(con)
+    # pryr::object_size(df)
+    # browser()
+    df
+  }
   
   # подгрузим таблицу преобразования идентификатора канала в русское название ----
   progs_df <- jsonlite::fromJSON("./channels.json", simplifyDataFrame=TRUE) %>% 
-    select(channelId, channelName=name)
+    select(channelId, channelName=name) %>%
+    as_tibble()
   
   # реактивные переменные -------------------
   raw_df <- reactive({
@@ -209,41 +217,52 @@ server <- function(input, output, session) {
       flog.info(paste0("Applied channel filter [", channels, "]"))
     
       # запрос конкретных данных
-      r <- buildReqDynamic(begin=input$in_date_range[1], end=input$in_date_range[2],
-                           regions=regions, 
-                           interval=as.numeric(input$time_bin), 
-                           channels=channels, 
-                           segment=input$segment_filter)
+      r <- buildReqStep1(begin=input$in_date_range[1], end=input$in_date_range[2],
+                         regions=regions,
+                         channels=channels, 
+                         segment=input$segment_filter)
       flog.info(paste0("DB request: ", r))    
 
       tic()
       # browser()
       temp_df <- dbGetQuery(con, r)
-      flog.info(paste0("Query by channels: ", capture.output(toc())))
       flog.info(paste0("Loaded ", nrow(temp_df), " rows"))    
     })
-    
-
-    # df <- NULL
+    # browser()
     df <- temp_df %>%
-      # время смотрения, мин
-      mutate(channel_duration=round(as.numeric(channel_duration), 0)) %>%
-      # превращаем временной маркер в POSIX
-      mutate(timegroup=anytime(as.numeric(timegroup), tz="Europe/Moscow")) %>%
-      as_tibble()
+      as_tibble() %>%
+      # общее время просмотра передачи всеми абонентами, мин
+      mutate(program_watch_time=round(as.numeric(program_watch_time), 0)) %>%
+      # 6. Среднее время просмотра, мин
+      mutate(mean_watch_time=round(program_watch_time/watch_events, 0)) %>%
+      # 3. % уникальных приставок
+      mutate(stb_ratio=round(unique_stb/total_unique_stb, 5)) %>%
+      # 5. % времени просмотра
+      mutate(watch_ratio=round(program_watch_time/sum(program_watch_time), 5))
+    # %>% mutate_at(vars(mean_duration, ratio_per_stb, watch_ratio, duration_per_stb), funs(round), digits=1)
     
+# browser()
     df
   })  
 
   cur_df <- reactive({
-    req(raw_df()) %>%
-      mutate_at(vars(channelId), as.character) %>%
-      left_join(progs_df, by=c("channelId")) %>%
+    df <- req(raw_df()) %>%
+      mutate_at(vars(programId), as.character) %>%
+      left_join(tvplan_df, by=c("programId"="program_id")) %>%
+      mutate_at(vars(channel_id), as.character) %>%
+      left_join(progs_df, by=c("channel_id"="channelId"))
+    # browser()
+    df %<>%
       # санация
       mutate(channelName=if_else(is.na(channelName), 
-                                 str_c("_", channelId, "_"), 
+                                 str_c("_", channel_id, "_"), 
                                  channelName)) %>%
-      select(channelName, channelId, everything())
+      select(channelName, program_title, program_start_time, everything()) 
+
+        # выгрузим для генератора
+    # tvplan_df %>% distinct(programId) %>% select(program_id, channel_id) %>% write.csv("program.csv", row.names=FALSE)
+    df
+    
   })
   
   msg <- reactiveVal("")
@@ -251,14 +270,8 @@ server <- function(input, output, session) {
   # таблица с выборкой по регионам ----------------------------
   output$stat_table <- DT::renderDataTable({
     df <- req(cur_df()) %>%
-      select(-channelId, -timestamp)
-    
-    # проверяем форму представления и модифицируем, если надо
-    if(!input$long_wide_cbx){
-      df %<>% select(-channel_duration) %>%
-        spread(timegroup, watch_events)
-    }
-    
+      select(-programId, -channel_id, -created_at)
+
     colnames_df <- getRusColnames(df)
     # https://stackoverflow.com/questions/39970097/tooltip-or-popover-in-shiny-datatables-for-row-names
     colheader <- htmltools::withTags(
@@ -275,7 +288,7 @@ server <- function(input, output, session) {
                   filter='bottom',
                   # только после жесткой фиксации колонок
                   container=colheader,
-                  options=list(dom='fltip', pageLength=7, lengthMenu=c(5, 7, 10, 15),
+                  options=list(dom='fltip', pageLength=10, lengthMenu=c(5, 7, 10, 15),
                                order=list(list(1, 'asc')), # нумерация с 0
                                # columnDefs=list(list(width="160px", targets="_all"),
                                #                 list(className='dt-center', targets="_all")),
@@ -284,11 +297,8 @@ server <- function(input, output, session) {
                   scrollX=TRUE
                   )
                   )
+    dt %<>% DT::formatDate("program_start_time", method="toLocaleString")
     
-    # проверяем форму представления и модифицируем, если надо
-    if(input$long_wide_cbx){
-      dt %<>% DT::formatDate("timegroup", method="toLocaleString")
-      }
     dt
     })
   

@@ -24,6 +24,47 @@ hgroup.enum <- function(date, hour_bin=NULL, min_bin=5){
   dt
 }
 
+
+getTvProgramm <- function() {
+  #' получаем всю испторическую программу вещания из в PostgreSQL ---------------------
+
+  # Connect to a specific postgres database
+  if (Sys.info()["sysname"] == "Windows") {
+    dw <- config::get("media-tel")
+  }else{
+    dw <- config::get("cti")
+  }
+  
+  # dbConnect из RPostgreSQL
+  con <- dbConnect(dbDriver(dw$driver),
+                   host = dw$host,
+                   user = dw$uid,
+                   password = dw$pwd,
+                   port = dw$port,
+                   dbname = dw$database
+  )
+  
+  # принудительно загоняем кодировку сгруженных данных в unicode
+  rs <- dbSendQuery(con, "SELECT program_id, 
+                          channel_id, 
+                          duration/60/60 AS program_duration, 
+                          title AS program_title,
+                          extract(epoch FROM start_time) AS program_start_time,
+                    extract(epoch FROM created_at) AS created_at FROM programs;")
+  df <- dbFetch(rs)
+  dbDisconnect(con)
+  
+  # browser()
+  df %<>%
+    as_tibble() %>%
+    mutate_if(is.character, `Encoding<-`, "UTF-8") %>%
+    mutate(program_start_time=anytime(as.numeric(program_start_time), tz="Europe/Moscow")) %>%
+    mutate(created_at=anytime(as.numeric(created_at), tz="Europe/Moscow")) %>%
+    # Продолжительность программы, мин
+    mutate(program_duration=round(program_duration, 0))
+    
+}
+
 # конструирование ограничений запроса по данным фильтров
 buildReqLimits <- function(begin, end, regions, segment) {
   # базисная SQL конструкция для ограничения дат ----
@@ -48,43 +89,8 @@ buildReqLimits <- function(begin, end, regions, segment) {
 }
 
 # построение запроса для отчета 'Статистика по телепередачам' ----------------
-buildReqStep1 <- function(begin, end, regions=NULL, segment="all"){
+buildReqStep1 <- function(begin, end, regions=NULL, interval=60, channels=NULL, segment="all"){
   #' считаем ТОП 20 передча по общему времени смотрения при заданных фильтрах
-  # begin, end -- даты; 
-  # regs -- вектор регионов, если NULL -- то все регионы (в т.ч. на этапе инициализации);
-  # segment -- регион (строка), если "all" -- то все сегменты;
-  # browser()
-  
-  limits <- buildReqLimits(begin, end, regions, segment)
-
-  paste(
-    "SELECT ",
-    # 1. Название канала
-    "programId, ",
-    # 2. Кол-во уникальных приставок по каналу
-    "uniq(serial) AS unique_stb, ",
-    # Кол-во уникальных приставок по всем каналам выбранных регионов
-    "( SELECT uniq(serial) ",
-    "  FROM genstates ",
-    "  WHERE ", limits, 
-    "  AND duration>5*60 AND duration <2*60*60 ", # указали жестко длительность, в секундах
-    ") AS total_unique_stb, ",  
-    # 4. Суммарное время просмотра всеми приставками, мин
-    "sum(duration)/60 AS program_duration, ",
-    # 8. Кол-во событий просмотра
-    "count() AS watch_events ",
-    "FROM genstates ",
-    # "SAMPLE 0.1 ",
-    "WHERE ", limits,
-    "AND duration>5*60 AND duration <2*60*60 ", # указали жестко длительность, в секундах
-    "AND (programId != 'undefined') ",
-    "GROUP BY programId ",
-    "ORDER BY program_duration DESC ",
-    "LIMIT 20", sep="")
-  }
-
-buildReqDynamic <- function(begin, end, regions=NULL, interval=60, channels=NULL, segment="all"){
-  #`
   # begin, end -- даты; 
   # interval -- временной интервал агрегации, в минутах
   # channels -- вектор каналов
@@ -104,104 +110,30 @@ buildReqDynamic <- function(begin, end, regions=NULL, interval=60, channels=NULL
 
   paste(
     "SELECT ",
-    # 1. временной интервал (как строка)
-    "toDateTime(intDiv(toUInt32(begin), ", interval*60, ") *", interval*60, ") AS timestamp, ",
-    # 2. временной интервал (как целое)
-    "toUInt32(timestamp) AS timegroup, ",
-    # 3. канал 
-    "channelId, ", 
-    # 4. длительность телесмотрения в минутах и кол-во событий телесмотрения
-    "sum(duration)/60 AS channel_duration, count() AS watch_events ",
-    "FROM genstates ",
-    # "SAMPLE 0.1 ",
-    "WHERE ", limits, limit_channels,
-    "AND duration>5*60 AND duration <2*60*60 ", # указали жестко длительность, в секундах
-    "GROUP BY timestamp, channelId ",
-    "ORDER BY timestamp DESC", sep="")
-  }
-
-buildReq <- function(begin, end, interval=60, regions, segment="all", channel=""){
-  # begin, end -- даты; 
-  # interval -- временной интервал агрегации, в минутах
-  # regs -- вектор регионов, если NULL -- то все регионы (в т.ч. на этапе инициализации);
-  # segment -- регион (строка), если "all" -- то все сегменты;
-  # browser()
-  
-  limits <- buildReqLimits(begin, end, regions, segment)
-
-  paste(
-    "SELECT ",
-    # 1. Временной интервал (как строка)
-    "toDateTime(intDiv(toUInt32(begin), ", interval*60, ") *", interval*60, ") AS timestamp, ",
-    # 2. Временной интервал (как целое)
-    "toUInt32(timestamp) AS timegroup, ",
-    # 3. Кол-во событий телесмотрения
+    # 1. Название канала
+    "programId, ",
+    # 2. Кол-во уникальных приставок по каналу
+    "uniq(serial) AS unique_stb, ",
+    # Кол-во уникальных приставок по всем каналам выбранных регионов
+    "( SELECT uniq(serial) ",
+    "  FROM genstates_10m ",
+    "  WHERE ", limits, 
+    "  AND duration>5*60 AND duration <2*60*60 ", # указали жестко длительность, в секундах
+    ") AS total_unique_stb, ",  
+    # 4. Суммарное время просмотра всеми приставками, мин
+    "sum(duration)/60 AS program_watch_time, ",
+    # 8. Кол-во событий просмотра
     "count() AS watch_events ",
-    "FROM genstates ",
+    "FROM genstates_10m ",
     # "SAMPLE 0.1 ",
     "WHERE ", limits,
     "AND duration>5*60 AND duration <2*60*60 ", # указали жестко длительность, в секундах
-    "GROUP BY timestamp ",
-    "ORDER BY timestamp DESC", sep="")
+    "AND (programId != 'undefined') ",
+    "GROUP BY programId ",
+    "ORDER BY program_watch_time DESC ",
+    "LIMIT 10", sep="")
 }
 
-
-plotAreaplotActivity <- function(df, publish_set, ntop=10){ 
-  
-  flog.info(paste0("publish_set is ", capture.output(str(publish_set))))
-  
-  # browser()
-  reg_df <- df %>%
-    rename(value=watch_events) # обезличили
-#     group_by(channelName)
-#     top_n(ntop, value) %>%
-# # может возникнуть ситуация, когда все значения top_n одинаковы. тогда надо брать выборку
-#     filter(row_number()<=ntop) %>%
-#     arrange(desc(value))
-
-  g <- guide_legend("Каналы")
-  gp <- ggplot(reg_df, aes(timegroup, value, color=channelName)) +
-    # geom_line(lwd=1.2, alpha=0.5) +
-    # geom_point(shape=21, size=4, alpha=0.5) +
-    geom_area(aes(colour=channelName, fill=channelName), alpha=0.5, position="stack") +
-    guides(colour=g, fill=g) +
-    scale_x_datetime(labels=date_format(format="%d.%m.%y%n%H:%M", tz="Europe/Moscow")) +
-    theme_ipsum_rc(base_size=publish_set[["base_size"]], 
-                   axis_title_size=publish_set[["axis_title_size"]]) +  
-    theme(axis.text.x = element_text(angle=90)) +
-    ylab("Количество событий") +
-    xlab("Временной интервал")
-
-  gp
-  }
-
-plotLineplotActivity <- function(df, publish_set, ntop=10){
-
-  flog.info(paste0("publish_set is ", capture.output(str(publish_set))))
-  
-  # browser()
-  reg_df <- df %>%
-    rename(value=watch_events) # обезличили
-  # top_n(ntop, value) %>%
-  #   # может возникнуть ситуация, когда все значения top_n одинаковы. тогда надо брать выборку
-  #   filter(row_number()<=ntop) %>%
-  #   arrange(desc(value))
-  
-  g <- guide_legend("Каналы")
-  gp <- ggplot(reg_df, aes(timegroup, value, color=channelName)) +
-    geom_line(lwd=1.2, alpha=0.5) +
-    geom_point(shape=21, size=4, alpha=0.5) +
-    guides(colour=g, fill=g) +
-    # geom_area(aes(colour=channelName, fill=channelName), alpha=0.5, position="stack") +
-    scale_x_datetime(labels=date_format(format="%d.%m.%y%n%H:%M", tz="Europe/Moscow")) +
-    theme_ipsum_rc(base_size=publish_set[["base_size"]], 
-                   axis_title_size=publish_set[["axis_title_size"]]) +  
-    theme(axis.text.x = element_text(angle=90)) +
-    ylab("Количество событий") +
-    xlab("Временной интервал")
-  
-  gp
-}
 
 # Генерация word файла для выгрузки средcтвами officer -------------
 gen_word_report <- function(df, template_fname, publish_set=NULL){
@@ -252,9 +184,14 @@ getRusColnames <- function(df) {
     "duration_per_stb", "ср. время просм. 1 STB за период, мин", "ср. время просм. 1 STB за период, мин", "подсказка (duration_per_stb)",
     "date", "дата", "дата", "подсказка (date)",
     "timestamp", "время", "время", "подсказка (timestamp)",
-    "timegroup", "группа", "группа", "подсказка (timegroup)"
+    "timegroup", "группа", "группа", "подсказка (timegroup)",
+    "program_duration", "длительность передачи", "длительность передачи", "подсказка (program_duration)",
+    "program_title", "название передачи", "название передачи", "подсказка (program_title)",
+    "program_start_time", "время начала передачи", "время начала передачи", "подсказка (program_start_time)",
+    "program_watch_time", "общее время просмотра передачи, мин", "общее время просмотра передачи, мин", "подсказка (program_watch_time)",
+    "mean_watch_time", "среднее время просмотра передачи, мин", "среднее время просмотра передачи, мин", "подсказка (mean_watch_time)"    
   )
-  
+    
   tibble(name=names(df)) %>%
     left_join(colnames_df, by=c("name"="col_name")) %>%
     # санация

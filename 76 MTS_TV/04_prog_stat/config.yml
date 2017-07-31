@@ -1,11 +1,11 @@
 default:
   media-tel:
     driver: 'PostgreSQL'
-    host: '10.0.0.177'
+    host: '10.0.0.184'
     uid: 'puser'
     pwd: 'puser'  
     port: 5432
-    database: 'channel_list'
+    database: 'tvlog'
 
   cti:
     driver: 'PostgreSQL'
@@ -13,4 +13,4 @@ default:
     uid: 'stat'
     pwd: 'stat'  
     port: 5432
-    database: 'stat'
+    database: 'tvlog'
