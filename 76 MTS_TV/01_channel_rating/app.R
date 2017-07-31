@@ -345,7 +345,8 @@ server <- function(input, output, session) {
     content = function(file) {
       cur_df() %>%
         # сделаем вывод в формате, принимаемым Excel
-        write.table(file, na="NA", append=FALSE, col.names=TRUE, row.names=FALSE, sep=";")
+        write.table(file, na="NA", append=FALSE, col.names=TRUE, 
+                    row.names=FALSE, sep=";", fileEncoding="windows-1251")
     }
   )
   

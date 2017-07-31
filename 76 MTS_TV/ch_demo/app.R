@@ -25,7 +25,8 @@ eval(parse("clickhouse.R", encoding="UTF-8"))
 ui <- fluidPage(
   useShinyjs(), 
   
-  titlePanel("Тест цепочки"),
+  # titlePanel("Тест цепочки"),
+  titlePanel("Сырые данные"),
   # Some custom CSS for a smaller font for preformatted text
   tags$head(tags$style(HTML("pre, table.table {font-size: smaller;}"))),
   theme = shinytheme("united"),
@@ -113,7 +114,7 @@ server <- function(input, output, session) {
                       # "SELECT * FROM states WHERE toDate(begin) >= yesterday() AND begin < now() AND serial='46839447975'")
                       # "SELECT * FROM states WHERE toDate(begin) >= yesterday() AND begin < now()")
     rs <- dbSendQuery(con, 
-                      "SELECT * FROM view_states WHERE begin >= toUInt32(yesterday()) AND begin < toUInt32(now())")
+                      "SELECT * FROM view_states WHERE begin >= toUInt32(yesterday()) AND begin < toUInt32(now())  LIMIT 10000")
     df <- dbFetch(rs)
 
     msg1 <- capture.output(toc())
@@ -156,7 +157,7 @@ server <- function(input, output, session) {
     tic()
     # rs <- dbSendQuery(con, 
     rs <- dbSendQuery(con, 
-                      "SELECT * FROM view_events WHERE edate >= toUInt32(yesterday()) AND edate < toUInt32(now())")
+                      "SELECT * FROM view_events WHERE edate >= toUInt32(yesterday()) AND edate < toUInt32(now()) LIMIT 10000")
     df <- dbFetch(rs)
     
     msg1 <- capture.output(toc())

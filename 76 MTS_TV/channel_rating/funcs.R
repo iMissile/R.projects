@@ -43,7 +43,7 @@ buildReq <- function(begin, end, regs){
     "  WHERE toDate(begin) >= toDate('", begin, "') AND toDate(end) <= toDate('", end, "') AND region IN (", plain_regs, ") ",
     ") AS total_unique_stb, ",  
     # 4. Суммарное время просмотра всеми приставками, мин
-    "sum(duration) AS channel_duration, ",
+    "sum(duration)/60 AS channel_duration, ",
     # 8. Кол-во событий просмотра
     "count() AS watch_events ",
     "FROM genstates ",

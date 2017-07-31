@@ -101,8 +101,6 @@ ui <-
                                         "DVB-C"="DVB-C", 
                                         "IPTV"="IPTV", 
                                         "DVB-S"="DVB-S"), selected="all")),
-      column(1, selectInput("top_num", "Кол-во в ТОП", 
-                            choices=c(3, 5, 7, 10, 20), selected=5)),
       column(1, selectInput("time_bin", "Период агрегации", 
                             choices=c("1 час"=60, "1 сутки"=24*60), selected=60))
     ),
@@ -199,34 +197,16 @@ server <- function(input, output, session) {
     input$process_btn # обновлять будем вручную
     
     isolate({
-      top_num <- input$top_num
-      # regions <- c("Moskva", "Barnaul")
-      # browser()
+      # надо из русского названия канала получить список идентификаторов
+      
+      channels <- progs_df %>% 
+        filter(channelName %in% input$channel_filter) %>% 
+        pull(channelId)
       regions <- input$region_filter
       # browser()
       flog.info(paste0("Applied time filter [", input$in_date_range[1], "; ", input$in_date_range[2], "]"))
       flog.info(paste0("Applied region filter [", regions, "]"))
-      # сначала запрашиваем ТОП 20 каналов
-      r <- buildReqGetTop(begin=input$in_date_range[1], end=input$in_date_range[2],
-                          regions=regions, segment=input$segment_filter, top=top_num)
-      flog.info(paste0("DB request: ", r))
-    
-      # запрос Топ-N каналов
-      tic()
-      temp_df <- dbGetQuery(con, r) %>%
-        as_tibble()
-      flog.info(paste0("Query for Top ", top_num, " channels: ", capture.output(toc())))
-      flog.info(paste0("Loaded ", nrow(temp_df), " rows"))
-      
-      # если каналов вообще нет, выбрасываем NULL
-      # if(nrow(temp_df)<=0) return(NULL)
-
-      # вытаскиваем каналы, выборку подрезать на изменяемую глубину будем потом
-      channels <- temp_df %>% 
-        # исключим возможные несисмвольные типы, например, logical(0)
-        mutate(channelId=as.character(channelId)) %>%
-        # filter(row_number()<=5) %>% 
-        pull(channelId)
+      flog.info(paste0("Applied channel filter [", channels, "]"))
     
       # запрос конкретных данных
       r <- buildReqDynamic(begin=input$in_date_range[1], end=input$in_date_range[2],
@@ -239,7 +219,7 @@ server <- function(input, output, session) {
       tic()
       # browser()
       temp_df <- dbGetQuery(con, r)
-      flog.info(paste0("Query by specific Top ", top_num, " channels: ", capture.output(toc())))
+      flog.info(paste0("Query by channels: ", capture.output(toc())))
       flog.info(paste0("Loaded ", nrow(temp_df), " rows"))    
     })
     
@@ -309,8 +289,7 @@ server <- function(input, output, session) {
     if(input$long_wide_cbx){
       dt %<>% DT::formatDate("timegroup", method="toLocaleString")
       }
-    
-      dt
+    dt
     })
   
   # левый график  -------------
@@ -320,7 +299,7 @@ server <- function(input, output, session) {
       need(nrow(cur_df())>0, "0 rows -- nothing to draw") 
     )
     plotAreaplotActivity(cur_df(), publish_set=font_sizes[["screen"]], 
-                      ntop=as.integer(input$top_num))
+                      ntop=10)
   })
   
   # правый график --------------
@@ -330,7 +309,7 @@ server <- function(input, output, session) {
       need(nrow(cur_df())>0, "0 rows -- nothing to draw") 
     )
     plotLineplotActivity(cur_df(), publish_set=font_sizes[["screen"]], 
-                 ntop=as.integer(input$top_num))
+                 ntop=10)
   })  
 
   # динамическое управление диапазоном дат ---------

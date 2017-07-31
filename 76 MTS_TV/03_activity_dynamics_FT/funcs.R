@@ -108,7 +108,7 @@ buildReqDynamic <- function(begin, end, regions=NULL, interval=60, channels=NULL
     "ORDER BY timestamp DESC", sep="")
   }
 
-buildReq <- function(begin, end, interval=60, regions, segment="all"){
+buildReq <- function(begin, end, interval=60, regions, segment="all", channel=""){
   # begin, end -- даты; 
   # interval -- временной интервал агрегации, в минутах
   # regs -- вектор регионов, если NULL -- то все регионы (в т.ч. на этапе инициализации);

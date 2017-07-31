@@ -94,7 +94,8 @@ ui <-
       #column(1, selectInput("max_watch_time", "Макс. время",
       #                      choices = c("1 час"=1, "2 часа"=2, 
       #                                  "3 часа"=3, "4 часа"=4), selected = 2)),
-      column(6, uiOutput("choose_region")),
+      column(3, uiOutput("choose_region")),
+      column(3, uiOutput("choose_channel")),
       column(1, selectInput("segment_filter", "Сегмент",
                             choices = c("Все"="all",
                                         "DVB-C"="DVB-C", 
@@ -187,8 +188,7 @@ server <- function(input, output, session) {
     # dbDisconnect(con)
     df
   }
-  
-  
+
   
   # подгрузим таблицу преобразования идентификатора канала в русское название ----
   progs_df <- jsonlite::fromJSON("./channels.json", simplifyDataFrame=TRUE) %>% 
@@ -271,11 +271,11 @@ server <- function(input, output, session) {
   # таблица с выборкой по регионам ----------------------------
   output$stat_table <- DT::renderDataTable({
     df <- req(cur_df()) %>%
-      select(-channelId)
+      select(-channelId, -timestamp)
     
     # проверяем форму представления и модифицируем, если надо
     if(!input$long_wide_cbx){
-      df %<>% select(-timestamp, -channel_duration) %>%
+      df %<>% select(-channel_duration) %>%
         spread(timegroup, watch_events)
     }
     
@@ -381,6 +381,25 @@ server <- function(input, output, session) {
                 choices=data, width = "100%")
   })
 
+  # динамический выбор канала ---------
+  output$choose_channel <- renderUI({
+    
+    # имена каналов могут быть одинаковыми для разных ID, которые включают и название сегмента
+    df <- progs_df %>% distinct(channelName) %>% arrange(desc(channelName)) 
+    data <- as.list(df$channelName)
+    names(data) <- df$channelName
+    # distinct(df) %>% group_by(channelName) %>% summarise(n=n()) %>% arrange(desc(n))
+    
+    # browser()
+    
+    # создадим элемент
+    selectInput("channel_filter", 
+                paste0("Канал (", length(data), ")"),
+                multiple=TRUE,
+                choices=data, width = "100%")
+  })
+  
+  
   # обработчики кнопок выгрузки файлов --------------------------------------------------
   # выгрузка таблицы в CSV -----------------------  
   output$csv_download_btn <- downloadHandler(
@@ -390,7 +409,8 @@ server <- function(input, output, session) {
     content = function(file) {
       cur_df() %>%
         # сделаем вывод в формате, принимаемым Excel
-        write.table(file, na="NA", append=FALSE, col.names=TRUE, row.names=FALSE, sep=";")
+        write.table(file, na="NA", append=FALSE, col.names=TRUE, 
+                    row.names=FALSE, sep=";", fileEncoding="windows-1251")
     }
   )
   
