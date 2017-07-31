@@ -257,7 +257,9 @@ server <- function(input, output, session) {
       mutate(channelName=if_else(is.na(channelName), 
                                  str_c("_", channel_id, "_"), 
                                  channelName)) %>%
-      select(channelName, program_title, program_start_time, everything()) 
+      select(channelName, program_title, program_start_time, watch_events, unique_stb,
+             total_unique_stb, stb_ratio, program_watch_time, 
+             mean_watch_time, watch_ratio, everything()) 
 
         # выгрузим для генератора
     # tvplan_df %>% distinct(programId) %>% select(program_id, channel_id) %>% write.csv("program.csv", row.names=FALSE)
