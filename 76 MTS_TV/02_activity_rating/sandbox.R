@@ -23,7 +23,8 @@ source("clickhouse.R")
 
 # отработка фукции по переименованию колонок
 
-
+mm <- 1
+browser()
 stop()
 
 
@@ -54,6 +55,7 @@ publishToSQL <- function(clean_df) {
   
   dbDisconnect(con)
 }
+
 
 # подгружаем тестовые данные из CH
 if (TRUE){

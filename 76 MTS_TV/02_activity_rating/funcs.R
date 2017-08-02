@@ -81,41 +81,56 @@ buildReq <- function(begin, end, regions, segment="all"){
 }
 
 
-buildReqTS <- function(begin, end, regions=NULL, interval=60, channels=NULL, segment="all"){
+buildReqTS <- function(begin, end, regions=NULL, interval=60, segment="all"){
   #`
   # begin, end -- даты; 
   # interval -- временной интервал агрегации, в минутах
   # channels -- вектор каналов
   # regions -- вектор регионов, если NULL -- то все регионы (в т.ч. на этапе инициализации);
   # segment -- регион (строка), если "all" -- то все сегменты;
+
   # browser()
-  
   limits <- buildReqLimits(begin, end, regions, segment)
-  # добавочная SQL конструкция для ограничения каналов -----
-  # прежде чем строить мы должны действительно убедиться, что мы получили вектор строк в качестве channels
-  
-  limit_channels <- ifelse(is.null(channels) | any(is.na(channels)) | identical(channels, character(0)), " ",
-                           stri_join(" AND channelId IN (", 
-                                     stri_join(channels %>% map_chr(~stri_join("'", .x, "'", sep="")),
-                                               sep = " ", collapse=","),
-                                     ") ", sep = "", collapse=""))
-  
+
   paste(
     "SELECT ",
+    "region, ",
     # 1. временной интервал (как строка)
     "toDateTime(intDiv(toUInt32(begin), ", interval*60, ") *", interval*60, ") AS timestamp, ",
     # 2. временной интервал (как целое)
     "toUInt32(timestamp) AS timegroup, ",
-    # 3. канал 
-    "channelId, ", 
     # 4. длительность телесмотрения в минутах и кол-во событий телесмотрения
-    "sum(duration)/60 AS channel_duration, count() AS watch_events ",
+    "sum(duration)/60 AS total_duration, count() AS watch_events ",
     "FROM genstates ",
     # "SAMPLE 0.1 ",
-    "WHERE ", limits, limit_channels,
+    "WHERE ", limits, 
     "AND duration>5*60 AND duration <2*60*60 ", # указали жестко длительность, в секундах
-    "GROUP BY timestamp, channelId ",
-    "ORDER BY timestamp DESC", sep="")
+    "GROUP BY timestamp, region ",
+    "ORDER BY timestamp  DESC", sep="")
+}
+
+# построение time-series отчета по выбранному региону
+plotRegionHistory <- function(df, publish_set){
+  reg_df <- df %>%
+    rename(value=watch_events) # обезличили
+
+  g <- guide_legend("Регион")
+  # browser()
+  gp <- ggplot(df, aes(timegroup, watch_events, fill=region)) +
+    #geom_line(lwd=1.2, alpha=0.5, colour=region) +
+    #geom_point(shape=21, size=4, alpha=0.5, colour=region) +
+    geom_bar(alpha=0.8, stat="identity", position="dodge") +
+    guides(colour=g, fill=g) +
+    # geom_area(aes(colour=channelName, fill=channelName), alpha=0.5, position="stack") +
+    scale_color_brewer(palette="Dark2") +
+    scale_x_datetime(labels=date_format(format="%d.%m.%y%n%H:%M", tz="Europe/Moscow")) +
+    theme_ipsum_rc(base_size=publish_set[["base_size"]], 
+                   axis_title_size=publish_set[["axis_title_size"]]) +  
+    theme(axis.text.x = element_text(angle=90)) +
+    ylab("Количество событий") +
+    xlab("Временной интервал")
+  
+  gp
 }
 
 # построение гистограммы ТОП N по времени телесмотрения ----------------
