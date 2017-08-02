@@ -25,6 +25,7 @@ library(shinyjqui)
 library(shinythemes) # https://rstudio.github.io/shinythemes/
 library(shinyBS)
 library(shinyjs)
+library(shinyWidgets)
 library(shinycssloaders)
 library(config)
 library(anytime)
@@ -108,12 +109,15 @@ ui <-
 
     #tags$style(type='text/css', "#in_date_range { position: absolute; top: 50%; transform: translateY(-80%); }"),
     tabsetPanel(
-      id = "panel_id",
-      selected="agile_graph_tab",
+      id = "main_panel",
+      selected="table_tab",
       tabPanel("Таблица", value="table_tab",
                fluidRow(
                  p(),
-                 column(12, div(withSpinner(DT::dataTableOutput("stat_table"))), style="font-size: 90%")
+                 column(11, div(withSpinner(DT::dataTableOutput("stat_table"))), style="font-size: 90%"),
+                 column(1, radioButtons("subset_plottype", "Тип графика:",
+                                        choices=c("ВременнОй"=1, "ТОП N"=2))
+                                        )
                ),
                p(),
                fluidRow(
@@ -122,8 +126,8 @@ ui <-
                  column(2, downloadButton("word_download_btn", label="Экспорт (Word)", class = 'rightAlign'))
                ),
                fluidRow(
-                 column(12, plotOutput("ts_detail"))# ,
-                 # column(6, textOutput("info_text"))
+                 column(10, plotOutput("subset_plot")),
+                 column(2, textOutput("info_text"))
                )               
       ),
       tabPanel("График", value = "graph_tab",
@@ -142,33 +146,29 @@ ui <-
                        column(6, div(withSpinner(plotOutput('top10_duration_plot', height="500px")))),
                        column(6, div(withSpinner(plotOutput('top10_stb_plot', height="500px"))))
                        )))
-               )# 
-      tabPanel("'Гибкий' график", value = "agile_graph_tab",
-               fluidRow(
-                 p(),
-                 column(12, "Main")
-                 # column(12, div(selectInput("top_num", "Кол-во в ТОП:", 
-                 #                            choices=c(3, 5, 7, 10, 20), 
-                 #                            selected=5), 
-                 #                class='rightAlign'))
-               ),
-               fluidRow(
-                 p(),
-                 
-                 column(2, fluidRow("sidebar", column(12,
-                                    selectInput("axis_x_field",
-                                                "Ось Х, метрика",
-                                                choices = c(1, 2, 3, 4, 6, 12)),
-                                    selectInput("axis_y_field",
-                                                "Ось Y, метрика",
-                                                choices = c(1, 2, 3, 4, 6, 12))
-                                    
-                                    
-                                    ))),
-                 column(10, plotOutput('agile_plot', height="500px"))
-                   )
                )
       )
+    # ,
+    # tabsetPanel(
+    #   id = "subset_panel",
+    #   selected="ts_tab",
+    #   tabPanel("Временной график", value="ts_tab",
+    #            fluidRow(
+    #              column(10, plotOutput("subset_plot")),
+    #              column(2, textOutput("info_text"))
+    #            )               
+    #   ),
+    #   tabPanel("ТОП N график", value = "topn_tab",
+    #            fluidRow(
+    #              p(),
+    #              column(12, div(selectInput("slice_top", "Кол-во в ТОП:", 
+    #                                         choices=c(3, 5, 7, 10, 20), 
+    #                                         selected=5), 
+    #                             class='rightAlign'))
+    #            )
+    #   )
+    # )
+    
   ),
   shinyjs::useShinyjs()  # Include shinyjs
 )
@@ -350,13 +350,20 @@ server <- function(input, output, session) {
     })
   
   # вывод time-series графика по выбранному элементу ---------------------  
-  output$ts_detail <- renderPlot({
+  output$subset_plot <- renderPlot({
     shiny::validate(
       need(!is.null(detail_df()), "NULL value can't be renederd"),
       need(nrow(detail_df())>0, "0 rows -- nothing to draw") 
     )
 
-    plotRegionHistory(detail_df(), publish_set=font_sizes[["screen"]])
+    if(input$subset_plottype == 1){
+      flog.info("Time-Series subset plot")
+      plotRegionHistory(detail_df(), publish_set=font_sizes[["screen"]])
+    } else {
+      flog.info("Top N subset plot")
+    }
+      
+    
   })
     
     # график Топ10 каналов по суммарному времени просмотра -------------
