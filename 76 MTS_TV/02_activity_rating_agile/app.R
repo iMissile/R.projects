@@ -109,8 +109,8 @@ ui <-
     #tags$style(type='text/css', "#in_date_range { position: absolute; top: 50%; transform: translateY(-80%); }"),
     tabsetPanel(
       id = "panel_id",
-      selected="table_tab",
-      tabPanel("Таблица", value = "table_tab",
+      selected="agile_graph_tab",
+      tabPanel("Таблица", value="table_tab",
                fluidRow(
                  p(),
                  column(12, div(withSpinner(DT::dataTableOutput("stat_table"))), style="font-size: 90%")
@@ -142,11 +142,33 @@ ui <-
                        column(6, div(withSpinner(plotOutput('top10_duration_plot', height="500px")))),
                        column(6, div(withSpinner(plotOutput('top10_stb_plot', height="500px"))))
                        )))
+               )# 
+      tabPanel("'Гибкий' график", value = "agile_graph_tab",
+               fluidRow(
+                 p(),
+                 column(12, "Main")
+                 # column(12, div(selectInput("top_num", "Кол-во в ТОП:", 
+                 #                            choices=c(3, 5, 7, 10, 20), 
+                 #                            selected=5), 
+                 #                class='rightAlign'))
+               ),
+               fluidRow(
+                 p(),
+                 
+                 column(2, fluidRow("sidebar", column(12,
+                                    selectInput("axis_x_field",
+                                                "Ось Х, метрика",
+                                                choices = c(1, 2, 3, 4, 6, 12)),
+                                    selectInput("axis_y_field",
+                                                "Ось Y, метрика",
+                                                choices = c(1, 2, 3, 4, 6, 12))
+                                    
+                                    
+                                    ))),
+                 column(10, plotOutput('agile_plot', height="500px"))
+                   )
                )
       )
-    #,
-
-    
   ),
   shinyjs::useShinyjs()  # Include shinyjs
 )
