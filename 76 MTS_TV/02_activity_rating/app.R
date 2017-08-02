@@ -112,14 +112,18 @@ ui <-
       tabPanel("Таблица", value = "table_tab",
                fluidRow(
                  p(),
-                 column(12, div(withSpinner(DT::dataTableOutput('stat_table'))), style="font-size: 90%")
+                 column(12, div(withSpinner(DT::dataTableOutput("stat_table"))), style="font-size: 90%")
                ),
                p(),
                fluidRow(
                  column(8, {}),
                  column(2, downloadButton("csv_download_btn", label="Экспорт (Excel)", class = 'rightAlign')),
                  column(2, downloadButton("word_download_btn", label="Экспорт (Word)", class = 'rightAlign'))
-               )
+               ),
+               fluidRow(
+                 column(6, textOutput("ts_detail")),
+                 column(6, textOutput("info_text"))
+               )               
       ),
       tabPanel("График", value = "graph_tab",
                fluidRow(
@@ -140,9 +144,7 @@ ui <-
                )
       )
     #,
-    #fluidRow(
-    #  column(6, textOutput('info_text'))
-    #)
+
     
   ),
   shinyjs::useShinyjs()  # Include shinyjs
@@ -230,7 +232,8 @@ server <- function(input, output, session) {
       left_join(cities_df, by=c("region"="translit")) %>%
       # санация
       mutate(russian=if_else(is.na(russian), str_c("_", region, "_"), russian)) %>%
-      select(-region, -date) %>%
+      rename(region_enu=region) %>%
+      select(-date) %>%
       select(region=russian, everything())
     
     # browser()
@@ -241,14 +244,50 @@ server <- function(input, output, session) {
   cur_df <- reactive({
     req(raw_df()) %>%
       # filter(segment==input$segment_filter) %>%
-      select(region, everything())
+      # колонку для удаления перед выводом в график ставим в начало, чтобы не сбить нумерацию
+      select(region_enu, region, everything()) 
   })
   
   msg <- reactiveVal("")
-
+  
+  # формируем time-series детализацию по аналогии с 3-им отчетом -------------------
+  detail_df <- reactive({
+    input$process_btn # обновлять будем вручную
+    
+    isolate({
+      # надо из русского названия канала получить список идентификаторов
+      
+      channels <- progs_df %>% 
+        filter(channelName %in% input$channel_filter) %>% 
+        pull(channelId)
+      regions <- input$region_filter
+      # browser()
+      flog.info(paste0("Applied time filter [", input$in_date_range[1], "; ", input$in_date_range[2], "]"))
+      flog.info(paste0("Applied region filter [", regions, "]"))
+      flog.info(paste0("Applied channel filter [", channels, "]"))
+      
+      # запрос конкретных данных
+      r <- buildReqDynamic(begin=input$in_date_range[1], end=input$in_date_range[2],
+                           regions=regions, 
+                           interval=as.numeric(input$time_bin), 
+                           channels=channels, 
+                           segment=input$segment_filter)
+      flog.info(paste0("DB request: ", r))    
+      
+      tic()
+      # browser()
+      temp_df <- dbGetQuery(con, r)
+      flog.info(paste0("Query by channels: ", capture.output(toc())))
+      flog.info(paste0("Loaded ", nrow(temp_df), " rows"))    
+    })
+  })
+    
+  
   # таблица с выборкой по регионам ----------------------------
   output$stat_table <- DT::renderDataTable({
-    df <- req(cur_df())
+    df <- req(cur_df()) %>%
+      # удаляем служебную информацию
+      select(-region_enu)
     
     colnames_df <- getRusColnames(df)
     # https://stackoverflow.com/questions/39970097/tooltip-or-popover-in-shiny-datatables-for-row-names
@@ -264,12 +303,37 @@ server <- function(input, output, session) {
     DT::datatable(df,
                   rownames=FALSE,
                   filter='bottom',
+                  selection=list(mode="single", target="row"),
+                  # selection="single",
                   # только после жесткой фиксации колонок
                   container=colheader,
                   options=list(dom='fltip', pageLength=7, lengthMenu=c(5, 7, 10, 15),
                                order=list(list(3, 'desc')))) %>% # нумерация с 0
       DT::formatPercentage("stb_ratio", 2)
     })
+  
+  # вывод time-series графика по выбранному элементу ---------------------  
+  output$ts_detail <- renderText({
+    # msg()
+    # row с 1, col с 0 
+    # m <- req(input$stat_table_cells_selected)
+    m <- req(input$stat_table_rows_selected)
+    
+    # s <- input$stat_table_rows_all
+    # paste(m, s)
+    df <- cur_df()
+    # значение ячейки
+    
+    # колонка с 0 + удаленный регион на английском
+    # df[[m[[1]], m[[2]]+2]]
+    # имя колонки
+    # colnames(df)[[m[[2]]+2]]
+    
+    # browser()
+    flog.info(paste0("Selected row num is ", m, ". Data row: ", capture.output(str(df[m, ]))))
+    # собираем select для получения time-series данных
+    m
+  })  
   
   # график Топ10 каналов по суммарному времени просмотра -------------
   output$top10_duration_plot <-renderPlot({
@@ -321,9 +385,8 @@ server <- function(input, output, session) {
   
   # служебный вывод ---------------------  
   output$info_text <- renderText({
-    msg()
+    # msg()
   })
-
 
   # динамический выбор региона ---------
   output$choose_region <- renderUI({

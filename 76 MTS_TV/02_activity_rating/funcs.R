@@ -80,6 +80,44 @@ buildReq <- function(begin, end, regions, segment="all"){
     "GROUP BY region", sep="")
 }
 
+
+buildReqTS <- function(begin, end, regions=NULL, interval=60, channels=NULL, segment="all"){
+  #`
+  # begin, end -- даты; 
+  # interval -- временной интервал агрегации, в минутах
+  # channels -- вектор каналов
+  # regions -- вектор регионов, если NULL -- то все регионы (в т.ч. на этапе инициализации);
+  # segment -- регион (строка), если "all" -- то все сегменты;
+  # browser()
+  
+  limits <- buildReqLimits(begin, end, regions, segment)
+  # добавочная SQL конструкция для ограничения каналов -----
+  # прежде чем строить мы должны действительно убедиться, что мы получили вектор строк в качестве channels
+  
+  limit_channels <- ifelse(is.null(channels) | any(is.na(channels)) | identical(channels, character(0)), " ",
+                           stri_join(" AND channelId IN (", 
+                                     stri_join(channels %>% map_chr(~stri_join("'", .x, "'", sep="")),
+                                               sep = " ", collapse=","),
+                                     ") ", sep = "", collapse=""))
+  
+  paste(
+    "SELECT ",
+    # 1. временной интервал (как строка)
+    "toDateTime(intDiv(toUInt32(begin), ", interval*60, ") *", interval*60, ") AS timestamp, ",
+    # 2. временной интервал (как целое)
+    "toUInt32(timestamp) AS timegroup, ",
+    # 3. канал 
+    "channelId, ", 
+    # 4. длительность телесмотрения в минутах и кол-во событий телесмотрения
+    "sum(duration)/60 AS channel_duration, count() AS watch_events ",
+    "FROM genstates ",
+    # "SAMPLE 0.1 ",
+    "WHERE ", limits, limit_channels,
+    "AND duration>5*60 AND duration <2*60*60 ", # указали жестко длительность, в секундах
+    "GROUP BY timestamp, channelId ",
+    "ORDER BY timestamp DESC", sep="")
+}
+
 # построение гистограммы ТОП N по времени телесмотрения ----------------
 # для отчета 'Рейтинг пользователей по регионам' 
 plotTop10Duration <- function(df, publish_set, ntop=10){
