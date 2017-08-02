@@ -21,10 +21,32 @@ library(config)
 
 source("clickhouse.R")
 
-# отработка фукции по переименованию колонок
+# отработка времннОго графика
+df <- readRDS("./data/tsdata.rds")
+g <- guide_legend("Регион")
 
-mm <- 1
-browser()
+var_name <- "total_unique_stb"
+var_name <- "watch_events"
+
+# https://blog.rstudio.com/2017/06/13/dplyr-0-7-0/
+
+#gp <- ggplot(df, aes_(as.name("timegroup"), as.name(var_name), fill=as.name("region"))) +
+gp <- ggplot(df, aes_string("timegroup", var_name, fill="region")) +
+  #geom_line(lwd=1.2, alpha=0.5, colour=region) +
+  #geom_point(shape=21, size=4, alpha=0.5, colour=region) +
+  geom_bar(alpha=0.8, stat="identity", position="dodge") +
+  guides(colour=g, fill=g) +
+  # geom_area(aes(colour=channelName, fill=channelName), alpha=0.5, position="stack") +
+  scale_color_brewer(palette="Dark2") +
+  scale_x_datetime(labels=date_format(format="%d.%m.%y%n%H:%M", tz="Europe/Moscow")) +
+#  theme_ipsum_rc(base_size=publish_set[["base_size"]], 
+#                 axis_title_size=publish_set[["axis_title_size"]]) +  
+  # theme(axis.text.x = element_text(angle=90)) +
+  ylab("Метрика") +
+  xlab("Временной интервал")
+
+gp
+
 stop()
 
 

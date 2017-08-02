@@ -114,10 +114,7 @@ ui <-
       tabPanel("Таблица", value="table_tab",
                fluidRow(
                  p(),
-                 column(11, div(withSpinner(DT::dataTableOutput("stat_table"))), style="font-size: 90%"),
-                 column(1, radioButtons("subset_plottype", "Тип графика:",
-                                        choices=c("ВременнОй"=1, "ТОП N"=2))
-                                        )
+                 column(12, div(withSpinner(DT::dataTableOutput("stat_table"))), style="font-size: 90%")
                ),
                p(),
                fluidRow(
@@ -126,8 +123,8 @@ ui <-
                  column(2, downloadButton("word_download_btn", label="Экспорт (Word)", class = 'rightAlign'))
                ),
                fluidRow(
-                 column(10, plotOutput("subset_plot")),
-                 column(2, textOutput("info_text"))
+                 #column(10, plotOutput("subset_plot")),
+                 #column(2, textOutput("info_text"))
                )               
       ),
       tabPanel("График", value = "graph_tab",
@@ -147,27 +144,31 @@ ui <-
                        column(6, div(withSpinner(plotOutput('top10_stb_plot', height="500px"))))
                        )))
                )
+      ),
+    tabsetPanel(
+      id = "subset_panel",
+      selected="ts_tab",
+      tabPanel("Временной график", value="ts_tab",
+               fluidRow(
+                 column(10, plotOutput("subset_plot")),
+                 column(2, selectInput("y_ts_plot", "Параметр по Y:",
+                                       c("кол-во уник. STB"="unique_stb",
+                                         "всего уник. STB"="total_unique_stb",
+                                         "суммарное время"="total_duration",
+                                         "кол-во просмотров"="watch_events",
+                                         "% уник. STB"="stb_ratio")))
+               )
+      ),
+      tabPanel("Аналитика по выборке", value = "topn_tab",
+               fluidRow(
+                 p(),
+                 column(12, div(selectInput("slice_top", "Кол-во в ТОП:",
+                                            choices=c(3, 5, 7, 10, 20),
+                                            selected=5),
+                                class='rightAlign'))
+               )
       )
-    # ,
-    # tabsetPanel(
-    #   id = "subset_panel",
-    #   selected="ts_tab",
-    #   tabPanel("Временной график", value="ts_tab",
-    #            fluidRow(
-    #              column(10, plotOutput("subset_plot")),
-    #              column(2, textOutput("info_text"))
-    #            )               
-    #   ),
-    #   tabPanel("ТОП N график", value = "topn_tab",
-    #            fluidRow(
-    #              p(),
-    #              column(12, div(selectInput("slice_top", "Кол-во в ТОП:", 
-    #                                         choices=c(3, 5, 7, 10, 20), 
-    #                                         selected=5), 
-    #                             class='rightAlign'))
-    #            )
-    #   )
-    # )
+    )
     
   ),
   shinyjs::useShinyjs()  # Include shinyjs
@@ -307,6 +308,7 @@ server <- function(input, output, session) {
       # превращаем временной маркер в POSIX
       mutate(timegroup=anytime(as.numeric(timegroup), tz="Europe/Moscow")) %>%
       as_tibble() %>%
+      mutate(stb_ratio=round(unique_stb/total_unique_stb, 3)) %>%      
       # вернем обратно русские названия городов
       left_join(cities_df, by=c("region"="translit")) %>%
       # санация
@@ -325,6 +327,7 @@ server <- function(input, output, session) {
     df <- req(cur_df()) %>%
       # удаляем служебную информацию
       select(-region_enu)
+    # browser()
 
     colnames_df <- getRusColnames(df)
     # https://stackoverflow.com/questions/39970097/tooltip-or-popover-in-shiny-datatables-for-row-names
@@ -355,15 +358,8 @@ server <- function(input, output, session) {
       need(!is.null(detail_df()), "NULL value can't be renederd"),
       need(nrow(detail_df())>0, "0 rows -- nothing to draw") 
     )
-
-    if(input$subset_plottype == 1){
-      flog.info("Time-Series subset plot")
-      plotRegionHistory(detail_df(), publish_set=font_sizes[["screen"]])
-    } else {
-      flog.info("Top N subset plot")
-    }
-      
     
+    plotRegionHistory(detail_df(), input$y_ts_plot, publish_set=font_sizes[["screen"]])
   })
     
     # график Топ10 каналов по суммарному времени просмотра -------------

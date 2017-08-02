@@ -95,11 +95,19 @@ buildReqTS <- function(begin, end, regions=NULL, interval=60, segment="all"){
   paste(
     "SELECT ",
     "region, ",
-    # 1. временной интервал (как строка)
+    # временной интервал (как строка)
     "toDateTime(intDiv(toUInt32(begin), ", interval*60, ") *", interval*60, ") AS timestamp, ",
-    # 2. временной интервал (как целое)
+    # временной интервал (как целое)
     "toUInt32(timestamp) AS timegroup, ",
-    # 4. длительность телесмотрения в минутах и кол-во событий телесмотрения
+    # кол-во уникальных приставок по региону
+    "uniq(serial) AS unique_stb, ",    
+    # Кол-во уникальных приставок по всем каналам выбранных регионов
+    "( SELECT uniq(serial) ",
+    "  FROM genstates ",
+    "  WHERE ", limits, 
+    "  AND duration>5*60 AND duration <2*60*60 ", # указали жестко длительность, в секундах
+    ") AS total_unique_stb, ",  
+    # длительность телесмотрения в минутах и кол-во событий телесмотрения
     "sum(duration)/60 AS total_duration, count() AS watch_events ",
     "FROM genstates ",
     # "SAMPLE 0.1 ",
@@ -110,13 +118,13 @@ buildReqTS <- function(begin, end, regions=NULL, interval=60, segment="all"){
 }
 
 # построение time-series отчета по выбранному региону
-plotRegionHistory <- function(df, publish_set){
+plotRegionHistory <- function(df, var_name, publish_set){
   reg_df <- df %>%
     rename(value=watch_events) # обезличили
 
   g <- guide_legend("Регион")
   # browser()
-  gp <- ggplot(df, aes(timegroup, watch_events, fill=region)) +
+  gp <- ggplot(df, aes_string("timegroup", var_name, fill="region")) +
     #geom_line(lwd=1.2, alpha=0.5, colour=region) +
     #geom_point(shape=21, size=4, alpha=0.5, colour=region) +
     geom_bar(alpha=0.8, stat="identity", position="dodge") +
@@ -126,8 +134,8 @@ plotRegionHistory <- function(df, publish_set){
     scale_x_datetime(labels=date_format(format="%d.%m.%y%n%H:%M", tz="Europe/Moscow")) +
     theme_ipsum_rc(base_size=publish_set[["base_size"]], 
                    axis_title_size=publish_set[["axis_title_size"]]) +  
-    theme(axis.text.x = element_text(angle=90)) +
-    ylab("Количество событий") +
+    # theme(axis.text.x = element_text(angle=90)) +
+    ylab("Метрика") +
     xlab("Временной интервал")
   
   gp
