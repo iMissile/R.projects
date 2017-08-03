@@ -90,6 +90,7 @@ setMethod("dbSendQuery", "clickhouse_connection", function(conn, statement, use 
   # <simpleError in rawToChar(req$content): long vectors are not supported yet: raw.c:68>
   # browser()
   use <- match.arg(use)
+  # browser()
 
   q <- sub("[; ]*;\\s*$", "", statement, ignore.case=T, perl=T)
 	has_resultset <- grepl("^\\s*(SELECT|SHOW)\\s+", statement, perl=T, ignore.case=T)

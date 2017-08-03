@@ -216,6 +216,7 @@ server <- function(input, output, session) {
       temp_df <- dbGetQuery(con, r) %>%
         as_tibble()
       flog.info(paste0("Query for Top ", top_num, " channels: ", capture.output(toc())))
+      flog.info(paste0("Table: ", capture.output(head(temp_df, 2))))
       flog.info(paste0("Loaded ", nrow(temp_df), " rows"))
       
       # если каналов вообще нет, выбрасываем NULL

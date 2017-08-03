@@ -208,8 +208,12 @@ server <- function(input, output, session) {
       as_tibble()
 
     flog.info(paste0("Query: ", capture.output(toc())))
+    flog.info(paste0("Table: ", capture.output(head(temp_df, 2))))
     # system.time(df <- readRDS("./data/tvstream4.rds"))
     flog.info(paste0("Loaded ", nrow(temp_df), " rows"))
+    
+    # !!! исправляем непонятно чей косяк: если вложенный select дает 0 строк, то его имя транслируется как NULL
+    names(temp_df)[[3]] <- "total_unique_stb"
     
     # browser()
     df <- temp_df %>%
