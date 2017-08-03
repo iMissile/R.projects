@@ -13,4 +13,4 @@ default:
     uid: 'stat'
     pwd: 'stat'  
     port: 5432
-    database: 'tvlog'
+    database: 'stat'

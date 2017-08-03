@@ -59,9 +59,7 @@ ui <-
 
   # http://stackoverflow.com/questions/25387844/right-align-elements-in-shiny-mainpanel/25390164
   tags$head(tags$style(".rightAlign{float:right;}")), 
-  
-  
-  
+
   # titlePanel("Статистика телесмотрения"),
   # ----------------
   conditionalPanel(
