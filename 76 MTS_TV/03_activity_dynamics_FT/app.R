@@ -221,6 +221,7 @@ server <- function(input, output, session) {
       flog.info(paste0("Query by channels: ", capture.output(toc())))
       flog.info(paste0("Table: ", capture.output(head(temp_df, 2))))
       flog.info(paste0("Loaded ", nrow(temp_df), " rows"))    
+      # browser()
     })
     
 
@@ -228,10 +229,11 @@ server <- function(input, output, session) {
     df <- temp_df %>%
       # время смотрения, мин
       mutate(channel_duration=round(as.numeric(channel_duration), 0)) %>%
-      # превращаем временной маркер в POSIX
-      mutate(timegroup=anytime(as.numeric(timegroup), tz="Europe/Moscow")) %>%
+      # превращаем временной маркер в POSIX, принудительно смещаем на 3 часа назад
+      # mutate(timegroup=anytime(as.numeric(timegroup), tz="UTC", asUTC=FALSE)-3*60*60) %>%
+      mutate(timegroup=anytime(as.numeric(timegroup), tz="UTC", asUTC=FALSE)) %>% 
       as_tibble()
-    
+
     df
   })  
 
@@ -254,15 +256,14 @@ server <- function(input, output, session) {
       ungroup() %>%
       select(channelName, timegroup, everything())
     
-    df # channelId & timestamp здесь потерялся
+    df # channelId & timestamp здесь потерялись
   })
   
   msg <- reactiveVal("")
 
   # таблица с выборкой по регионам ----------------------------
   output$stat_table <- DT::renderDataTable({
-    df <- req(cur_df()) # %>%
-      # select(-channelId)
+    df <- req(cur_df())
     
     # проверяем форму представления и модифицируем, если надо
     if(!input$long_wide_cbx){
@@ -287,11 +288,11 @@ server <- function(input, output, session) {
                   # только после жесткой фиксации колонок
                   container=colheader,
                   options=list(dom='fltip', pageLength=7, lengthMenu=c(5, 7, 10, 15),
-                               order=list(list(1, 'asc')), # нумерация с 0
+                               order=list(list(2, 'desc')), # нумерация с 0
                                # columnDefs=list(list(width="160px", targets="_all"),
                                #                 list(className='dt-center', targets="_all")),
                   #autoWidth=TRUE,
-                  #scrollCollapse=TRUE,
+                  scrollCollapse=TRUE,
                   scrollX=TRUE
                   )
                   )
@@ -299,6 +300,7 @@ server <- function(input, output, session) {
     # проверяем форму представления и модифицируем, если надо
     if(input$long_wide_cbx){
       dt %<>% DT::formatDate("timegroup", method="toLocaleString")
+      # dt %<>% DT::formatDate("timegroup", method="toUTCString")
       }
     dt
     })

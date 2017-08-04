@@ -287,7 +287,7 @@ server <- function(input, output, session) {
       # время смотрения, мин
       mutate(total_duration=round(as.numeric(total_duration), 0)) %>%
       # превращаем временной маркер в POSIX
-      mutate(timegroup=anytime(as.numeric(timegroup), tz="Europe/Moscow")) %>%
+      mutate(timegroup=anytime(as.numeric(timegroup), tz="UTC")) %>%
       as_tibble() %>%
       # вернем обратно русские названия городов
       left_join(cities_df, by=c("region"="translit")) %>%

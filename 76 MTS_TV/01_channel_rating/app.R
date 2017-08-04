@@ -161,7 +161,8 @@ server <- function(input, output, session) {
     con <- dbConnect(clickhouse(), host="172.16.33.74", port=8123L, user="default", password="")
   }else{
     # MT стенд
-    con <- dbConnect(clickhouse(), host="10.0.0.44", port=8123L, user="default", password="")
+    con <- dbConnect(clickhouse(), host="172.16.33.74", port=8123L, user="default", password="")
+    # con <- dbConnect(clickhouse(), host="10.0.0.44", port=8123L, user="default", password="")
   }      
   
   # подгрузим таблицу преобразования транслита в русские названия городов -------
@@ -213,6 +214,7 @@ server <- function(input, output, session) {
     flog.info(paste0("Loaded ", nrow(temp_df), " rows"))
     
     # !!! исправляем непонятно чей косяк: если вложенный select дает 0 строк, то его имя транслируется как NULL
+    # browser()
     names(temp_df)[[3]] <- "total_unique_stb"
     
     # browser()

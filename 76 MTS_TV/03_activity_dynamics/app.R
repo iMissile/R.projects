@@ -59,9 +59,7 @@ ui <-
 
   # http://stackoverflow.com/questions/25387844/right-align-elements-in-shiny-mainpanel/25390164
   tags$head(tags$style(".rightAlign{float:right;}")), 
-  
-  
-  
+
   # titlePanel("Статистика телесмотрения"),
   # ----------------
   conditionalPanel(
@@ -103,7 +101,7 @@ ui <-
                                         "DVB-S"="DVB-S"), selected="all")),
       column(1, selectInput("top_num", "Кол-во в ТОП", 
                             choices=c(3, 5, 7, 10, 20), selected=5)),
-      column(1, selectInput("time_bin", "Период агрегации", 
+      column(1, selectInput("time_bin", "Агрегация", 
                             choices=c("1 час"=60, "1 сутки"=24*60), selected=60))
     ),
     fluidRow(
@@ -239,8 +237,10 @@ server <- function(input, output, session) {
 
       tic()
       # browser()
-      temp_df <- dbGetQuery(con, r)
+      temp_df <- dbGetQuery(con, r) %>%
+          as_tibble()
       flog.info(paste0("Query by specific Top ", top_num, " channels: ", capture.output(toc())))
+      flog.info(paste0("Table: ", capture.output(head(temp_df, 2))))
       flog.info(paste0("Loaded ", nrow(temp_df), " rows"))    
     })
     
@@ -250,29 +250,39 @@ server <- function(input, output, session) {
       # время смотрения, мин
       mutate(channel_duration=round(as.numeric(channel_duration), 0)) %>%
       # превращаем временной маркер в POSIX
-      mutate(timegroup=anytime(as.numeric(timegroup), tz="Europe/Moscow")) %>%
+      mutate(timegroup=anytime(as.numeric(timegroup), tz="UTC")) %>%
       as_tibble()
     
     df
   })  
 
   cur_df <- reactive({
-    req(raw_df()) %>%
+    df <- req(raw_df()) %>%
       mutate_at(vars(channelId), as.character) %>%
       left_join(progs_df, by=c("channelId")) %>%
       # санация
       mutate(channelName=if_else(is.na(channelName), 
                                  str_c("_", channelId, "_"), 
-                                 channelName)) %>%
-      select(channelName, channelId, everything())
+                                 channelName))
+    
+    # а теперь делаем агрегацию по русскому имени канала. 
+    # именно из-за неоднозначности мапирования name-channelId возникает дублирование записей в таблице и пила на графике
+    # browser()
+    df %<>%
+      mutate_at(vars(channel_duration, watch_events), as.numeric) %>%
+      group_by(timegroup, channelName) %>%
+      summarise(channel_duration=sum(channel_duration), watch_events=sum(watch_events)) %>%
+      ungroup() %>%
+      select(channelName, timegroup, everything())
+    
+    df # channelId & timestamp здесь потерялись
   })
   
   msg <- reactiveVal("")
 
   # таблица с выборкой по регионам ----------------------------
   output$stat_table <- DT::renderDataTable({
-    df <- req(cur_df()) %>%
-      select(-channelId, -timestamp)
+    df <- req(cur_df())
     
     # проверяем форму представления и модифицируем, если надо
     if(!input$long_wide_cbx){
@@ -310,7 +320,6 @@ server <- function(input, output, session) {
     if(input$long_wide_cbx){
       dt %<>% DT::formatDate("timegroup", method="toLocaleString")
       }
-    
       dt
     })
   

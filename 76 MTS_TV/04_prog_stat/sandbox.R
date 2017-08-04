@@ -88,7 +88,7 @@ df <- dbGetQuery(con, r) %>%
   # время смотрения, мин
   mutate(channel_duration=round(as.numeric(channel_duration), 0)) %>%
   # превращаем временной маркер в POSIX
-  mutate(timegroup=anytime(timegroup, tz="Europe/Moscow"))
+  mutate(timegroup=anytime(timegroup, tz="UTC"))
 
 
 # нарисуем lineplot
@@ -104,7 +104,7 @@ gp <- ggplot(df, aes(timegroup, channel_duration, color=channelId)) +
   # geom_text(aes(label=label), hjust=+1.1, colour="blue") + # для вертикальных
   # geom_label(aes(label=label), fill="white", colour="black", fontface="bold", hjust=+1.1) +
   # geom_text_repel(aes(label=label), fontface = 'bold', color = 'blue', nudge_y=0) +
-  scale_x_datetime(labels=date_format(format="%d.%m.%y%n%H:%M", tz="Europe/Moscow")
+  scale_x_datetime(labels=date_format(format="%d.%m.%y%n%H:%M", tz="UTC")
                    #breaks=date_breaks("2 hours"), 
                    #minor_breaks=date_breaks("1 hours")
   ) +
@@ -151,7 +151,7 @@ gp <- ggplot(reg_df, aes(timegroup, watch_events)) +
   # geom_text(aes(label=label), hjust=+1.1, colour="blue") + # для вертикальных
   # geom_label(aes(label=label), fill="white", colour="black", fontface="bold", hjust=+1.1) +
   # geom_text_repel(aes(label=label), fontface = 'bold', color = 'blue', nudge_y=0) +
-  scale_x_datetime(labels=date_format(format="%d.%m.%y%n%H:%M", tz="Europe/Moscow"),
+  scale_x_datetime(labels=date_format(format="%d.%m.%y%n%H:%M", tz="UTC"),
                    breaks=date_breaks("2 hours"), 
                    minor_breaks=date_breaks("1 hours")
   ) +
@@ -178,7 +178,7 @@ gp <- ggplot(reg_df, aes(timegroup, watch_events)) +
   # geom_text(aes(label=label), hjust=+1.1, colour="blue") + # для вертикальных
   # geom_label(aes(label=label), fill="white", colour="black", fontface="bold", hjust=+1.1) +
   # geom_text_repel(aes(label=label), fontface = 'bold', color = 'blue', nudge_y=0) +
-  scale_x_datetime(labels=date_format(format="%d.%m.%y%n%H:%M", tz="Europe/Moscow"),
+  scale_x_datetime(labels=date_format(format="%d.%m.%y%n%H:%M", tz="UTC"),
                    breaks=date_breaks("2 hours"), 
                    minor_breaks=date_breaks("1 hours")
                    ) +

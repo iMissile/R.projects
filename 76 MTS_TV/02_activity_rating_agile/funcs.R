@@ -129,7 +129,7 @@ plotRegionHistory <- function(df, var_name, plot_type, publish_set){
     # geom_area(aes(colour=channelName, fill=channelName), alpha=0.5, position="stack") +
     scale_color_brewer(palette="Dark2") +
     scale_fill_brewer(palette="Dark2") +
-    scale_x_datetime(labels=date_format(format="%d.%m.%y%n%H:%M", tz="Europe/Moscow")) +
+    scale_x_datetime(labels=date_format(format="%d.%m.%y%n%H:%M", tz="UTC")) +
     theme_ipsum_rc(base_size=publish_set[["base_size"]], 
                    axis_title_size=publish_set[["axis_title_size"]]) +  
     # theme(axis.text.x = element_text(angle=90)) +

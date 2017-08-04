@@ -58,8 +58,8 @@ getTvProgramm <- function() {
   df %<>%
     as_tibble() %>%
     mutate_if(is.character, `Encoding<-`, "UTF-8") %>%
-    mutate(program_start_time=anytime(as.numeric(program_start_time), tz="Europe/Moscow")) %>%
-    mutate(created_at=anytime(as.numeric(created_at), tz="Europe/Moscow")) %>%
+    mutate(program_start_time=anytime(as.numeric(program_start_time), tz="UTC")) %>%
+    mutate(created_at=anytime(as.numeric(created_at), tz="UTC")) %>%
     # Продолжительность программы, мин
     mutate(program_duration=round(program_duration, 0))
     
