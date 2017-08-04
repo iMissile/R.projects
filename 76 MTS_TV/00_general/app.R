@@ -47,7 +47,7 @@ ui <-
   navbarPage("DVT IoT",
   # title=HTML('<div><a href="http://devoteam.com/"><img src="./img/devoteam_176px.png" width="80%"></a></div>'),
   title = "Статистика телесмотрения",
-  tabPanel("Рейтинг каналов", value="general_panel"),
+  tabPanel("Форма запросов", value="general_panel"),
   tabPanel("About", value="about"),
   # windowTitle="CC4L",
   # collapsible=TRUE,
@@ -83,27 +83,51 @@ ui <-
                                separator = " - ", format = "dd/mm/yy",
                                startview = "month", language = 'ru', weekstart=1)
       ), 
-      column(1, selectInput("history_depth", "История", 
-                            choices = c("1 месяц"=30, "2 недели"=14,
-                                        "1 неделя"=7, "3 дня"=3, "1 день"=1), selected=1)),
+      #column(1, selectInput("history_depth", "История", 
+      #                      choices = c("1 месяц"=30, "2 недели"=14,
+      #                                  "1 неделя"=7, "3 дня"=3, "1 день"=1), selected=1)),
       #column(1, selectInput("min_watch_time", "Мин. время",
       #                      choices = c("5 сек"=5, "10 сек"=10, 
       #                                  "20 сек"=20, "30 сек"=30), selected = 10)),
       #column(1, selectInput("max_watch_time", "Макс. время",
       #                      choices = c("1 час"=1, "2 часа"=2, 
       #                                  "3 часа"=3, "4 часа"=4), selected = 2)),
-      column(6, uiOutput("choose_region")),
-      column(2, selectInput("segment_filter", "Сегмент",
-                            choices = c("Все"="all",
-                                        "DVB-C"="DVB-C", 
-                                        "IPTV"="IPTV", 
-                                        "DVB-S"="DVB-S"), selected="all"))
+      column(3, uiOutput("choose_region")),
+      column(3, uiOutput("choose_channel")),
+      # column(1, selectInput("segment_filter", "Сегмент",
+      #                       choices = c("DVB-C"="DVB-C", 
+      #                                   "IPTV"="IPTV", 
+      #                                   "DVB-S"="DVB-S"), multiple=TRUE)),
+      column(2, selectInput("prefix_filter", "Префикс",
+                            choices=c("001 - DVB-S: Dune Lite", "002 - DVB-S: Dune Lite+",
+                                      "003 - IPTV: Huawei", "004 - DVB-S: Huawei",
+                                      "006 - DVB-C: Huawei", "007 - IPTV: ZTE",
+                                      "008 - IPTV: EKT", "009 - DVB-C: EKT"), multiple=TRUE))
     ),
     fluidRow(
       column(10, actionButton("set_test_dates_btn", "Вкл. демо дату", class = 'rightAlign')),
       column(2, actionButton("process_btn", "Применить", class = 'rightAlign'))
       ),
-
+    fluidRow(
+      column(1, selectInput("var1_input", "Значение 1",
+                            choices=c("нет", "поле 1", "поле 2"))),
+      column(1, selectInput("var2_input", "Значение 2",
+                            choices=c("нет", "поле 1", "поле 2"))),
+      column(1, selectInput("var3_input", "Значение 3",
+                            choices=c("нет", "поле 1", "поле 2")))
+    ),
+    fluidRow(
+      column(1, selectInput("var1_aggr", "Агрегат",
+                            choices=c("агр 1", "агр 2"))),
+      column(1, selectInput("var2_aggr", "Агрегат",
+                            choices=c("агр 1", "агр 2"))),
+      column(1, selectInput("var3_aggr", "Агрегат",
+                            choices=c("агр 1", "агр 2")))
+      
+    ),
+    fluidRow(
+      column(12, verbatimTextOutput('info_text'))
+    ),
     #tags$style(type='text/css', "#in_date_range { position: absolute; top: 50%; transform: translateY(-80%); }"),
     tabsetPanel(
       id = "panel_id",
@@ -111,7 +135,7 @@ ui <-
       tabPanel("Таблица", value = "table_tab",
                fluidRow(
                  p(),
-                 column(12, div(withSpinner(DT::dataTableOutput('stat_table'))), style="font-size: 90%")
+                 column(12, div(withSpinner(DT::dataTableOutput('stat_table1'))), style="font-size: 90%")
                ),
                p(),
                fluidRow(
@@ -130,10 +154,6 @@ ui <-
                        )))
                )
       )
-    #,
-    #fluidRow(
-    #  column(6, textOutput('info_text'))
-    #)
     
   ),
   shinyjs::useShinyjs()  # Include shinyjs
@@ -177,12 +197,13 @@ server <- function(input, output, session) {
     # dbDisconnect(con)
     df
   }
-  
-  
-  
+
   # подгрузим таблицу преобразования идентификатора канала в русское название ----
   progs_df <- jsonlite::fromJSON("./channels.json", simplifyDataFrame=TRUE) %>% 
-    select(channelId, channelName=name)
+    select(channelId, channelName=name) %>%
+    as_tibble()
+    
+  
   
   # реактивные переменные -------------------
   raw_df <- reactive({
@@ -212,8 +233,8 @@ server <- function(input, output, session) {
     # system.time(df <- readRDS("./data/tvstream4.rds"))
     flog.info(paste0("Loaded ", nrow(temp_df), " rows"))
     
-    # !!! исправляем непонятно чей косяк: если вложенный select дает 0 строк, то его имя транслируется как NULL
-    names(temp_df)[[3]] <- "total_unique_stb"
+    # косяк билда CH: если вложенный select дает 0 строк, то его имя транслируется как NULL
+    # names(temp_df)[[3]] <- "total_unique_stb"
     
     # browser()
     df <- temp_df %>%
@@ -324,15 +345,11 @@ server <- function(input, output, session) {
     msg()
   })
 
-
   # динамический выбор региона ---------
   output$choose_region <- renderUI({
-    
     data <- as.list(cities_df$translit)
     names(data) <- cities_df$russian
-    
-    # browser()
-    
+    msg(capture.output(str(data)))
     # создадим элемент
     selectInput("region_filter", 
                 paste0("Регион (", length(data), ")"),
@@ -340,6 +357,18 @@ server <- function(input, output, session) {
                 choices=data, width = "100%")
   })
 
+  # динамический выбор канала ---------
+  output$choose_channel <- renderUI({
+    data <- as.list(progs_df$channelId)
+    names(data) <- progs_df$channelId
+
+    # создадим элемент
+    selectInput("channel_filter", 
+                paste0("ChannelID (", length(data), ")"),
+                multiple=TRUE,
+                choices=data, width = "100%")
+  })  
+  
   # обработчики кнопок выгрузки файлов --------------------------------------------------
   # выгрузка таблицы в CSV -----------------------  
   output$csv_download_btn <- downloadHandler(
