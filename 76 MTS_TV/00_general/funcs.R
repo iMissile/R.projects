@@ -1,4 +1,3 @@
-
 hgroup.enum <- function(date, hour_bin=NULL, min_bin=5){
   # привязываем все измерения, которые попали в промежуток [0, t] к точке измерения.
   # точки измерения могут быть кратны 1, 2, 3, 4, 6, 12 часам, определяется hour.bin
@@ -23,6 +22,15 @@ hgroup.enum <- function(date, hour_bin=NULL, min_bin=5){
   }
   
   dt
+}
+
+
+buildReqFilter <- function(db_field, conditions){
+  ifelse(is.null(conditions) || conditions=="all", " ",
+         stri_join(" ", db_field, " IN (",
+                   stri_join(conditions %>% map_chr(~stri_join("'", .x, "'", sep="")),
+                             sep = " ", collapse=","),
+                   ") ", sep = "", collapse=""))
 }
 
 # конструирование ограничений запроса по данным фильтров

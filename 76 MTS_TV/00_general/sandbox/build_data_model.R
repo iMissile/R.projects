@@ -33,12 +33,30 @@ df0 <- jsonlite::fromJSON("datamodel.json", simplifyDataFrame=TRUE)
 df2 <- df0 %>%
   as_tibble() %>%
   # в переменные берем только то, что подпадает под агрегаты
+  filter(!is.na(aggr_ops)) %>%
   separate_rows(aggr_ops) %>%
   mutate(id=row_number()) %>%
-  filter(!is.na(aggr_ops)) %>%
-  mutate(visual_var_name=str_c("visual ", aggr_ops, "(", col_name, ")")) %>%
+  # переводим алиасы функций агрегации в различные узлы (экран, CH)
+  mutate(x=aggr_ops,
+         ext_aggr_opts=case_when(
+           x=="min" ~ "мин, min",
+           x=="max" ~ "макс, max",
+           x=="mean" ~ "ср, avg",
+           x=="sum" ~ "сумма, sum",
+           x=="unique" ~ "уник, uniq",           
+           x=="count" ~ "всего, count",
+           TRUE ~ "UNKNOWN"
+         )) %>%
+  # разнесем на отдельные колонки
+  separate(ext_aggr_opts, into=c("visual_aggr_func", "ch_aggr_func")) %>%
+  select(-x) %>%
+  mutate(visual_var_name=str_c(col_runame_screen, ": ", visual_aggr_func)) %>%
   mutate(visual_group_name=str_c("gr ", "(", col_name, ")")) %>%
-  mutate(ch_query_name=str_c(aggr_ops, "(", col_name, ")"))
+  mutate(ch_field=case_when(
+    col_name=="prefix" ~ "substring(serial, 1, 3)",
+    TRUE ~ col_name)) %>%
+  mutate(ch_query_name=str_c(ch_aggr_func, "(", ch_field, ")"))
+  
   
 
 #data <- as.list(df2$query_name)
@@ -46,9 +64,10 @@ df2 <- df0 %>%
 data_model_df <- df2
 data <- setNames(as.list(data_model_df$ch_query_name), data_model_df$visual_var_name)
 
-
-selectizeInput("selected_req", "ѕол€ дл€ запроса", choices=data, 
-               selected=NULL, multiple=TRUE, width="100%")
+# построим список переменных в часть SELECT
+data_model_df %>%
+  {purrr::map2_chr(.$ch_query_name, .$col_name, ~str_c(.x, " AS ", .y))} %>%
+  stri_join(sep="", collapse=", ")
 
 # теперь заполним возможные выборы в сооотв. с метамоделью
 # updateSelectizeInput(session, 'foo', choices=data, server=TRUE)

@@ -99,10 +99,14 @@ ui <-
       #                                   "IPTV"="IPTV", 
       #                                   "DVB-S"="DVB-S"), multiple=TRUE)),
       column(2, selectInput("prefix_filter", "Префикс",
-                            choices=c("001 - DVB-S: Dune Lite", "002 - DVB-S: Dune Lite+",
-                                      "003 - IPTV: Huawei", "004 - DVB-S: Huawei",
-                                      "006 - DVB-C: Huawei", "007 - IPTV: ZTE",
-                                      "008 - IPTV: EKT", "009 - DVB-C: EKT"), multiple=TRUE))
+                            choices=c("001 - DVB-S: Dune Lite"="001", 
+                                      "002 - DVB-S: Dune Lite+"="002",
+                                      "003 - IPTV: Huawei"="003", 
+                                      "004 - DVB-S: Huawei"="004",
+                                      "006 - DVB-C: Huawei"="006", 
+                                      "007 - IPTV: ZTE"="007",
+                                      "008 - IPTV: EKT"="008", 
+                                      "009 - DVB-C: EKT"="009"), multiple=TRUE))
     ),
     fluidRow(
       column(10, actionButton("set_test_dates_btn", "Вкл. демо дату", class = 'rightAlign')),
@@ -210,9 +214,26 @@ server <- function(input, output, session) {
       filter(!is.na(aggr_ops)) %>%
       separate_rows(aggr_ops) %>%
       mutate(id=row_number()) %>%
-      mutate(visual_var_name=str_c("видео ", aggr_ops, "(", col_name, ")")) %>%
+      # переводим алиасы функций агрегации в различные узлы (экран, CH)
+      mutate(x=aggr_ops,
+             ext_aggr_opts=case_when(
+               x=="min" ~ "мин, min",
+               x=="max" ~ "макс, max",
+               x=="mean" ~ "ср, avg",
+               x=="sum" ~ "сумма, sum",
+               x=="unique" ~ "уник, uniq",           
+               x=="count" ~ "всего, count",
+               TRUE ~ "UNKNOWN"
+             )) %>%
+      # разнесем на отдельные колонки
+      separate(ext_aggr_opts, into=c("visual_aggr_func", "ch_aggr_func")) %>%
+      select(-x) %>%
+      mutate(visual_var_name=str_c(col_runame_screen, ": ", visual_aggr_func)) %>%
       mutate(visual_group_name=str_c("gr ", "(", col_name, ")")) %>%
-      mutate(ch_query_name=str_c(aggr_ops, "(", col_name, ")"))
+      mutate(ch_field=case_when(
+        col_name=="prefix" ~ "substring(serial, 1, 3)",
+        TRUE ~ col_name)) %>%
+      mutate(ch_query_name=str_c(ch_aggr_func, "(", ch_field, ")"))
     
     df
   }
@@ -239,52 +260,52 @@ server <- function(input, output, session) {
   msg <- reactiveVal("")
   
   raw_df <- reactive({
-    input$process_btn # обновлять будем вручную
-    isolate({
-      
-      # regions <- c("Moskva", "Barnaul")
-      regions <- input$region_filter
-      # browser()
-    
-      # r <- buildReq(begin=today(), end=today()+days(1), regions)
-      flog.info(paste0("Applied time filter [", input$in_date_range[1], "; ", input$in_date_range[2], "]"))
-      flog.info(paste0("Applied region filter [", regions, "]"))
-      r <- buildReq(begin=input$in_date_range[1], end=input$in_date_range[2], 
-                    regions=regions, segment=input$segment_filter)
-      flog.info(paste0("DB request: ", r))
-    })
-    
-    # browser()
-
-    tic()
-    temp_df <- dbGetQuery(con, r) %>%
-      as_tibble()
-
-    flog.info(paste0("Query: ", capture.output(toc())))
-    flog.info(paste0("Table: ", capture.output(head(temp_df, 2))))
-    # system.time(df <- readRDS("./data/tvstream4.rds"))
-    flog.info(paste0("Loaded ", nrow(temp_df), " rows"))
-    
-    # косяк билда CH: если вложенный select дает 0 строк, то его имя транслируется как NULL
-    # names(temp_df)[[3]] <- "total_unique_stb"
-    
-    # browser()
-    df <- temp_df %>%
-      # время смотрения, мин
-      mutate(channel_duration=round(as.numeric(channel_duration), 0)) %>%
-      # 6. Среднее время просмотра, мин
-      mutate(mean_duration=round(channel_duration/watch_events, 0)) %>%
-      # 3. % уникальных приставок
-      mutate(stb_ratio=round(unique_stb/total_unique_stb, 3)) %>%
-      # 5. % времени просмотра
-      mutate(watch_ratio=round(channel_duration/sum(channel_duration), 5)) %>%
-      # 7. Среднее суммарное время просмотра одной приставкой за период, мин
-      mutate(duration_per_stb=round(channel_duration/unique_stb, 0))
-      # %>% mutate_at(vars(mean_duration, ratio_per_stb, watch_ratio, duration_per_stb), funs(round), digits=1)
-
-    # browser()
-    # dbDisconnect(con)
-    as_tibble(df)
+    # input$process_btn # обновлять будем вручную
+    # isolate({
+    #   
+    #   # regions <- c("Moskva", "Barnaul")
+    #   regions <- input$region_filter
+    #   # browser()
+    # 
+    #   # r <- buildReq(begin=today(), end=today()+days(1), regions)
+    #   flog.info(paste0("Applied time filter [", input$in_date_range[1], "; ", input$in_date_range[2], "]"))
+    #   flog.info(paste0("Applied region filter [", regions, "]"))
+    #   r <- buildReq(begin=input$in_date_range[1], end=input$in_date_range[2], 
+    #                 regions=regions, segment=input$segment_filter)
+    #   flog.info(paste0("DB request: ", r))
+    # })
+    # 
+    # # browser()
+    # 
+    # tic()
+    # temp_df <- dbGetQuery(con, r) %>%
+    #   as_tibble()
+    # 
+    # flog.info(paste0("Query: ", capture.output(toc())))
+    # flog.info(paste0("Table: ", capture.output(head(temp_df, 2))))
+    # # system.time(df <- readRDS("./data/tvstream4.rds"))
+    # flog.info(paste0("Loaded ", nrow(temp_df), " rows"))
+    # 
+    # # косяк билда CH: если вложенный select дает 0 строк, то его имя транслируется как NULL
+    # # names(temp_df)[[3]] <- "total_unique_stb"
+    # 
+    # # browser()
+    # df <- temp_df %>%
+    #   # время смотрения, мин
+    #   mutate(channel_duration=round(as.numeric(channel_duration), 0)) %>%
+    #   # 6. Среднее время просмотра, мин
+    #   mutate(mean_duration=round(channel_duration/watch_events, 0)) %>%
+    #   # 3. % уникальных приставок
+    #   mutate(stb_ratio=round(unique_stb/total_unique_stb, 3)) %>%
+    #   # 5. % времени просмотра
+    #   mutate(watch_ratio=round(channel_duration/sum(channel_duration), 5)) %>%
+    #   # 7. Среднее суммарное время просмотра одной приставкой за период, мин
+    #   mutate(duration_per_stb=round(channel_duration/unique_stb, 0))
+    #   # %>% mutate_at(vars(mean_duration, ratio_per_stb, watch_ratio, duration_per_stb), funs(round), digits=1)
+    # 
+    # # browser()
+    # # dbDisconnect(con)
+    # as_tibble(df)
   })  
 
   cur_df <- reactive({
@@ -380,10 +401,10 @@ server <- function(input, output, session) {
   # динамический выбор списка доступных агрегатов переменных в запрос ---------
   output$choose_vars <- renderUI({
     df <- var_model_df
-    data <- setNames(as.list(df$ch_query_name), df$visual_var_name)
+    data <- setNames(as.list(df$id), df$visual_var_name)
     msg(capture.output(str(data)))
     # создадим элемент
-    selectizeInput("selected_req", "Поля для запроса", choices=data, 
+    selectizeInput("selected_vars", "Поля для запроса", choices=data, 
                    selected=NULL, multiple=TRUE, width="100%")
     })
   
@@ -453,6 +474,21 @@ server <- function(input, output, session) {
                 multiple=TRUE,
                 choices=data, width = "100%")
   })  
+  
+  # генерируем SQL запрос
+  observeEvent(input$process_btn, {
+    # генерируем SQL запрос
+    # построим список переменных в часть SELECT
+    vars_string <- var_model_df %>%
+      filter(id %in% input$selected_vars) %>%
+      {purrr::map2_chr(.$ch_query_name, .$col_name, ~str_c(.x, " AS ", .y))} %>%
+      stri_join(sep="", collapse=", ")
+    
+    text <- paste0("SQL query: ", 
+                   "SELECT ", vars_string, " FROM db ",
+                   "WHERE ", buildReqFilter("prefix", input$prefix_filter))
+    msg(text)
+  })
   
   # обработчики кнопок выгрузки файлов --------------------------------------------------
   # выгрузка таблицы в CSV -----------------------  
