@@ -112,8 +112,7 @@ ui <-
     fluidRow(
       column(2, uiOutput("choose_group1")),
       column(2, uiOutput("choose_group2")),
-      column(2, selectInput("group_var3", "Группировка 3",
-                            choices=c("нет", "поле 1", "поле 2")))
+      column(2, uiOutput("choose_group3"))
     ),
     fluidRow(
       # https://stackoverflow.com/questions/21465411/r-shiny-passing-reactive-to-selectinput-choices
@@ -196,21 +195,46 @@ server <- function(input, output, session) {
   progs_df <- jsonlite::fromJSON("./channels.json", simplifyDataFrame=TRUE) %>% 
     select(channelId, channelName=name) %>%
     as_tibble()
-  
-  data_model_df <- {
-    df0 <- jsonlite::fromJSON("datamodel.json", simplifyDataFrame=TRUE)
-    
-    # построим модель переменных для вычисления
-    df2 <- df0 %>%
-      # в переменные берем только то, что подпадает под агрегаты
-      separate_rows(aggr_ops) %>%
-      filter(!is.na(aggr_ops)) %>%
-      mutate(visual_name=str_c("visial ", aggr_ops, "(", col_name, ")")) %>%
-      mutate(query_name=str_c(aggr_ops, "(", col_name, ")"))
 
-    df2
+  # создаем tidy модель данных ----
+  data_model_df <- {
+    df0 <- jsonlite::fromJSON("datamodel.json", simplifyDataFrame=TRUE) %>%
+      as_tibble()
+  }
+  
+  # модель для переменных под агрегат
+  var_model_df <- {    
+    # построим модель переменных для вычисления
+    df <- data_model_df %>%
+      # в переменные берем только то, что подпадает под агрегаты
+      filter(!is.na(aggr_ops)) %>%
+      separate_rows(aggr_ops) %>%
+      mutate(id=row_number()) %>%
+      mutate(visual_var_name=str_c("видео ", aggr_ops, "(", col_name, ")")) %>%
+      mutate(visual_group_name=str_c("gr ", "(", col_name, ")")) %>%
+      mutate(ch_query_name=str_c(aggr_ops, "(", col_name, ")"))
+    
+    df
   }
 
+  # модель переменных для группировки
+  group_model_df <- {    
+    # построим модель переменных для вычисления
+    df <- data_model_df %>%
+      # в переменные берем только то, что подпадает под агрегаты
+      filter(can_be_grouped) %>%
+      mutate(id=row_number()) %>%
+      mutate(visual_var_name=str_c("visual ", aggr_ops, "(", col_name, ")")) %>%
+      mutate(visual_group_name=str_c("gr ", "(", col_name, ")")) %>%
+      mutate(ch_query_name=str_c(aggr_ops, "(", col_name, ")")) %>%
+      # добавим пустую строку, позволяющую не выбирать агрегат
+      add_row(id=0, visual_group_name="нет") %>%
+      arrange(id)
+
+    df
+  }
+
+  # browser()
   # реактивные переменные -------------------
   msg <- reactiveVal("")
   
@@ -355,7 +379,8 @@ server <- function(input, output, session) {
   
   # динамический выбор списка доступных агрегатов переменных в запрос ---------
   output$choose_vars <- renderUI({
-    data <- setNames(as.list(data_model_df$query_name), data_model_df$visual_name)
+    df <- var_model_df
+    data <- setNames(as.list(df$ch_query_name), df$visual_var_name)
     msg(capture.output(str(data)))
     # создадим элемент
     selectizeInput("selected_req", "Поля для запроса", choices=data, 
@@ -364,20 +389,47 @@ server <- function(input, output, session) {
   
   # динамический выбор группировки 1-го уровня в запрос ---------
   output$choose_group1 <- renderUI({
-    data <- setNames(as.list(data_model_df$query_name), data_model_df$visual_name)
-    msg(capture.output(str(data)))
-    # создадим элемент
+    flog.info("Recreating 'Group 1' control")
+    df <- group_model_df
+    data <- setNames(as.list(df$id), df$visual_group_name)
     selectInput("group_var1", "Группировка 1", choices=data)
   })
 
-  # динамический выбор группировки 1-го уровня в запрос ---------
+  # динамический выбор группировки 2-го уровня в запрос ---------
   output$choose_group2 <- renderUI({
-    data <- setNames(as.list(data_model_df$query_name), data_model_df$visual_name)
-    msg(capture.output(str(data)))
-    # создадим элемент
+    req(input$group_var1)
+    flog.info("Recreating 'Group 2' control")
+    # если выше нет группировки, то и ниже ее быть не может
+    if(input$group_var1==0){
+      data <- c("нет"=0)
+    } else {
+      # исключаем поле, которое указано в 1-ой группировке
+      df <- group_model_df %>%
+        filter(id != input$group_var1)
+      data <- setNames(as.list(df$id), df$visual_group_name)
+    }
     selectInput("group_var2", "Группировка 2", choices=data)
   })
+
+  # динамический выбор группировки 3-го уровня в запрос ---------
+  output$choose_group3 <- renderUI({
+    # исключаем поле, которое указано в 1-ой или 2-ой группировке
+    req(input$group_var1)
+    req(input$group_var2)
+    flog.info("Recreating 'Group 3' control")
+    # если выше нет группировки, то и ниже ее быть не может
+    if(input$group_var2==0){
+      data <- c("нет"=0)
+    } else {
+      # исключаем поле, которое указано в 1-ой или 2-ой группировке
+      df <- group_model_df %>%
+        filter(id != input$group_var1 & id != input$group_var2)
+      data <- setNames(as.list(df$id), df$visual_group_name)
+    }    
+    selectInput("group_var3", "Группировка 3", choices=data, selected=NULL)
+  })
   
+    
   # динамический выбор региона ---------
   output$choose_region <- renderUI({
     data <- as.list(cities_df$translit)
