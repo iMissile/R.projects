@@ -29,9 +29,16 @@ source("clickhouse.R")
 rm(list=ls()) # очистим все переменные
 df0 <- jsonlite::fromJSON("datamodel.json", simplifyDataFrame=TRUE)
 
+data_model <- df0 %>%
+  as_tibble()
+
+# %>%
+#   mutate(ch_field=case_when(
+#     col_name=="prefix" ~ "substring(serial, 1, 3)",
+#     TRUE ~ col_name))
+  
 # построим модель переменных для вычисления
-df2 <- df0 %>%
-  as_tibble() %>%
+var_model <- data_model %>%
   # в переменные берем только то, что подпадает под агрегаты
   filter(!is.na(aggr_ops)) %>%
   separate_rows(aggr_ops) %>%
@@ -51,13 +58,17 @@ df2 <- df0 %>%
   separate(ext_aggr_opts, into=c("visual_aggr_func", "ch_aggr_func")) %>%
   select(-x) %>%
   mutate(visual_var_name=str_c(col_runame_screen, ": ", visual_aggr_func)) %>%
-  mutate(visual_group_name=str_c("gr ", "(", col_name, ")")) %>%
-  mutate(ch_field=case_when(
-    col_name=="prefix" ~ "substring(serial, 1, 3)",
-    TRUE ~ col_name)) %>%
   mutate(ch_query_name=str_c(ch_aggr_func, "(", ch_field, ")"))
   
-  
+# делаем обратную свертку
+group_model <- data_model %>%
+  filter(can_be_grouped) %>%
+  mutate(visual_group_name=str_c("_", col_name, "_")) %>%
+  select(col_name, visual_group_name, ch_field) %>%
+  mutate(id=row_number()) %>%
+  # добавим пустую строку, позволяющую не выбирать агрегат
+  add_row(id=0, visual_group_name="нет") %>%
+  arrange(id)  
 
 #data <- as.list(df2$query_name)
 #names(data) <- df2$visual_name

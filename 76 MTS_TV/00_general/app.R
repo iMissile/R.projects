@@ -203,7 +203,10 @@ server <- function(input, output, session) {
   # создаем tidy модель данных ----
   data_model_df <- {
     df0 <- jsonlite::fromJSON("datamodel.json", simplifyDataFrame=TRUE) %>%
-      as_tibble()
+      as_tibble() %>%
+      mutate(ch_field=case_when(
+        col_name=="prefix" ~ "substring(serial, 1, 3)",
+        TRUE ~ col_name))
   }
   
   # модель для переменных под агрегат
@@ -229,10 +232,6 @@ server <- function(input, output, session) {
       separate(ext_aggr_opts, into=c("visual_aggr_func", "ch_aggr_func")) %>%
       select(-x) %>%
       mutate(visual_var_name=str_c(col_runame_screen, ": ", visual_aggr_func)) %>%
-      mutate(visual_group_name=str_c("gr ", "(", col_name, ")")) %>%
-      mutate(ch_field=case_when(
-        col_name=="prefix" ~ "substring(serial, 1, 3)",
-        TRUE ~ col_name)) %>%
       mutate(ch_query_name=str_c(ch_aggr_func, "(", ch_field, ")"))
     
     df
@@ -244,10 +243,9 @@ server <- function(input, output, session) {
     df <- data_model_df %>%
       # в переменные берем только то, что подпадает под агрегаты
       filter(can_be_grouped) %>%
+      mutate(visual_group_name=str_c("_", col_name, "_")) %>%
+      select(col_name, visual_group_name, ch_field) %>%
       mutate(id=row_number()) %>%
-      mutate(visual_var_name=str_c("visual ", aggr_ops, "(", col_name, ")")) %>%
-      mutate(visual_group_name=str_c("gr ", "(", col_name, ")")) %>%
-      mutate(ch_query_name=str_c(aggr_ops, "(", col_name, ")")) %>%
       # добавим пустую строку, позволяющую не выбирать агрегат
       add_row(id=0, visual_group_name="нет") %>%
       arrange(id)
@@ -484,9 +482,11 @@ server <- function(input, output, session) {
       {purrr::map2_chr(.$ch_query_name, .$col_name, ~str_c(.x, " AS ", .y))} %>%
       stri_join(sep="", collapse=", ")
     
+    browser()
     text <- paste0("SQL query: ", 
-                   "SELECT ", vars_string, " FROM db ",
-                   "WHERE ", buildReqFilter("prefix", input$prefix_filter))
+                   "SELECT ", vars_string, " FROM simstates ",
+                   "WHERE ", buildReqFilter("prefix", input$prefix_filter),
+                   " LIMIT 10;")
     msg(text)
   })
   
