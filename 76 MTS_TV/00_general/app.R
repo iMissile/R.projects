@@ -108,34 +108,16 @@ ui <-
       column(10, actionButton("set_test_dates_btn", "Вкл. демо дату", class = 'rightAlign')),
       column(2, actionButton("process_btn", "Применить", class = 'rightAlign'))
       ),
+    # блок элементов группировки и агрегации, формируемых динамически
     fluidRow(
-      column(1, selectInput("var1_input", "Значение 1",
-                            choices=c("нет", "поле 1", "поле 2"))),
-      column(1, selectInput("var2_input", "Значение 2",
-                            choices=c("нет", "поле 1", "поле 2"))),
-      column(1, selectInput("var3_input", "Значение 3",
+      column(2, uiOutput("choose_group1")),
+      column(2, uiOutput("choose_group2")),
+      column(2, selectInput("group_var3", "Группировка 3",
                             choices=c("нет", "поле 1", "поле 2")))
     ),
     fluidRow(
-      column(1, selectInput("var1_aggr", "Агрегат",
-                            choices=c("агр 1", "агр 2"))),
-      column(1, selectInput("var2_aggr", "Агрегат",
-                            choices=c("агр 1", "агр 2"))),
-      column(1, selectInput("var3_aggr", "Агрегат",
-                            choices=c("агр 1", "агр 2")))
-      
-    ),
-    fluidRow(
-      column(2, selectInput("var_input", "Поле",
-                           choices=c("нет", "поле 1", "поле 2"))),
-      column(2, selectInput("aggr_input", "Агрегат",
-                           choices=c("нет", "поле 1", "поле 2"))),
-      column(1, actionButton("add_var_btn", "Добавить")),
-      column(1, actionButton("erase_req_btn", "Очистить"))
-    ),
-    fluidRow(
-      column(12, selectizeInput("selected_req", "Поля для запроса", choices=c(""), 
-                               selected=NULL, multiple=TRUE, width="100%"))
+      # https://stackoverflow.com/questions/21465411/r-shiny-passing-reactive-to-selectinput-choices
+      column(12, uiOutput("choose_vars"))
     ),
     fluidRow(
       column(12, verbatimTextOutput('info_text'))
@@ -215,12 +197,20 @@ server <- function(input, output, session) {
     select(channelId, channelName=name) %>%
     as_tibble()
   
-  data_model_df <- readr::read_delim("datamodel.csv", delim=";")
+  data_model_df <- {
+    df0 <- jsonlite::fromJSON("datamodel.json", simplifyDataFrame=TRUE)
+    
+    # построим модель переменных для вычисления
+    df2 <- df0 %>%
+      # в переменные берем только то, что подпадает под агрегаты
+      separate_rows(aggr_ops) %>%
+      filter(!is.na(aggr_ops)) %>%
+      mutate(visual_name=str_c("visial ", aggr_ops, "(", col_name, ")")) %>%
+      mutate(query_name=str_c(aggr_ops, "(", col_name, ")"))
 
-  # теперь заполним возможные выборы в сооотв. с метамоделью
-  updateSelectizeInput(session, 'foo', choices = data, server = TRUE)
+    df2
+  }
 
-  
   # реактивные переменные -------------------
   msg <- reactiveVal("")
   
@@ -346,6 +336,7 @@ server <- function(input, output, session) {
   
   # управляем визуализацией кнопок выгрузки ----- 
   observe({
+    # msg(capture.output(str(session)))
     # browser()
     if(!is.null(cur_df()) & nrow(cur_df())>0) {
       shinyjs::enable("csv_download_btn")
@@ -361,11 +352,37 @@ server <- function(input, output, session) {
     msg()
   })
 
+  
+  # динамический выбор списка доступных агрегатов переменных в запрос ---------
+  output$choose_vars <- renderUI({
+    data <- setNames(as.list(data_model_df$query_name), data_model_df$visual_name)
+    msg(capture.output(str(data)))
+    # создадим элемент
+    selectizeInput("selected_req", "Поля для запроса", choices=data, 
+                   selected=NULL, multiple=TRUE, width="100%")
+    })
+  
+  # динамический выбор группировки 1-го уровня в запрос ---------
+  output$choose_group1 <- renderUI({
+    data <- setNames(as.list(data_model_df$query_name), data_model_df$visual_name)
+    msg(capture.output(str(data)))
+    # создадим элемент
+    selectInput("group_var1", "Группировка 1", choices=data)
+  })
+
+  # динамический выбор группировки 1-го уровня в запрос ---------
+  output$choose_group2 <- renderUI({
+    data <- setNames(as.list(data_model_df$query_name), data_model_df$visual_name)
+    msg(capture.output(str(data)))
+    # создадим элемент
+    selectInput("group_var2", "Группировка 2", choices=data)
+  })
+  
   # динамический выбор региона ---------
   output$choose_region <- renderUI({
     data <- as.list(cities_df$translit)
     names(data) <- cities_df$russian
-    msg(capture.output(str(data)))
+    # msg(capture.output(str(data)))
     # создадим элемент
     selectInput("region_filter", 
                 paste0("Регион (", length(data), ")"),
