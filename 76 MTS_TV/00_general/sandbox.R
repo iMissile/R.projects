@@ -21,6 +21,11 @@ library(config)
 
 source("clickhouse.R")
 
+
+
+
+df <- readr::read_delim("datamodel.csv", delim=";")
+
 # загрузка 
 publishToSQL <- function(clean_df) {
   # делаем экспорт в PostgreSQL ---------------------

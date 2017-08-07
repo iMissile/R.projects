@@ -126,6 +126,18 @@ ui <-
       
     ),
     fluidRow(
+      column(2, selectInput("var_input", "Поле",
+                           choices=c("нет", "поле 1", "поле 2"))),
+      column(2, selectInput("aggr_input", "Агрегат",
+                           choices=c("нет", "поле 1", "поле 2"))),
+      column(1, actionButton("add_var_btn", "Добавить")),
+      column(1, actionButton("erase_req_btn", "Очистить"))
+    ),
+    fluidRow(
+      column(12, selectizeInput("selected_req", "Поля для запроса", choices=c(""), 
+                               selected=NULL, multiple=TRUE, width="100%"))
+    ),
+    fluidRow(
       column(12, verbatimTextOutput('info_text'))
     ),
     #tags$style(type='text/css', "#in_date_range { position: absolute; top: 50%; transform: translateY(-80%); }"),
@@ -202,10 +214,16 @@ server <- function(input, output, session) {
   progs_df <- jsonlite::fromJSON("./channels.json", simplifyDataFrame=TRUE) %>% 
     select(channelId, channelName=name) %>%
     as_tibble()
-    
   
+  data_model_df <- readr::read_delim("datamodel.csv", delim=";")
+
+  # теперь заполним возможные выборы в сооотв. с метамоделью
+  updateSelectizeInput(session, 'foo', choices = data, server = TRUE)
+
   
   # реактивные переменные -------------------
+  msg <- reactiveVal("")
+  
   raw_df <- reactive({
     input$process_btn # обновлять будем вручную
     isolate({
@@ -266,8 +284,6 @@ server <- function(input, output, session) {
       select(channelName, channelId, everything())
   })
   
-  msg <- reactiveVal("")
-
   # таблица с выборкой по каналам ----------------------------
   output$stat_table <- DT::renderDataTable({
     df <- req(cur_df()) %>%
