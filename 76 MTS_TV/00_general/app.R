@@ -111,7 +111,7 @@ ui <-
                                       "008 - IPTV: EKT"="*008", 
                                       "009 - DVB-C: EKT"="*009"), 
                             multiple=TRUE, width="100%")),
-      column(6, selectInput("event_filter", "Типы событий",
+      column(6, selectInput("event_filter", "Тип переключения канала",
                             choices=c("CHPLUS", "INIT", "DIGIT", "PREVIOUS_CHANNEL",
                                       "CHMINUS", "FULLSCREEN_EPG", "ENTER", "PVR", 
                                       "REMINDER", "MAIN_MENU", "FILE", "VOD", "CATCH_UP"), 
@@ -456,7 +456,7 @@ server <- function(input, output, session) {
     } else {
       # не выбрана ни одна переменная
       select_string <- " * "
-      limit_string <- "LIMIT 1000"
+      limit_string <- "LIMIT 2000"
     }
     
     # browser()

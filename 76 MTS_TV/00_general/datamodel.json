@@ -85,20 +85,20 @@
     "can_be_grouped": false
   },
   {
-    "col_name": "interval",
-    "col_runame_screen": "группа (1 час)",
-    "col_runame_office": "группа",
-    "col_label": "подсказка (interval)",
-    "ch_field": "interval",
+    "col_name": "timegroup1h",
+    "col_runame_screen": "почасовая группировка",
+    "col_runame_office": "почасовая группировка",
+    "col_label": "подсказка (timegroup1h)",
+    "ch_field": "timegroup1h",
     "can_be_grouped": true
   },
   {
-    "col_name": "segment",
+    "col_name": "segment_old",
     "col_runame_screen": "сегмент",
     "col_runame_office": "сегмент",
     "col_label": "подсказка (segment)",
     "ch_field": "substring(serial, 1, 3)",
-    "internal_field": "segment",
+    "internal_field": "segment_old",
     "can_be_grouped": false
   },
   {
@@ -107,6 +107,24 @@
     "col_runame_office": "регион",
     "col_label": "Название региона; указанного в настройках STB",
     "ch_field": "region",
+    "aggr_ops": "count, unique",
+    "can_be_grouped": true
+  },
+  {
+    "col_name": "segment",
+    "col_runame_screen": "сегмент",
+    "col_runame_office": "сегмент",
+    "col_label": "Технологический сегмент",
+    "ch_field": "segment",
+    "aggr_ops": "count, unique",
+    "can_be_grouped": true
+  },
+  {
+    "col_name": "vendor",
+    "col_runame_screen": "вендор STB",
+    "col_runame_office": "вендор STB",
+    "col_label": "Производитель STB",
+    "ch_field": "vendor",
     "aggr_ops": "count, unique",
     "can_be_grouped": true
   },
