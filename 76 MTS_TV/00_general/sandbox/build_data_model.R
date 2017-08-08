@@ -30,7 +30,10 @@ rm(list=ls()) # очистим все переменные
 df0 <- jsonlite::fromJSON("datamodel.json", simplifyDataFrame=TRUE)
 
 data_model <- df0 %>%
-  as_tibble()
+  as_tibble() %>%
+  mutate(select_string={map2_chr(.$internal_field, .$ch_field, 
+                                 ~if_else(is.na(.x), .y, stri_join(.y, " AS ", .x)))}) %>%
+  mutate(internal_field={map2_chr(.$internal_field, .$ch_field, ~if_else(is.na(.x), .y, .x))})  
 
 # %>%
 #   mutate(ch_field=case_when(
@@ -58,13 +61,13 @@ var_model <- data_model %>%
   separate(ext_aggr_opts, into=c("visual_aggr_func", "ch_aggr_func")) %>%
   select(-x) %>%
   mutate(visual_var_name=str_c(col_runame_screen, ": ", visual_aggr_func)) %>%
-  mutate(ch_query_name=str_c(ch_aggr_func, "(", ch_field, ")"))
+  mutate(ch_query_name=str_c(ch_aggr_func, "(", internal_field, ")"))
   
 # делаем обратную свертку
 group_model <- data_model %>%
   filter(can_be_grouped) %>%
-  mutate(visual_group_name=str_c("_", col_name, "_")) %>%
-  select(col_name, visual_group_name, ch_field) %>%
+  mutate(visual_group_name=str_c("_", internal_field, "_")) %>%
+  select(select_string, internal_field, visual_group_name) %>%
   mutate(id=row_number()) %>%
   # добавим пустую строку, позволяющую не выбирать агрегат
   add_row(id=0, visual_group_name="нет") %>%
@@ -85,7 +88,12 @@ data_model_df %>%
 stop()
 
 # блок для моделирования и добавления новых полей
-df <- jsonlite::fromJSON("datamodel.json", simplifyDataFrame=TRUE)# %>%
+df <- jsonlite::fromJSON("datamodel.json", simplifyDataFrame=TRUE)
+
+df <- jsonlite::fromJSON("datamodel.json", simplifyDataFrame=TRUE) %>%
+  mutate(select_string={map2_chr(.$internal_field, .$ch_field, 
+                                 ~if_else(is.na(.x), .y, stri_join(.y, " AS ", .x)))}) %>%
+  mutate(internal_field={map2_chr(.$internal_field, .$ch_field, ~if_else(is.na(.x), .y, .x))})
   # select(-visual_name, -query_name)
   # mutate(can_be_grouped=FALSE) 
   # rename(visual_var_name=visual_name, visual_group_name=can_be_grouped)

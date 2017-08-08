@@ -25,35 +25,28 @@ hgroup.enum <- function(date, hour_bin=NULL, min_bin=5){
 }
 
 
-buildReqFilter <- function(db_field, conditions){
+buildReqFilter <- function(db_field, conditions, add=TRUE){
   ifelse(is.null(conditions) || conditions=="all", " ",
-         stri_join(" ", db_field, " IN (",
+         stri_join(ifelse(add, " AND ", " "), db_field, " IN (",
                    stri_join(conditions %>% map_chr(~stri_join("'", .x, "'", sep="")),
                              sep = " ", collapse=","),
                    ") ", sep = "", collapse=""))
 }
 
 # конструирование ограничений запроса по данным фильтров
-buildReqLimits <- function(begin, end, regions, segment) {
+buildReqLimits <- function(begin, end, regions, prefixes, channels) {
   # базисная SQL конструкция для ограничения дат ----
   # limit_dates <- paste0(" toDate(begin) >= toDate('", begin, "') AND toDate(end) <= toDate('", end, "') ")
   limit_dates <- paste0(" date >= '", begin, "' AND date <= '", end, "' ")
   
   # добавочная SQL конструкция для ограничения регионов -----
-  limit_regions <- ifelse(is.null(regions), " ",
-                          stri_join(" AND region IN (", 
-                                    stri_join(regions %>% map_chr(~stri_join("'", .x, "'", sep="")),
-                                              sep = " ", collapse=","),
-                                    ") ", sep = "", collapse=""))
-  
-  # добавочная SQL конструкция для ограничения сегментов -----
-  limit_segments <- ifelse(segment=="all", " ", 
-                           stri_join(" AND segment IN (", 
-                                     stri_join(segment %>% map_chr(~stri_join("'", .x, "'", sep="")),
-                                               sep = " ", collapse=","),
-                                     ") ", sep = "", collapse=""))
-  
-  paste0(limit_dates, limit_regions, limit_segments)
+  limit_regions <- 
+
+  paste0(limit_dates, 
+         " AND ", buildReqFilter("region", regions), 
+         " AND ", buildReqFilter("prefix", prefixes),
+         " AND ", buildReqFilter("prefix", channels)
+         )
 }
 
 # построение запроса для отчета 'Рейтинг по каналам' ----------------

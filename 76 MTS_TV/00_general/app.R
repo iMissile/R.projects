@@ -52,8 +52,8 @@ ui <-
   # windowTitle="CC4L",
   # collapsible=TRUE,
   id="tsp",
-  # theme=shinytheme("flatly"),
-  theme=shinytheme("yeti"),
+  theme=shinytheme("flatly"),
+  # theme=shinytheme("yeti"),
   # shinythemes::themeSelector(),
   # includeCSS("styles.css"),
 
@@ -72,33 +72,34 @@ ui <-
       #column(6, h2("Типовая форма"), h3(textOutput("cweather_text", inline=TRUE))),
       #column(6, h2("Заполнитель"))
       ),
+    h3("Область фильтров"),
     fluidRow(
       column(2, dateRangeInput("in_date_range",
                                label="Диапазон дат",
-                               start=Sys.Date()-1, end=Sys.Date(),
-                               # на время отладки
-                               # start="2017-06-28", end="2017-06-30",
+                               # start=Sys.Date()-1, end=Sys.Date(),
+                               # при демонстрации на пилотных данных
+                               start="2017-03-01", end="2017-03-02",
                                # min = Sys.Date() - 10, 
-                               max = Sys.Date(),
+                               # max = Sys.Date(),
                                separator = " - ", format = "dd/mm/yy",
                                startview = "month", language = 'ru', weekstart=1)
       ), 
       #column(1, selectInput("history_depth", "История", 
       #                      choices = c("1 месяц"=30, "2 недели"=14,
       #                                  "1 неделя"=7, "3 дня"=3, "1 день"=1), selected=1)),
-      #column(1, selectInput("min_watch_time", "Мин. время",
-      #                      choices = c("5 сек"=5, "10 сек"=10, 
-      #                                  "20 сек"=20, "30 сек"=30), selected = 10)),
-      #column(1, selectInput("max_watch_time", "Макс. время",
-      #                      choices = c("1 час"=1, "2 часа"=2, 
-      #                                  "3 часа"=3, "4 часа"=4), selected = 2)),
-      column(3, uiOutput("choose_region")),
-      column(3, uiOutput("choose_channel")),
-      # column(1, selectInput("segment_filter", "Сегмент",
-      #                       choices = c("DVB-C"="DVB-C", 
-      #                                   "IPTV"="IPTV", 
-      #                                   "DVB-S"="DVB-S"), multiple=TRUE)),
-      column(2, selectInput("prefix_filter", "Префикс",
+      column(1, selectInput("min_watch_time", "Мин. время",
+                            choices = c("5 сек"=5, "10 сек"=10, 
+                                        "20 сек"=20, "30 сек"=30), selected = 10)),
+      column(1, selectInput("max_watch_time", "Макс. время",
+                            choices = c("1 час"=1, "2 часа"=2, 
+                                        "3 часа"=3, "4 часа"=4), selected = 2))
+    ),
+    fluidRow(
+      column(6, uiOutput("choose_region")),
+      column(6, uiOutput("choose_channel"))
+    ),
+    fluidRow(
+      column(6, selectInput("prefix_filter", "Префикс",
                             choices=c("001 - DVB-S: Dune Lite"="001", 
                                       "002 - DVB-S: Dune Lite+"="002",
                                       "003 - IPTV: Huawei"="003", 
@@ -106,21 +107,26 @@ ui <-
                                       "006 - DVB-C: Huawei"="006", 
                                       "007 - IPTV: ZTE"="007",
                                       "008 - IPTV: EKT"="008", 
-                                      "009 - DVB-C: EKT"="009"), multiple=TRUE))
+                                      "009 - DVB-C: EKT"="009"), 
+                            multiple=TRUE, width="100%")),
+      column(6, selectInput("event_filter", "Событие",
+                            choices=c("CHPLUS", "INIT", "DIGIT", "PREVIOUS_CHANNEL",
+                                      "CHMINUS", "FULLSCREEN_EPG", "ENTER", "PVR", 
+                                      "REMINDER", "MAIN_MENU", "FILE", "VOD", "CATCH_UP"), 
+                            multiple=TRUE, width="100%"))
+    ),
+    h3("Область агрегатов"),
+    # блок элементов группировки и агрегации, формируемых динамически
+    fluidRow(
+      column(1, uiOutput("choose_group1")),
+      column(1, uiOutput("choose_group2")),
+      column(1, uiOutput("choose_group3")),
+      # https://stackoverflow.com/questions/21465411/r-shiny-passing-reactive-to-selectinput-choices
+      column(9, uiOutput("choose_vars"))
     ),
     fluidRow(
       column(10, actionButton("set_test_dates_btn", "Вкл. демо дату", class = 'rightAlign')),
       column(2, actionButton("process_btn", "Применить", class = 'rightAlign'))
-      ),
-    # блок элементов группировки и агрегации, формируемых динамически
-    fluidRow(
-      column(2, uiOutput("choose_group1")),
-      column(2, uiOutput("choose_group2")),
-      column(2, uiOutput("choose_group3"))
-    ),
-    fluidRow(
-      # https://stackoverflow.com/questions/21465411/r-shiny-passing-reactive-to-selectinput-choices
-      column(12, uiOutput("choose_vars"))
     ),
     fluidRow(
       column(12, verbatimTextOutput('info_text'))
@@ -204,9 +210,10 @@ server <- function(input, output, session) {
   data_model_df <- {
     df0 <- jsonlite::fromJSON("datamodel.json", simplifyDataFrame=TRUE) %>%
       as_tibble() %>%
-      mutate(ch_field=case_when(
-        col_name=="prefix" ~ "substring(serial, 1, 3)",
-        TRUE ~ col_name))
+      mutate(select_string={map2_chr(.$internal_field, .$ch_field,
+                                     ~if_else(is.na(.x), .y, stri_join(.y, " AS ", .x)))}) %>%
+      mutate(internal_field={map2_chr(.$internal_field, .$ch_field,
+                                      ~if_else(is.na(.x), .y, .x))})  
   }
   
   # модель для переменных под агрегат
@@ -232,7 +239,7 @@ server <- function(input, output, session) {
       separate(ext_aggr_opts, into=c("visual_aggr_func", "ch_aggr_func")) %>%
       select(-x) %>%
       mutate(visual_var_name=str_c(col_runame_screen, ": ", visual_aggr_func)) %>%
-      mutate(ch_query_name=str_c(ch_aggr_func, "(", ch_field, ")"))
+      mutate(ch_query_name=str_c(ch_aggr_func, "(", internal_field, ")"))
     
     df
   }
@@ -243,12 +250,12 @@ server <- function(input, output, session) {
     df <- data_model_df %>%
       # в переменные берем только то, что подпадает под агрегаты
       filter(can_be_grouped) %>%
-      mutate(visual_group_name=str_c("_", col_name, "_")) %>%
-      select(col_name, visual_group_name, ch_field) %>%
+      mutate(visual_group_name=str_c("_", internal_field, "_")) %>%
+      select(select_string, internal_field, visual_group_name) %>%
       mutate(id=row_number()) %>%
       # добавим пустую строку, позволяющую не выбирать агрегат
       add_row(id=0, visual_group_name="нет") %>%
-      arrange(id)
+      arrange(id) 
 
     df
   }
@@ -344,24 +351,6 @@ server <- function(input, output, session) {
       DT::formatPercentage("stb_ratio", 2)
     })
   
-  # график Топ10 каналов по суммарному времени просмотра -------------
-  output$top10_duration_plot <-renderPlot({
-    shiny::validate(
-      need(!is.null(cur_df()), "NULL value can't be renederd"),
-      need(nrow(cur_df())>0, "0 rows -- nothing to draw") 
-    )
-    plotTop10Duration(cur_df(), publish_set=font_sizes[["screen"]])
-  })
-  
-  # график Топ10 каналов по количеству уникальных приставок --------------
-  output$top10_stb_plot <-renderPlot({
-    shiny::validate(
-      need(!is.null(cur_df()), "NULL value can't be renederd"),
-      need(nrow(cur_df())>0, "0 rows -- nothing to draw") 
-    )
-    plotTop10STB(cur_df(), publish_set=font_sizes[["screen"]])
-  })  
-
   # динамическое управление диапазоном дат ---------
   observeEvent(input$history_depth, {
     # $history_depth получаем как строку
@@ -395,7 +384,6 @@ server <- function(input, output, session) {
     msg()
   })
 
-  
   # динамический выбор списка доступных агрегатов переменных в запрос ---------
   output$choose_vars <- renderUI({
     df <- var_model_df
@@ -447,8 +435,7 @@ server <- function(input, output, session) {
     }    
     selectInput("group_var3", "Группировка 3", choices=data, selected=NULL)
   })
-  
-    
+
   # динамический выбор региона ---------
   output$choose_region <- renderUI({
     data <- as.list(cities_df$translit)
@@ -473,20 +460,42 @@ server <- function(input, output, session) {
                 choices=data, width = "100%")
   })  
   
-  # генерируем SQL запрос
+  # генерируем SQL запрос ----------------
   observeEvent(input$process_btn, {
     # генерируем SQL запрос
-    # построим список переменных в часть SELECT
-    vars_string <- var_model_df %>%
-      filter(id %in% input$selected_vars) %>%
-      {purrr::map2_chr(.$ch_query_name, .$col_name, ~str_c(.x, " AS ", .y))} %>%
-      stri_join(sep="", collapse=", ")
+
+    # определяем, есть ли переменные в select
+    # has_select <- !all(purrr::map_lgl(list(input$group_var1, input$group_var2,
+    #                                        input$group_var3, input$selected_vars), 
+    #                                   is.null))
+    has_select_var <- !all(purrr::map_lgl(list(input$group_var1, input$group_var2,
+                                               input$group_var3), ~.x=="0"), 
+                           is.null(input$selected_vars))
+
+    limit_string <- ""    
+    if(has_select_var){
+      # построим список переменных в часть SELECT
+      vars_string <- var_model_df %>%
+        filter(id %in% input$selected_vars) %>%
+        # {purrr::map2_chr(.$ch_query_name, .$col_name, ~str_c(.x, " AS ", .y))} %>%
+        {purrr::map_chr(.$ch_query_name, ~str_c(.x, " "))} %>%
+        stri_join(sep="", collapse=", ")
+    } else {
+      # не выбрана ни одна переменная
+      vars_string <- " * "
+      limit_string <- "LIMIT 10"
+    }
     
-    browser()
-    text <- paste0("SQL query: ", 
-                   "SELECT ", vars_string, " FROM simstates ",
-                   "WHERE ", buildReqFilter("prefix", input$prefix_filter),
-                   " LIMIT 10;")
+    where_string <- paste0(paste0(" date >= '", input$in_date_range[1], "' AND date <= '", input$in_date_range[2], "' "),
+                           buildReqFilter("region", input$region_filter, add=TRUE),
+                           buildReqFilter("prefix", input$prefix_filter, add=TRUE),
+                           buildReqFilter("channelId", input$channel_filter, add=TRUE),
+                           buildReqFilter("switchEvent", input$event_filter, add=TRUE)
+    ) 
+    
+    text <- paste0("SELECT ", vars_string, " FROM view_simstates ",
+                   "WHERE ", where_string,
+                   limit_string, ";")
     msg(text)
   })
   

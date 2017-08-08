@@ -4,7 +4,6 @@
     "col_runame_screen": "кол-во уник. STB",
     "col_runame_office": "кол-во уник. STB",
     "col_label": "Кол-во уникальных STB с которых был зафиксирован хотя бы один факт телесмотрения канала",
-    "base_field": false,
     "can_be_grouped": false
   },
   {
@@ -12,7 +11,6 @@
     "col_runame_screen": "всего уник. STB",
     "col_runame_office": "всего уник. STB",
     "col_label": "Общее количество уникальных STB с которых выполнялось телесмотрение хотя бы одного канала",
-    "base_field": false,
     "can_be_grouped": false
   },
   {
@@ -20,7 +18,6 @@
     "col_runame_screen": "суммарное время, мин",
     "col_runame_office": "суммарное время, мин",
     "col_label": "Суммарное время просмотра канала всеми STB",
-    "base_field": false,
     "can_be_grouped": false
   },
   {
@@ -28,7 +25,6 @@
     "col_runame_screen": "кол-во просмотров",
     "col_runame_office": "кол-во просмотров",
     "col_label": "Количество событий телесмотрения канала со всех приставок",
-    "base_field": false,
     "can_be_grouped": false
   },
   {
@@ -36,7 +32,6 @@
     "col_runame_screen": "% уник. STB",
     "col_runame_office": "% уник. STB",
     "col_label": "Отношение STB, смотревших данный канал, к общему количеству уникальных STB",
-    "base_field": false,
     "can_be_grouped": false
   },
   {
@@ -44,7 +39,6 @@
     "col_runame_screen": "канал",
     "col_runame_office": "канал",
     "col_label": "Название телеканала",
-    "base_field": false,
     "can_be_grouped": false
   },
   {
@@ -52,7 +46,6 @@
     "col_runame_screen": "суммарное время, мин",
     "col_runame_office": "суммарное время, мин",
     "col_label": "подсказка (channel_duration)",
-    "base_field": false,
     "can_be_grouped": false
   },
   {
@@ -60,7 +53,6 @@
     "col_runame_screen": "ср. время просмотра, мин",
     "col_runame_office": "ср. время просмотра, мин",
     "col_label": "Среднее время отдельного просмотра канала",
-    "base_field": false,
     "can_be_grouped": false
   },
   {
@@ -68,7 +60,6 @@
     "col_runame_screen": "% врем. просмотра",
     "col_runame_office": "% врем. просмотра",
     "col_label": "Отношение времени просмотра канала к общему времени телесмотрения",
-    "base_field": false,
     "can_be_grouped": false
   },
   {
@@ -76,7 +67,6 @@
     "col_runame_screen": "ср. время просм. 1 STB за период, мин",
     "col_runame_office": "ср. время просм. 1 STB за период, мин",
     "col_label": "Среднее время суммарного просмотра канала одной приставкой за выбранный период",
-    "base_field": false,
     "can_be_grouped": false
   },
   {
@@ -84,7 +74,7 @@
     "col_runame_screen": "дата",
     "col_runame_office": "дата",
     "col_label": "подсказка (date)",
-    "base_field": false,
+    "ch_field": "date",
     "can_be_grouped": true
   },
   {
@@ -92,7 +82,6 @@
     "col_runame_screen": "время",
     "col_runame_office": "время",
     "col_label": "подсказка (timestamp)",
-    "base_field": false,
     "can_be_grouped": false
   },
   {
@@ -100,7 +89,7 @@
     "col_runame_screen": "группа",
     "col_runame_office": "группа",
     "col_label": "подсказка (timegroup)",
-    "base_field": false,
+    "ch_field": "begin",
     "can_be_grouped": true
   },
   {
@@ -108,7 +97,8 @@
     "col_runame_screen": "сегмент",
     "col_runame_office": "сегмент",
     "col_label": "подсказка (segment)",
-    "base_field": false,
+    "ch_field": "substring(serial, 1, 3)",
+    "internal_field": "segment",
     "can_be_grouped": false
   },
   {
@@ -116,7 +106,7 @@
     "col_runame_screen": "регион",
     "col_runame_office": "регион",
     "col_label": "Название региона; указанного в настройках STB",
-    "base_field": true,
+    "ch_field": "region",
     "aggr_ops": "count, unique",
     "can_be_grouped": true
   },
@@ -125,7 +115,7 @@
     "col_runame_screen": "S/N",
     "col_runame_office": "S/N",
     "col_label": "подсказка (serial)",
-    "base_field": true,
+    "ch_field": "serial",
     "aggr_ops": "count, unique",
     "can_be_grouped": false
   },
@@ -134,7 +124,8 @@
     "col_runame_screen": "префикс",
     "col_runame_office": "префикс",
     "col_label": "подсказка (prefix)",
-    "base_field": true,
+    "ch_field": "substring(serial, 1, 3)",
+    "internal_field": "prefix",
     "aggr_ops": "count, unique",
     "can_be_grouped": true
   },
@@ -143,7 +134,7 @@
     "col_runame_screen": "длительность",
     "col_runame_office": "длительность",
     "col_label": "подсказка (duration)",
-    "base_field": true,
+    "ch_field": "duration",
     "aggr_ops": "min, max, mean, sum",
     "can_be_grouped": false
   },
@@ -152,7 +143,7 @@
     "col_runame_screen": "канал (ID)",
     "col_runame_office": "канал  (ID)",
     "col_label": "подсказка (channelId)",
-    "base_field": true,
+    "ch_field": "channelId",
     "aggr_ops": "count, unique",
     "can_be_grouped": true
   },
@@ -161,7 +152,7 @@
     "col_runame_screen": "программа (ID)",
     "col_runame_office": "программа  (ID)",
     "col_label": "подсказка (programId)",
-    "base_field": true,
+    "ch_field": "programId",
     "aggr_ops": "count, unique",
     "can_be_grouped": true
   }
