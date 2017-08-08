@@ -87,12 +87,14 @@ ui <-
       #column(1, selectInput("history_depth", "История", 
       #                      choices = c("1 месяц"=30, "2 недели"=14,
       #                                  "1 неделя"=7, "3 дня"=3, "1 день"=1), selected=1)),
-      column(1, selectInput("min_watch_time", "Мин. время",
-                            choices = c("5 сек"=5, "10 сек"=10, 
-                                        "20 сек"=20, "30 сек"=30), selected = 10)),
-      column(1, selectInput("max_watch_time", "Макс. время",
-                            choices = c("1 час"=1, "2 часа"=2, 
-                                        "3 часа"=3, "4 часа"=4), selected = 2))
+      column(4, sliderInput("duration_range", "Длительность, мин", min=1, max=4*60, value=c(5, 2*60))),
+      column(3, textInput("serial_mask", "Фрагмент S/N", value = "", placeholder=NULL))
+      # column(1, selectInput("min_watch_time", "Мин. время",
+      #                       choices = c("30 сек"=30, "1 мин"=1*60, "2 мин"=2*60, 
+      #                                   "3 мин"=3*60, "5 мин"=5*60), selected = 1*60)),
+      # column(1, selectInput("max_watch_time", "Макс. время",
+      #                       choices = c("1 час"=1*60*60, "2 часа"=2*60*60, 
+      #                                   "3 часа"=3*60*60, "4 часа"=4*60*60), selected=2*60*60))
     ),
     fluidRow(
       column(6, uiOutput("choose_region")),
@@ -100,14 +102,14 @@ ui <-
     ),
     fluidRow(
       column(6, selectInput("prefix_filter", "Префикс",
-                            choices=c("001 - DVB-S: Dune Lite"="001", 
-                                      "002 - DVB-S: Dune Lite+"="002",
-                                      "003 - IPTV: Huawei"="003", 
-                                      "004 - DVB-S: Huawei"="004",
-                                      "006 - DVB-C: Huawei"="006", 
-                                      "007 - IPTV: ZTE"="007",
-                                      "008 - IPTV: EKT"="008", 
-                                      "009 - DVB-C: EKT"="009"), 
+                            choices=c("001 - DVB-S: Dune Lite"="*001", 
+                                      "002 - DVB-S: Dune Lite+"="*002",
+                                      "003 - IPTV: Huawei"="*003", 
+                                      "004 - DVB-S: Huawei"="*004",
+                                      "006 - DVB-C: Huawei"="*006", 
+                                      "007 - IPTV: ZTE"="*007",
+                                      "008 - IPTV: EKT"="*008", 
+                                      "009 - DVB-C: EKT"="*009"), 
                             multiple=TRUE, width="100%")),
       column(6, selectInput("event_filter", "Событие",
                             choices=c("CHPLUS", "INIT", "DIGIT", "PREVIOUS_CHANNEL",
@@ -118,16 +120,18 @@ ui <-
     h3("Область агрегатов"),
     # блок элементов группировки и агрегации, формируемых динамически
     fluidRow(
-      column(1, uiOutput("choose_group1")),
-      column(1, uiOutput("choose_group2")),
-      column(1, uiOutput("choose_group3")),
+      column(2, uiOutput("choose_group1")),
+      column(2, uiOutput("choose_group2")),
+      column(2, uiOutput("choose_group3")),
       # https://stackoverflow.com/questions/21465411/r-shiny-passing-reactive-to-selectinput-choices
-      column(9, uiOutput("choose_vars"))
+      column(6, uiOutput("choose_vars"))
     ),
     fluidRow(
-      column(10, actionButton("set_test_dates_btn", "Вкл. демо дату", class = 'rightAlign')),
-      column(2, actionButton("process_btn", "Применить", class = 'rightAlign'))
+      column(11, actionButton("process_btn", "Применить", class = 'rightAlign')),
+      column(1, downloadButton("csv_download_btn", label="Экспорт (Excel)", class = 'rightAlign'))
+      
     ),
+    h3("Область результатов"),
     fluidRow(
       column(12, verbatimTextOutput('info_text'))
     ),
@@ -138,23 +142,9 @@ ui <-
       tabPanel("Таблица", value = "table_tab",
                fluidRow(
                  p(),
-                 column(12, div(withSpinner(DT::dataTableOutput('stat_table1'))), style="font-size: 90%")
-               ),
-               p(),
-               fluidRow(
-                 column(8, {}),
-                 column(2, downloadButton("csv_download_btn", label="Экспорт (Excel)", class = 'rightAlign')),
-                 column(2, downloadButton("word_download_btn", label="Экспорт (Word)", class = 'rightAlign'))
+                 # column(12, div(withSpinner(DT::dataTableOutput('stat_table'))), style="font-size: 90%")
+                 column(12, div(DT::dataTableOutput('stat_table')), style="font-size: 90%")
                )
-      ),
-      tabPanel("График", value = "graph_tab",
-               fluidRow(
-                 p(),
-                 jqui_sortabled(
-                   div(id='top10_plots',
-                 column(6, div(withSpinner(plotOutput('top10_duration_plot', height="500px")))),
-                 column(6, div(withSpinner(plotOutput('top10_stb_plot', height="500px"))))
-                       )))
                )
       )
     
@@ -172,6 +162,8 @@ server <- function(input, output, session) {
   flog.threshold(TRACE)
   flog.info("App started")
 
+  shinyjs::hide("csv_download_btn")
+  
   # создание параметров оформления для различных видов графиков (screen\publish) ------
   font_sizes <- list(
     "screen"=list(base_size=20, axis_title_size=18, subtitle_size=15),
@@ -206,7 +198,7 @@ server <- function(input, output, session) {
     select(channelId, channelName=name) %>%
     as_tibble()
 
-  # создаем tidy модель данных ----
+  # создаем tidy модель данных
   data_model_df <- {
     df0 <- jsonlite::fromJSON("datamodel.json", simplifyDataFrame=TRUE) %>%
       as_tibble() %>%
@@ -215,7 +207,6 @@ server <- function(input, output, session) {
       mutate(internal_field={map2_chr(.$internal_field, .$ch_field,
                                       ~if_else(is.na(.x), .y, .x))})  
   }
-  
   # модель для переменных под агрегат
   var_model_df <- {    
     # построим модель переменных для вычисления
@@ -243,14 +234,14 @@ server <- function(input, output, session) {
     
     df
   }
-
   # модель переменных для группировки
   group_model_df <- {    
     # построим модель переменных для вычисления
     df <- data_model_df %>%
       # в переменные берем только то, что подпадает под агрегаты
       filter(can_be_grouped) %>%
-      mutate(visual_group_name=str_c("_", internal_field, "_")) %>%
+      # mutate(visual_group_name=str_c("_", internal_field, "_")) %>%
+      mutate(visual_group_name=col_runame_screen) %>%
       select(select_string, internal_field, visual_group_name) %>%
       mutate(id=row_number()) %>%
       # добавим пустую строку, позволяющую не выбирать агрегат
@@ -259,96 +250,64 @@ server <- function(input, output, session) {
 
     df
   }
+  # словарь для преобразований имен полей из английских в русские
+  # имена колонок -- группы и агрегаты из запроса
+  # сливаем модельные данные
+  dic_df <- dplyr::union(var_model_df %>% select(name_enu=ch_query_name, name_rus=visual_var_name),
+                         group_model_df %>% select(name_enu=internal_field, name_rus=visual_group_name)
+  )
+  
 
   # browser()
   # реактивные переменные -------------------
   msg <- reactiveVal("")
-  
+  sql_request <- reactiveVal("")
+    
   raw_df <- reactive({
-    # input$process_btn # обновлять будем вручную
-    # isolate({
-    #   
-    #   # regions <- c("Moskva", "Barnaul")
-    #   regions <- input$region_filter
-    #   # browser()
-    # 
-    #   # r <- buildReq(begin=today(), end=today()+days(1), regions)
-    #   flog.info(paste0("Applied time filter [", input$in_date_range[1], "; ", input$in_date_range[2], "]"))
-    #   flog.info(paste0("Applied region filter [", regions, "]"))
-    #   r <- buildReq(begin=input$in_date_range[1], end=input$in_date_range[2], 
-    #                 regions=regions, segment=input$segment_filter)
-    #   flog.info(paste0("DB request: ", r))
-    # })
-    # 
-    # # browser()
-    # 
-    # tic()
-    # temp_df <- dbGetQuery(con, r) %>%
-    #   as_tibble()
-    # 
-    # flog.info(paste0("Query: ", capture.output(toc())))
-    # flog.info(paste0("Table: ", capture.output(head(temp_df, 2))))
-    # # system.time(df <- readRDS("./data/tvstream4.rds"))
-    # flog.info(paste0("Loaded ", nrow(temp_df), " rows"))
-    # 
-    # # косяк билда CH: если вложенный select дает 0 строк, то его имя транслируется как NULL
-    # # names(temp_df)[[3]] <- "total_unique_stb"
-    # 
-    # # browser()
-    # df <- temp_df %>%
-    #   # время смотрения, мин
-    #   mutate(channel_duration=round(as.numeric(channel_duration), 0)) %>%
-    #   # 6. Среднее время просмотра, мин
-    #   mutate(mean_duration=round(channel_duration/watch_events, 0)) %>%
-    #   # 3. % уникальных приставок
-    #   mutate(stb_ratio=round(unique_stb/total_unique_stb, 3)) %>%
-    #   # 5. % времени просмотра
-    #   mutate(watch_ratio=round(channel_duration/sum(channel_duration), 5)) %>%
-    #   # 7. Среднее суммарное время просмотра одной приставкой за период, мин
-    #   mutate(duration_per_stb=round(channel_duration/unique_stb, 0))
-    #   # %>% mutate_at(vars(mean_duration, ratio_per_stb, watch_ratio, duration_per_stb), funs(round), digits=1)
-    # 
-    # # browser()
-    # # dbDisconnect(con)
-    # as_tibble(df)
+    r <- req(sql_request())
+    flog.info(paste0("DB request: ", r))
+
+    tic()
+    df <- dbGetQuery(con, r) %>%
+      as_tibble()
+    flog.info(paste0("Query: ", capture.output(toc())))
+    flog.info(paste0("Table: ", capture.output(head(df, 2))))
+    flog.info(paste0("Loaded ", nrow(df), " rows"))
+
+    df
   })  
 
   cur_df <- reactive({
-    req(raw_df()) %>%
-      mutate_at(vars(channelId), as.character) %>%
-      left_join(progs_df, by=c("channelId")) %>%
-      # санация
-      mutate(channelName=if_else(is.na(channelName), 
-                                 str_c("_", channelId, "_"), 
-                                 channelName)) %>%
-      select(channelName, channelId, everything())
+    req(raw_df())
   })
   
   # таблица с выборкой по каналам ----------------------------
   output$stat_table <- DT::renderDataTable({
-    df <- req(cur_df()) %>%
-      select(-channelId)
-    
-    colnames_df <- getRusColnames(df)
+    df <- req(cur_df())
+
+    # делаем русские имена колонок в выводе
+    colnames_df <- tibble(name_enu=names(df)) %>%
+      left_join(dic_df, by=c("name_enu")) %>%
+      # санация
+      mutate(name_rus={map2_chr(.$name_rus, .$name_enu, 
+                                ~if_else(is.na(.x), .y, .x))})
+
     # https://stackoverflow.com/questions/39970097/tooltip-or-popover-in-shiny-datatables-for-row-names
     colheader <- htmltools::withTags(
-      table(class = 'display',
-            thead(
-              tr(colnames_df %>%
-                   {purrr::map2(.$col_label, .$col_runame_screen, ~th(title=.x, .y))})
-              )))
-    
+     table(class = 'display',
+           thead(
+             tr(colnames_df %>%
+                  {purrr::map2(.$name_enu, .$name_rus, ~th(title=.x, .y))})
+             )))
+    # 
     # browser()
     # https://rstudio.github.io/DT/functions.html
     DT::datatable(df,
                   rownames=FALSE,
                   filter='bottom',
-                  # только после жесткой фиксации колонок
                   container=colheader,
-                  options=list(dom='fltip', pageLength=7, lengthMenu=c(5, 7, 10, 15),
-                               order=list(list(3, 'desc')))) %>%
-      DT::formatPercentage("watch_ratio", 2) %>%
-      DT::formatPercentage("stb_ratio", 2)
+                  options=list(dom='fltip', pageLength=7, lengthMenu=c(5, 7, 10, 15))
+                  )
     })
   
   # динамическое управление диапазоном дат ---------
@@ -367,15 +326,13 @@ server <- function(input, output, session) {
   )
   
   # управляем визуализацией кнопок выгрузки ----- 
-  observe({
+  observeEvent(cur_df(), {
     # msg(capture.output(str(session)))
     # browser()
-    if(!is.null(cur_df()) & nrow(cur_df())>0) {
-      shinyjs::enable("csv_download_btn")
-      shinyjs::enable("word_download_btn")
+    if(!is.null(raw_df()) & nrow(raw_df())>0) {
+      shinyjs::show("csv_download_btn")
     } else {
-      shinyjs::disable("csv_download_btn")
-      shinyjs::disable("word_download_btn")
+      shinyjs::hide("csv_download_btn")
     }
   })  
   
@@ -386,10 +343,17 @@ server <- function(input, output, session) {
 
   # динамический выбор списка доступных агрегатов переменных в запрос ---------
   output$choose_vars <- renderUI({
-    df <- var_model_df
+    # сюда не должны попадать переменные, которые выбраны в группировках
+    # исключаем поля, которые указаны в 1-ой, 2-ой и 3-ей группировках
+    req(input$group_var1, input$group_var2, input$group_var3)
+    # собираем переменные групировки (в SELECT & GROUP BY)
+    idx <- map_int(1:3, ~as.integer(input[[stri_join("group_var", .x)]]))
+    exclude_var <- left_join(as_tibble(idx), group_model_df, by=c("value"="id")) %>% drop_na() %>% pull(internal_field)
+    # browser()
+    df <- var_model_df %>%
+      filter(!(internal_field %in% exclude_var))
     data <- setNames(as.list(df$id), df$visual_var_name)
-    msg(capture.output(str(data)))
-    # создадим элемент
+
     selectizeInput("selected_vars", "Поля для запроса", choices=data, 
                    selected=NULL, multiple=TRUE, width="100%")
     })
@@ -407,8 +371,8 @@ server <- function(input, output, session) {
     req(input$group_var1)
     flog.info("Recreating 'Group 2' control")
     # если выше нет группировки, то и ниже ее быть не может
-    if(input$group_var1==0){
-      data <- c("нет"=0)
+    if(input$group_var1=="0"){
+      data <- c("нет"="0")
     } else {
       # исключаем поле, которое указано в 1-ой группировке
       df <- group_model_df %>%
@@ -421,12 +385,11 @@ server <- function(input, output, session) {
   # динамический выбор группировки 3-го уровня в запрос ---------
   output$choose_group3 <- renderUI({
     # исключаем поле, которое указано в 1-ой или 2-ой группировке
-    req(input$group_var1)
-    req(input$group_var2)
+    req(input$group_var1, input$group_var2)
     flog.info("Recreating 'Group 3' control")
     # если выше нет группировки, то и ниже ее быть не может
-    if(input$group_var2==0){
-      data <- c("нет"=0)
+    if(input$group_var2=="0"){
+      data <- c("нет"="0")
     } else {
       # исключаем поле, которое указано в 1-ой или 2-ой группировке
       df <- group_model_df %>%
@@ -468,9 +431,16 @@ server <- function(input, output, session) {
     # has_select <- !all(purrr::map_lgl(list(input$group_var1, input$group_var2,
     #                                        input$group_var3, input$selected_vars), 
     #                                   is.null))
-    has_select_var <- !all(purrr::map_lgl(list(input$group_var1, input$group_var2,
-                                               input$group_var3), ~.x=="0"), 
-                           is.null(input$selected_vars))
+    
+    # собираем переменные групировки (в SELECT & GROUP BY)
+    idx <- map_int(1:3, ~as.integer(input[[stri_join("group_var", .x)]]))
+    df <- left_join(as_tibble(idx), group_model_df, by=c("value"="id")) %>% drop_na()
+    group_vars <- stri_join(df$internal_field, collapse=", ")
+    
+    # если переменных нет, то имеем character(0)
+    
+    # browser()
+    has_select_var <- any(length(group_vars) > 0, !is.null(input$selected_vars))
 
     limit_string <- ""    
     if(has_select_var){
@@ -480,54 +450,56 @@ server <- function(input, output, session) {
         # {purrr::map2_chr(.$ch_query_name, .$col_name, ~str_c(.x, " AS ", .y))} %>%
         {purrr::map_chr(.$ch_query_name, ~str_c(.x, " "))} %>%
         stri_join(sep="", collapse=", ")
+      # объединим с групповыми переменными
+      # browser()
+      select_string <- stri_join(group_vars, vars_string, sep=", ", collapse="", ignore_null=TRUE)
     } else {
       # не выбрана ни одна переменная
-      vars_string <- " * "
-      limit_string <- "LIMIT 10"
+      select_string <- " * "
+      limit_string <- "LIMIT 1000"
     }
     
+    browser()
     where_string <- paste0(paste0(" date >= '", input$in_date_range[1], "' AND date <= '", input$in_date_range[2], "' "),
+                           paste0("AND duration >= ", input$duration_range[1]*60, " AND duration <= ", input$duration_range[2]*60, " "),
                            buildReqFilter("region", input$region_filter, add=TRUE),
                            buildReqFilter("prefix", input$prefix_filter, add=TRUE),
                            buildReqFilter("channelId", input$channel_filter, add=TRUE),
-                           buildReqFilter("switchEvent", input$event_filter, add=TRUE)
+                           buildReqFilter("switchEvent", input$event_filter, add=TRUE),
+                           ifelse(input$serial_mask, 0, 1)
     ) 
     
-    text <- paste0("SELECT ", vars_string, " FROM view_simstates ",
+    text <- paste0("SELECT ", select_string, 
+                   " FROM view_simstates ",
                    "WHERE ", where_string,
+                   ifelse(length(group_vars)>0, paste0("GROUP BY ", group_vars), ""),
                    limit_string, ";")
+    
+    sql_request(text)
     msg(text)
   })
   
-  # обработчики кнопок выгрузки файлов --------------------------------------------------
   # выгрузка таблицы в CSV -----------------------  
   output$csv_download_btn <- downloadHandler(
     filename = function() {
-      paste0("channel_rating_data-", Sys.Date(), ".csv", sep="")
+      paste0("slice_", format(Sys.time(), "%F_%H-%M-%S"), ".csv", sep="")
     },
     content = function(file) {
-      cur_df() %>%
+      df <- cur_df()
+      # необходимо сделать русские названия колонок
+      names(df) <- tibble(name_enu=names(df)) %>%
+        left_join(dic_df, by=c("name_enu")) %>% 
+        # санация
+        mutate(name_rus={map2_chr(.$name_rus, .$name_enu, 
+                                  ~if_else(is.na(.x), .y, .x))}) %>% 
+        pull(name_rus)
+
+      df %>%
         # сделаем вывод в формате, принимаемым Excel
         write.table(file, na="NA", append=FALSE, col.names=TRUE, 
                     row.names=FALSE, sep=";", fileEncoding="windows-1251")
     }
   )
-  
-  # выгрузка таблицы в Word -----------------------
-  output$word_download_btn <- downloadHandler(
-    filename = function() {
-      name <- paste0("channel_rating_report-", Sys.Date(), ".docx", sep="")
-      flog.info(paste0("Word report: '", name, "'"))
-      name
-    },
-    content = function(file) {
-      # browser();
-      doc <- cur_df() %>% # select(-total_unique_stb) %>% # пока убираем, чтобы была консистентная подстановка
-        gen_word_report(publish_set=font_sizes[["word_A4"]])
-      print(doc, target=file)  
-    }
-  )  
-  
 }
 
 shinyApp(ui = ui, server = server)

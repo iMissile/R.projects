@@ -85,11 +85,11 @@
     "can_be_grouped": false
   },
   {
-    "col_name": "timegroup",
-    "col_runame_screen": "группа",
+    "col_name": "interval",
+    "col_runame_screen": "группа (1 час)",
     "col_runame_office": "группа",
-    "col_label": "подсказка (timegroup)",
-    "ch_field": "begin",
+    "col_label": "подсказка (interval)",
+    "ch_field": "interval",
     "can_be_grouped": true
   },
   {
