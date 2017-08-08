@@ -140,8 +140,8 @@
   },
   {
     "col_name": "channelId",
-    "col_runame_screen": "канал (ID)",
-    "col_runame_office": "канал  (ID)",
+    "col_runame_screen": "канал [ID]",
+    "col_runame_office": "канал [ID]",
     "col_label": "подсказка (channelId)",
     "ch_field": "channelId",
     "aggr_ops": "count, unique",
@@ -149,8 +149,8 @@
   },
   {
     "col_name": "programId",
-    "col_runame_screen": "программа (ID)",
-    "col_runame_office": "программа  (ID)",
+    "col_runame_screen": "программа [ID]",
+    "col_runame_office": "программа  [ID]",
     "col_label": "подсказка (programId)",
     "ch_field": "programId",
     "aggr_ops": "count, unique",

@@ -52,8 +52,8 @@ ui <-
   # windowTitle="CC4L",
   # collapsible=TRUE,
   id="tsp",
-  theme=shinytheme("flatly"),
-  # theme=shinytheme("yeti"),
+  # theme=shinytheme("flatly"),
+  theme=shinytheme("yeti"),
   # shinythemes::themeSelector(),
   # includeCSS("styles.css"),
 
@@ -72,7 +72,7 @@ ui <-
       #column(6, h2("Типовая форма"), h3(textOutput("cweather_text", inline=TRUE))),
       #column(6, h2("Заполнитель"))
       ),
-    h3("Область фильтров"),
+    h3("Фильтры"),
     fluidRow(
       column(2, dateRangeInput("in_date_range",
                                label="Диапазон дат",
@@ -111,13 +111,13 @@ ui <-
                                       "008 - IPTV: EKT"="*008", 
                                       "009 - DVB-C: EKT"="*009"), 
                             multiple=TRUE, width="100%")),
-      column(6, selectInput("event_filter", "Событие",
+      column(6, selectInput("event_filter", "Типы событий",
                             choices=c("CHPLUS", "INIT", "DIGIT", "PREVIOUS_CHANNEL",
                                       "CHMINUS", "FULLSCREEN_EPG", "ENTER", "PVR", 
                                       "REMINDER", "MAIN_MENU", "FILE", "VOD", "CATCH_UP"), 
                             multiple=TRUE, width="100%"))
     ),
-    h3("Область агрегатов"),
+    h3("Агрегаты"),
     # блок элементов группировки и агрегации, формируемых динамически
     fluidRow(
       column(2, uiOutput("choose_group1")),
@@ -131,7 +131,7 @@ ui <-
       column(1, downloadButton("csv_download_btn", label="Экспорт (Excel)", class = 'rightAlign'))
       
     ),
-    h3("Область результатов"),
+    h3("Выборка"),
     fluidRow(
       column(12, verbatimTextOutput('info_text'))
     ),
@@ -354,7 +354,7 @@ server <- function(input, output, session) {
       filter(!(internal_field %in% exclude_var))
     data <- setNames(as.list(df$id), df$visual_var_name)
 
-    selectizeInput("selected_vars", "Поля для запроса", choices=data, 
+    selectizeInput("selected_vars", "Агрегатные функции", choices=data, 
                    selected=NULL, multiple=TRUE, width="100%")
     })
   
@@ -418,7 +418,7 @@ server <- function(input, output, session) {
 
     # создадим элемент
     selectInput("channel_filter", 
-                paste0("ChannelID (", length(data), ")"),
+                paste0("Канал [ID] (", length(data), ")"),
                 multiple=TRUE,
                 choices=data, width = "100%")
   })  
