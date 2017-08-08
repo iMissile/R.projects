@@ -459,14 +459,14 @@ server <- function(input, output, session) {
       limit_string <- "LIMIT 1000"
     }
     
-    browser()
+    # browser()
     where_string <- paste0(paste0(" date >= '", input$in_date_range[1], "' AND date <= '", input$in_date_range[2], "' "),
                            paste0("AND duration >= ", input$duration_range[1]*60, " AND duration <= ", input$duration_range[2]*60, " "),
                            buildReqFilter("region", input$region_filter, add=TRUE),
                            buildReqFilter("prefix", input$prefix_filter, add=TRUE),
                            buildReqFilter("channelId", input$channel_filter, add=TRUE),
                            buildReqFilter("switchEvent", input$event_filter, add=TRUE),
-                           ifelse(input$serial_mask, 0, 1)
+                           ifelse(input$serial_mask=="", "", paste0(" AND like(serial, '%", input$serial_mask, "%') "))
     ) 
     
     text <- paste0("SELECT ", select_string, 
