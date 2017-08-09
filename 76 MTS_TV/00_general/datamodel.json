@@ -1,177 +1,118 @@
 [
   {
-    "col_name": "unique_stb",
-    "col_runame_screen": "кол-во уник. STB",
-    "col_runame_office": "кол-во уник. STB",
-    "col_label": "Кол-во уникальных STB с которых был зафиксирован хотя бы один факт телесмотрения канала",
-    "can_be_grouped": false
-  },
-  {
-    "col_name": "total_unique_stb",
-    "col_runame_screen": "всего уник. STB",
-    "col_runame_office": "всего уник. STB",
-    "col_label": "Общее количество уникальных STB с которых выполнялось телесмотрение хотя бы одного канала",
-    "can_be_grouped": false
-  },
-  {
-    "col_name": "total_duration",
-    "col_runame_screen": "суммарное время, мин",
-    "col_runame_office": "суммарное время, мин",
-    "col_label": "Суммарное время просмотра канала всеми STB",
-    "can_be_grouped": false
-  },
-  {
-    "col_name": "watch_events",
-    "col_runame_screen": "кол-во просмотров",
-    "col_runame_office": "кол-во просмотров",
-    "col_label": "Количество событий телесмотрения канала со всех приставок",
-    "can_be_grouped": false
-  },
-  {
-    "col_name": "stb_ratio",
-    "col_runame_screen": "% уник. STB",
-    "col_runame_office": "% уник. STB",
-    "col_label": "Отношение STB, смотревших данный канал, к общему количеству уникальных STB",
-    "can_be_grouped": false
-  },
-  {
-    "col_name": "channelName",
-    "col_runame_screen": "канал",
-    "col_runame_office": "канал",
-    "col_label": "Название телеканала",
-    "can_be_grouped": false
-  },
-  {
-    "col_name": "channel_duration",
-    "col_runame_screen": "суммарное время, мин",
-    "col_runame_office": "суммарное время, мин",
-    "col_label": "подсказка (channel_duration)",
-    "can_be_grouped": false
-  },
-  {
-    "col_name": "mean_duration",
-    "col_runame_screen": "ср. время просмотра, мин",
-    "col_runame_office": "ср. время просмотра, мин",
-    "col_label": "Среднее время отдельного просмотра канала",
-    "can_be_grouped": false
-  },
-  {
-    "col_name": "watch_ratio",
-    "col_runame_screen": "% врем. просмотра",
-    "col_runame_office": "% врем. просмотра",
-    "col_label": "Отношение времени просмотра канала к общему времени телесмотрения",
-    "can_be_grouped": false
-  },
-  {
-    "col_name": "duration_per_stb",
-    "col_runame_screen": "ср. время просм. 1 STB за период, мин",
-    "col_runame_office": "ср. время просм. 1 STB за период, мин",
-    "col_label": "Среднее время суммарного просмотра канала одной приставкой за выбранный период",
-    "can_be_grouped": false
-  },
-  {
-    "col_name": "date",
-    "col_runame_screen": "дата",
-    "col_runame_office": "дата",
-    "col_label": "подсказка (date)",
-    "ch_field": "date",
-    "can_be_grouped": true
-  },
-  {
-    "col_name": "timestamp",
-    "col_runame_screen": "время",
-    "col_runame_office": "время",
-    "col_label": "подсказка (timestamp)",
-    "can_be_grouped": false
-  },
-  {
-    "col_name": "timegroup1h",
-    "col_runame_screen": "почасовая группировка",
-    "col_runame_office": "почасовая группировка",
-    "col_label": "подсказка (timegroup1h)",
-    "ch_field": "timegroup1h",
-    "can_be_grouped": true
-  },
-  {
-    "col_name": "segment_old",
-    "col_runame_screen": "сегмент",
-    "col_runame_office": "сегмент",
-    "col_label": "подсказка (segment)",
-    "ch_field": "substring(serial, 1, 3)",
-    "internal_field": "segment_old",
-    "can_be_grouped": false
-  },
-  {
-    "col_name": "region",
-    "col_runame_screen": "регион",
-    "col_runame_office": "регион",
-    "col_label": "Название региона; указанного в настройках STB",
-    "ch_field": "region",
-    "aggr_ops": "count, unique",
-    "can_be_grouped": true
-  },
-  {
-    "col_name": "segment",
-    "col_runame_screen": "сегмент",
-    "col_runame_office": "сегмент",
-    "col_label": "Технологический сегмент",
-    "ch_field": "segment",
-    "aggr_ops": "count, unique",
-    "can_be_grouped": true
-  },
-  {
-    "col_name": "vendor",
-    "col_runame_screen": "вендор STB",
-    "col_runame_office": "вендор STB",
-    "col_label": "Производитель STB",
-    "ch_field": "vendor",
-    "aggr_ops": "count, unique",
-    "can_be_grouped": true
-  },
-  {
-    "col_name": "serial",
-    "col_runame_screen": "S/N",
-    "col_runame_office": "S/N",
-    "col_label": "подсказка (serial)",
-    "ch_field": "serial",
-    "aggr_ops": "count, unique",
-    "can_be_grouped": false
-  },
-  {
-    "col_name": "prefix",
-    "col_runame_screen": "префикс",
-    "col_runame_office": "префикс",
-    "col_label": "подсказка (prefix)",
-    "ch_field": "substring(serial, 1, 3)",
-    "internal_field": "prefix",
-    "aggr_ops": "count, unique",
-    "can_be_grouped": true
-  },
-  {
-    "col_name": "duration",
-    "col_runame_screen": "длительность",
-    "col_runame_office": "длительность",
-    "col_label": "подсказка (duration)",
-    "ch_field": "duration",
-    "aggr_ops": "min, max, mean, sum",
-    "can_be_grouped": false
-  },
-  {
-    "col_name": "channelId",
-    "col_runame_screen": "канал [ID]",
-    "col_runame_office": "канал [ID]",
-    "col_label": "подсказка (channelId)",
     "ch_field": "channelId",
+    "human_name_rus": "канал [ID]",
+    "can_be_grouped": true,
     "aggr_ops": "count, unique",
-    "can_be_grouped": true
+    "col_label": "подсказка (channelId)"
   },
   {
-    "col_name": "programId",
-    "col_runame_screen": "программа [ID]",
-    "col_runame_office": "программа  [ID]",
-    "col_label": "подсказка (programId)",
+    "ch_field": "date",
+    "human_name_rus": "дата",
+    "can_be_grouped": true,
+    "col_label": "подсказка (date)"
+  },
+  {
+    "ch_field": "duration",
+    "human_name_rus": "длительность",
+    "can_be_grouped": false,
+    "aggr_ops": "min, max, mean, sum",
+    "col_label": "подсказка (duration)"
+  },
+  {
     "ch_field": "programId",
+    "human_name_rus": "программа [ID]",
+    "can_be_grouped": true,
     "aggr_ops": "count, unique",
-    "can_be_grouped": true
+    "col_label": "подсказка (programId)"
+  },
+  {
+    "ch_field": "region",
+    "human_name_rus": "регион",
+    "can_be_grouped": true,
+    "aggr_ops": "count, unique",
+    "col_label": "Название региона; указанного в настройках STB"
+  },
+  {
+    "ch_field": "segment",
+    "human_name_rus": "сегмент",
+    "can_be_grouped": true,
+    "aggr_ops": "count, unique",
+    "col_label": "Технологический сегмент"
+  },
+  {
+    "ch_field": "serial",
+    "human_name_rus": "S/N",
+    "can_be_grouped": false,
+    "aggr_ops": "count, unique",
+    "col_label": "подсказка (serial)"
+  },
+  {
+    "ch_field": "timegroup1h",
+    "human_name_rus": "шаг 1ч",
+    "can_be_grouped": true,
+    "col_label": "подсказка (timegroup1h)"
+  },
+  {
+    "ch_field": "vendor",
+    "human_name_rus": "вендор STB",
+    "can_be_grouped": true,
+    "aggr_ops": "count, unique",
+    "col_label": "Производитель STB"
+  },
+  {
+    "human_name_rus": "кол-во уник. STB",
+    "can_be_grouped": false,
+    "col_label": "Кол-во уникальных STB с которых был зафиксирован хотя бы один факт телесмотрения канала"
+  },
+  {
+    "human_name_rus": "всего уник. STB",
+    "can_be_grouped": false,
+    "col_label": "Общее количество уникальных STB с которых выполнялось телесмотрение хотя бы одного канала"
+  },
+  {
+    "human_name_rus": "суммарное время, мин",
+    "can_be_grouped": false,
+    "col_label": "Суммарное время просмотра канала всеми STB"
+  },
+  {
+    "human_name_rus": "кол-во просмотров",
+    "can_be_grouped": false,
+    "col_label": "Количество событий телесмотрения канала со всех приставок"
+  },
+  {
+    "human_name_rus": "% уник. STB",
+    "can_be_grouped": false,
+    "col_label": "Отношение STB, смотревших данный канал, к общему количеству уникальных STB"
+  },
+  {
+    "human_name_rus": "канал",
+    "can_be_grouped": false,
+    "col_label": "Название телеканала"
+  },
+  {
+    "human_name_rus": "суммарное время, мин",
+    "can_be_grouped": false,
+    "col_label": "подсказка (channel_duration)"
+  },
+  {
+    "human_name_rus": "ср. время просмотра, мин",
+    "can_be_grouped": false,
+    "col_label": "Среднее время отдельного просмотра канала"
+  },
+  {
+    "human_name_rus": "% врем. просмотра",
+    "can_be_grouped": false,
+    "col_label": "Отношение времени просмотра канала к общему времени телесмотрения"
+  },
+  {
+    "human_name_rus": "ср. время просм. 1 STB за период, мин",
+    "can_be_grouped": false,
+    "col_label": "Среднее время суммарного просмотра канала одной приставкой за выбранный период"
+  },
+  {
+    "human_name_rus": "время",
+    "can_be_grouped": false,
+    "col_label": "подсказка (timestamp)"
   }
 ]

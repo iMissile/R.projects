@@ -31,6 +31,8 @@ df0 <- jsonlite::fromJSON("datamodel.json", simplifyDataFrame=TRUE)
 
 data_model <- df0 %>%
   as_tibble() %>%
+  # создаем внутреннее представление (раньше представление БД могло быть синтетикой)
+  mutate(internal_field=ifelse(any(names(.) %in% 'internal_field'), internal_field, as.character(NA))) %>%
   mutate(select_string={map2_chr(.$internal_field, .$ch_field, 
                                  ~if_else(is.na(.x), .y, stri_join(.y, " AS ", .x)))}) %>%
   mutate(internal_field={map2_chr(.$internal_field, .$ch_field, ~if_else(is.na(.x), .y, .x))})  
@@ -60,9 +62,9 @@ var_model <- data_model %>%
   # разнесем на отдельные колонки
   separate(ext_aggr_opts, into=c("visual_aggr_func", "ch_aggr_func")) %>%
   select(-x) %>%
-  mutate(visual_var_name=str_c(col_runame_screen, ": ", visual_aggr_func)) %>%
+  mutate(visual_var_name=str_c(human_name_rus, ": ", visual_aggr_func)) %>%
   mutate(ch_query_name=str_c(ch_aggr_func, "(", internal_field, ")"))
-  
+
 # делаем обратную свертку
 group_model <- data_model %>%
   filter(can_be_grouped) %>%
@@ -78,6 +80,7 @@ group_model <- data_model %>%
 data_model_df <- df2
 data <- setNames(as.list(data_model_df$ch_query_name), data_model_df$visual_var_name)
 
+stop()
 # построим список переменных в часть SELECT
 data_model_df %>%
   {purrr::map2_chr(.$ch_query_name, .$col_name, ~str_c(.x, " AS ", .y))} %>%
@@ -85,10 +88,14 @@ data_model_df %>%
 
 # теперь заполним возможные выборы в сооотв. с метамоделью
 # updateSelectizeInput(session, 'foo', choices=data, server=TRUE)
-stop()
+
 
 # блок для моделирования и добавления новых полей
-df <- jsonlite::fromJSON("datamodel.json", simplifyDataFrame=TRUE)
+df <- jsonlite::fromJSON("datamodel.json", simplifyDataFrame=TRUE) %>%
+  select(-col_name, -col_runame_office) %>%
+  rename(human_name_rus=col_runame_screen) %>%
+  arrange(ch_field) %>%
+  select(ch_field, human_name_rus, can_be_grouped, aggr_ops, everything())
 
 df <- jsonlite::fromJSON("datamodel.json", simplifyDataFrame=TRUE) %>%
   mutate(select_string={map2_chr(.$internal_field, .$ch_field, 

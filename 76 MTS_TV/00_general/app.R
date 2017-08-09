@@ -87,8 +87,9 @@ ui <-
       #column(1, selectInput("history_depth", "История", 
       #                      choices = c("1 месяц"=30, "2 недели"=14,
       #                                  "1 неделя"=7, "3 дня"=3, "1 день"=1), selected=1)),
-      column(4, sliderInput("duration_range", "Длительность, мин", min=1, max=4*60, value=c(5, 2*60))),
-      column(3, textInput("serial_mask", "Фрагмент S/N", value = "", placeholder=NULL))
+      column(2, textInput("serial_mask", "Фрагмент S/N", value = "", placeholder=NULL)),
+      column(8, sliderInput("duration_range", "Длительность, мин", 
+                            min=0, max=5*60, value=c(5, 2*60), width="100%"))
       # column(1, selectInput("min_watch_time", "Мин. время",
       #                       choices = c("30 сек"=30, "1 мин"=1*60, "2 мин"=2*60, 
       #                                   "3 мин"=3*60, "5 мин"=5*60), selected = 1*60)),
@@ -202,6 +203,9 @@ server <- function(input, output, session) {
   data_model_df <- {
     df0 <- jsonlite::fromJSON("datamodel.json", simplifyDataFrame=TRUE) %>%
       as_tibble() %>%
+      # создаем внутреннее представление (раньше представление БД могло быть синтетикой)
+      mutate(internal_field=ifelse(any(names(.) %in% 'internal_field'), 
+                                   internal_field, as.character(NA))) %>%
       mutate(select_string={map2_chr(.$internal_field, .$ch_field,
                                      ~if_else(is.na(.x), .y, stri_join(.y, " AS ", .x)))}) %>%
       mutate(internal_field={map2_chr(.$internal_field, .$ch_field,
@@ -229,7 +233,7 @@ server <- function(input, output, session) {
       # разнесем на отдельные колонки
       separate(ext_aggr_opts, into=c("visual_aggr_func", "ch_aggr_func")) %>%
       select(-x) %>%
-      mutate(visual_var_name=str_c(col_runame_screen, ": ", visual_aggr_func)) %>%
+      mutate(visual_var_name=str_c(human_name_rus, ": ", visual_aggr_func)) %>%
       mutate(ch_query_name=str_c(ch_aggr_func, "(", internal_field, ")"))
     
     df
@@ -241,7 +245,7 @@ server <- function(input, output, session) {
       # в переменные берем только то, что подпадает под агрегаты
       filter(can_be_grouped) %>%
       # mutate(visual_group_name=str_c("_", internal_field, "_")) %>%
-      mutate(visual_group_name=col_runame_screen) %>%
+      mutate(visual_group_name=human_name_rus) %>%
       select(select_string, internal_field, visual_group_name) %>%
       mutate(id=row_number()) %>%
       # добавим пустую строку, позволяющую не выбирать агрегат
