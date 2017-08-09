@@ -1,9 +1,16 @@
 [
   {
+    "ch_field": "",
+    "human_name_rus": "Кол-во записей",
+    "can_be_grouped": false,
+    "aggr_ops": "count",
+    "col_label": "Кол-во"
+  },
+  {
     "ch_field": "channelId",
     "human_name_rus": "канал [ID]",
     "can_be_grouped": true,
-    "aggr_ops": "count, unique",
+    "aggr_ops": "unique",
     "col_label": "подсказка (channelId)"
   },
   {
@@ -23,28 +30,28 @@
     "ch_field": "programId",
     "human_name_rus": "программа [ID]",
     "can_be_grouped": true,
-    "aggr_ops": "count, unique",
+    "aggr_ops": "unique",
     "col_label": "подсказка (programId)"
   },
   {
     "ch_field": "region",
     "human_name_rus": "регион",
     "can_be_grouped": true,
-    "aggr_ops": "count, unique",
+    "aggr_ops": "unique",
     "col_label": "Название региона; указанного в настройках STB"
   },
   {
     "ch_field": "segment",
     "human_name_rus": "сегмент",
     "can_be_grouped": true,
-    "aggr_ops": "count, unique",
+    "aggr_ops": "unique",
     "col_label": "Технологический сегмент"
   },
   {
     "ch_field": "serial",
     "human_name_rus": "S/N",
     "can_be_grouped": false,
-    "aggr_ops": "count, unique",
+    "aggr_ops": "unique",
     "col_label": "подсказка (serial)"
   },
   {
@@ -57,7 +64,7 @@
     "ch_field": "vendor",
     "human_name_rus": "вендор STB",
     "can_be_grouped": true,
-    "aggr_ops": "count, unique",
+    "aggr_ops": "unique",
     "col_label": "Производитель STB"
   },
   {

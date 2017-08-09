@@ -27,7 +27,7 @@ source("clickhouse.R")
 
 
 rm(list=ls()) # очистим все переменные
-df0 <- jsonlite::fromJSON("datamodel.json", simplifyDataFrame=TRUE)
+df0 <- jsonlite::fromJSON("datamodel_exp.json", simplifyDataFrame=TRUE)
 
 data_model <- df0 %>%
   as_tibble() %>%
@@ -62,7 +62,9 @@ var_model <- data_model %>%
   # разнесем на отдельные колонки
   separate(ext_aggr_opts, into=c("visual_aggr_func", "ch_aggr_func")) %>%
   select(-x) %>%
-  mutate(visual_var_name=str_c(human_name_rus, ": ", visual_aggr_func)) %>%
+  # mutate_at(vars(visual_aggr_func), funs(na_if(., ""))) %>%
+  mutate(visual_var_name={map2_chr(.$human_name_rus, .$visual_aggr_func,
+                                   ~if_else(.y=="", .x, stri_join(.x, ": ", .y)))}) %>%
   mutate(ch_query_name=str_c(ch_aggr_func, "(", internal_field, ")"))
 
 # делаем обратную свертку

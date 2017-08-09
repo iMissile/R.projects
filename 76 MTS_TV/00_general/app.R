@@ -101,6 +101,7 @@ ui <-
       column(6, uiOutput("choose_region")),
       column(6, uiOutput("choose_channel"))
     ),
+    p(),
     fluidRow(
       column(6, selectInput("prefix_filter", "Префикс",
                             choices=c("001 - DVB-S: Dune Lite"="*001", 
@@ -128,7 +129,8 @@ ui <-
       column(6, uiOutput("choose_vars"))
     ),
     fluidRow(
-      column(11, actionButton("process_btn", "Применить", class = 'rightAlign')),
+      column(10, actionButton("process_btn", "Применить", class = 'rightAlign')),
+      column(1, div(bookmarkButton(), class = 'rightAlign')),
       column(1, downloadButton("csv_download_btn", label="Экспорт (Excel)", class = 'rightAlign'))
       
     ),
@@ -227,15 +229,18 @@ server <- function(input, output, session) {
                x=="mean" ~ "ср, avg",
                x=="sum" ~ "сумма, sum",
                x=="unique" ~ "уник, uniq",           
-               x=="count" ~ "всего, count",
+               x=="count" ~ ", count",
                TRUE ~ "UNKNOWN"
              )) %>%
       # разнесем на отдельные колонки
       separate(ext_aggr_opts, into=c("visual_aggr_func", "ch_aggr_func")) %>%
       select(-x) %>%
-      mutate(visual_var_name=str_c(human_name_rus, ": ", visual_aggr_func)) %>%
+      # mutate_at(vars(visual_aggr_func), funs(na_if(., ""))) %>%
+      mutate(visual_var_name={map2_chr(.$human_name_rus, .$visual_aggr_func,
+                                     ~if_else(.y=="", .x, stri_join(.x, ": ", .y)))}) %>%
       mutate(ch_query_name=str_c(ch_aggr_func, "(", internal_field, ")"))
     
+    # browser()
     df
   }
   # модель переменных для группировки
@@ -407,8 +412,6 @@ server <- function(input, output, session) {
   output$choose_region <- renderUI({
     data <- as.list(cities_df$translit)
     names(data) <- cities_df$russian
-    # msg(capture.output(str(data)))
-    # создадим элемент
     selectInput("region_filter", 
                 paste0("Регион (", length(data), ")"),
                 multiple=TRUE,
@@ -473,13 +476,16 @@ server <- function(input, output, session) {
                            ifelse(input$serial_mask=="", "", paste0(" AND like(serial, '%", input$serial_mask, "%') "))
     ) 
     
+    from_where_string <- paste0(" FROM view_simstates ",
+                                "WHERE ", where_string)
+    
     text <- paste0("SELECT ", select_string, 
-                   " FROM view_simstates ",
-                   "WHERE ", where_string,
-                   ifelse(length(group_vars)>0, paste0("GROUP BY ", group_vars), ""),
+                   from_where_string,
+                   ifelse(length(group_vars)>0, paste0(" GROUP BY ", group_vars), ""),
                    limit_string, ";")
     
     sql_request(text)
+    # msg(from_where_string)
     msg(text)
   })
   
@@ -506,4 +512,4 @@ server <- function(input, output, session) {
   )
 }
 
-shinyApp(ui = ui, server = server)
+shinyApp(ui=ui, server=server, enableBookmarking="url")
