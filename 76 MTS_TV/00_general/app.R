@@ -219,7 +219,10 @@ server <- function(input, output, session) {
     df <- data_model_df %>%
       # в переменные берем только то, что подпадает под агрегаты
       filter(!is.na(aggr_ops)) %>%
-      separate_rows(aggr_ops) %>%
+      # 1-ая декомпозиция: по агрегатам
+      separate_rows(aggr_ops, sep="[,;[:space:]]+") %>%
+      # 2-ая декомпозиция: по вычислению долей
+      separate(aggr_ops, into=c("aggr_ops", "ratio_type"), sep="[:[:space:]]+") %>%  
       mutate(id=row_number()) %>%
       # переводим алиасы функций агрегации в различные узлы (экран, CH)
       mutate(x=aggr_ops,
@@ -434,39 +437,7 @@ server <- function(input, output, session) {
   observeEvent(input$process_btn, {
     # генерируем SQL запрос
 
-    # определяем, есть ли переменные в select
-    # has_select <- !all(purrr::map_lgl(list(input$group_var1, input$group_var2,
-    #                                        input$group_var3, input$selected_vars), 
-    #                                   is.null))
-    
-    # собираем переменные групировки (в SELECT & GROUP BY)
-    idx <- map_int(1:3, ~as.integer(input[[stri_join("group_var", .x)]]))
-    df <- left_join(as_tibble(idx), group_model_df, by=c("value"="id")) %>% drop_na()
-    group_vars <- stri_join(df$internal_field, collapse=", ")
-    
-    # если переменных нет, то имеем character(0)
-    
-    # browser()
-    has_select_var <- any(length(group_vars) > 0, !is.null(input$selected_vars))
-
-    limit_string <- ""    
-    if(has_select_var){
-      # построим список переменных в часть SELECT
-      vars_string <- var_model_df %>%
-        filter(id %in% input$selected_vars) %>%
-        # {purrr::map2_chr(.$ch_query_name, .$col_name, ~str_c(.x, " AS ", .y))} %>%
-        {purrr::map_chr(.$ch_query_name, ~str_c(.x, " "))} %>%
-        stri_join(sep="", collapse=", ")
-      # объединим с групповыми переменными
-      # browser()
-      select_string <- stri_join(group_vars, vars_string, sep=", ", collapse="", ignore_null=TRUE)
-    } else {
-      # не выбрана ни одна переменная
-      select_string <- " * "
-      limit_string <- "LIMIT 2000"
-    }
-    
-    # browser()
+    # собираем общие условия в соотв. с фильтрами
     where_string <- paste0(paste0(" date >= '", input$in_date_range[1], "' AND date <= '", input$in_date_range[2], "' "),
                            paste0("AND duration >= ", input$duration_range[1]*60, " AND duration <= ", input$duration_range[2]*60, " "),
                            buildReqFilter("region", input$region_filter, add=TRUE),
@@ -478,6 +449,44 @@ server <- function(input, output, session) {
     
     from_where_string <- paste0(" FROM view_simstates ",
                                 "WHERE ", where_string)
+    
+    # определяем, есть ли переменные в select
+    # has_select <- !all(purrr::map_lgl(list(input$group_var1, input$group_var2,
+    #                                        input$group_var3, input$selected_vars), 
+    #                                   is.null))
+    
+    # собираем переменные групировки (в SELECT & GROUP BY)
+    idx <- map_int(1:3, ~as.integer(input[[stri_join("group_var", .x)]]))
+    df <- left_join(as_tibble(idx), group_model_df, by=c("value"="id")) %>% drop_na()
+    group_vars <- stri_join(df$internal_field, collapse=", ")
+    
+    # если переменных нет, то имеем character(0)
+    has_select_var <- any(length(group_vars) > 0, !is.null(input$selected_vars))
+
+    limit_string <- ""    
+    if(has_select_var){
+      # 1. построим список просто переменных в часть SELECT
+      vars_string <- var_model_df %>%
+        filter(id %in% input$selected_vars) %>%
+        # {purrr::map2_chr(.$ch_query_name, .$col_name, ~str_c(.x, " AS ", .y))} %>%
+        {purrr::map_chr(.$ch_query_name, ~str_c(.x, " "))} %>%
+        stri_join(sep="", collapse=", ")
+      # 2. построим список процентных переменных в часть SELECT
+      ratio_df <- var_model_df %>%
+        filter(id %in% input$selected_vars) %>%
+        filter(!is.na(ratio_type)) %>%
+        mutate(ratio_query_string=
+                 str_c(" ( SELECT ", ch_query_name, " ) AS ", internal_field, " ",
+                                            sep=" ", collapse="")  )
+      browser()
+      ratio_vars_string <- ""
+      # 3. объединим с групповыми переменными
+      select_string <- stri_join(group_vars, vars_string, sep=", ", collapse="", ignore_null=TRUE)
+    } else {
+      # не выбрана ни одна переменная
+      select_string <- " * "
+      limit_string <- "LIMIT 2000"
+    }
     
     text <- paste0("SELECT ", select_string, 
                    from_where_string,

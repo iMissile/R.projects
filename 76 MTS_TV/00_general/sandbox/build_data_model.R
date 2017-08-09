@@ -42,11 +42,16 @@ data_model <- df0 %>%
 #     col_name=="prefix" ~ "substring(serial, 1, 3)",
 #     TRUE ~ col_name))
   
+m <- separate_rows(data_model, aggr_ops, sep="[,;[:space:]]+")
+
 # построим модель переменных для вычисления
 var_model <- data_model %>%
   # в переменные берем только то, что подпадает под агрегаты
   filter(!is.na(aggr_ops)) %>%
-  separate_rows(aggr_ops) %>%
+  # 1-ая декомпозиция: по агрегатам
+  separate_rows(aggr_ops, sep="[,;[:space:]]+") %>%
+  # 2-ая декомпозиция: по вычислению долей
+  separate(aggr_ops, into=c("aggr_ops", "ratio_type"), sep="[:[:space:]]+") %>%  
   mutate(id=row_number()) %>%
   # переводим алиасы функций агрегации в различные узлы (экран, CH)
   mutate(x=aggr_ops,

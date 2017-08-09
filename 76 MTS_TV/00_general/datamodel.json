@@ -1,7 +1,7 @@
 [
   {
     "ch_field": "",
-    "human_name_rus": "Кол-во записей",
+    "human_name_rus": "кол-во",
     "can_be_grouped": false,
     "aggr_ops": "count",
     "col_label": "Кол-во"
@@ -23,14 +23,14 @@
     "ch_field": "duration",
     "human_name_rus": "длительность",
     "can_be_grouped": false,
-    "aggr_ops": "min, max, mean, sum",
+    "aggr_ops": "min, max, mean:ratio, sum:ratio",
     "col_label": "подсказка (duration)"
   },
   {
     "ch_field": "programId",
     "human_name_rus": "программа [ID]",
     "can_be_grouped": true,
-    "aggr_ops": "unique",
+    "aggr_ops": "unique:ratio",
     "col_label": "подсказка (programId)"
   },
   {
@@ -51,7 +51,7 @@
     "ch_field": "serial",
     "human_name_rus": "S/N",
     "can_be_grouped": false,
-    "aggr_ops": "unique",
+    "aggr_ops": "unique:ratio",
     "col_label": "подсказка (serial)"
   },
   {
