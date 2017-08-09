@@ -161,8 +161,8 @@ server <- function(input, output, session) {
     con <- dbConnect(clickhouse(), host="172.16.33.74", port=8123L, user="default", password="")
   }else{
     # MT стенд
-    con <- dbConnect(clickhouse(), host="172.16.33.74", port=8123L, user="default", password="")
-    # con <- dbConnect(clickhouse(), host="10.0.0.44", port=8123L, user="default", password="")
+    # con <- dbConnect(clickhouse(), host="172.16.33.74", port=8123L, user="default", password="")
+    con <- dbConnect(clickhouse(), host="10.0.0.44", port=8123L, user="default", password="")
   }      
   
   # подгрузим таблицу преобразования транслита в русские названия городов -------
