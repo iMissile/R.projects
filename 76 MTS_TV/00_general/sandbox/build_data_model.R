@@ -32,7 +32,7 @@ df0 <- jsonlite::fromJSON("datamodel.json", simplifyDataFrame=TRUE)
 data_model_df <- df0 %>%
   as_tibble() %>%
   # создаем внутреннее представление (раньше представление Ѕƒ могло быть синтетикой)
-  mutate(internal_field=ifelse(any(names(.) %in% 'internal_field'), internal_field, as.character(NA))) %>%
+  # mutate(internal_field=ifelse(any(names(.) %in% 'internal_field'), internal_field, as.character(NA))) %>%
   mutate(select_string={map2_chr(.$internal_field, .$ch_field, 
                                  ~if_else(is.na(.x), .y, stri_join(.y, " AS ", .x)))}) %>%
   mutate(internal_field={map2_chr(.$internal_field, .$ch_field, ~if_else(is.na(.x), .y, .x))})  
@@ -45,14 +45,13 @@ data_model_df <- df0 %>%
 m <- separate_rows(data_model_df, aggr_ops, sep="[,;[:space:]]+")
 
 # построим модель переменных дл€ вычислени€
-var_model_df <- data_model_df %>%
+df1 <- data_model_df %>%
   # в переменные берем только то, что подпадает под агрегаты
   filter(!is.na(aggr_ops)) %>%
   # 1-а€ декомпозици€: по агрегатам
   separate_rows(aggr_ops, sep="[,;[:space:]]+") %>%
   # 2-а€ декомпозици€: по вычислению долей
   separate(aggr_ops, into=c("aggr_ops", "ratio_type"), sep="[:[:space:]]+") %>%  
-  mutate(id=row_number()) %>%
   # переводим алиасы функций агрегации в различные узлы (экран, CH)
   mutate(x=aggr_ops,
          ext_aggr_opts=case_when(
@@ -66,16 +65,24 @@ var_model_df <- data_model_df %>%
          )) %>%
   # разнесем на отдельные колонки
   separate(ext_aggr_opts, into=c("visual_aggr_func", "ch_aggr_func")) %>%
-  select(-x) %>%
+  select(-x, -col_label)
   # mutate_at(vars(visual_aggr_func), funs(na_if(., ""))) %>%
-  mutate(visual_var_name={map2_chr(.$human_name_rus, .$visual_aggr_func,
-                                   ~if_else(.y=="", .x, stri_join(.x, ": ", .y)))}) %>%
-  mutate(ch_query_name=str_c(ch_aggr_func, "(", internal_field, ")"))
 
 # добавим дробные отношени€ как самосто€тельные агрегатные переменные
-ratio_df <- var_model_df %>%
+df2 <- df1 %>%
   filter(!is.na(ratio_type)) %>%
-  mutate(can_be_grouped=FALSE)
+  mutate(can_be_grouped=FALSE) %>%
+  mutate_at(vars(visual_aggr_func), ~str_c(.x, ", % от общего"))
+
+# объединим все в единую модель
+var_model_df <- df1 %>%
+  mutate(ratio_type=as.character(NA)) %>%
+  bind_rows(df2, .id="src") %>%
+  mutate(visual_var_name={map2_chr(.$human_name_rus, .$visual_aggr_func,
+                                   ~if_else(.y=="", .x, stri_join(.x, ": ", .y)))}) %>%
+  mutate(ch_query_name=str_c(ch_aggr_func, "(", internal_field, ")")) %>%
+  mutate(id=row_number())
+  
 
 
 # делаем обратную свертку

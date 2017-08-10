@@ -219,14 +219,14 @@ server <- function(input, output, session) {
   # модель для переменных под агрегат
   var_model_df <- {    
     # построим модель переменных для вычисления
-    df <- data_model_df %>%
+    # построим модель переменных для вычисления
+    df1 <- data_model_df %>%
       # в переменные берем только то, что подпадает под агрегаты
       filter(!is.na(aggr_ops)) %>%
       # 1-ая декомпозиция: по агрегатам
       separate_rows(aggr_ops, sep="[,;[:space:]]+") %>%
       # 2-ая декомпозиция: по вычислению долей
       separate(aggr_ops, into=c("aggr_ops", "ratio_type"), sep="[:[:space:]]+") %>%  
-      mutate(id=row_number()) %>%
       # переводим алиасы функций агрегации в различные узлы (экран, CH)
       mutate(x=aggr_ops,
              ext_aggr_opts=case_when(
@@ -235,19 +235,31 @@ server <- function(input, output, session) {
                x=="mean" ~ "ср, avg",
                x=="sum" ~ "сумма, sum",
                x=="unique" ~ "уник, uniq",           
-               x=="count" ~ ", count",
+               x=="count" ~ "всего, count",
                TRUE ~ "UNKNOWN"
              )) %>%
       # разнесем на отдельные колонки
       separate(ext_aggr_opts, into=c("visual_aggr_func", "ch_aggr_func")) %>%
-      select(-x) %>%
-      # mutate_at(vars(visual_aggr_func), funs(na_if(., ""))) %>%
+      select(-x, -col_label)
+    # mutate_at(vars(visual_aggr_func), funs(na_if(., ""))) %>%
+    
+    # добавим дробные отношения как самостоятельные агрегатные переменные
+    df2 <- df1 %>%
+      filter(!is.na(ratio_type)) %>%
+      mutate(can_be_grouped=FALSE) %>%
+      mutate_at(vars(visual_aggr_func), ~str_c(.x, ", % от общего"))
+    
+    # объединим все в единую модель
+    res_df <- df1 %>%
+      mutate(ratio_type=as.character(NA)) %>%
+      bind_rows(df2, .id="src") %>%
       mutate(visual_var_name={map2_chr(.$human_name_rus, .$visual_aggr_func,
-                                     ~if_else(.y=="", .x, stri_join(.x, ": ", .y)))}) %>%
-      mutate(ch_query_name=str_c(ch_aggr_func, "(", internal_field, ")"))
+                                       ~if_else(.y=="", .x, stri_join(.x, ": ", .y)))}) %>%
+      mutate(ch_query_name=str_c(ch_aggr_func, "(", internal_field, ")")) %>%
+      mutate(id=row_number())
     
     # browser()
-    df
+    res_df
   }
   # модель переменных для группировки
   group_model_df <- {    
@@ -471,17 +483,18 @@ server <- function(input, output, session) {
       # 1. построим список просто переменных в часть SELECT
       vars_string <- var_model_df %>%
         filter(id %in% input$selected_vars) %>%
-        # {purrr::map2_chr(.$ch_query_name, .$col_name, ~str_c(.x, " AS ", .y))} %>%
-        {purrr::map_chr(.$ch_query_name, ~str_c(.x, " "))} %>%
+        pull(ch_query_name) %>%
+        # purrr::map_chr(~str_c(.x, "")) %>%
         stri_join(sep="", collapse=", ")
-      # 2. построим список процентных переменных в часть SELECT
+      # 2. построим список долевых переменных в часть SELECT
       ratio_df <- var_model_df %>%
         filter(id %in% input$selected_vars) %>%
         filter(!is.na(ratio_type)) %>%
-        mutate(ratio_query_string=
-                 str_c(" ( SELECT ", ch_query_name, " ) AS ", internal_field, " ",
-                                            sep=" ", collapse="")  )
-      # browser()
+        mutate(ratio_query_string={map2_chr(.$ch_query_name, .$internal_field,
+                                            ~str_c(" ( SELECT ", .x, " ) AS ", .y, " ",
+                                                   sep=" ", collapse=""))})
+      
+      browser()
       ratio_vars_string <- ""
       # 3. объединим с групповыми переменными
       select_string <- stri_join(group_vars, vars_string, sep=", ", collapse="", ignore_null=TRUE)
