@@ -129,8 +129,8 @@ ui <-
       column(6, uiOutput("choose_vars"))
     ),
     fluidRow(
-      column(10, actionButton("process_btn", "Применить", class = 'rightAlign')),
-      column(1, div(bookmarkButton(), class = 'rightAlign')),
+      column(11, actionButton("process_btn", "Применить", class = 'rightAlign')),
+      #column(1, div(bookmarkButton(label="Закладка..."), class = 'rightAlign')),
       column(1, downloadButton("csv_download_btn", label="Экспорт (Excel)", class = 'rightAlign'))
       
     ),
@@ -519,6 +519,37 @@ server <- function(input, output, session) {
                     row.names=FALSE, sep=";", fileEncoding="windows-1251")
     }
   )
+  
+  # обработчки сохранения состояний статических элементов
+  onBookmark(function(state) {
+    #state$values$event_filter <- input$event_filter
+    #state$values$intensity <- input$intensity
+  })
+  
+  onRestored(function(state){
+    # input-ы сохраняются штатным образом, главное их восстановить. 
+    # восстанавливаем не из values, а из input
+    # browser()
+    updateSelectInput(session, "event_filter", selected=state$input$event_filter)
+    updateSelectInput(session, "prefix_filter", selected=state$input$prefix_filter)
+    updateSelectInput(session, "serial_mask", selected=state$input$serial_mask)
+    # shinyjs::delay(800, {})
+    updateSliderInput(session, "duration_range", value=state$input$duration_range)
+    updateDateRangeInput(session, "in_date_range",
+                         start=state$input$in_date_range[1], 
+                         end=state$input$in_date_range[2])
+  }) 
+  
+  # динамичекое обновление url в location bar
+  observe({
+    # Trigger this observer every time an input changes
+    reactiveValuesToList(input)
+    session$doBookmark()
+  })
+  
+  onBookmarked(function(url) {
+    updateQueryString(url)
+  })  
 }
 
 shinyApp(ui=ui, server=server, enableBookmarking="url")
