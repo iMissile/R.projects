@@ -207,15 +207,9 @@ server <- function(input, output, session) {
   # создаем tidy модель данных
   data_model_df <- {
     df0 <- jsonlite::fromJSON("datamodel.json", simplifyDataFrame=TRUE) %>%
-      as_tibble() %>%
-      # создаем внутреннее представление (раньше представление БД могло быть синтетикой)
-      mutate(internal_field=ifelse(any(names(.) %in% 'internal_field'), 
-                                   internal_field, as.character(NA))) %>%
-      mutate(select_string={map2_chr(.$internal_field, .$ch_field,
-                                     ~if_else(is.na(.x), .y, stri_join(.y, " AS ", .x)))}) %>%
-      mutate(internal_field={map2_chr(.$internal_field, .$ch_field,
-                                      ~if_else(is.na(.x), .y, .x))})  
+      as_tibble()
   }
+  
   # модель для переменных под агрегат
   var_model_df <- {    
     # построим модель переменных для вычисления
@@ -252,10 +246,10 @@ server <- function(input, output, session) {
     # объединим все в единую модель
     res_df <- df1 %>%
       mutate(ratio_type=as.character(NA)) %>%
-      bind_rows(df2, .id="src") %>%
+      bind_rows(df2) %>%
       mutate(visual_var_name={map2_chr(.$human_name_rus, .$visual_aggr_func,
                                        ~if_else(.y=="", .x, stri_join(.x, ": ", .y)))}) %>%
-      mutate(ch_query_name=str_c(ch_aggr_func, "(", internal_field, ")")) %>%
+      mutate(ch_query_name=str_c(ch_aggr_func, "(", internal_name, ")")) %>%
       mutate(id=row_number())
     
     # browser()
@@ -267,9 +261,9 @@ server <- function(input, output, session) {
     df <- data_model_df %>%
       # в переменные берем только то, что подпадает под агрегаты
       filter(can_be_grouped) %>%
-      # mutate(visual_group_name=str_c("_", internal_field, "_")) %>%
+      # mutate(visual_group_name=str_c("_", internal_name, "_")) %>%
       mutate(visual_group_name=human_name_rus) %>%
-      select(select_string, internal_field, visual_group_name) %>%
+      select(select_string, internal_name, visual_group_name) %>%
       mutate(id=row_number()) %>%
       # добавим пустую строку, позволяющую не выбирать агрегат
       add_row(id=0, visual_group_name="нет") %>%
@@ -281,7 +275,7 @@ server <- function(input, output, session) {
   # имена колонок -- группы и агрегаты из запроса
   # сливаем модельные данные
   dic_df <- dplyr::union(var_model_df %>% select(name_enu=ch_query_name, name_rus=visual_var_name),
-                         group_model_df %>% select(name_enu=internal_field, name_rus=visual_group_name)
+                         group_model_df %>% select(name_enu=internal_name, name_rus=visual_group_name)
   )
   
 
@@ -375,10 +369,10 @@ server <- function(input, output, session) {
     req(input$group_var1, input$group_var2, input$group_var3)
     # собираем переменные групировки (в SELECT & GROUP BY)
     idx <- map_int(1:3, ~as.integer(input[[stri_join("group_var", .x)]]))
-    exclude_var <- left_join(as_tibble(idx), group_model_df, by=c("value"="id")) %>% drop_na() %>% pull(internal_field)
+    exclude_var <- left_join(as_tibble(idx), group_model_df, by=c("value"="id")) %>% drop_na() %>% pull(internal_name)
     # browser()
     df <- var_model_df %>%
-      filter(!(internal_field %in% exclude_var))
+      filter(!(internal_name %in% exclude_var))
     data <- setNames(as.list(df$id), df$visual_var_name)
 
     selectizeInput("selected_vars", "Агрегатные функции", choices=data, 
@@ -472,10 +466,11 @@ server <- function(input, output, session) {
     
     # собираем переменные групировки (в SELECT & GROUP BY)
     idx <- map_int(1:3, ~as.integer(input[[stri_join("group_var", .x)]]))
-    df <- left_join(as_tibble(idx), group_model_df, by=c("value"="id")) %>% drop_na()
-    group_vars <- stri_join(df$internal_field, collapse=", ")
+    df0 <- left_join(as_tibble(idx), group_model_df, by=c("value"="id")) %>% drop_na()
+    group_vars <- stri_join(df0$internal_name, collapse=", ")
     
     # если переменных нет, то имеем character(0)
+    # это важно для последующего слияния.... иначе получится "" вместо *
     has_select_var <- any(length(group_vars) > 0, !is.null(input$selected_vars))
 
     limit_string <- ""    
@@ -490,7 +485,7 @@ server <- function(input, output, session) {
       ratio_df <- var_model_df %>%
         filter(id %in% input$selected_vars) %>%
         filter(!is.na(ratio_type)) %>%
-        mutate(ratio_query_string={map2_chr(.$ch_query_name, .$internal_field,
+        mutate(ratio_query_string={map2_chr(.$ch_query_name, .$internal_name,
                                             ~str_c(" ( SELECT ", .x, " ) AS ", .y, " ",
                                                    sep=" ", collapse=""))})
       
