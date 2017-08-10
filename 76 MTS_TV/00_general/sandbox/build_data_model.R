@@ -27,9 +27,9 @@ source("clickhouse.R")
 
 
 rm(list=ls()) # очистим все переменные
-df0 <- jsonlite::fromJSON("datamodel_exp.json", simplifyDataFrame=TRUE)
+df0 <- jsonlite::fromJSON("datamodel.json", simplifyDataFrame=TRUE)
 
-data_model <- df0 %>%
+data_model_df <- df0 %>%
   as_tibble() %>%
   # создаем внутреннее представление (раньше представление БД могло быть синтетикой)
   mutate(internal_field=ifelse(any(names(.) %in% 'internal_field'), internal_field, as.character(NA))) %>%
@@ -42,10 +42,10 @@ data_model <- df0 %>%
 #     col_name=="prefix" ~ "substring(serial, 1, 3)",
 #     TRUE ~ col_name))
   
-m <- separate_rows(data_model, aggr_ops, sep="[,;[:space:]]+")
+m <- separate_rows(data_model_df, aggr_ops, sep="[,;[:space:]]+")
 
 # построим модель переменных для вычисления
-var_model <- data_model %>%
+var_model_df <- data_model_df %>%
   # в переменные берем только то, что подпадает под агрегаты
   filter(!is.na(aggr_ops)) %>%
   # 1-ая декомпозиция: по агрегатам
@@ -72,8 +72,14 @@ var_model <- data_model %>%
                                    ~if_else(.y=="", .x, stri_join(.x, ": ", .y)))}) %>%
   mutate(ch_query_name=str_c(ch_aggr_func, "(", internal_field, ")"))
 
+# добавим дробные отношения как самостоятельные агрегатные переменные
+ratio_df <- var_model_df %>%
+  filter(!is.na(ratio_type)) %>%
+  mutate(can_be_grouped=FALSE)
+
+
 # делаем обратную свертку
-group_model <- data_model %>%
+group_model_df <- data_model_df %>%
   filter(can_be_grouped) %>%
   mutate(visual_group_name=str_c("_", internal_field, "_")) %>%
   select(select_string, internal_field, visual_group_name) %>%
@@ -84,12 +90,11 @@ group_model <- data_model %>%
 
 #data <- as.list(df2$query_name)
 #names(data) <- df2$visual_name
-data_model_df <- df2
-data <- setNames(as.list(data_model_df$ch_query_name), data_model_df$visual_var_name)
+data <- setNames(as.list(var_model_df$ch_query_name), var_model_df$visual_var_name)
 
 stop()
 # построим список переменных в часть SELECT
-data_model_df %>%
+data_model %>%
   {purrr::map2_chr(.$ch_query_name, .$col_name, ~str_c(.x, " AS ", .y))} %>%
   stri_join(sep="", collapse=", ")
 

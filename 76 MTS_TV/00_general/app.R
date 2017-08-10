@@ -158,6 +158,9 @@ ui <-
 
 # ================================================================
 server <- function(input, output, session) {
+  
+  setBookmarkExclude(c("stat_table")) # таблицу восстановить мы не можем и не должны
+  
   # статические переменные ------------------------------------------------
   log_name <- "app.log"
   
@@ -478,7 +481,7 @@ server <- function(input, output, session) {
         mutate(ratio_query_string=
                  str_c(" ( SELECT ", ch_query_name, " ) AS ", internal_field, " ",
                                             sep=" ", collapse="")  )
-      browser()
+      # browser()
       ratio_vars_string <- ""
       # 3. объединим с групповыми переменными
       select_string <- stri_join(group_vars, vars_string, sep=", ", collapse="", ignore_null=TRUE)
