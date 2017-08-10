@@ -136,7 +136,9 @@ ui <-
     ),
     h3("Выборка"),
     fluidRow(
-      column(12, verbatimTextOutput('info_text'))
+      column(12, verbatimTextOutput('info_text')),
+      # https://stackoverflow.com/questions/23233497/outputting-multiple-lines-of-text-with-rendertext-in-r-shiny
+      tags$style(type="text/css", "#info_text {white-space: pre-wrap;}")
     ),
     #tags$style(type='text/css', "#in_date_range { position: absolute; top: 50%; transform: translateY(-80%); }"),
     tabsetPanel(
@@ -489,7 +491,7 @@ server <- function(input, output, session) {
         pull(ch_query_name) %>%
         # purrr::map_chr(~str_c(.x, "")) %>%
         stri_join(sep="", collapse=", ")
-      browser()
+      # browser()
       
       # 3. объединим с групповыми переменными
       select_string <- stri_join(group_vars, vars_string, sep=", ", collapse="", ignore_null=TRUE)
