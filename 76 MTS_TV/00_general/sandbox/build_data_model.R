@@ -80,7 +80,7 @@ df2 <- df1 %>%
 
 
 # объединим все в единую модель
-var_model_df <- df1 %>%
+res_df <- df1 %>%
   mutate(ratio_type=as.character(NA)) %>%
   bind_rows(df2) %>%
   # select(-src) %>%
@@ -88,10 +88,10 @@ var_model_df <- df1 %>%
                                    ~if_else(.y=="", .x, stri_join(.x, ": ", .y)))}) %>%
   mutate(id=row_number())
   
-
+var_model_df <-res_df
 
 # делаем обратную свертку
-group_model_df <- df1 %>%
+group_model_df <- data_model_df %>%
   filter(can_be_grouped) %>%
   mutate(visual_group_name=human_name_rus) %>%
   select(internal_name=ch_field, visual_group_name) %>%

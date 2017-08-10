@@ -213,7 +213,6 @@ server <- function(input, output, session) {
   # модель для переменных под агрегат
   var_model_df <- {    
     # построим модель переменных для вычисления
-    # построим модель переменных для вычисления
     df1 <- data_model_df %>%
       # в переменные берем только то, что подпадает под агрегаты
       filter(!is.na(aggr_ops)) %>%
@@ -234,49 +233,53 @@ server <- function(input, output, session) {
              )) %>%
       # разнесем на отдельные колонки
       separate(ext_aggr_opts, into=c("visual_aggr_func", "ch_aggr_func")) %>%
-      select(-x, -col_label)
-    # mutate_at(vars(visual_aggr_func), funs(na_if(., ""))) %>%
+      select(-x, -col_label) %>%
+      mutate(ch_query_name=str_c(ch_aggr_func, "(", ch_field, ")")) %>%
+      mutate(internal_name=ch_query_name)
     
     # добавим дробные отношения как самостоятельные агрегатные переменные
     df2 <- df1 %>%
       filter(!is.na(ratio_type)) %>%
       mutate(can_be_grouped=FALSE) %>%
-      mutate_at(vars(visual_aggr_func), ~str_c(.x, ", % от общего"))
+      mutate_at(vars(visual_aggr_func), ~str_c(.x, ", % от общего")) %>%
+      mutate(internal_name=str_c(ch_aggr_func, ch_field, "ratio", sep="_"))
+    # mutate(internal_name=stri_join(ch_aggr_func, ch_field, "ratio", sep="_", collapse=NULL))
+    # mutate(internal_name={map2_chr(.$internal_name, .$ch_field, ~if_else(is.na(.x), .y, .x))})
+    
     
     # объединим все в единую модель
     res_df <- df1 %>%
       mutate(ratio_type=as.character(NA)) %>%
       bind_rows(df2) %>%
+      # select(-src) %>%
       mutate(visual_var_name={map2_chr(.$human_name_rus, .$visual_aggr_func,
                                        ~if_else(.y=="", .x, stri_join(.x, ": ", .y)))}) %>%
-      mutate(ch_query_name=str_c(ch_aggr_func, "(", internal_name, ")")) %>%
       mutate(id=row_number())
     
     # browser()
     res_df
   }
+  
   # модель переменных для группировки
   group_model_df <- {    
     # построим модель переменных для вычисления
     df <- data_model_df %>%
-      # в переменные берем только то, что подпадает под агрегаты
       filter(can_be_grouped) %>%
-      # mutate(visual_group_name=str_c("_", internal_name, "_")) %>%
       mutate(visual_group_name=human_name_rus) %>%
-      select(select_string, internal_name, visual_group_name) %>%
+      select(internal_name=ch_field, visual_group_name) %>%
       mutate(id=row_number()) %>%
       # добавим пустую строку, позволяющую не выбирать агрегат
       add_row(id=0, visual_group_name="нет") %>%
-      arrange(id) 
+      arrange(id)
 
     df
   }
+  
   # словарь для преобразований имен полей из английских в русские
   # имена колонок -- группы и агрегаты из запроса
   # сливаем модельные данные
-  dic_df <- dplyr::union(var_model_df %>% select(name_enu=ch_query_name, name_rus=visual_var_name),
-                         group_model_df %>% select(name_enu=internal_name, name_rus=visual_group_name)
-  )
+  dic_df <- dplyr::union(var_model_df %>% select(name_enu=internal_name, name_rus=visual_var_name),
+                         group_model_df %>% select(name_enu=internal_name, name_rus=visual_group_name))
   
 
   # browser()
@@ -475,22 +478,19 @@ server <- function(input, output, session) {
 
     limit_string <- ""    
     if(has_select_var){
-      # 1. построим список просто переменных в часть SELECT
-      vars_string <- var_model_df %>%
+      # 1. для единообразной обработки построим динамический SELECT для %-ных параметров
+      df <- var_model_df %>%
+        mutate(ch_query_name=if_else(is.na(ratio_type), ch_query_name, 
+                          str_c(ch_query_name, " / ( SELECT", ch_query_name, from_where_string, 
+                                ") AS", internal_name, sep=" ")))
+      # 2. построим список переменных в часть SELECT
+      vars_string <- df %>%
         filter(id %in% input$selected_vars) %>%
         pull(ch_query_name) %>%
         # purrr::map_chr(~str_c(.x, "")) %>%
         stri_join(sep="", collapse=", ")
-      # 2. построим список долевых переменных в часть SELECT
-      ratio_df <- var_model_df %>%
-        filter(id %in% input$selected_vars) %>%
-        filter(!is.na(ratio_type)) %>%
-        mutate(ratio_query_string={map2_chr(.$ch_query_name, .$internal_name,
-                                            ~str_c(" ( SELECT ", .x, " ) AS ", .y, " ",
-                                                   sep=" ", collapse=""))})
-      
       browser()
-      ratio_vars_string <- ""
+      
       # 3. объединим с групповыми переменными
       select_string <- stri_join(group_vars, vars_string, sep=", ", collapse="", ignore_null=TRUE)
     } else {
