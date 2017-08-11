@@ -24,6 +24,19 @@ hgroup.enum <- function(date, hour_bin=NULL, min_bin=5){
   dt
 }
 
+# взято из formattable::formatter.R
+dvt_color_bar <- function(color = "lightgray", fun = "proportion", ...) {
+  fun <- match.fun(fun)
+  formatter("span",
+            style = function(x) style(
+              display = "inline-block",
+              direction = "ltr", # "inherit", # "rtl",
+              "border-radius" = "4px",
+              "padding-right" = "2px",
+              "background-color" = csscolor(color),
+              width = percent(fun(as.numeric(x), ...))
+            ))
+}
 
 buildReqFilter <- function(db_field, conditions, add=TRUE){
   ifelse(is.null(conditions) || conditions=="all", " ",
