@@ -26,6 +26,7 @@ library(shinythemes) # https://rstudio.github.io/shinythemes/
 library(shinyBS)
 library(shinyjs)
 library(shinycssloaders)
+library(formattable)
 library(config)
 library(anytime)
 library(tictoc)
@@ -296,11 +297,20 @@ server <- function(input, output, session) {
     tic()
     df <- dbGetQuery(con, r) %>%
       as_tibble()
+    
     flog.info(paste0("Query: ", capture.output(toc())))
     flog.info(paste0("Table: ", capture.output(head(df, 2))))
     flog.info(paste0("Loaded ", nrow(df), " rows"))
 
-    df
+    # для переменных, содержащих %-ную долю, надо применить округление
+    # составим список имен колонок для которых мы ожидаем получить долевую часть
+    ratio_vars <- var_model_df %>%
+      filter(!is.na(ratio_type)) %>%
+      pull(internal_name)
+    
+    res_df <- df %>% mutate_at(vars(one_of(ratio_vars)), ~(round(.x*100, 2)))
+    
+    res_df
   })  
 
   cur_df <- reactive({
@@ -317,6 +327,14 @@ server <- function(input, output, session) {
       # санация
       mutate(name_rus={map2_chr(.$name_rus, .$name_enu, 
                                 ~if_else(is.na(.x), .y, .x))})
+    # добавим форматный вывод для %-ных долей
+    ratio_vars <- var_model_df %>%
+      filter(!is.na(ratio_type)) %>%
+      pull(internal_name)
+    
+    # browser()
+    df <- formattable(df, list(area(col=ratio_vars) ~ 
+                           color_bar("lightblue", function(x) formattable::normalize(x, 0, 100))))
 
     # https://stackoverflow.com/questions/39970097/tooltip-or-popover-in-shiny-datatables-for-row-names
     colheader <- htmltools::withTags(
@@ -374,7 +392,9 @@ server <- function(input, output, session) {
     req(input$group_var1, input$group_var2, input$group_var3)
     # собираем переменные групировки (в SELECT & GROUP BY)
     idx <- map_int(1:3, ~as.integer(input[[stri_join("group_var", .x)]]))
-    exclude_var <- left_join(as_tibble(idx), group_model_df, by=c("value"="id")) %>% drop_na() %>% pull(internal_name)
+    exclude_var <- left_join(as_tibble(idx), group_model_df, by=c("value"="id")) %>% 
+      drop_na() %>% 
+      pull(internal_name)
     # browser()
     df <- var_model_df %>%
       filter(!(internal_name %in% exclude_var))

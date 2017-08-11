@@ -36,7 +36,7 @@ norm1 <- function(x, left, right){
 }
 
 formattable(products, list(profit=sign_formatter, 
-                           rating=color_bar("lightblue", function(x) norm1(x, 3, 7))))
+                           area(col=c("rating", "price")) ~ color_bar("lightblue", function(x) norm1(x, 3, 7))))
 
 
 # dput(products)
