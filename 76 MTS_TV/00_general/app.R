@@ -306,6 +306,7 @@ server <- function(input, output, session) {
     # составим список имен колонок для которых мы ожидаем получить долевую часть
     ratio_vars <- var_model_df %>%
       filter(!is.na(ratio_type)) %>%
+      filter(internal_name %in% names(df)) %>%
       pull(internal_name)
     
     res_df <- df %>% mutate_at(vars(one_of(ratio_vars)), ~(round(.x*100, 2)))
@@ -330,11 +331,19 @@ server <- function(input, output, session) {
     # добавим форматный вывод для %-ных долей
     ratio_vars <- var_model_df %>%
       filter(!is.na(ratio_type)) %>%
+      filter(internal_name %in% names(df)) %>%
       pull(internal_name)
     
     # browser()
-    df <- formattable(df, list(area(col=ratio_vars) ~ 
-                           color_bar("lightblue", function(x) formattable::normalize(x, 0, 100))))
+    # форматирование можно применять только если у нас есть список колонок
+    attributes(ratio_vars) <- NULL
+    fmt_df <- if(identical(ratio_vars, character(0))){
+      formattable(df)
+      } else {
+        formattable(df, list(area(col=ratio_vars) ~ 
+                             dvt_color_bar("lightblue", function(x) x/100)))
+      }
+    # color_bar("lightblue", function(x) formattable::normalize(x, 0, 100))))
 
     # https://stackoverflow.com/questions/39970097/tooltip-or-popover-in-shiny-datatables-for-row-names
     colheader <- htmltools::withTags(
@@ -344,9 +353,11 @@ server <- function(input, output, session) {
                   {purrr::map2(.$name_enu, .$name_rus, ~th(title=.x, .y))})
              )))
     # 
-    # browser()
+    browser()
     # https://rstudio.github.io/DT/functions.html
     DT::datatable(df,
+    # formattable превращает числа в строки, тем самым нарушая возможности сортровки
+    # as.datatable(fmt_df, # для сохранения параметров formattable
                   rownames=FALSE,
                   filter='bottom',
                   container=colheader,

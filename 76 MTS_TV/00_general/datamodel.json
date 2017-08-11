@@ -23,7 +23,7 @@
     "ch_field": "duration",
     "human_name_rus": "длительность",
     "can_be_grouped": false,
-    "aggr_ops": "min, max, mean:ratio, sum:ratio",
+    "aggr_ops": "min, max, mean, sum:ratio",
     "col_label": "подсказка (duration)"
   },
   {
@@ -66,60 +66,5 @@
     "can_be_grouped": true,
     "aggr_ops": "unique",
     "col_label": "Производитель STB"
-  },
-  {
-    "human_name_rus": "кол-во уник. STB",
-    "can_be_grouped": false,
-    "col_label": "Кол-во уникальных STB с которых был зафиксирован хотя бы один факт телесмотрения канала"
-  },
-  {
-    "human_name_rus": "всего уник. STB",
-    "can_be_grouped": false,
-    "col_label": "Общее количество уникальных STB с которых выполнялось телесмотрение хотя бы одного канала"
-  },
-  {
-    "human_name_rus": "суммарное время, мин",
-    "can_be_grouped": false,
-    "col_label": "Суммарное время просмотра канала всеми STB"
-  },
-  {
-    "human_name_rus": "кол-во просмотров",
-    "can_be_grouped": false,
-    "col_label": "Количество событий телесмотрения канала со всех приставок"
-  },
-  {
-    "human_name_rus": "% уник. STB",
-    "can_be_grouped": false,
-    "col_label": "Отношение STB, смотревших данный канал, к общему количеству уникальных STB"
-  },
-  {
-    "human_name_rus": "канал",
-    "can_be_grouped": false,
-    "col_label": "Название телеканала"
-  },
-  {
-    "human_name_rus": "суммарное время, мин",
-    "can_be_grouped": false,
-    "col_label": "подсказка (channel_duration)"
-  },
-  {
-    "human_name_rus": "ср. время просмотра, мин",
-    "can_be_grouped": false,
-    "col_label": "Среднее время отдельного просмотра канала"
-  },
-  {
-    "human_name_rus": "% врем. просмотра",
-    "can_be_grouped": false,
-    "col_label": "Отношение времени просмотра канала к общему времени телесмотрения"
-  },
-  {
-    "human_name_rus": "ср. время просм. 1 STB за период, мин",
-    "can_be_grouped": false,
-    "col_label": "Среднее время суммарного просмотра канала одной приставкой за выбранный период"
-  },
-  {
-    "human_name_rus": "время",
-    "can_be_grouped": false,
-    "col_label": "подсказка (timestamp)"
   }
 ]
