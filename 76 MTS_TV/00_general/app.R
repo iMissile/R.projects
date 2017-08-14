@@ -42,6 +42,10 @@ eval(parse("funcs.R", encoding="UTF-8"))
 # очистим все warnings():
 assign("last.warning", NULL, envir = baseenv())
 
+# определеяем окружение в котором запускаемся
+Sys.setenv("R_CONFIG_ACTIVE"="media-tel-prod") # продашн конфиг
+Sys.setenv("R_CONFIG_ACTIVE"="media-tel-demo") # продашн конфиг
+
 # ================================================================
 ui <- 
   navbarPage("DVT IoT",
@@ -168,7 +172,7 @@ server <- function(input, output, session) {
   
   flog.appender(appender.tee(log_name))
   flog.threshold(TRACE)
-  flog.info("App started")
+  flog.info(paste0("App started in '", Sys.getenv("R_CONFIG_ACTIVE"), "' environment"))
 
   shinyjs::hide("csv_download_btn")
   
@@ -178,14 +182,18 @@ server <- function(input, output, session) {
     "word_A4"=list(base_size=14, axis_title_size=12, subtitle_size=11)
   )
   
+  
+  # Sys.getenv("R_CONFIG_ACTIVE")
+  ch_db <- config::get("clickhouse") # достаем параметры подключения
   # создаем коннект к инстансу CH -----------
-  if (Sys.info()["sysname"] == "Linux") {
-    # CTI стенд
-    con <- dbConnect(clickhouse(), host="172.16.33.74", port=8123L, user="default", password="")
-  }else{
-    # MT стенд
-    con <- dbConnect(clickhouse(), host="10.0.0.44", port=8123L, user="default", password="")
-  }      
+  con <- dbConnect(clickhouse(), host=ch_db$host, port=ch_db$port, user=ch_db$user, password=ch_db$password)
+  # if (Sys.info()["sysname"] == "Linux") {
+  #   # CTI стенд
+  #   con <- dbConnect(clickhouse(), host="172.16.33.74", port=8123L, user="default", password="")
+  # }else{
+  #   # MT стенд
+  #   con <- dbConnect(clickhouse(), host="10.0.0.44", port=8123L, user="default", password="")
+  # }      
   
   # подгрузим таблицу преобразования транслита в русские названия городов -------
   cities_df <- {
@@ -351,8 +359,7 @@ server <- function(input, output, session) {
              tr(colnames_df %>%
                   {purrr::map2(.$name_enu, .$name_rus, ~th(title=.x, .y))})
              )))
-    # 
-    browser()
+    # browser()
     # https://rstudio.github.io/DT/functions.html
     DT::datatable(df,
     # formattable превращает числа в строки, тем самым нарушая возможности сортровки
@@ -491,8 +498,8 @@ server <- function(input, output, session) {
                            ifelse(input$serial_mask=="", "", paste0(" AND like(serial, '%", input$serial_mask, "%') "))
     ) 
     
-    from_where_string <- paste0(" FROM view_simstates ",
-                                "WHERE ", where_string)
+    from_where_string <- str_c(" FROM", ch_db$table, 
+                                "WHERE ", where_string, sep=" ")
     
     # определяем, есть ли переменные в select
     # has_select <- !all(purrr::map_lgl(list(input$group_var1, input$group_var2,

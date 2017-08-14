@@ -1,0 +1,64 @@
+CREATE VIEW view_simstates AS SELECT      toDateTime(intDiv(toUInt32(edate), 3600) * 3600) AS timegroup1h,      date,      channelId,      channelLCN,      edate,      duration,      epgId,      kinopoiskId,      programId,      region,      seriaId,      concat('#', serial) AS serial,      concat('*', substring(serial, 2, 3)) AS prefix,     switchEvent,     arrayFilter(x -> substring(x,1,4) = prefix, ['*001 DVB-S: Dune Lite',                                                          '*002 DVB-S: Dune Lite+',                                              '*003 IPTV: Huawei',                                                    '*004 DVB-S: Huawei',                                                   '*006 DVB-C: Huawei',                                                  '*007 IPTV: ZTE',                                               '*008 IPTV: EKT',                                               '*009 DVB-C: EKT'                                               ])[1] as ft,    replaceRegexpOne(ft, '(.*) (.*):(.*)', '\\2') as segment, replaceRegexpOne(ft, '(.*) (.*):(.*)', '\\3') as vendor FROM simstates; 
+
+CREATE VIEW view_simstates AS
+SELECT 
+    toDateTime(intDiv(toUInt32(edate), 3600) * 3600) AS timegroup1h, 
+    date, 
+    channelId, 
+    channelLCN, 
+    edate, 
+    duration, 
+    epgId, 
+    kinopoiskId, 
+    programId, 
+    region, 
+    seriaId, 
+    concat('#', serial) AS serial, 
+    concat('*', substring(serial, 2, 3)) AS prefix, 
+    switchEvent, 
+    arrayFilter(x -> (substring(x, 1, 4) = prefix), ['*001 DVB-S: Dune Lite', '*002 DVB-S: Dune Lite+', '*003 IPTV: Huawei', '*004 DVB-S: Huawei', '*006 DVB-C: Huawei', '*007 IPTV: ZTE', '*008 IPTV: EKT', '*009 DVB-C: EKT'])[1] AS ft, 
+    replaceRegexpOne(ft, '(.*) (.*):(.*)', '\\2') AS segment, 
+    replaceRegexpOne(ft, '(.*) (.*):(.*)', '\\3') AS vendor
+FROM simstates 
+
+======================================================
+вот такая ерунда
+
+SELECT DISTINCT prefix
+FROM view_simstates 
+
+--prefix-¬
+¦ *030   ¦
+L---------
+--prefix-¬
+¦ *060   ¦
+¦ *069   ¦
+¦ *091   ¦
+L---------
+
+
+меняем порядок создания префикса с соотв. модификацией полей
+
+
+CREATE VIEW view_simstates AS
+SELECT 
+    toDateTime(intDiv(toUInt32(edate), 3600) * 3600) AS timegroup1h, 
+    date, 
+    channelId, 
+    channelLCN, 
+    edate, 
+    duration, 
+    epgId, 
+    kinopoiskId, 
+    programId, 
+    region, 
+    seriaId, 
+    concat('*', substring(serial, 1, 3)) AS prefix, 
+    concat('#', serial) AS serial, 
+    switchEvent, 
+    arrayFilter(x -> (substring(x, 1, 4) = prefix), ['*001 DVB-S: Dune Lite', '*002 DVB-S: Dune Lite+', '*003 IPTV: Huawei', '*004 DVB-S: Huawei', '*006 DVB-C: Huawei', '*007 IPTV: ZTE', '*008 IPTV: EKT', '*009 DVB-C: EKT'])[1] AS ft, 
+    replaceRegexpOne(ft, '(.*) (.*):(.*)', '\\2') AS segment, 
+    replaceRegexpOne(ft, '(.*) (.*):(.*)', '\\3') AS vendor
+FROM simstates 
+
+
