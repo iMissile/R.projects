@@ -1,0 +1,64 @@
+default:
+  postgress:
+    driver: 'PostgreSQL'
+    host: '10.0.0.177'
+    uid: 'puser'
+    pwd: 'puser'  
+    port: 5432
+    database: 'channel_list'
+
+  clickhouse:
+    host: '10.0.0.44'
+    port: 8123
+    user: 'default'
+    password: ''  
+    table: 'states'
+
+cti-demo:
+  postgress:
+    driver: 'PostgreSQL'
+    host: '10.0.0.177'
+    uid: 'puser'
+    pwd: 'puser'  
+    port: 5432
+    database: 'channel_list'
+
+  clickhouse:
+    host: '10.0.0.44'
+    port: 8123
+    user: 'default'
+    password: ''  
+    table: 'sim_states'
+
+
+media-prod:
+  postgess:
+    driver: 'PostgreSQL'
+    host: '172.16.33.76'
+    uid: 'stat'
+    pwd: 'stat'  
+    port: 5432
+    database: 'stat'
+
+  clickhouse:
+    host: '172.16.33.74'
+    port: 8123
+    user: 'default'
+    password: ''  
+    table: 'states'
+
+media-demo:
+  postgess:
+    driver: 'PostgreSQL'
+    host: '172.16.33.76'
+    uid: 'stat'
+    pwd: 'stat'  
+    port: 5432
+    database: 'stat'
+
+  clickhouse:
+    host: '172.16.33.74'
+    port: 8123
+    user: 'default'
+    password: ''  
+    table: 'sim_states'
