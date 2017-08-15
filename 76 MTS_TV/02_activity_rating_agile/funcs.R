@@ -24,97 +24,83 @@ hgroup.enum <- function(date, hour_bin=NULL, min_bin=5){
   dt
 }
 
+buildReqFilter <- function(db_field, conditions, add=TRUE){
+  ifelse(is.null(conditions) || conditions=="all", " ",
+         stri_join(ifelse(add, " AND ", " "), db_field, " IN (",
+                   stri_join(conditions %>% map_chr(~stri_join("'", .x, "'", sep="")),
+                             sep = " ", collapse=","),
+                   ") ", sep = "", collapse=""))
+}
+
 # конструирование ограничений запроса по данным фильтров
-buildReqLimits <- function(begin, end, regions, segment) {
-  # базисная SQL конструкция для ограничения дат ----
-  # limit_dates <- paste0(" toDate(begin) >= toDate('", begin, "') AND toDate(end) <= toDate('", end, "') ")
-  limit_dates <- paste0(" date >= '", begin, "' AND date <= '", end, "' ")
-  
-  # добавочная SQL конструкция для ограничения регионов -----
-  limit_regions <- ifelse(is.null(regions), " ",
-                          stri_join(" AND region IN (", 
-                                    stri_join(regions %>% map_chr(~stri_join("'", .x, "'", sep="")),
-                                              sep = " ", collapse=","),
-                                    ") ", sep = "", collapse=""))
-  
-  # добавочная SQL конструкция для ограничения сегментов -----
-  limit_segments <- ifelse(segment=="all", " ", 
-                           stri_join(" AND segment IN (", 
-                                     stri_join(segment %>% map_chr(~stri_join("'", .x, "'", sep="")),
-                                               sep = " ", collapse=","),
-                                     ") ", sep = "", collapse=""))
-  
-  paste0(limit_dates, limit_regions, limit_segments)
+buildReqLimits <- function(begin, end, region=NULL, prefix=NULL, channel=NULL, event=NULL, 
+                           segment=NULL, serial_mask=NULL) {
+  # region, prefix, channel -- вектора
+  # собираем общие условия в соотв. с фильтрами
+  res <- paste0(paste0(" date >= '", begin, "' AND date <= '", end, "' "),
+                # указали жестко длительность, в секундах
+                paste0(" AND duration>0*60 AND duration <2*60*60 "),
+                buildReqFilter("region", region, add=TRUE),
+                buildReqFilter("prefix", prefix, add=TRUE),
+                buildReqFilter("channelId", channel, add=TRUE),
+                buildReqFilter("switchEvent", event, add=TRUE),
+                ifelse(serial_mask=="", "", paste0(" AND like(serial, '%", serial_mask, "%') "))
+  )   
 }
 
 
 # построение запроса для отчета 'Активность пользователей по регионам' ----------------
-buildReq <- function(begin, end, regions, segment="all"){
+buildReq <- function(db_table, begin, end, region=NULL, segment="all"){
   # begin, end -- даты; 
   # regs -- вектор регионов, если NULL -- то все регионы (в т.ч. на этапе инициализации);
   # segment -- регион (строка), если "all" -- то все сегменты;
   # browser()
-  
-  limits <- buildReqLimits(begin, end, regions, segment)
+  where_string <- buildReqLimits(begin=begin, end=end, region=region, segment=segment)
 
-  paste(
-    "SELECT ",
+    paste(
+    "SELECT",
     # 1. Регион
-    "region, ",
+    "region,",
     # 2. Кол-во уникальных приставок по каналу
-    "uniq(serial) AS unique_stb, ",
+    "uniq(serial) AS unique_stb,",
     # Кол-во уникальных приставок по всем каналам выбранных регионов
-    "( SELECT uniq(serial) ",
-    "  FROM genstates ",
-    "  WHERE ", limits, 
-    "  AND duration>5*60 AND duration <2*60*60 ", # указали жестко длительность, в секундах
-    ") AS total_unique_stb, ",  
+    "(SELECT uniq(serial)", "FROM", db_table, "WHERE", where_string, ") AS total_unique_stb,",  
     # 4. Суммарное время просмотра всеми приставками, мин
-    "sum(duration)/60 AS total_duration, ",
+    "sum(duration)/60 AS total_duration,",
     # 8. Кол-во событий просмотра
-    "count() AS watch_events ",
-    "FROM genstates ",
-    # "SAMPLE 0.1 ",
-    "WHERE ", limits,
-    "AND duration>5*60 AND duration <2*60*60 ", # указали жестко длительность, в секундах
-    "GROUP BY region", sep="")
+    "count() AS watch_events",
+    "FROM", db_table, 
+    # "SAMPLE 0.1",
+    "WHERE",  where_string,
+    "GROUP BY region", sep=" ")
 }
 
 
-buildReqTS <- function(begin, end, regions=NULL, interval=60, segment="all"){
-  #`
+buildReqTS <- function(db_table, begin, end, region=NULL, interval=60, segment="all"){
   # begin, end -- даты; 
   # interval -- временной интервал агрегации, в минутах
   # channels -- вектор каналов
   # regions -- вектор регионов, если NULL -- то все регионы (в т.ч. на этапе инициализации);
   # segment -- регион (строка), если "all" -- то все сегменты;
-
-  # browser()
-  limits <- buildReqLimits(begin, end, regions, segment)
-
+  where_string <- buildReqLimits(begin=begin, end=end, region=region, segment=segment)
   paste(
-    "SELECT ",
-    "region, ",
+    "SELECT",
+    "region,",
     # временной интервал (как строка)
-    "toDateTime(intDiv(toUInt32(begin), ", interval*60, ") *", interval*60, ") AS timestamp, ",
+    "toDateTime(intDiv(toUInt32(begin), ", interval*60, ") *", interval*60, ") AS timestamp,",
     # временной интервал (как целое)
-    "toUInt32(timestamp) AS timegroup, ",
+    "toUInt32(timestamp) AS timegroup,",
     # кол-во уникальных приставок по региону
-    "uniq(serial) AS unique_stb, ",    
+    "uniq(serial) AS unique_stb,",    
     # Кол-во уникальных приставок по всем каналам выбранных регионов
-    "( SELECT uniq(serial) ",
-    "  FROM genstates ",
-    "  WHERE ", limits, 
-    "  AND duration>5*60 AND duration <2*60*60 ", # указали жестко длительность, в секундах
-    ") AS total_unique_stb, ",  
+    "(SELECT uniq(serial)", "FROM", db_table, "WHERE", where_string, ") AS total_unique_stb,",  
     # длительность телесмотрения в минутах и кол-во событий телесмотрения
-    "sum(duration)/60 AS total_duration, count() AS watch_events ",
-    "FROM genstates ",
-    # "SAMPLE 0.1 ",
-    "WHERE ", limits, 
-    "AND duration>5*60 AND duration <2*60*60 ", # указали жестко длительность, в секундах
+    "sum(duration)/60 AS total_duration, count() AS watch_events",
+    "FROM", db_table, 
+    # "SAMPLE 0.1",
+    "WHERE", where_string, 
     "GROUP BY timestamp, region ",
-    "ORDER BY timestamp  DESC", sep="")
+    "ORDER BY timestamp  DESC", sep=" ")
 }
 
 # построение time-series отчета по выбранному региону

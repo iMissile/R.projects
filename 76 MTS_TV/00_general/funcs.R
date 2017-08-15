@@ -47,7 +47,8 @@ buildReqFilter <- function(db_field, conditions, add=TRUE){
 }
 
 # конструирование ограничений запроса по данным фильтров
-buildReqLimits <- function(begin, end, regions, prefixes, channels) {
+buildReqLimits <- function(begin, end, region=NULL, prefix=NULL, channel=NULL) {
+  # region, prefix, channel -- вектора
   # базисная SQL конструкция для ограничения дат ----
   # limit_dates <- paste0(" toDate(begin) >= toDate('", begin, "') AND toDate(end) <= toDate('", end, "') ")
   limit_dates <- paste0(" date >= '", begin, "' AND date <= '", end, "' ")
@@ -56,9 +57,9 @@ buildReqLimits <- function(begin, end, regions, prefixes, channels) {
   limit_regions <- 
 
   paste0(limit_dates, 
-         " AND ", buildReqFilter("region", regions), 
-         " AND ", buildReqFilter("prefix", prefixes),
-         " AND ", buildReqFilter("prefix", channels)
+         " AND ", buildReqFilter("region", region), 
+         " AND ", buildReqFilter("prefix", prefix),
+         " AND ", buildReqFilter("channelId", channel)
          )
 }
 

@@ -43,9 +43,13 @@ eval(parse("funcs.R", encoding="UTF-8"))
 # очистим все warnings():
 assign("last.warning", NULL, envir = baseenv())
 
+# определеяем окружение в котором запускаемся
+Sys.setenv("R_CONFIG_ACTIVE"="media-tel-prod") # продашн конфиг
+# Sys.setenv("R_CONFIG_ACTIVE"="media-tel-demo")
+
 # ================================================================
 ui <- 
-  navbarPage("DVT IoT",
+  navbarPage(
   # title=HTML('<div><a href="http://devoteam.com/"><img src="./img/devoteam_176px.png" width="80%"></a></div>'),
   title = "Статистика телесмотрения",
   tabPanel("Рейтинг пользовательской активности", value="general_panel"),
@@ -183,12 +187,15 @@ ui <-
 
 # ================================================================
 server <- function(input, output, session) {
+
+  setBookmarkExclude(c("stat_table")) # таблицу восстановить мы не можем и не должны
+  
   # статические переменные ------------------------------------------------
   log_name <- "app.log"
   
   flog.appender(appender.tee(log_name))
   flog.threshold(TRACE)
-  flog.info("App started")
+  flog.info(paste0("App started in '", Sys.getenv("R_CONFIG_ACTIVE"), "' environment"))
 
   shinyjs::hide("slice_panel_div")
   
@@ -198,15 +205,12 @@ server <- function(input, output, session) {
     "word_A4"=list(base_size=14, axis_title_size=12, subtitle_size=11)
   )
   
-  # создаем коннект к инстансу CH -----------
-  if (Sys.info()["sysname"] == "Linux") {
-    # CTI стенд
-    con <- dbConnect(clickhouse(), host="172.16.33.74", port=8123L, user="default", password="")
-  }else{
-    # MT стенд
-    con <- dbConnect(clickhouse(), host="10.0.0.44", port=8123L, user="default", password="")
-  }      
   
+  # Sys.getenv("R_CONFIG_ACTIVE")
+  ch_db <- config::get("clickhouse") # достаем параметры подключения
+  # создаем коннект к инстансу CH -----------
+  con <- dbConnect(clickhouse(), host=ch_db$host, port=ch_db$port, user=ch_db$user, password=ch_db$password)
+
   # подгрузим таблицу преобразования транслита в русские названия городов -------
   cities_df <- {
     flog.info("Loading cities translit table")
@@ -226,15 +230,11 @@ server <- function(input, output, session) {
   raw_df <- reactive({
     input$process_btn # обновлять будем вручную
     isolate({
-      # regions <- c("Moskva", "Barnaul")
-      regions <- input$region_filter
-      # browser()
-    
       # r <- buildReq(begin=today(), end=today()+days(1), regions)
-      flog.info(paste0("Applied time filter [", input$in_date_range[1], "; ", input$in_date_range[2], "]"))
-      flog.info(paste0("Applied region filter [", regions, "]"))
-      r <- buildReq(begin=input$in_date_range[1], end=input$in_date_range[2], 
-                    regions=regions, segment=input$segment_filter)
+      # flog.info(paste0("Applied time filter [", input$in_date_range[1], "; ", input$in_date_range[2], "]"))
+      # flog.info(paste0("Applied region filter [", regions, "]"))
+      r <- buildReq(ch_db$table, begin=input$in_date_range[1], end=input$in_date_range[2], 
+                    region=input$region_filter, segment=input$segment_filter)
       flog.info(paste0("DB request: ", r))
     })
     
@@ -297,10 +297,9 @@ server <- function(input, output, session) {
     regions <- cur_df()$region_enu[ids]
     
     isolate({
-      
-      # запрос конкретных данных
-      r <- buildReqTS(begin=input$in_date_range[1], end=input$in_date_range[2],
-                      regions=regions,
+      # запрос временного ряда по выбранным данным
+      r <- buildReqTS(ch_db$table, begin=input$in_date_range[1], end=input$in_date_range[2],
+                      region=regions,
                       # возьмем часовой интервал агрегации
                       interval=60, 
                       segment=input$segment_filter)
@@ -421,7 +420,7 @@ server <- function(input, output, session) {
 
   # фиксим даты на демо диапазон ---------  
   observeEvent(input$set_test_dates_btn, {
-    updateDateRangeInput(session, "in_date_range", start="2017-05-28", end="2017-05-30")
+    updateDateRangeInput(session, "in_date_range", start="2017-08-14", end="2017-08-15")
     }
   )
   
@@ -491,7 +490,35 @@ server <- function(input, output, session) {
       print(doc, target=file)  
     }
   )  
+  onBookmark(function(state) {
+    #state$values$event_filter <- input$event_filter
+    #state$values$intensity <- input$intensity
+  })
   
+  onRestored(function(state){
+    # input-ы сохраняются штатным образом, главное их восстановить. 
+    # восстанавливаем не из values, а из input
+    # browser()
+    updateSelectInput(session, "event_filter", selected=state$input$event_filter)
+    updateSelectInput(session, "prefix_filter", selected=state$input$prefix_filter)
+    updateSelectInput(session, "serial_mask", selected=state$input$serial_mask)
+    # shinyjs::delay(800, {})
+    updateSliderInput(session, "duration_range", value=state$input$duration_range)
+    updateDateRangeInput(session, "in_date_range",
+                         start=state$input$in_date_range[1], 
+                         end=state$input$in_date_range[2])
+  }) 
+  
+  # динамичекое обновление url в location bar
+  observe({
+    # Trigger this observer every time an input changes
+    reactiveValuesToList(input)
+    session$doBookmark()
+  })
+  
+  onBookmarked(function(url) {
+    updateQueryString(url)
+  })   
 }
 
 shinyApp(ui = ui, server = server)
