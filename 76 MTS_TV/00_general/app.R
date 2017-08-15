@@ -48,9 +48,9 @@ Sys.setenv("R_CONFIG_ACTIVE"="media-tel-demo") # продашн конфиг
 
 # ================================================================
 ui <- 
-  navbarPage("DVT IoT",
+  navbarPage(
   # title=HTML('<div><a href="http://devoteam.com/"><img src="./img/devoteam_176px.png" width="80%"></a></div>'),
-  title = "Статистика телесмотрения",
+  title="Статистика телесмотрения",
   tabPanel("Форма запросов", value="general_panel"),
   tabPanel("About", value="about"),
   # windowTitle="CC4L",
@@ -60,6 +60,8 @@ ui <-
   theme=shinytheme("yeti"),
   # shinythemes::themeSelector(),
   # includeCSS("styles.css"),
+  shinyjs::useShinyjs(),  # Include shinyjs
+  
 
   # http://stackoverflow.com/questions/25387844/right-align-elements-in-shiny-mainpanel/25390164
   tags$head(tags$style(".rightAlign{float:right;}")), 
@@ -68,7 +70,7 @@ ui <-
   
   conditionalPanel(
     # general panel -----------------------
-    condition = "input.tsp == 'general_panel'",
+    condition = "input.tsp=='general_panel'",
     fluidRow(
       tags$style(type='text/css', '#cweather_text {white-space:pre;}')
       # tags$style(type='text/css', 'div {background-color: #000с00;}'), 
@@ -146,9 +148,9 @@ ui <-
     ),
     #tags$style(type='text/css', "#in_date_range { position: absolute; top: 50%; transform: translateY(-80%); }"),
     tabsetPanel(
-      id = "panel_id",
+      id="panel_id",
       selected="table_tab",
-      tabPanel("Таблица", value = "table_tab",
+      tabPanel("Таблица", value="table_tab",
                fluidRow(
                  p(),
                  # column(12, div(withSpinner(DT::dataTableOutput('stat_table'))), style="font-size: 90%")
@@ -156,15 +158,14 @@ ui <-
                )
                )
       )
-    
-  ),
-  shinyjs::useShinyjs()  # Include shinyjs
+  )
+  
 )
 
 
 # ================================================================
 server <- function(input, output, session) {
-  
+
   setBookmarkExclude(c("stat_table")) # таблицу восстановить мы не можем и не должны
   
   # статические переменные ------------------------------------------------
