@@ -45,7 +45,7 @@ assign("last.warning", NULL, envir = baseenv())
 
 # определеяем окружение в котором запускаемся
 Sys.setenv("R_CONFIG_ACTIVE"="media-tel-prod") # продашн конфиг
-# Sys.setenv("R_CONFIG_ACTIVE"="media-tel-demo")
+Sys.setenv("R_CONFIG_ACTIVE"="media-tel-demo")
 
 # ================================================================
 ui <- 
@@ -205,7 +205,6 @@ server <- function(input, output, session) {
     "word_A4"=list(base_size=14, axis_title_size=12, subtitle_size=11)
   )
   
-  
   # Sys.getenv("R_CONFIG_ACTIVE")
   ch_db <- config::get("clickhouse") # достаем параметры подключения
   # создаем коннект к инстансу CH -----------
@@ -224,8 +223,23 @@ server <- function(input, output, session) {
     # dbDisconnect(con)
     df
   }
+ 
+  # словарь для преобразований имен полей из английских в русские
+  # имена колонок -- группы и агрегаты из запроса
+  # сливаем модельные данные
+  dict_df <- {
+    df0 <- jsonlite::fromJSON("data_dict.json", simplifyDataFrame=TRUE)
+    
+    # на всякий случай защитимся от случая, когда вообще не определено поле internal_name
+    if (!"internal_name" %in% names(df0)) df0$internal_name <- NA
+    
+    dict_df <- df0 %>%
+      as_tibble() %>%
+      # если есть поле в БД, а внутреннее представление не задано, то прозрачно транслируем
+      mutate(internal_name={map2_chr(.$db_field, .$internal_name, ~if_else(!is.na(.x) & is.na(.y), .x, .y))})
+  }
   
-  
+  # browser()
   # реактивные переменные -------------------
   raw_df <- reactive({
     input$process_btn # обновлять будем вручную
@@ -340,13 +354,19 @@ server <- function(input, output, session) {
       select(-region_enu)
     # browser()
 
-    colnames_df <- getRusColnames(df)
+    # сделаем мэпинг русских имен колонок и подсказок
+    colnames_df <- tibble(internal_name=names(df)) %>%
+      left_join(dict_df, by=c("internal_name"))
+      # санация
+      # mutate(name_rus={map2_chr(.$name_rus, .$name_enu, ~if_else(is.na(.x), .y, .x))})
+    
+    # browser()
     # https://stackoverflow.com/questions/39970097/tooltip-or-popover-in-shiny-datatables-for-row-names
     colheader <- htmltools::withTags(
       table(class = 'display',
             thead(
               tr(colnames_df %>%
-                   {purrr::map2(.$col_label, .$col_runame_screen, ~th(title=.x, .y))})
+                   {purrr::map2(.$col_label, .$human_name_rus, ~th(title=.x, .y))})
               )))
     
     # browser()
@@ -369,8 +389,6 @@ server <- function(input, output, session) {
       need(!is.null(detail_df()), "NULL value can't be renederd"),
       need(nrow(detail_df())>0, "0 rows -- nothing to draw") 
     )
-
-            
     plotRegionHistory(detail_df(), input$y_ts_plot, input$type_ts_plot, publish_set=font_sizes[["screen"]])
   })
     
@@ -486,7 +504,7 @@ server <- function(input, output, session) {
     },
     content = function(file) {
       doc <- cur_df() %>% # select(-total_unique_stb) %>% # пока убираем, чтобы была консистентная подстановка
-        gen_word_report(publish_set=font_sizes[["word_A4"]])
+        gen_word_report(publish_set=font_sizes[["word_A4"]], dict=dict_df)
       print(doc, target=file)  
     }
   )  

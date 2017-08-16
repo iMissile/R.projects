@@ -24,9 +24,9 @@ hgroup.enum <- function(date, hour_bin=NULL, min_bin=5){
   dt
 }
 
-buildReqFilter <- function(db_field, conditions, add=TRUE){
+buildReqFilter <- function(field, conditions, add=TRUE){
   ifelse(is.null(conditions) || conditions=="all", " ",
-         stri_join(ifelse(add, " AND ", " "), db_field, " IN (",
+         stri_join(ifelse(add, " AND ", " "), field, " IN (",
                    stri_join(conditions %>% map_chr(~stri_join("'", .x, "'", sep="")),
                              sep = " ", collapse=","),
                    ") ", sep = "", collapse=""))
@@ -199,7 +199,7 @@ plotTop10STB <- function(df, publish_set, ntop=10){
 }
 
 # Генерация word файла для выгрузки средcтвами officer -------------
-gen_word_report <- function(df, template_fname, publish_set=NULL){
+gen_word_report <- function(df, template_fname, publish_set=NULL, dict){
   if(is.na(publish_set)){
     flog.error("publish_set is NULL")
     return(NULL)
@@ -211,10 +211,15 @@ gen_word_report <- function(df, template_fname, publish_set=NULL){
     select(-total_unique_stb)
 
   flog.info(paste0("Word report generation under ", Sys.info()["sysname"]))
+  flog.info(paste0("Internal df column names are: ", names(out_df)))
   if (Sys.info()["sysname"] == "Linux") {
-    names_df <- getRusColnames(out_df)
-    names(out_df) <- names_df$col_runame_office
+    # сделаем мэпинг русских имен колонок и подсказок
+    colnames_df <- tibble(internal_name=names(out_df)) %>%
+      left_join(dict, by=c("internal_name"))
+    names(out_df) <- colnames_df$human_name_rus
+    
   }
+  
   
   # создаем файл ------------------------------------------
   doc <- read_docx() %>% # read_docx(path="./TV_report_template.docx") %>%
@@ -228,33 +233,3 @@ gen_word_report <- function(df, template_fname, publish_set=NULL){
   doc
   
   }
-
-# Локализация названий колонок в датасете --------------
-getRusColnames <- function(df) {
-  colnames_df <- tribble(
-    ~col_name, ~col_runame_screen, ~col_runame_office, ~col_label, 
-    "region", "регион", "регион","Название региона, указанного в настройках STB",
-    "unique_stb", "кол-во уник. STB", "кол-во уник. STB", "Количество уникальных STB в регионе",
-    "total_unique_stb", "всего уник. STB", "всего уник. STB", "Общее количество уникальных STB по всем регионам",
-    "total_duration", "суммарное время, мин",	"суммарное время, мин",	"Суммарное время просмотра канала всеми STB",
-    "watch_events", "кол-во просмотров", "кол-во просмотров", "Суммарное количество событий телесмотрения в регионе",
-    "stb_ratio", "% уник. STB", "% уник. STB", "Соотношение STB в регионе к общему количеству STB",
-    "segment", "сегмент", "сегмент", "подсказка (segment)",
-    "channelId", "канал (ID)", "канал  (ID)", "подсказка (channelId)",
-    "channelName", "канал", "канал", "Название телеканала",
-    "channel_duration", "суммарное время, мин", "суммарное время, мин", "Суммарное время телесмотрения всеми STB в регионе",
-    "mean_duration", "ср. время просмотра, мин", "ср. время просмотра, мин", "Среднее время отдельного просмотра канала",
-    "watch_ratio", "% врем. просмотра", "% врем. просмотра", "Отношение времени просмотра канала к общему времени телесмотрения",
-    "duration_per_stb", "ср. время просм. 1 STB за период, мин", "ср. время просм. 1 STB за период, мин", "Среднее время суммарного просмотра канала одной приставкой за выбранный период",
-    "date", "дата", "дата", "подсказка (date)",
-    "timestamp", "время", "время", "подсказка (timestamp)",
-    "timegroup", "группа", "группа", "подсказка (timegroup)"
-  )
-  
-  tibble(name=names(df)) %>%
-    left_join(colnames_df, by=c("name"="col_name")) %>%
-    # санация
-    mutate(col_runame_screen=if_else(is.na(col_runame_screen), name, col_runame_screen)) %>%
-    mutate(col_runame_office=if_else(is.na(col_runame_office), name, col_runame_office)) %>%
-    mutate(col_label=if_else(is.na(col_label), name, col_label))
-}
