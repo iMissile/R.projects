@@ -33,12 +33,12 @@ data_model_df <- df0 %>%
   as_tibble() # %>%
   # создаем внутреннее представление (раньше представление БД могло быть синтетикой)
   # mutate(internal_name=ifelse(any(names(.) %in% 'internal_name'), internal_name, as.character(NA))) %>%
-  # mutate(select_string={map2_chr(.$internal_name, .$ch_field, 
+  # mutate(select_string={map2_chr(.$internal_name, .$db_field, 
   #                                ~if_else(is.na(.x), .y, stri_join(.y, " AS ", .x)))}) %>%
-  # mutate(internal_name={map2_chr(.$internal_name, .$ch_field, ~if_else(is.na(.x), .y, .x))})  
+  # mutate(internal_name={map2_chr(.$internal_name, .$db_field, ~if_else(is.na(.x), .y, .x))})  
 
 # %>%
-#   mutate(ch_field=case_when(
+#   mutate(db_field=case_when(
 #     col_name=="prefix" ~ "substring(serial, 1, 3)",
 #     TRUE ~ col_name))
   
@@ -66,7 +66,7 @@ df1 <- data_model_df %>%
   # разнесем на отдельные колонки
   separate(ext_aggr_opts, into=c("visual_aggr_func", "ch_aggr_func")) %>%
   select(-x, -col_label) %>%
-  mutate(ch_query_name=str_c(ch_aggr_func, "(", ch_field, ")")) %>%
+  mutate(ch_query_name=str_c(ch_aggr_func, "(", db_field, ")")) %>%
   mutate(internal_name=ch_query_name)
   
 # добавим дробные отношения как самостоятельные агрегатные переменные
@@ -74,9 +74,9 @@ df2 <- df1 %>%
   filter(!is.na(ratio_type)) %>%
   mutate(can_be_grouped=FALSE) %>%
   mutate_at(vars(visual_aggr_func), ~str_c(.x, ", % от общего")) %>%
-  mutate(internal_name=str_c(ch_aggr_func, ch_field, "ratio", sep="_"))
-  # mutate(internal_name=stri_join(ch_aggr_func, ch_field, "ratio", sep="_", collapse=NULL))
-  # mutate(internal_name={map2_chr(.$internal_name, .$ch_field, ~if_else(is.na(.x), .y, .x))})
+  mutate(internal_name=str_c(ch_aggr_func, db_field, "ratio", sep="_"))
+  # mutate(internal_name=stri_join(ch_aggr_func, db_field, "ratio", sep="_", collapse=NULL))
+  # mutate(internal_name={map2_chr(.$internal_name, .$db_field, ~if_else(is.na(.x), .y, .x))})
 
 
 # объединим все в единую модель
@@ -94,7 +94,7 @@ var_model_df <-res_df
 group_model_df <- data_model_df %>%
   filter(can_be_grouped) %>%
   mutate(visual_group_name=human_name_rus) %>%
-  select(internal_name=ch_field, visual_group_name) %>%
+  select(internal_name=db_field, visual_group_name) %>%
   mutate(id=row_number()) %>%
   # добавим пустую строку, позволяющую не выбирать агрегат
   add_row(id=0, visual_group_name="нет") %>%
@@ -125,13 +125,13 @@ data_model %>%
 df <- jsonlite::fromJSON("datamodel.json", simplifyDataFrame=TRUE) %>%
   select(-col_name, -col_runame_office) %>%
   rename(human_name_rus=col_runame_screen) %>%
-  arrange(ch_field) %>%
-  select(ch_field, human_name_rus, can_be_grouped, aggr_ops, everything())
+  arrange(db_field) %>%
+  select(db_field, human_name_rus, can_be_grouped, aggr_ops, everything())
 
 df <- jsonlite::fromJSON("datamodel.json", simplifyDataFrame=TRUE) %>%
-  mutate(select_string={map2_chr(.$internal_name, .$ch_field, 
+  mutate(select_string={map2_chr(.$internal_name, .$db_field, 
                                  ~if_else(is.na(.x), .y, stri_join(.y, " AS ", .x)))}) %>%
-  mutate(internal_name={map2_chr(.$internal_name, .$ch_field, ~if_else(is.na(.x), .y, .x))})
+  mutate(internal_name={map2_chr(.$internal_name, .$db_field, ~if_else(is.na(.x), .y, .x))})
   # select(-visual_name, -query_name)
   # mutate(can_be_grouped=FALSE) 
   # rename(visual_var_name=visual_name, visual_group_name=can_be_grouped)

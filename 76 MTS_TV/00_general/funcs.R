@@ -38,9 +38,9 @@ dvt_color_bar <- function(color = "lightgray", fun = "proportion", ...) {
             ))
 }
 
-buildReqFilter <- function(db_field, conditions, add=TRUE){
+buildReqFilter <- function(field, conditions, add=TRUE){
   ifelse(is.null(conditions) || conditions=="all", " ",
-         stri_join(ifelse(add, " AND ", " "), db_field, " IN (",
+         stri_join(ifelse(add, " AND ", " "), field, " IN (",
                    stri_join(conditions %>% map_chr(~stri_join("'", .x, "'", sep="")),
                              sep = " ", collapse=","),
                    ") ", sep = "", collapse=""))

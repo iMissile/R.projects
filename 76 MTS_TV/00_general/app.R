@@ -245,7 +245,7 @@ server <- function(input, output, session) {
       # разнесем на отдельные колонки
       separate(ext_aggr_opts, into=c("visual_aggr_func", "ch_aggr_func")) %>%
       select(-x, -col_label) %>%
-      mutate(ch_query_name=str_c(ch_aggr_func, "(", ch_field, ")")) %>%
+      mutate(ch_query_name=str_c(ch_aggr_func, "(", db_field, ")")) %>%
       mutate(internal_name=ch_query_name)
     
     # добавим дробные отношения как самостоятельные агрегатные переменные
@@ -253,9 +253,9 @@ server <- function(input, output, session) {
       filter(!is.na(ratio_type)) %>%
       mutate(can_be_grouped=FALSE) %>%
       mutate_at(vars(visual_aggr_func), ~str_c(.x, ", % от общего")) %>%
-      mutate(internal_name=str_c(ch_aggr_func, ch_field, "ratio", sep="_"))
-    # mutate(internal_name=stri_join(ch_aggr_func, ch_field, "ratio", sep="_", collapse=NULL))
-    # mutate(internal_name={map2_chr(.$internal_name, .$ch_field, ~if_else(is.na(.x), .y, .x))})
+      mutate(internal_name=str_c(ch_aggr_func, db_field, "ratio", sep="_"))
+    # mutate(internal_name=stri_join(ch_aggr_func, db_field, "ratio", sep="_", collapse=NULL))
+    # mutate(internal_name={map2_chr(.$internal_name, .$db_field, ~if_else(is.na(.x), .y, .x))})
     
     
     # объединим все в единую модель
@@ -277,7 +277,7 @@ server <- function(input, output, session) {
     df <- data_model_df %>%
       filter(can_be_grouped) %>%
       mutate(visual_group_name=human_name_rus) %>%
-      select(internal_name=ch_field, visual_group_name) %>%
+      select(internal_name=db_field, visual_group_name) %>%
       mutate(id=row_number()) %>%
       # добавим пустую строку, позволяющую не выбирать агрегат
       add_row(id=0, visual_group_name="нет") %>%

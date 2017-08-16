@@ -1,67 +1,67 @@
 [
   {
-    "ch_field": "",
+    "db_field": "",
     "human_name_rus": "кол-во",
     "can_be_grouped": false,
     "aggr_ops": "count",
     "col_label": "Кол-во"
   },
   {
-    "ch_field": "channelId",
+    "db_field": "channelId",
     "human_name_rus": "канал [ID]",
     "can_be_grouped": true,
     "aggr_ops": "unique",
     "col_label": "подсказка (channelId)"
   },
   {
-    "ch_field": "date",
+    "db_field": "date",
     "human_name_rus": "дата",
     "can_be_grouped": true,
     "col_label": "подсказка (date)"
   },
   {
-    "ch_field": "duration",
+    "db_field": "duration",
     "human_name_rus": "длительность",
     "can_be_grouped": false,
     "aggr_ops": "min, max, mean, sum:ratio",
     "col_label": "подсказка (duration)"
   },
   {
-    "ch_field": "programId",
+    "db_field": "programId",
     "human_name_rus": "программа [ID]",
     "can_be_grouped": true,
     "aggr_ops": "unique:ratio",
     "col_label": "подсказка (programId)"
   },
   {
-    "ch_field": "region",
+    "db_field": "region",
     "human_name_rus": "регион",
     "can_be_grouped": true,
     "aggr_ops": "unique",
     "col_label": "Название региона; указанного в настройках STB"
   },
   {
-    "ch_field": "segment",
+    "db_field": "segment",
     "human_name_rus": "сегмент",
     "can_be_grouped": true,
     "aggr_ops": "unique",
     "col_label": "Технологический сегмент"
   },
   {
-    "ch_field": "serial",
+    "db_field": "serial",
     "human_name_rus": "S/N",
     "can_be_grouped": false,
     "aggr_ops": "unique:ratio",
     "col_label": "подсказка (serial)"
   },
   {
-    "ch_field": "timegroup1h",
+    "db_field": "timegroup1h",
     "human_name_rus": "шаг 1ч",
     "can_be_grouped": true,
     "col_label": "подсказка (timegroup1h)"
   },
   {
-    "ch_field": "vendor",
+    "db_field": "vendor",
     "human_name_rus": "вендор STB",
     "can_be_grouped": true,
     "aggr_ops": "unique",
