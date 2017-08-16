@@ -101,7 +101,7 @@ group_model_df <- data_model_df %>%
   arrange(id)  
 
 
-dic_df <- dplyr::union(var_model_df %>% select(name_enu=internal_name, name_rus=visual_var_name),
+dict_df <- dplyr::union(var_model_df %>% select(name_enu=internal_name, name_rus=visual_var_name),
                        group_model_df %>% select(name_enu=internal_name, name_rus=visual_group_name))
 
 #data <- as.list(df2$query_name)

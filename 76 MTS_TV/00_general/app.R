@@ -289,7 +289,7 @@ server <- function(input, output, session) {
   # словарь для преобразований имен полей из английских в русские
   # имена колонок -- группы и агрегаты из запроса
   # сливаем модельные данные
-  dic_df <- dplyr::union(var_model_df %>% select(name_enu=internal_name, name_rus=visual_var_name),
+  dict_df <- dplyr::union(var_model_df %>% select(name_enu=internal_name, name_rus=visual_var_name),
                          group_model_df %>% select(name_enu=internal_name, name_rus=visual_group_name))
   
 
@@ -332,7 +332,7 @@ server <- function(input, output, session) {
 
     # делаем русские имена колонок в выводе
     colnames_df <- tibble(name_enu=names(df)) %>%
-      left_join(dic_df, by=c("name_enu")) %>%
+      left_join(dict_df, by=c("name_enu")) %>%
       # санация
       mutate(name_rus={map2_chr(.$name_rus, .$name_enu, 
                                 ~if_else(is.na(.x), .y, .x))})
@@ -558,7 +558,7 @@ server <- function(input, output, session) {
       df <- cur_df()
       # необходимо сделать русские названия колонок
       names(df) <- tibble(name_enu=names(df)) %>%
-        left_join(dic_df, by=c("name_enu")) %>% 
+        left_join(dict_df, by=c("name_enu")) %>% 
         # санация
         mutate(name_rus={map2_chr(.$name_rus, .$name_enu, 
                                   ~if_else(is.na(.x), .y, .x))}) %>% 
