@@ -43,8 +43,9 @@ eval(parse("funcs.R", encoding="UTF-8"))
 assign("last.warning", NULL, envir = baseenv())
 
 # определеяем окружение в котором запускаемся
-Sys.setenv("R_CONFIG_ACTIVE"="media-tel-prod") # продашн конфиг
-Sys.setenv("R_CONFIG_ACTIVE"="media-tel-demo") # продашн конфиг
+Sys.setenv("R_CONFIG_ACTIVE"="media-tel-prod")
+Sys.setenv("R_CONFIG_ACTIVE"="media-tel-demo")
+Sys.setenv("R_CONFIG_ACTIVE"="cti-demo")
 
 # ================================================================
 ui <- 

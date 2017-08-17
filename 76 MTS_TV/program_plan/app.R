@@ -30,8 +30,6 @@ options(shiny.maxRequestSize=30*1024^2)
 eval(parse("funcs.R", encoding="UTF-8"))
 
 ui <- fluidPage(
-  useShinyjs(), 
-  
   titlePanel("Канальный план"),
   # Some custom CSS for a smaller font for preformatted text
   tags$head(tags$style(HTML("pre, table.table {font-size: smaller;}"))),
@@ -73,7 +71,8 @@ ui <- fluidPage(
                          ))
                 
               ))
-    )
+    ),
+  useShinyjs()
   )
 
 
