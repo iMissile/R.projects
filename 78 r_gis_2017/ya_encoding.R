@@ -1,7 +1,9 @@
 rm(list=ls()) # очистим все переменные
 library(tidyverse)
 library(stringi)
+library(httr)
 library(crul)
+library(jsonlite)
 # library(rjson)
 # library(XML)
 # library(foreach)
@@ -67,12 +69,38 @@ geoYandex <- function(location, IsAddressFilter=TRUE){
   loc <- location %>% stri_replace_all_regex(pattern=c("(\\s+)", ","), 
                                              replacement=c("+", ""), 
                                              vectorize_all=FALSE)
+  ## взято из документации crul, стр 11
   # query params are URL encoded for you, so DO NOT do it yourself
   ## if you url encode yourself, it gets double encoded, and that's bad
   base_url <- "http://geocode-maps.yandex.ru/1.x/?geocode="
+  geo_url <- paste0(base_url, loc, "&key=APtPG0wBAAAAS8FeaAMArpHrIC3jWCyvT8B4MURfOLIngjYAAAAAAAAAAADzTZIsj_GIcyDQC3AEcIMcqLFlPg==&format=json")
+  resp <- fromJSON(content(httr::GET(geo_url, verbose()), as='text'))
   
   browser()
 }
+
+geoGoogle <- function(location, IsAddressFilter=TRUE){
+  # превращаем location строку с разделителями в набор лексем, соединенных `+`
+  loc <- location %>% stri_replace_all_regex(pattern=c("(\\s+)", ","), 
+                                             replacement=c("+", ""), 
+                                             vectorize_all=FALSE)
+  ## взято из документации crul, стр 11
+  # query params are URL encoded for you, so DO NOT do it yourself
+  ## if you url encode yourself, it gets double encoded, and that's bad
+  base_url <- "http://maps.googleapis.com/maps/api/geocode/json?address="
+  geo_url <- paste0(base_url, loc, "&language=ru")
+  resp <- fromJSON(content(httr::GET(geo_url, verbose()), as='text'))
+  
+  browser()
+}
+
+### Простой тест ####
+tic()
+# l <- addr %>% purrr::map(geoYandex, IsAddressFilter=T)
+l <- addr %>% purrr::map(geoGoogle, IsAddressFilter=T)
+toc()
+
+stop()
 
 m <- addr %>% 
   stri_replace_all_regex(pattern=c("(\\s+)", ","), replacement=c("+", ""), vectorize_all=FALSE)
@@ -202,10 +230,6 @@ oldgeoYandex <- function(location, IsAddressFilter=TRUE){
   )
 }
 
-### Простой тест ####
-tic()
-l <- addr %>% purrr::map(geoYandex, IsAddressFilter=T)
-toc()
 
 
 
