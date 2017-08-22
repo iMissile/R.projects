@@ -377,9 +377,9 @@ server <- function(input, output, session) {
     updateDateRangeInput(session, "in_date_range", start=Sys.Date()-1, end=Sys.Date())
   })
 
-  # управляем визуализацией кнопок выгрузки ----- 
   observe({
     # browser()
+    # управляем визуализацией кнопок выгрузки ----- 
     if(!is.null(cur_df()) & nrow(cur_df())>0) {
       shinyjs::enable("csv_download_btn")
       shinyjs::enable("word_download_btn")
@@ -394,13 +394,11 @@ server <- function(input, output, session) {
     msg()
   })
 
-
   # динамический выбор региона ---------
   output$choose_region <- renderUI({
     
     data <- as.list(cities_df$translit)
     names(data) <- cities_df$russian
-    
     # browser()
     
     # создадим элемент
