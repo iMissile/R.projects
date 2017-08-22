@@ -112,9 +112,7 @@ ui <-
     ),
     fluidRow(
       column(6, {}),
-      column(2, selectInput("select_config", "Конфигурация",
-                            choices = c("cti-prod","cti-demo","demia-tel-prod", "media-tel-demo"), 
-                            selected=Sys.getenv("R_CONFIG_ACTIVE"))),
+      column(2, selectInput("select_ch_table", "Таблица", choices = NULL)),
       column(2, actionButton("set_test_dates_btn", "Вкл. демо дату", class = 'rightAlign')),
       column(2, actionButton("process_btn", "Применить", class = 'rightAlign'))
       ),
@@ -181,6 +179,9 @@ server <- function(input, output, session) {
   # создаем коннект к инстансу CH -----------
   conn <- dbConnect(clickhouse(), host=ch_db$host, port=ch_db$port, user=ch_db$user, password=ch_db$password)
 
+  # заполним список доступных к выбору таблиц
+  updateSelectInput(session, "select_ch_table", choices=unique(c(ch_db$table, "states")), selected=ch_db$table)
+
   # подгрузим таблицу преобразования транслита в русские названия городов -------
   cities_df <- {
     flog.info("Loading cities translit table")
@@ -216,11 +217,17 @@ server <- function(input, output, session) {
   # реактивные переменные -------------------
   raw_df <- reactive({
     input$process_btn # обновлять будем вручную
+    req(input$select_ch_table)
     isolate({
       # r <- buildReq(begin=today(), end=today()+days(1), regions)
       # flog.info(paste0("Applied time filter [", input$in_date_range[1], "; ", input$in_date_range[2], "]"))
       # flog.info(paste0("Applied region filter [", regions, "]"))
-      r <- buildReq(ch_db$table, begin=input$in_date_range[1], end=input$in_date_range[2], 
+      # ch_db$table из конфига меняем на ручное управление -> input$select_table
+
+      flog.info(paste0("Active table is '", input$select_ch_table, "'"))      
+      # browser()
+      r <- buildReq(input$select_ch_table,
+                    begin=input$in_date_range[1], end=input$in_date_range[2], 
                     region=input$region_filter, segment=input$segment_filter)
       flog.info(paste0("DB request: ", r))
     })
