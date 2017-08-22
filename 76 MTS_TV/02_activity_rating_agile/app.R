@@ -27,7 +27,6 @@ library(shinyBS)
 library(shinyjs)
 library(shinyWidgets)
 library(shinycssloaders)
-library(config)
 library(anytime)
 library(tictoc)
 library(digest)
@@ -43,9 +42,16 @@ eval(parse("funcs.R", encoding="UTF-8"))
 # очистим все warnings():
 assign("last.warning", NULL, envir = baseenv())
 
-# определеяем окружение в котором запускаемся
-Sys.setenv("R_CONFIG_ACTIVE"="media-tel-prod") # продашн конфиг
-Sys.setenv("R_CONFIG_ACTIVE"="media-tel-demo")
+# определяем окружение в котором запускаемся
+if (Sys.info()["sysname"] == "Linux") {
+  # CTI стенд
+  Sys.setenv("R_CONFIG_ACTIVE"="cti-prod")
+  # Sys.setenv("R_CONFIG_ACTIVE"="cti-demo")
+}else{
+  # MT стенд
+  Sys.setenv("R_CONFIG_ACTIVE"="media-tel-prod")
+  Sys.setenv("R_CONFIG_ACTIVE"="media-tel-demo")
+}   
 
 # ================================================================
 ui <- 
@@ -64,9 +70,7 @@ ui <-
 
   # http://stackoverflow.com/questions/25387844/right-align-elements-in-shiny-mainpanel/25390164
   tags$head(tags$style(".rightAlign{float:right;}")), 
-  
-  
-  
+
   # titlePanel("Статистика телесмотрения"),
   # ----------------
   conditionalPanel(
@@ -107,9 +111,14 @@ ui <-
                                         "DVB-S"="DVB-S"), selected="all"))
     ),
     fluidRow(
-      column(10, actionButton("set_test_dates_btn", "Вкл. демо дату", class = 'rightAlign')),
+      column(6, {}),
+      column(2, selectInput("select_ch_table", "Таблица", choices = NULL)),
+      column(2, actionButton("set_test_dates_btn", "Вкл. демо дату", class = 'rightAlign')),
       column(2, actionButton("process_btn", "Применить", class = 'rightAlign'))
     ),
+    # https://stackoverflow.com/questions/28960189/bottom-align-a-button-in-r-shiny
+    tags$style(type='text/css', "#set_test_dates_btn {margin-top: 25px;}"),
+    tags$style(type='text/css', "#process_btn {margin-top: 25px;}"),
 
     #tags$style(type='text/css', "#in_date_range { position: absolute; top: 50%; transform: translateY(-80%); }"),
     tabsetPanel(
@@ -208,7 +217,10 @@ server <- function(input, output, session) {
   # Sys.getenv("R_CONFIG_ACTIVE")
   ch_db <- config::get("clickhouse") # достаем параметры подключения
   # создаем коннект к инстансу CH -----------
-  con <- dbConnect(clickhouse(), host=ch_db$host, port=ch_db$port, user=ch_db$user, password=ch_db$password)
+  conn <- dbConnect(clickhouse(), host=ch_db$host, port=ch_db$port, user=ch_db$user, password=ch_db$password)
+
+  # заполним список доступных к выбору таблиц
+  updateSelectInput(session, "select_ch_table", choices=unique(c(ch_db$table, "states")), selected=ch_db$table)
 
   # подгрузим таблицу преобразования транслита в русские названия городов -------
   cities_df <- {
@@ -216,7 +228,7 @@ server <- function(input, output, session) {
     # подгрузим ограниченный список городов
     city_subset <- read_csv("region.csv")
     
-    df <- req(dbGetQuery(con, "SELECT * FROM regnames")  %>%
+    df <- req(dbGetQuery(conn, "SELECT * FROM regnames")  %>%
                 mutate_if(is.character, `Encoding<-`, "UTF-8") %>%
                 filter(translit %in% pull(city_subset)))
     flog.info(paste0("Cities translit table loaded ", nrow(df), " rows"))
@@ -232,7 +244,6 @@ server <- function(input, output, session) {
     
     # на всякий случай защитимся от случая, когда вообще не определено поле internal_name
     if (!"internal_name" %in% names(df0)) df0$internal_name <- NA
-    
     dict_df <- df0 %>%
       as_tibble() %>%
       # если есть поле в БД, а внутреннее представление не задано, то прозрачно транслируем
@@ -243,19 +254,24 @@ server <- function(input, output, session) {
   # реактивные переменные -------------------
   raw_df <- reactive({
     input$process_btn # обновлять будем вручную
+    req(input$select_ch_table)
     isolate({
       # r <- buildReq(begin=today(), end=today()+days(1), regions)
       # flog.info(paste0("Applied time filter [", input$in_date_range[1], "; ", input$in_date_range[2], "]"))
       # flog.info(paste0("Applied region filter [", regions, "]"))
-      r <- buildReq(ch_db$table, begin=input$in_date_range[1], end=input$in_date_range[2], 
+      # ch_db$table из конфига меняем на ручное управление -> input$select_table
+
+      flog.info(paste0("Active table is '", input$select_ch_table, "'"))      
+      # browser()
+      r <- buildReq(input$select_ch_table,
+                    begin=input$in_date_range[1], end=input$in_date_range[2], 
                     region=input$region_filter, segment=input$segment_filter)
       flog.info(paste0("DB request: ", r))
     })
     
     # browser()
-
     tic()
-    temp_df <- dbGetQuery(con, r) %>%
+    temp_df <- dbGetQuery(conn, r) %>%
       as_tibble()
 
     flog.info(paste0("Query: ", capture.output(toc())))
@@ -322,7 +338,7 @@ server <- function(input, output, session) {
       
       tic()
       # browser()
-      temp_df <- dbGetQuery(con, r)
+      temp_df <- dbGetQuery(conn, r)
       flog.info(paste0("Query by region: ", capture.output(toc())))
       flog.info(paste0("Loaded ", nrow(temp_df), " rows"))    
     })
@@ -357,10 +373,8 @@ server <- function(input, output, session) {
     # сделаем мэпинг русских имен колонок и подсказок
     colnames_df <- tibble(internal_name=names(df)) %>%
       left_join(dict_df, by=c("internal_name"))
-      # санация
-      # mutate(name_rus={map2_chr(.$name_rus, .$name_enu, ~if_else(is.na(.x), .y, .x))})
-    
-    # browser()
+      # поля строго заданы, санация сознательно не делается. Если что не так, надо справочник править
+
     # https://stackoverflow.com/questions/39970097/tooltip-or-popover-in-shiny-datatables-for-row-names
     colheader <- htmltools::withTags(
       table(class = 'display',
@@ -438,7 +452,7 @@ server <- function(input, output, session) {
 
   # фиксим даты на демо диапазон ---------  
   observeEvent(input$set_test_dates_btn, {
-    updateDateRangeInput(session, "in_date_range", start="2017-08-14", end="2017-08-15")
+    updateDateRangeInput(session, "in_date_range", start="2016-05-01", end="2016-05-08")
     }
   )
   

@@ -220,7 +220,6 @@ gen_word_report <- function(df, template_fname, publish_set=NULL, dict){
     
   }
   
-  
   # создаем файл ------------------------------------------
   doc <- read_docx() %>% # read_docx(path="./TV_report_template.docx") %>%
     body_add_par(value=paste0("Первые ", n_out, " строк данных"), style="heading 1") %>%
