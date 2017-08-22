@@ -22,7 +22,8 @@ library(futile.logger)
 # считываем таблицу городов
 cities_df <- read_excel("./data/города.xlsx") %>%
   select(city_name=`Город (рус)`) %>%
-  head(5)
+  head(5) %>%
+  add_row(city_name="Незнаемо что")
 
 
 # Геокодеры -------
@@ -55,7 +56,7 @@ geoGoogle <- function(location){
   geo_url <- paste0(base_url, loc, "&language=ru")
   r <- fromJSON(content(httr::GET(geo_url, verbose()), as='text'))
   
-  # надо проверить, что статус = "OK"
+  # надо проверить, что status="OK". Если ответ пустой, то status="ZERO_RESULTS"
   # browser()
   res <- tibble(location_src=location,
                 formatted_address=r$results$formatted_address,
@@ -66,11 +67,17 @@ geoGoogle <- function(location){
 ### Простой тест ####
 tic()
 # l <- addr %>% purrr::map(geoYandex, IsAddressFilter=T)
-l <- cities_df$city_name %>% purrr::map(geoGoogle)
-df2 <- tibble(l) %>% unnest()
+res <- cities_df$city_name %>% purrr::map(safely(geoGoogle)) %>% transpose()
+# выгребем только не NULL результаты и разложим их 
+ok <- res$error %>% map_lgl(is_null)
+df2 <- res$result %>% keep(ok) %>% {tibble(val=.)} %>% unnest()
 toc()
 
 stop()
+
+l2 <- cities_df$city_name %>% purrr::map_df(safely(geoGoogle))
+
+
 
 m <- addr %>% 
   stri_replace_all_regex(pattern=c("(\\s+)", ","), replacement=c("+", ""), vectorize_all=FALSE)
