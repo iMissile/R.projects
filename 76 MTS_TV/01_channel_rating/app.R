@@ -27,7 +27,6 @@ library(shinyBS)
 library(shinyjs)
 library(shinyWidgets)
 library(shinycssloaders)
-library(config)
 library(anytime)
 library(tictoc)
 library(digest)
@@ -43,9 +42,16 @@ eval(parse("funcs.R", encoding="UTF-8"))
 # очистим все warnings():
 assign("last.warning", NULL, envir = baseenv())
 
-# определеяем окружение в котором запускаемся
-Sys.setenv("R_CONFIG_ACTIVE"="media-tel-prod") # продашн конфиг
-Sys.setenv("R_CONFIG_ACTIVE"="media-tel-demo")
+# определяем окружение в котором запускаемся
+if (Sys.info()["sysname"] == "Linux") {
+  # CTI стенд
+  Sys.setenv("R_CONFIG_ACTIVE"="cti-prod")
+  # Sys.setenv("R_CONFIG_ACTIVE"="cti-demo")
+}else{
+  # MT стенд
+  Sys.setenv("R_CONFIG_ACTIVE"="media-tel-prod")
+  Sys.setenv("R_CONFIG_ACTIVE"="media-tel-demo")
+}   
 
 # ================================================================
 ui <- 
@@ -105,9 +111,16 @@ ui <-
                                         "DVB-S"="DVB-S"), selected="all"))
     ),
     fluidRow(
-      column(10, actionButton("set_test_dates_btn", "Вкл. демо дату", class = 'rightAlign')),
+      column(6, {}),
+      column(2, selectInput("select_config", "Конфигурация",
+                            choices = c("cti-prod","cti-demo","demia-tel-prod", "media-tel-demo"), 
+                            selected=Sys.getenv("R_CONFIG_ACTIVE"))),
+      column(2, actionButton("set_test_dates_btn", "Вкл. демо дату", class = 'rightAlign')),
       column(2, actionButton("process_btn", "Применить", class = 'rightAlign'))
       ),
+    # https://stackoverflow.com/questions/28960189/bottom-align-a-button-in-r-shiny
+    tags$style(type='text/css', "#set_test_dates_btn {margin-top: 25px;}"),
+    tags$style(type='text/css', "#process_btn {margin-top: 25px;}"),
 
     #tags$style(type='text/css', "#in_date_range { position: absolute; top: 50%; transform: translateY(-80%); }"),
     tabsetPanel(
@@ -166,7 +179,7 @@ server <- function(input, output, session) {
   # Sys.getenv("R_CONFIG_ACTIVE")
   ch_db <- config::get("clickhouse") # достаем параметры подключения
   # создаем коннект к инстансу CH -----------
-  con <- dbConnect(clickhouse(), host=ch_db$host, port=ch_db$port, user=ch_db$user, password=ch_db$password)
+  conn <- dbConnect(clickhouse(), host=ch_db$host, port=ch_db$port, user=ch_db$user, password=ch_db$password)
 
   # подгрузим таблицу преобразования транслита в русские названия городов -------
   cities_df <- {
@@ -174,7 +187,7 @@ server <- function(input, output, session) {
     # подгрузим ограниченный список городов
     city_subset <- read_csv("region.csv")
     
-    df <- req(dbGetQuery(con, "SELECT * FROM regnames")  %>%
+    df <- req(dbGetQuery(conn, "SELECT * FROM regnames")  %>%
                 mutate_if(is.character, `Encoding<-`, "UTF-8") %>%
                 filter(translit %in% pull(city_subset)))
     flog.info(paste0("Cities translit table loaded ", nrow(df), " rows"))
@@ -190,7 +203,6 @@ server <- function(input, output, session) {
     
     # на всякий случай защитимся от случая, когда вообще не определено поле internal_name
     if (!"internal_name" %in% names(df0)) df0$internal_name <- NA
-    
     dict_df <- df0 %>%
       as_tibble() %>%
       # если есть поле в БД, а внутреннее представление не задано, то прозрачно транслируем
@@ -214,9 +226,8 @@ server <- function(input, output, session) {
     })
     
     # browser()
-
     tic()
-    temp_df <- dbGetQuery(con, r) %>%
+    temp_df <- dbGetQuery(conn, r) %>%
       as_tibble()
 
     flog.info(paste0("Query: ", capture.output(toc())))
@@ -268,8 +279,8 @@ server <- function(input, output, session) {
     # сделаем мэпинг русских имен колонок и подсказок
     colnames_df <- tibble(internal_name=names(df)) %>%
       left_join(dict_df, by=c("internal_name"))
-      # санация
-      # mutate(name_rus={map2_chr(.$name_rus, .$name_enu, ~if_else(is.na(.x), .y, .x))})
+      # поля строго заданы, санация сознательно не делается. Если что не так, надо справочник править
+
     # https://stackoverflow.com/questions/39970097/tooltip-or-popover-in-shiny-datatables-for-row-names
     colheader <- htmltools::withTags(
       table(class = 'display',
@@ -341,16 +352,12 @@ server <- function(input, output, session) {
     msg()
   })
 
-
   # динамический выбор региона ---------
   output$choose_region <- renderUI({
     
     data <- as.list(cities_df$translit)
     names(data) <- cities_df$russian
-    
     # browser()
-    
-    # создадим элемент
     selectInput("region_filter", 
                 paste0("Регион (", length(data), ")"),
                 multiple=TRUE,
