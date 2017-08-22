@@ -1,5 +1,5 @@
 default:
-  postgess:
+  postgres:
     driver: 'PostgreSQL'
     host: '172.16.33.76'
     uid: 'stat'
@@ -15,7 +15,7 @@ default:
     table: 'states'
 
 cti-prod:
-  postgess:
+  postgres:
     driver: 'PostgreSQL'
     host: '172.16.33.76'
     uid: 'stat'
@@ -31,7 +31,7 @@ cti-prod:
     table: 'states'
 
 cti-demo:
-  postgess:
+  postgres:
     driver: 'PostgreSQL'
     host: '172.16.33.76'
     uid: 'stat'
@@ -47,7 +47,7 @@ cti-demo:
     table: 'view_simstates'
 
 media-tel-prod:
-  postgress:
+  postgres:
     driver: 'PostgreSQL'
     host: '10.0.0.177'
     uid: 'puser'
@@ -63,7 +63,7 @@ media-tel-prod:
     table: 'states'
 
 media-tel-demo:
-  postgress:
+  postgres:
     driver: 'PostgreSQL'
     host: '10.0.0.177'
     uid: 'puser'

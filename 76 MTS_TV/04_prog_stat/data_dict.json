@@ -1,0 +1,82 @@
+[
+  {
+    "db_field": "region",
+    "human_name_rus": "регион",
+    "col_label": "Название региона, указанного в настройках STB"
+  },
+  {
+    "internal_name": "unique_stb",
+    "human_name_rus": "кол-во уник. STB",
+    "col_label": "Количество уникальных STB в регионе"
+  },
+  {
+    "internal_name": "total_unique_stb",
+    "human_name_rus": "всего уник. STB",
+    "col_label": "Общее количество уникальных STB по всем регионам"
+  },
+  {
+    "internal_name": "total_duration",
+    "human_name_rus": "суммарное время, мин",
+    "col_label": "Суммарное время просмотра канала всеми STB"
+  },
+  {
+    "internal_name": "watch_events",
+    "human_name_rus": "кол-во просмотров",
+    "col_label": "Суммарное количество событий телесмотрения в регионе"
+  },
+  {
+    "internal_name": "stb_ratio",
+    "human_name_rus": "% уник. STB",
+    "col_label": "Соотношение STB в регионе к общему количеству STB"
+  },
+  {
+    "db_field": "segment",
+    "human_name_rus": "сегмент",
+    "col_label": "подсказка (segment)"
+  },
+  {
+    "db_field": "channelId",
+    "human_name_rus": "канал (ID)",
+    "col_label": "подсказка (channelId)"
+  },
+  {
+    "internal_name": "channelName",
+    "human_name_rus": "канал",
+    "col_label": "Название телеканала"
+  },
+  {
+    "internal_name": "channel_duration",
+    "human_name_rus": "суммарное время, мин",
+    "col_label": "Суммарное время телесмотрения всеми STB в регионе"
+  },
+  {
+    "internal_name": "mean_duration",
+    "human_name_rus": "ср. время просмотра, мин",
+    "col_label": "Среднее время отдельного просмотра канала"
+  },
+  {
+    "internal_name": "watch_ratio",
+    "human_name_rus": "% врем. просмотра",
+    "col_label": "Отношение времени просмотра канала к общему времени телесмотрения"
+  },
+  {
+    "internal_name": "duration_per_stb",
+    "human_name_rus": "ср. время просм. 1 STB за период, мин",
+    "col_label": "Среднее время суммарного просмотра канала одной приставкой за выбранный период"
+  },
+  {
+    "db_field": "date",
+    "human_name_rus": "дата",
+    "col_label": "подсказка (date)"
+  },
+  {
+    "internal_name": "timestamp",
+    "human_name_rus": "время",
+    "col_label": "подсказка (timestamp)"
+  },
+  {
+    "internal_name": "timegroup",
+    "human_name_rus": "группа",
+    "col_label": "подсказка (timegroup)"
+  }
+]

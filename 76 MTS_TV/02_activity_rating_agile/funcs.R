@@ -54,7 +54,7 @@ buildReqLimits <- function(begin, end, region=NULL, prefix=NULL, channel=NULL, e
 # построение запроса для отчета 'Активность пользователей по регионам' ----------------
 buildReq <- function(db_table, begin, end, region=NULL, segment="all"){
   # begin, end -- даты; 
-  # regs -- вектор регионов, если NULL -- то все регионы (в т.ч. на этапе инициализации);
+  # region -- вектор регионов, если NULL -- то все регионы (в т.ч. на этапе инициализации);
   # segment -- регион (строка), если "all" -- то все сегменты;
   # browser()
   where_string <- buildReqLimits(begin=begin, end=end, region=region, segment=segment)

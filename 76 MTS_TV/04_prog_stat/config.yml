@@ -1,16 +1,81 @@
 default:
-  media-tel:
-    driver: 'PostgreSQL'
-    host: '10.0.0.184'
-    uid: 'puser'
-    pwd: 'puser'  
-    port: 5432
-    database: 'tvlog'
-
-  cti:
+  postgres:
     driver: 'PostgreSQL'
     host: '172.16.33.76'
     uid: 'stat'
     pwd: 'stat'  
     port: 5432
     database: 'stat'
+
+  clickhouse:
+    host: '172.16.33.74'
+    port: 8123
+    user: 'default'
+    password: ''  
+    table: 'states'
+
+cti-prod:
+  postgres:
+    driver: 'PostgreSQL'
+    host: '172.16.33.76'
+    uid: 'stat'
+    pwd: 'stat'  
+    port: 5432
+    database: 'stat'
+
+  clickhouse:
+    host: '172.16.33.74'
+    port: 8123
+    user: 'default'
+    password: ''  
+    table: 'states'
+
+cti-demo:
+  postgres:
+    driver: 'PostgreSQL'
+    host: '172.16.33.76'
+    uid: 'stat'
+    pwd: 'stat'  
+    port: 5432
+    database: 'stat'
+
+  clickhouse:
+    host: '172.16.33.74'
+    port: 8123
+    user: 'default'
+    password: ''  
+    table: 'view_simstates'
+
+media-tel-prod:
+  postgres:
+    driver: 'PostgreSQL'
+    host: '10.0.0.177'
+    uid: 'puser'
+    pwd: 'puser'  
+    port: 5432
+    database: 'channel_list'
+
+  clickhouse:
+    host: '10.0.0.44'
+    port: 8123
+    user: 'default'
+    password: ''  
+    table: 'states'
+
+media-tel-demo:
+  postgres:
+    driver: 'PostgreSQL'
+    host: '10.0.0.177'
+    uid: 'puser'
+    pwd: 'puser'  
+    port: 5432
+    database: 'channel_list'
+
+  clickhouse:
+    host: '10.0.0.44'
+    port: 8123
+    user: 'default'
+    password: ''  
+    table: 'manystates'
+
+
