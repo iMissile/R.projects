@@ -91,8 +91,8 @@ ui <-
                                # start="2017-06-28", end="2017-06-30",
                                # min = Sys.Date() - 10, 
                                max = Sys.Date(),
-                               separator = " - ", format = "dd/mm/yy",
-                               startview = "month", language = 'ru', weekstart=1)
+                               separator=" - ", format="dd/mm/yyyy",
+                               startview="month", language='ru', weekstart=1)
       ), 
       column(1, selectInput("history_depth", "История", 
                             choices = c("1 месяц"=30, "2 недели"=14,
@@ -111,12 +111,14 @@ ui <-
                                         "DVB-S"="DVB-S"), selected="all"))
     ),
     fluidRow(
-      column(6, {}),
-      column(2, selectInput("select_ch_table", "Таблица", choices = NULL)),
-      column(2, actionButton("set_test_dates_btn", "Вкл. демо дату", class = 'rightAlign')),
+      column(4, {}),
+      column(2, selectInput("select_ch_table", "Таблица", choices=NULL)),
+      column(2, actionButton("set_today_btn", "На сегодня", class='rightAlign')),
+      column(2, actionButton("set_test_dates_btn", "На демо дату", class='rightAlign')),
       column(2, actionButton("process_btn", "Применить", class = 'rightAlign'))
       ),
     # https://stackoverflow.com/questions/28960189/bottom-align-a-button-in-r-shiny
+    tags$style(type='text/css', "#set_today_btn {margin-top: 25px;}"),
     tags$style(type='text/css', "#set_test_dates_btn {margin-top: 25px;}"),
     tags$style(type='text/css', "#process_btn {margin-top: 25px;}"),
 
@@ -336,15 +338,18 @@ server <- function(input, output, session) {
     }
   )
 
-  # фиксим даты на демо диапазон ---------  
+  # установка даты на демо диапазон ---------  
   observeEvent(input$set_test_dates_btn, {
-    updateDateRangeInput(session, "in_date_range", start="2017-05-28", end="2017-05-30")
-    }
-  )
-  
-  # управляем визуализацией кнопок выгрузки ----- 
+    updateDateRangeInput(session, "in_date_range", start="2016-05-01", end="2016-05-08")
+    })
+  # установка даты на сегодня ---------  
+  observeEvent(input$set_today_btn, {
+    updateDateRangeInput(session, "in_date_range", start=Sys.Date()-1, end=Sys.Date())
+  })
+
   observe({
     # browser()
+    # управляем визуализацией кнопок выгрузки ----- 
     if(!is.null(cur_df()) & nrow(cur_df())>0) {
       shinyjs::enable("csv_download_btn")
       shinyjs::enable("word_download_btn")

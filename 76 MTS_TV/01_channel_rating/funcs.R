@@ -25,11 +25,13 @@ hgroup.enum <- function(date, hour_bin=NULL, min_bin=5){
 }
 
 buildReqFilter <- function(field, conditions, add=TRUE){
-  ifelse(is.null(conditions) || conditions=="all", " ",
+  # потенциально надо проверять условия еще на NA, character(0)
+  ifelse(((length(conditions) == 0) && (typeof(conditions) == "character")) || 
+           is.null(conditions) || conditions=="all", 
+         " ",
          stri_join(ifelse(add, " AND ", " "), field, " IN (",
                    stri_join(conditions %>% map_chr(~stri_join("'", .x, "'", sep="")),
-                                              sep = " ", collapse=","),
-                                    ") ", sep = "", collapse=""))
+                             sep=" ", collapse=","), ") ", sep = "", collapse=""))
 }
 
 # конструирование ограничений запроса по данным фильтров
