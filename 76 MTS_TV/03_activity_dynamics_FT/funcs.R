@@ -1,9 +1,11 @@
 buildReqFilter <- function(field, conditions, add=TRUE){
-  ifelse(is.null(conditions) || conditions=="all", " ",
+  # потенциально надо проверять условия еще на NA, character(0)
+  ifelse(((length(conditions) == 0) && (typeof(conditions) == "character")) || 
+           is.null(conditions) || conditions=="all", 
+         " ",
          stri_join(ifelse(add, " AND ", " "), field, " IN (",
                    stri_join(conditions %>% map_chr(~stri_join("'", .x, "'", sep="")),
-                                              sep = " ", collapse=","),
-                                    ") ", sep = "", collapse=""))
+                             sep=" ", collapse=","), ") ", sep = "", collapse=""))
 }
 
 # конструирование ограничений запроса по данным фильтров
@@ -26,8 +28,8 @@ buildReqDynamic <- function(db_table, begin, end, region=NULL, interval=60, chan
   #`
   # begin, end -- даты; 
   # interval -- временной интервал агрегации, в минутах
-  # channels -- вектор каналов
-  # regions -- вектор регионов, если NULL -- то все регионы (в т.ч. на этапе инициализации);
+  # channel -- вектор каналов
+  # region -- вектор регионов, если NULL -- то все регионы (в т.ч. на этапе инициализации);
   # segment -- регион (строка), если "all" -- то все сегменты;
   # browser()
   

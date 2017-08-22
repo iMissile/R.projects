@@ -228,15 +228,11 @@ server <- function(input, output, session) {
     
     isolate({
       # надо из русского названия канала получить список идентификаторов
-      
       channels <- progs_df %>% 
         filter(channelName %in% input$channel_filter) %>% 
         pull(channelId)
-      # browser()
       # ch_db$table из конфига меняем на ручное управление -> input$select_table
       flog.info(paste0("Active table is '", input$select_ch_table, "'"))      
-      # browser()
-      # запрос конкретных данных
       r <- buildReqDynamic(input$select_ch_table,
                            begin=input$in_date_range[1], end=input$in_date_range[2],
                            region=input$region_filter, 
@@ -247,7 +243,7 @@ server <- function(input, output, session) {
 
       tic()
       # browser()
-      temp_df <- dbGetQuery(con, r) %>%
+      temp_df <- dbGetQuery(conn, r) %>%
           as_tibble()
       flog.info(paste0("Query by channels: ", capture.output(toc())))
       flog.info(paste0("Table: ", capture.output(head(temp_df, 2))))
@@ -304,8 +300,10 @@ server <- function(input, output, session) {
     
     # сделаем мэпинг русских имен колонок и подсказок
     colnames_df <- tibble(internal_name=names(df)) %>%
-      left_join(dict_df, by=c("internal_name"))
-      # поля строго заданы, санация сознательно не делается. Если что не так, надо справочник править
+      left_join(dict_df, by=c("internal_name")) %>%
+      # возможно развертывание wide<->long, необходима санация
+      mutate(human_name_rus={map2_chr(.$human_name_rus, .$internal_name, ~if_else(is.na(.x), .y, .x))})
+    # browser()
     # https://stackoverflow.com/questions/39970097/tooltip-or-popover-in-shiny-datatables-for-row-names
     colheader <- htmltools::withTags(
       table(class = 'display',
