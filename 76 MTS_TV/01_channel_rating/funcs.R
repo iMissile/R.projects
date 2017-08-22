@@ -24,59 +24,54 @@ hgroup.enum <- function(date, hour_bin=NULL, min_bin=5){
   dt
 }
 
-# конструирование ограничений запроса по данным фильтров
-buildReqLimits <- function(begin, end, regions, segment) {
-  # базисная SQL конструкция для ограничения дат ----
-  # limit_dates <- paste0(" toDate(begin) >= toDate('", begin, "') AND toDate(end) <= toDate('", end, "') ")
-  limit_dates <- paste0(" date >= '", begin, "' AND date <= '", end, "' ")
-  
-  # добавочная SQL конструкция для ограничения регионов -----
-  limit_regions <- ifelse(is.null(regions), " ",
-                          stri_join(" AND region IN (", 
-                                    stri_join(regions %>% map_chr(~stri_join("'", .x, "'", sep="")),
+buildReqFilter <- function(field, conditions, add=TRUE){
+  ifelse(is.null(conditions) || conditions=="all", " ",
+         stri_join(ifelse(add, " AND ", " "), field, " IN (",
+                   stri_join(conditions %>% map_chr(~stri_join("'", .x, "'", sep="")),
                                               sep = " ", collapse=","),
                                     ") ", sep = "", collapse=""))
-  
-  # добавочная SQL конструкция для ограничения сегментов -----
-  limit_segments <- ifelse(segment=="all", " ", 
-                           stri_join(" AND segment IN (", 
-                                     stri_join(segment %>% map_chr(~stri_join("'", .x, "'", sep="")),
-                                               sep = " ", collapse=","),
-                                     ") ", sep = "", collapse=""))
-  
-  paste0(limit_dates, limit_regions, limit_segments)
+}
+
+# конструирование ограничений запроса по данным фильтров
+buildReqLimits <- function(begin, end, region=NULL, prefix=NULL, channel=NULL, event=NULL, 
+                           segment=NULL, serial_mask=NULL) {
+  # region, prefix, channel -- вектора
+  # собираем общие условия в соотв. с фильтрами
+  res <- paste0(paste0(" date >= '", begin, "' AND date <= '", end, "' "),
+                # указали жестко длительность, в секундах
+                paste0(" AND duration>0*60 AND duration <2*60*60 "),
+                buildReqFilter("region", region, add=TRUE),
+                buildReqFilter("prefix", prefix, add=TRUE),
+                buildReqFilter("channelId", channel, add=TRUE),
+                buildReqFilter("switchEvent", event, add=TRUE),
+                ifelse(serial_mask=="", "", paste0(" AND like(serial, '%", serial_mask, "%') "))
+  )   
 }
 
 # построение запроса для отчета 'Рейтинг по каналам' ----------------
-buildReq <- function(begin, end, regions, segment="all"){
+buildReq <- function(db_table, begin, end, region=NULL, segment="all"){
   # begin, end -- даты; 
   # regs -- вектор регионов, если NULL -- то все регионы (в т.ч. на этапе инициализации);
   # segment -- регион (строка), если "all" -- то все сегменты;
   # browser()
-  
-  limits <- buildReqLimits(begin, end, regions, segment)
+  where_string <- buildReqLimits(begin=begin, end=end, region=region, segment=segment)
 
   paste(
     "SELECT ",
     # 1. Название канала
-    "channelId, ",
+    "channelId,",
     # 2. Кол-во уникальных приставок по каналу
-    "uniq(serial) AS unique_stb, ",
+    "uniq(serial) AS unique_stb,",
     # Кол-во уникальных приставок по всем каналам выбранных регионов
-    "( SELECT uniq(serial) ",
-    "  FROM genstates ",
-    "  WHERE ", limits, 
-    "  AND duration>5*60 AND duration <2*60*60 ", # указали жестко длительность, в секундах
-    ") AS total_unique_stb, ",  
+    "(SELECT uniq(serial)", "FROM", db_table, "WHERE", where_string, ") AS total_unique_stb,",  
     # 4. Суммарное время просмотра всеми приставками, мин
-    "sum(duration)/60 AS channel_duration, ",
+    "sum(duration)/60 AS channel_duration,",
     # 8. Кол-во событий просмотра
-    "count() AS watch_events ",
-    "FROM genstates ",
-    # "SAMPLE 0.1 ",
-    "WHERE ", limits,
-    "AND duration>5*60 AND duration <2*60*60 ", # указали жестко длительность, в секундах
-    "GROUP BY channelId", sep="")
+    "count() AS watch_events",
+    "FROM", db_table, 
+    # "SAMPLE 0.1",
+    "WHERE",  where_string,
+    "GROUP BY channelId", sep=" ")
 }
 
 # построение гистограммы ТОП 10 по времени просмотра для отчета 'Рейтинг по каналам' ----------------
@@ -141,7 +136,7 @@ plotTop10STB <- function(df, publish_set, ntop=10){
 }
 
 # Генерация word файла для выгрузки средcтвами officer -------------
-gen_word_report <- function(df, template_fname, publish_set=NULL){
+gen_word_report <- function(df, template_fname, publish_set=NULL, dict){
   if(is.na(publish_set)){
     flog.error("publish_set is NULL")
     return(NULL)
@@ -153,9 +148,13 @@ gen_word_report <- function(df, template_fname, publish_set=NULL){
     select(-total_unique_stb)
 
   flog.info(paste0("Word report generation under ", Sys.info()["sysname"]))
+  flog.info(paste0("Internal df column names are: ", names(out_df)))
   if (Sys.info()["sysname"] == "Linux") {
-    names_df <- getRusColnames(out_df)
-    names(out_df) <- names_df$col_runame_office
+    # сделаем мэпинг русских имен колонок и подсказок
+    colnames_df <- tibble(internal_name=names(out_df)) %>%
+      left_join(dict, by=c("internal_name"))
+    names(out_df) <- colnames_df$human_name_rus
+    
   }
   
   # создаем файл ------------------------------------------
@@ -170,33 +169,3 @@ gen_word_report <- function(df, template_fname, publish_set=NULL){
   doc
   
   }
-
-# Локализация названий колонок в датасете --------------
-getRusColnames <- function(df) {
-  colnames_df <- tribble(
-    ~col_name, ~col_runame_screen, ~col_runame_office, ~col_label, 
-    "region", "регион", "регион","Название региона, указанного в настройках STB",
-    "unique_stb", "кол-во уник. STB", "кол-во уник. STB", "Кол-во уникальных STB, с которых был зафиксирован хотя бы один факт телесмотрения канала",
-    "total_unique_stb", "всего уник. STB", "всего уник. STB", "Общее количество уникальных STB, с которых выполнялось телесмотрение хотя бы одного канала",
-    "total_duration", "суммарное время, мин",	"суммарное время, мин",	"Суммарное время просмотра канала всеми STB",
-    "watch_events", "кол-во просмотров", "кол-во просмотров", "Количество событий телесмотрения канала со всех приставок",
-    "stb_ratio", "% уник. STB", "% уник. STB", "Отношение STB, смотревших данный канал, к общему количеству уникальных STB",
-    "segment", "сегмент", "сегмент", "подсказка (segment)",
-    "channelId", "канал (ID)", "канал  (ID)", "подсказка (channelId)",
-    "channelName", "канал", "канал", "Название телеканала",
-    "channel_duration", "суммарное время, мин", "суммарное время, мин", "подсказка (channel_duration)",
-    "mean_duration", "ср. время просмотра, мин", "ср. время просмотра, мин", "Среднее время отдельного просмотра канала",
-    "watch_ratio", "% врем. просмотра", "% врем. просмотра", "Отношение времени просмотра канала к общему времени телесмотрения",
-    "duration_per_stb", "ср. время просм. 1 STB за период, мин", "ср. время просм. 1 STB за период, мин", "Среднее время суммарного просмотра канала одной приставкой за выбранный период",
-    "date", "дата", "дата", "подсказка (date)",
-    "timestamp", "время", "время", "подсказка (timestamp)",
-    "timegroup", "группа", "группа", "подсказка (timegroup)"
-  )
-  
-  tibble(name=names(df)) %>%
-    left_join(colnames_df, by=c("name"="col_name")) %>%
-    # санация
-    mutate(col_runame_screen=if_else(is.na(col_runame_screen), name, col_runame_screen)) %>%
-    mutate(col_runame_office=if_else(is.na(col_runame_office), name, col_runame_office)) %>%
-    mutate(col_label=if_else(is.na(col_label), name, col_label))
-}

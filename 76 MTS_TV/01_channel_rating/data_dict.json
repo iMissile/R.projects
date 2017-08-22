@@ -7,12 +7,12 @@
   {
     "internal_name": "unique_stb",
     "human_name_rus": "кол-во уник. STB",
-    "col_label": "Количество уникальных STB в регионе"
+    "col_label": "Кол-во уникальных STB, с которых был зафиксирован хотя бы один факт телесмотрения канала"
   },
   {
     "internal_name": "total_unique_stb",
     "human_name_rus": "всего уник. STB",
-    "col_label": "Общее количество уникальных STB по всем регионам"
+    "col_label": "Общее количество уникальных STB, с которых выполнялось телесмотрение хотя бы одного канала"
   },
   {
     "internal_name": "total_duration",
@@ -22,12 +22,12 @@
   {
     "internal_name": "watch_events",
     "human_name_rus": "кол-во просмотров",
-    "col_label": "Суммарное количество событий телесмотрения в регионе"
+    "col_label": "Количество событий телесмотрения канала со всех приставок"
   },
   {
     "internal_name": "stb_ratio",
     "human_name_rus": "% уник. STB",
-    "col_label": "Соотношение STB в регионе к общему количеству STB"
+    "col_label": "Отношение STB, смотревших данный канал, к общему количеству уникальных STB"
   },
   {
     "db_field": "segment",
