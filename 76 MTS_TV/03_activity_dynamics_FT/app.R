@@ -25,8 +25,8 @@ library(shinyjqui)
 library(shinythemes) # https://rstudio.github.io/shinythemes/
 library(shinyBS)
 library(shinyjs)
+library(shinyWidgets)
 library(shinycssloaders)
-library(config)
 library(anytime)
 library(tictoc)
 library(digest)
@@ -42,9 +42,20 @@ eval(parse("funcs.R", encoding="UTF-8"))
 # очистим все warnings():
 assign("last.warning", NULL, envir = baseenv())
 
+# определяем окружение в котором запускаемся
+if (Sys.info()["sysname"] == "Linux") {
+  # CTI стенд
+  Sys.setenv("R_CONFIG_ACTIVE"="cti-prod")
+  # Sys.setenv("R_CONFIG_ACTIVE"="cti-demo")
+}else{
+  # MT стенд
+  Sys.setenv("R_CONFIG_ACTIVE"="media-tel-prod")
+  Sys.setenv("R_CONFIG_ACTIVE"="media-tel-demo")
+}   
+
 # ================================================================
 ui <- 
-  navbarPage("DVT IoT",
+  navbarPage(
   # title=HTML('<div><a href="http://devoteam.com/"><img src="./img/devoteam_176px.png" width="80%"></a></div>'),
   title = "Статистика телесмотрения",
   tabPanel("Динамика пользовательской активности", value="general_panel"),
@@ -103,22 +114,27 @@ ui <-
                             choices=c("1 час"=60, "1 сутки"=24*60), selected=60))
     ),
     fluidRow(
-      column(10, actionButton("set_test_dates_btn", "Вкл. демо дату", class = 'rightAlign')),
+      column(6, {}),
+      column(2, selectInput("select_ch_table", "Таблица", choices = NULL)),
+      column(2, actionButton("set_test_dates_btn", "Вкл. демо дату", class = 'rightAlign')),
       column(2, actionButton("process_btn", "Применить", class = 'rightAlign'))
     ),
+    # https://stackoverflow.com/questions/28960189/bottom-align-a-button-in-r-shiny
+    tags$style(type='text/css', "#set_test_dates_btn {margin-top: 25px;}"),
+    tags$style(type='text/css', "#process_btn {margin-top: 25px;}"),
 
     #tags$style(type='text/css', "#in_date_range { position: absolute; top: 50%; transform: translateY(-80%); }"),
     tabsetPanel(
-      id = "panel_id",
+      id = "main_panel",
       selected="table_tab",
-      tabPanel("Таблица", value = "table_tab",
+      tabPanel("Таблица", value="table_tab",
                fluidRow(
                  p(),
                  column(12, div(checkboxInput("long_wide_cbx", "Long форма", TRUE), 
                                 class='rightAlign'))
                ),
                fluidRow(
-                 column(12, div(withSpinner(DT::dataTableOutput('stat_table'))), style="font-size: 90%")
+                 column(12, div(withSpinner(DT::dataTableOutput("stat_table"))), style="font-size: 90%")
                ),
                p(),
                fluidRow(
@@ -149,12 +165,15 @@ ui <-
 
 # ================================================================
 server <- function(input, output, session) {
+
+  setBookmarkExclude(c("stat_table")) # таблицу восстановить мы не можем и не должны
+  
   # статические переменные ------------------------------------------------
   log_name <- "app.log"
   
   flog.appender(appender.tee(log_name))
   flog.threshold(TRACE)
-  flog.info("App started")
+  flog.info(paste0("App started in '", Sys.getenv("R_CONFIG_ACTIVE"), "' environment"))
 
   # создание параметров оформления для различных видов графиков (screen\publish) ------
   font_sizes <- list(
@@ -162,30 +181,42 @@ server <- function(input, output, session) {
     "word_A4"=list(base_size=14, axis_title_size=12, subtitle_size=11)
   )
   
+  # Sys.getenv("R_CONFIG_ACTIVE")
+  ch_db <- config::get("clickhouse") # достаем параметры подключения
   # создаем коннект к инстансу CH -----------
-  if (Sys.info()["sysname"] == "Linux") {
-    # CTI стенд
-    con <- dbConnect(clickhouse(), host="172.16.33.74", port=8123L, user="default", password="")
-  }else{
-    # MT стенд
-    con <- dbConnect(clickhouse(), host="10.0.0.44", port=8123L, user="default", password="")
-  }      
-  
+  conn <- dbConnect(clickhouse(), host=ch_db$host, port=ch_db$port, user=ch_db$user, password=ch_db$password)
+
+  # заполним список доступных к выбору таблиц
+  updateSelectInput(session, "select_ch_table", choices=unique(c(ch_db$table, "states")), selected=ch_db$table)
+
   # подгрузим таблицу преобразования транслита в русские названия городов -------
   cities_df <- {
     flog.info("Loading cities translit table")
     # подгрузим ограниченный список городов
     city_subset <- read_csv("region.csv")
     
-    df <- req(dbGetQuery(con, "SELECT * FROM regnames")  %>%
+    df <- req(dbGetQuery(conn, "SELECT * FROM regnames")  %>%
                 mutate_if(is.character, `Encoding<-`, "UTF-8") %>%
                 filter(translit %in% pull(city_subset)))
     flog.info(paste0("Cities translit table loaded ", nrow(df), " rows"))
     # dbDisconnect(con)
     df
   }
-
-  
+ 
+  # словарь для преобразований имен полей из английских в русские
+  # имена колонок -- группы и агрегаты из запроса
+  # сливаем модельные данные
+  dict_df <- {
+    df0 <- jsonlite::fromJSON("data_dict.json", simplifyDataFrame=TRUE)
+    
+    # на всякий случай защитимся от случая, когда вообще не определено поле internal_name
+    if (!"internal_name" %in% names(df0)) df0$internal_name <- NA
+    dict_df <- df0 %>%
+      as_tibble() %>%
+      # если есть поле в БД, а внутреннее представление не задано, то прозрачно транслируем
+      mutate(internal_name={map2_chr(.$db_field, .$internal_name, ~if_else(!is.na(.x) & is.na(.y), .x, .y))})
+  }
+    
   # подгрузим таблицу преобразования идентификатора канала в русское название ----
   progs_df <- jsonlite::fromJSON("./channels.json", simplifyDataFrame=TRUE) %>% 
     select(channelId, channelName=name)
@@ -193,6 +224,7 @@ server <- function(input, output, session) {
   # реактивные переменные -------------------
   raw_df <- reactive({
     input$process_btn # обновлять будем вручную
+    req(input$select_ch_table)
     
     isolate({
       # надо из русского названия канала получить список идентификаторов
@@ -200,17 +232,16 @@ server <- function(input, output, session) {
       channels <- progs_df %>% 
         filter(channelName %in% input$channel_filter) %>% 
         pull(channelId)
-      regions <- input$region_filter
       # browser()
-      flog.info(paste0("Applied time filter [", input$in_date_range[1], "; ", input$in_date_range[2], "]"))
-      flog.info(paste0("Applied region filter [", regions, "]"))
-      flog.info(paste0("Applied channel filter [", channels, "]"))
-    
+      # ch_db$table из конфига меняем на ручное управление -> input$select_table
+      flog.info(paste0("Active table is '", input$select_ch_table, "'"))      
+      # browser()
       # запрос конкретных данных
-      r <- buildReqDynamic(begin=input$in_date_range[1], end=input$in_date_range[2],
-                           regions=regions, 
+      r <- buildReqDynamic(input$select_ch_table,
+                           begin=input$in_date_range[1], end=input$in_date_range[2],
+                           region=input$region_filter, 
                            interval=as.numeric(input$time_bin), 
-                           channels=channels, 
+                           channel=channels, 
                            segment=input$segment_filter)
       flog.info(paste0("DB request: ", r))    
 
@@ -271,13 +302,16 @@ server <- function(input, output, session) {
         spread(timegroup, watch_events)
     }
     
-    colnames_df <- getRusColnames(df)
+    # сделаем мэпинг русских имен колонок и подсказок
+    colnames_df <- tibble(internal_name=names(df)) %>%
+      left_join(dict_df, by=c("internal_name"))
+      # поля строго заданы, санация сознательно не делается. Если что не так, надо справочник править
     # https://stackoverflow.com/questions/39970097/tooltip-or-popover-in-shiny-datatables-for-row-names
     colheader <- htmltools::withTags(
       table(class = 'display',
             thead(
               tr(colnames_df %>%
-                   {purrr::map2(.$col_label, .$col_runame_screen, ~th(title=.x, .y))})
+                   {purrr::map2(.$col_label, .$human_name_rus, ~th(title=.x, .y))})
               )))
     
     # browser()
@@ -336,7 +370,7 @@ server <- function(input, output, session) {
 
   # фиксим даты на демо диапазон ---------  
   observeEvent(input$set_test_dates_btn, {
-    updateDateRangeInput(session, "in_date_range", start="2017-06-28", end="2017-06-30")
+    updateDateRangeInput(session, "in_date_range", start="2016-05-01", end="2016-05-08")
     }
   )
   
@@ -415,11 +449,39 @@ server <- function(input, output, session) {
     },
     content = function(file) {
       doc <- cur_df() %>% # select(-total_unique_stb) %>% # пока убираем, чтобы была консистентная подстановка
-        gen_word_report(publish_set=font_sizes[["word_A4"]])
+        gen_word_report(publish_set=font_sizes[["word_A4"]], dict=dict_df)
       print(doc, target=file)  
     }
   )  
+  onBookmark(function(state) {
+    #state$values$event_filter <- input$event_filter
+    #state$values$intensity <- input$intensity
+  })
   
+  onRestored(function(state){
+    # input-ы сохраняются штатным образом, главное их восстановить. 
+    # восстанавливаем не из values, а из input
+    # browser()
+    updateSelectInput(session, "event_filter", selected=state$input$event_filter)
+    updateSelectInput(session, "prefix_filter", selected=state$input$prefix_filter)
+    updateSelectInput(session, "serial_mask", selected=state$input$serial_mask)
+    # shinyjs::delay(800, {})
+    updateSliderInput(session, "duration_range", value=state$input$duration_range)
+    updateDateRangeInput(session, "in_date_range",
+                         start=state$input$in_date_range[1], 
+                         end=state$input$in_date_range[2])
+  }) 
+  
+  # динамичекое обновление url в location bar
+  observe({
+    # Trigger this observer every time an input changes
+    reactiveValuesToList(input)
+    session$doBookmark()
+  })
+  
+  onBookmarked(function(url) {
+    updateQueryString(url)
+  })   
 }
 
 shinyApp(ui = ui, server = server)
