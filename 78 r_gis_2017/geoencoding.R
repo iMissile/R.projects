@@ -9,7 +9,10 @@ data(Europe)
 
 # ----
 # eiffelTower <- geocode_OSM("Eiffel Tower", as.SPDF=TRUE)
-city_geocode <- geocode_OSM("Москва,+Тверская+улица,+дом+7", as.SPDF=TRUE)
+city_geocode <- geocode_OSM("Москва,+Тверская+улица,+дом+7", details=TRUE, as.SPDF=TRUE)
+city_geocode <- purrr::safely(geocode_OSM, otherwise=NULL)("Марс,+Тверская+улица,+дом+7", details=TRUE, as.SPDF=TRUE)
+city_geocode <- try(geocode_OSM("Марс,+Тверская+улица,+дом+7", details=TRUE, as.SPDF=TRUE))
+# city_geocode <- geocode_OSM("Марс,+Тверская+улица,+дом+7", details=TRUE, as.data.frame=TRUE)
 sp::coordinates(city_geocode) <- ~lon+lat
 
 data(World)
