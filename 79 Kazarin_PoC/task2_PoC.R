@@ -81,22 +81,38 @@ df1 <- df0 %>%
   filter(complete.cases(.)) %>%
   mutate_at(vars(estimated_cost), as.numeric)
 
+
+calc_cost <- function(chap, df){
+  print(paste0("Глава ", chap))
+  # сюда заносим логику вычисления для каждой главы отдельно
+  calc_rules <- list("01"=c("графа 12", "графа 13"), "08"=c("графа 12", "графа 13"),
+                     "09"=c("графа 12", "графа 13", "графа 14"), "10"=c("графа 16"),
+                     "12"=c("графа 16"))
+  res <- df %>%
+      filter(estimated_cost_type %in% calc_rules[[chap]]) %>%
+      summarise(res=sum(estimated_cost)) %>%
+      pull(res)
+
+  print(res)    
+  res
+  }
+  
 # определим косвенные затраты по главам
 ind_df <- df1 %>%
   filter(indirect_cost) %>%
   filter(ssr_chap %in% c("01", "08", "09", "10", "12")) %>%
   arrange(ssr_chap) %>%
   group_by(ssr_chap) %>%
-  nest()
+  nest() %>%
+  # посчитаем базу распределения в зависимости от Главы ССР
+  mutate(chap_indirect_сost=purrr::map2_dbl(ssr_chap, data, ~calc_cost(.x, .y)))
+         
 
-object_size(ind_df)  
-  # filter(estimated_cost_type %in% c("строительные работы", "монтажные работы")) %>%
-  group_by(oks_code) %>%
-  summarize(total_indirect_cost=sum(estimated_cost))
-  
+object_size(ind_df)
+
 # разнесем косвенные затраты
 
-
+stop()
 # посмотрим на данные -----------------
 tic("Analysis")
 # посчитаем количество уникальных значений в колонках
