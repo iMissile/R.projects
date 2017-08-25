@@ -11,7 +11,7 @@ library(pryr)
 # library(config)
 packageVersion("dplyr")
 
-
+# загрузка и первичная очистка исходных данных -------------------
 costing_file <- "./data/task2_sample1.xlsx"
 getwd()
 
@@ -57,9 +57,9 @@ df0 <- raw_df %>%
             funs(c("oks_type", "oks_code", "ossr_type", "ossr_code", "ssr_chap"))) %>%
   # именуем колонки для последующей свертки
   rename_at(12:16, 
-           funs(c("строительные работы", "монтажные работы", "оборудование", "прочие работы", "всего"))) %>%
-  rename_at(12:16, 
-            funs(c("графа 12", "графа 13", "графа 14", "графа 15", "графа 16"))) %>%
+          funs(c("строительные работы", "монтажные работы", "оборудование", "прочие работы", "всего"))) %>%
+  rename_at(12:16, funs(c("12", "13", "14", "15", "16"))) %>%
+  rename_at(8, funs(c("cost_element"))) %>%  
   slice(6:n())
 
 # классификация и разбивка --------------------
@@ -70,32 +70,39 @@ df0 <- raw_df %>%
 # последовательность действий некоммутативна, поскольку идет адресация по индексам
 clean_df <- df0 %>%
   # исключим ненужный правый мусор
-  select(-(17:19)) %>%
+  # колонка "всего (графа 16)" является вычисляемой, поэтому ее исключим
+  select(-(16:19)) %>%
   # определим тип затрат
   # mutate(indirect_cost=if_else(oks_code=="0000" & ossr_code=="000", TRUE, FALSE)) # %>%
   mutate(indirect_cost=(oks_code=="0000" & ossr_code=="000")) %>%
   # свернем все типы затрат, после этого к исходным индексам возвращаться уже нельзя
-  gather(12:16, key="estimated_cost_type", value="estimated_cost") %>%
+  gather(12:15, key="est_cost_entry", value="est_cost") %>%
   select(oks_type, oks_code, ossr_code, ssr_chap, indirect_cost, 
-         estimated_cost_type, estimated_cost, `9: Наименование СД`) %>%
+         est_cost_entry, est_cost, `9: Наименование СД`, cost_element) %>%
+  # элементы без кода вида затрат (cost_element) являются промежуточными подытогами, их тоже надо исключать
   filter(complete.cases(.)) %>%
-  mutate_at(vars(estimated_cost), as.numeric)
+  mutate_at(vars(est_cost), as.numeric) %>%
+  mutate_at(vars(est_cost_entry), as.integer) %>%
+  # исключим нулевые затраты и промежуточные подытоги
+  #filter_at(vars(est_cost, cost_element), any_vars(is.na(.))) %>%
+  filter(est_cost != 0)
 
+  
 # определим косвенные затраты по главам --------
 calc_cost <- function(chap, df){
   print(paste0("Глава ", chap))
   # сюда заносим логику вычисления для каждой главы отдельно
-  calc_rules <- list("01"=c("графа 12", "графа 13"), "08"=c("графа 12", "графа 13"),
-                     "09"=c("графа 12", "графа 13"), "10"=c("графа 16"), "12"=c("графа 16"))
+  calc_rules <- list("01"=12:13, "08"=12:13,
+                     "09"=12:13, "10"=12:15, "12"=12:15)
   res <- df %>%
-      filter(estimated_cost_type %in% calc_rules[[chap]]) %>%
-      summarise(res=sum(estimated_cost)) %>%
+      filter(est_cost_entry %in% calc_rules[[chap]]) %>%
+      summarise(res=sum(est_cost)) %>%
       pull(res)
   print(res)    
   res
 }
   
-ind_df <- clean_df %>%
+indirect_df <- clean_df %>%
   filter(indirect_cost) %>%
   filter(ssr_chap %in% c("01", "08", "09", "10", "12")) %>%
   arrange(ssr_chap) %>%
@@ -105,24 +112,42 @@ ind_df <- clean_df %>%
   mutate(chap_indirect_сost=purrr::map2_dbl(ssr_chap, data, ~calc_cost(.x, .y))) %>%
   select(-data)
 
+# промежуточный анализ полученных данных
+# 1. посмотрим строки, которые содержат NA
+# m1 <- clean_df %>% filter_all(any_vars(is.na(.)))
+# m2 <- clean_df %>% filter_at(vars(est_cost, cost_element), any_vars(is.na(.)))
+total_direct_cost <- clean_df %>% 
+  filter(!indirect_cost) %>% 
+  summarise(s=sum(est_cost)) %>% 
+  pull(s)
+
+total_indirect_cost <- sum(indirect_df$chap_indirect_сost)
+# !!! суммы не бьются
+print(sprintf("%.2f (прямые) + %.2f (косвенные) = %.2f. Прямая сумма по таблице = %.2f", 
+              total_direct_cost, total_indirect_cost, (total_direct_cost + total_indirect_cost),
+              sum(clean_df$est_cost))) 
+
+# поищем, что именно не так, видимо в косвенных затратах остались другие главы
+ss <- clean_df %>% 
+  filter(indirect_cost) %>%
+  filter(!(ssr_chap %in% c("01", "08", "09", "10", "12"))) %>%
+  arrange(ssr_chap)
+  
+
 # распределим косвенные затраты по главам 2-7 --------
 # для этого определим коэффициент косвенных затрат и на него увеличим все основные
-direct_cost <- clean_df %>% 
-  filter(!indirect_cost) %>% 
-  summarise(s=sum(estimated_cost)) %>% 
-  pull(s)
-raise_coeff <- 1+sum(ind_df$chap_indirect_сost)/direct_cost
+raise_coeff <- 1+sum(indirect_df$chap_indirect_сost)/total_direct_cost
 
 final_df <- clean_df %>%
   mutate(should_raise=ssr_chap %in% c("02","03","04","05","06","07")) %>%
-  mutate(raised_cost=estimated_cost*should_raise*raise_coeff)
+  mutate(raised_cost=est_cost*should_raise*raise_coeff)
 
 object_size(final_df)
 
 # сумма по исходному "Всего"
 clean_df %>% 
-  filter(estimated_cost_type %in% c("графа 16")) %>%
-  summarise(raw=sum(estimated_cost))
+  filter(est_cost_entry %in% c("графа 16")) %>%
+  summarise(raw=sum(est_cost))
 
 # сумма по распределениям
 final_df %>% 
@@ -199,3 +224,4 @@ stop()
 write_csv(df1, "clean_xdr.csv")
 
 df <- df1
+
