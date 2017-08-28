@@ -134,6 +134,8 @@ final_df <- clean_df %>%
   filter((ssr_chap %in% stri_split_fixed("02,03,04,05,06,07", ",", simplify=TRUE))) %>%
   select(-indirect_cost, -cost_element, -internal_id)
 
+# промежуточные упражнения с группировками
+if(FALSE){
 # коэффициенты распределения по Главам 1, 8, 9
 t1 <- final_df %>% 
   group_by(ssr_chap) %>%
@@ -159,12 +161,15 @@ tr <- left_join(t1, t2, by="ssr_chap") %>%
   mutate(cost_raise=ratio*chap_indirect_сost) %>%
   arrange(ssr_chap)# %>%
   # spread(indirect_chap, cost_raise)
+}
 
-
-# можно делать и напрямик
+# Делаем в "лоб"
 # Различные базы распределения для Глав 2-7
-s1213 <- sum(final_df %>% filter(est_cost_entry %in% c(12, 13)) %>% pull(est_cost))
-s1215 <- sum(final_df %>% filter(est_cost_entry %in% c(12, 13, 14, 15)) %>% pull(est_cost))
+
+base_cost <- list(s1213=c(12, 13), s1215=c(12, 13, 14, 15)) %>%
+  map(~sum(final_df %>% filter(est_cost_entry %in% .x) %>% pull(est_cost)))
+s1213 <- base_cost[["s1213"]]
+s1215 <- base_cost[["s1215"]]
 
 v <- indirect_df$chap_indirect_сost %>% set_names(indirect_df$ssr_chap)
 
@@ -180,7 +185,7 @@ final_df %<>% group_by(ssr_chap) %>%
 # final_df %>% summarise_at(c("ch1", "ch8", "ch9", "ch10", "ch12"), sum)
 final_df %>% summarise_at(vars(ch1, ch8, ch9, ch10, ch12), sum)
 
-write_csv(final_df, "task2.csv")
+write_csv(final_df, "task2.txt")
 
 stop()
 # промежуточный анализ полученных данных
