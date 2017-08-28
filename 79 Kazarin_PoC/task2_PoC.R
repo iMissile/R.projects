@@ -156,12 +156,9 @@ tr <- left_join(t1, t2, by="ssr_chap") %>%
   gather(`01`,`08`,`09`, `10`, `12`, key=indirect_chap, value=ratio) %>%
   # подсоединим косвенные затраты по Главе
   left_join(indirect_df, by=c("indirect_chap"="ssr_chap")) %>%
-  mutate(cost_raise=ratio*chap_indirect_сost) #
-
-
-
-%>%
-  spread(indirect_chap, cost_raise)
+  mutate(cost_raise=ratio*chap_indirect_сost) %>%
+  arrange(ssr_chap)# %>%
+  # spread(indirect_chap, cost_raise)
 
 
 # можно делать и напрямик
@@ -169,16 +166,23 @@ tr <- left_join(t1, t2, by="ssr_chap") %>%
 s1213 <- sum(final_df %>% filter(est_cost_entry %in% c(12, 13)) %>% pull(est_cost))
 s1215 <- sum(final_df %>% filter(est_cost_entry %in% c(12, 13, 14, 15)) %>% pull(est_cost))
 
+v <- indirect_df$chap_indirect_сost %>% set_names(indirect_df$ssr_chap)
+
 final_df %<>% group_by(ssr_chap) %>%
-  mutate(ch1=sum(if_else(est_cost_entry %in% c(12, 13), est_cost, 0))/s1213) %>%
-  mutate(ch8=sum(if_else(est_cost_entry %in% c(12, 13), est_cost, 0))/s1213) %>%
-  mutate(ch9=sum(if_else(est_cost_entry %in% c(12, 13), est_cost, 0))/s1213) %>%
-  mutate(ch10=sum(if_else(est_cost_entry %in% c(12, 13, 14, 15), est_cost, 0))/s1215) %>%
-  mutate(ch12=sum(if_else(est_cost_entry %in% c(12, 13, 14, 15), est_cost, 0))/s1215) %>%
+  mutate(ch1=if_else(est_cost_entry %in% c(12, 13), est_cost, 0)/s1213 * v[["01"]]) %>%
+  mutate(ch8=if_else(est_cost_entry %in% c(12, 13), est_cost, 0)/s1213 * v[["08"]]) %>%
+  mutate(ch9=if_else(est_cost_entry %in% c(12, 13), est_cost, 0)/s1213 * v[["09"]]) %>%
+  mutate(ch10=if_else(est_cost_entry %in% c(12, 13, 14, 15), est_cost, 0)/s1215 * v[["10"]]) %>%
+  mutate(ch12=if_else(est_cost_entry %in% c(12, 13, 14, 15), est_cost, 0)/s1215 * v[["12"]]) %>%
   ungroup()
 
+# проверили
+# final_df %>% summarise_at(c("ch1", "ch8", "ch9", "ch10", "ch12"), sum)
+final_df %>% summarise_at(vars(ch1, ch8, ch9, ch10, ch12), sum)
 
+write_csv(final_df, "task2.csv")
 
+stop()
 # промежуточный анализ полученных данных
 # 1. посмотрим строки, которые содержат NA
 # m1 <- clean_df %>% filter_all(any_vars(is.na(.)))
