@@ -8,11 +8,12 @@ library(anytime)
 library(config)
 library(tictoc)
 library(pryr)
+library(wrapr)
 # library(config)
 packageVersion("dplyr")
 
 # загрузка и первичная очистка исходных данных -------------------
-costing_file <- "./data/task2_sample1.xlsx"
+costing_file <- "./data/task2_clean_sample.xlsx"
 getwd()
 
 raw_df <- read_excel(costing_file) %>%
@@ -58,7 +59,7 @@ df0 <- raw_df %>%
   # именуем колонки для последующей свертки
   rename_at(12:16, 
           funs(c("строительные работы", "монтажные работы", "оборудование", "прочие работы", "всего"))) %>%
-  rename_at(12:16, funs(c("12", "13", "14", "15", "16"))) %>%
+  rename_at(12:17, funs(c("12", "13", "14", "15", "16", "internal_id"))) %>%
   rename_at(8, funs(c("cost_element"))) %>%  
   slice(6:n())
 
@@ -71,29 +72,43 @@ df0 <- raw_df %>%
 clean_df <- df0 %>%
   # исключим ненужный правый мусор
   # колонка "всего (графа 16)" является вычисляемой, поэтому ее исключим
-  select(-(16:19)) %>%
+  # появились нюансы с машинным номером (internal_id), пока ничего выкидывать не будем
+  # select(-(16:19)) %>%
   # определим тип затрат
   # mutate(indirect_cost=if_else(oks_code=="0000" & ossr_code=="000", TRUE, FALSE)) # %>%
   mutate(indirect_cost=(oks_code=="0000" & ossr_code=="000")) %>%
   # свернем все типы затрат, после этого к исходным индексам возвращаться уже нельзя
   gather(12:15, key="est_cost_entry", value="est_cost") %>%
   select(oks_type, oks_code, ossr_code, ssr_chap, indirect_cost, 
-         est_cost_entry, est_cost, `9: Наименование СД`, cost_element) %>%
+         est_cost_entry, est_cost, `9: Наименование СД`, cost_element, internal_id) %>%
   # элементы без кода вида затрат (cost_element) являются промежуточными подытогами, их тоже надо исключать
-  filter(complete.cases(.)) %>%
+  # но сразу исключать нельзя, надо сначала выделить косвенные затраты
+  # filter(complete.cases(.)) %>% 
   mutate_at(vars(est_cost), as.numeric) %>%
   mutate_at(vars(est_cost_entry), as.integer) %>%
   # исключим нулевые затраты и промежуточные подытоги
-  #filter_at(vars(est_cost, cost_element), any_vars(is.na(.))) %>%
-  filter(est_cost != 0)
+  # filter_at(vars(est_cost, cost_element), any_vars(is.na(.))) %>%
+  filter(est_cost != 0) %>%
+  # отбрасываем пустые виды затрат и пустой машинный номер
+  filter_at(vars(cost_element, internal_id), all_vars(!is.na(.)))
 
-  
-# определим косвенные затраты по главам --------
+
+# посчитаем прямые затраты по графам и по Главам ---------
+direct_df <- clean_df %>%
+  filter(!indirect_cost) %>%
+  filter((ssr_chap %in% stri_split_fixed("02,03,04,05,06,07", ",", simplify=TRUE))) %>%
+  group_by(ssr_chap, est_cost_entry) %>%
+  summarise(total_cost=sum(est_cost)) %>%
+  ungroup() %>%
+  # mutate_at(vars(est_cost_entry), as.character)#  %>%
+  spread(key=est_cost_entry, value=total_cost)
+
+# расчитаем косвенные затраты по Главам --------
 calc_cost <- function(chap, df){
   print(paste0("Глава ", chap))
   # сюда заносим логику вычисления для каждой главы отдельно
-  calc_rules <- list("01"=12:13, "08"=12:13,
-                     "09"=12:13, "10"=12:15, "12"=12:15)
+  calc_rules <- list("01"=12:15, "08"=12:15,
+                     "09"=12:15, "10"=12:15, "12"=12:15)
   res <- df %>%
       filter(est_cost_entry %in% calc_rules[[chap]]) %>%
       summarise(res=sum(est_cost)) %>%
@@ -104,13 +119,65 @@ calc_cost <- function(chap, df){
   
 indirect_df <- clean_df %>%
   filter(indirect_cost) %>%
-  filter(ssr_chap %in% c("01", "08", "09", "10", "12")) %>%
+  # filter(!is.na(cost_element)) %>% # уже исключили выше
+  filter((ssr_chap %in% c("01", "08", "09", "10", "12"))) %>%
   arrange(ssr_chap) %>%
   group_by(ssr_chap) %>%
   nest() %>%
   # посчитаем базу распределения в зависимости от Главы ССР
   mutate(chap_indirect_сost=purrr::map2_dbl(ssr_chap, data, ~calc_cost(.x, .y))) %>%
   select(-data)
+
+# распределяем косвенные затраты по базису в зависимости от Главы ССР -------------
+final_df <- clean_df %>%
+  filter(!indirect_cost) %>%
+  filter((ssr_chap %in% stri_split_fixed("02,03,04,05,06,07", ",", simplify=TRUE))) %>%
+  select(-indirect_cost, -cost_element, -internal_id)
+
+# коэффициенты распределения по Главам 1, 8, 9
+t1 <- final_df %>% 
+  group_by(ssr_chap) %>%
+  filter(est_cost_entry %in% c(12, 13)) %>%
+  summarise(s=sum(est_cost)) %>%
+  # считаем пропорции
+  mutate(`01`=s/sum(s), `08`=`01`, `09`=`01`) %>%
+  select(-s)
+
+# коэффициенты распределения по Главам 10, 12
+t2 <- final_df %>% 
+  group_by(ssr_chap) %>%
+  filter(est_cost_entry %in% c(12, 13, 14, 15)) %>%
+  summarise(s=sum(est_cost)) %>%
+  # считаем пропорции
+  mutate(`10`=s/sum(s), `12`=`10`) %>%
+  select(-s)
+
+tr <- left_join(t1, t2, by="ssr_chap") %>% 
+  gather(`01`,`08`,`09`, `10`, `12`, key=indirect_chap, value=ratio) %>%
+  # подсоединим косвенные затраты по Главе
+  left_join(indirect_df, by=c("indirect_chap"="ssr_chap")) %>%
+  mutate(cost_raise=ratio*chap_indirect_сost) #
+
+
+
+%>%
+  spread(indirect_chap, cost_raise)
+
+
+# можно делать и напрямик
+# Различные базы распределения для Глав 2-7
+s1213 <- sum(final_df %>% filter(est_cost_entry %in% c(12, 13)) %>% pull(est_cost))
+s1215 <- sum(final_df %>% filter(est_cost_entry %in% c(12, 13, 14, 15)) %>% pull(est_cost))
+
+final_df %<>% group_by(ssr_chap) %>%
+  mutate(ch1=sum(if_else(est_cost_entry %in% c(12, 13), est_cost, 0))/s1213) %>%
+  mutate(ch8=sum(if_else(est_cost_entry %in% c(12, 13), est_cost, 0))/s1213) %>%
+  mutate(ch9=sum(if_else(est_cost_entry %in% c(12, 13), est_cost, 0))/s1213) %>%
+  mutate(ch10=sum(if_else(est_cost_entry %in% c(12, 13, 14, 15), est_cost, 0))/s1215) %>%
+  mutate(ch12=sum(if_else(est_cost_entry %in% c(12, 13, 14, 15), est_cost, 0))/s1215) %>%
+  ungroup()
+
+
 
 # промежуточный анализ полученных данных
 # 1. посмотрим строки, которые содержат NA
@@ -185,39 +252,7 @@ names <- stri_join(raw_df[2, ] %>% replace_na(replace=list()), " : ", raw_df[3, 
 print(problems(raw_df), n=Inf)
 
 # постпроцессинг
-df0 <- raw_df %>% 
-  # переименуем колонки из требования фиксирвоанных позиций
-  setNames(c("billing_code", "account", "equipment_sn", "service_name", 
-             "service_code", "charge", "service_type", "payment", "charge_period")) %>%
-  # выкидываем строки, в которых были ошибки парсинга
-  filter((!row_number() %in% problems(.)$row)) %>%
-  # преобразуем числовые поля в числа
-  mutate_at(vars(charge, payment), as.numeric) %>%
-  mutate_at(vars(charge_period), myd, truncated=1) %>%
-  mutate_at(vars(account, equipment_sn), function(x) stri_replace_all_regex(x, "^'", "")) %>%
-  mutate(id=row_number())
 
-# логическая отбраковка
-df1 <- df0 %>%
-  separate_rows(equipment_sn) %>% 
-  # отбракуем отсутствие начислений
-  filter(!is.na(charge)) %>%
-  # ограничение на длину SN
-  filter(!is.na(equipment_sn)) %>%
-  # filter(stri_length(equipment_sn)==11) %>%
-  # номер состоит строго из 11 цифровых знаков и начинаться на 001..009
-  filter(!is.na(stri_match_first_regex(equipment_sn, "^00[1-9][:digit:]{8}"))) %>%
-  # head(50) %>%
-  # размажем платежи
-  group_by(id) %>%
-  mutate(split_charge=charge/n(), split_payment=payment/n()) %>%
-  ungroup() %>%
-  select(equipment_sn, everything()) %>%
-  arrange(equipment_sn)
-  
-    
-
-# count_fields(xdr_file, tokenizer_tsv())
 
 stop()
 
