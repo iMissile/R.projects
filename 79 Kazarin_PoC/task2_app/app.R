@@ -36,28 +36,16 @@ options(shiny.usecairo=TRUE)
 options(shiny.reactlog=TRUE)
 options(spinner.type=4)
 
-source("clickhouse.R")
 eval(parse("funcs.R", encoding="UTF-8"))
 
 # очистим все warnings():
 assign("last.warning", NULL, envir = baseenv())
 
-# определяем окружение в котором запускаемся
-if (Sys.info()["sysname"] == "Linux") {
-  # CTI стенд
-  Sys.setenv("R_CONFIG_ACTIVE"="cti-prod")
-  # Sys.setenv("R_CONFIG_ACTIVE"="cti-demo")
-}else{
-  # MT стенд
-  Sys.setenv("R_CONFIG_ACTIVE"="media-tel-prod")
-  Sys.setenv("R_CONFIG_ACTIVE"="media-tel-demo")
-}   
-
 # ================================================================
 ui <- 
   navbarPage(
   # title=HTML('<div><a href="http://devoteam.com/"><img src="./img/devoteam_176px.png" width="80%"></a></div>'),
-  title = "Статистика телесмотрения",
+  title = "Сметная стоимость объектов",
   tabPanel("Рейтинг пользовательской активности", value="general_panel"),
   tabPanel("About", value="about"),
   # windowTitle="CC4L",
@@ -71,7 +59,6 @@ ui <-
   # http://stackoverflow.com/questions/25387844/right-align-elements-in-shiny-mainpanel/25390164
   tags$head(tags$style(".rightAlign{float:right;}")), 
 
-  # titlePanel("Статистика телесмотрения"),
   # ----------------
   conditionalPanel(
     # general panel -----------------------
@@ -84,6 +71,10 @@ ui <-
       #column(6, h2("Заполнитель"))
       ),
     fluidRow(
+      column(2, fileInput('project_plan', 'Выбор .xlsx файла с планом',
+                          #accept=c('application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')),
+                          accept = c('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'))
+      ),
       column(2, dateRangeInput("in_date_range",
                                label="Диапазон дат",
                                start=Sys.Date()-1, end=Sys.Date(),
@@ -139,7 +130,7 @@ ui <-
                ),
                fluidRow(
                  #column(10, plotOutput("subset_plot")),
-                 #column(2, textOutput("info_text"))
+                 column(12, textOutput("info_text"))
                )               
       ),
       tabPanel("График", value = "graph_tab",
@@ -206,7 +197,7 @@ server <- function(input, output, session) {
   
   flog.appender(appender.tee(log_name))
   flog.threshold(TRACE)
-  flog.info(paste0("App started in '", Sys.getenv("R_CONFIG_ACTIVE"), "' environment"))
+  flog.info(paste0("App started"))
 
   shinyjs::hide("slice_panel_div")
   
@@ -215,176 +206,40 @@ server <- function(input, output, session) {
     "screen"=list(base_size=20, axis_title_size=18, subtitle_size=15),
     "word_A4"=list(base_size=14, axis_title_size=12, subtitle_size=11)
   )
-  
-  # Sys.getenv("R_CONFIG_ACTIVE")
-  ch_db <- config::get("clickhouse") # достаем параметры подключения
-  # создаем коннект к инстансу CH -----------
-  conn <- dbConnect(clickhouse(), host=ch_db$host, port=ch_db$port, user=ch_db$user, password=ch_db$password)
 
-  # заполним список доступных к выбору таблиц
-  updateSelectInput(session, "select_ch_table", choices=unique(c(ch_db$table, "states")), selected=ch_db$table)
-
-  # подгрузим таблицу преобразования транслита в русские названия городов -------
-  cities_df <- {
-    flog.info("Loading cities translit table")
-    # подгрузим ограниченный список городов
-    city_subset <- read_csv("region.csv")
-    
-    df <- req(dbGetQuery(conn, "SELECT * FROM regnames")  %>%
-                mutate_if(is.character, `Encoding<-`, "UTF-8") %>%
-                filter(translit %in% pull(city_subset)))
-    flog.info(paste0("Cities translit table loaded ", nrow(df), " rows"))
-    # dbDisconnect(con)
-    df
-  }
-
-  # словарь для преобразований имен полей из английских в русские
-  # имена колонок -- группы и агрегаты из запроса
-  # сливаем модельные данные
-  dict_df <- {
-    df0 <- jsonlite::fromJSON("data_dict.json", simplifyDataFrame=TRUE)
-    
-    # на всякий случай защитимся от случая, когда вообще не определено поле internal_name
-    if (!"internal_name" %in% names(df0)) df0$internal_name <- NA
-    dict_df <- df0 %>%
-      as_tibble() %>%
-      # если есть поле в БД, а внутреннее представление не задано, то прозрачно транслируем
-      mutate(internal_name={map2_chr(.$db_field, .$internal_name, ~if_else(!is.na(.x) & is.na(.y), .x, .y))})
-  }
-  
   # browser()
   # реактивные переменные -------------------
-  raw_df <- reactive({
-    input$process_btn # обновлять будем вручную
-    req(input$select_ch_table)
-    isolate({
-      # r <- buildReq(begin=today(), end=today()+days(1), regions)
-      # flog.info(paste0("Applied time filter [", input$in_date_range[1], "; ", input$in_date_range[2], "]"))
-      # flog.info(paste0("Applied region filter [", regions, "]"))
-      # ch_db$table из конфига меняем на ручное управление -> input$select_table
-      flog.info(paste0("Active table is '", input$select_ch_table, "'"))      
-      # browser()
-      r <- buildReq(input$select_ch_table,
-                    begin=input$in_date_range[1], end=input$in_date_range[2], 
-                    region=input$region_filter, segment=input$segment_filter)
-      flog.info(paste0("DB request: ", r))
-    })
-    
-    # browser()
-    tic()
-    temp_df <- dbGetQuery(conn, r) %>%
-      as_tibble()
+  pplan <- reactive({
+    # в shiny версии 1.0.5 сохраняется расширение загруженного файла
+    # fname <- paste(req(input$project_plan$datapath), ".xlsx", sep="")
+    # file.copy(input$pplan$datapath, fname)
+    # normalizePath(fname)
+  })
 
-    flog.info(paste0("Query: ", capture.output(toc())))
-    flog.info(paste0("Table: ", capture.output(head(temp_df, 2))))
-    # system.time(df <- readRDS("./data/tvstream4.rds"))
-    flog.info(paste0("Loaded ", nrow(temp_df), " rows"))
-    
-    # !!! исправляем непонятно чей косяк: если вложенный select дает 0 строк, то его имя транслируется как NULL
-    names(temp_df)[[3]] <- "total_unique_stb"
-    
-    # browser()
-    df <- temp_df %>%
-      # время смотрения, мин
-      mutate(total_duration=round(as.numeric(total_duration), 0)) %>%
-      # 3. % уникальных приставок
-      mutate(stb_ratio=round(unique_stb/total_unique_stb, 3)) %>%
-      mutate(region=as.character(region))
-    # возникает ситуация, когда в данных могут быть города, которых нет в ограниченном подмножестве
-    # (типа выбор "всех регионов"). Тогда в рамках join могут возникнуть NA. Надо делать санацию поля
-    # browser()
-    
-    df %<>% # при пустом значении решает, что logi
-      left_join(cities_df, by=c("region"="translit")) %>%
-      # санация
-      mutate(russian=if_else(is.na(russian), str_c("_", region, "_"), russian)) %>%
-      rename(region_enu=region) %>%
-      select(-date) %>%
-      select(region=russian, everything())
-    
-    # browser()
-    # dbDisconnect(con)
-    as_tibble(df)
+  raw_df <- reactive({
+    fname <- req(input$project_plan$datapath)
+    flog.info(paste0("Loading '", fname, "'"))
+    df <- read_excel(fname) %>%
+      select(1:19) # отрезали примечания
   })  
 
-  cur_df <- reactive({
-    req(raw_df()) %>%
-      # filter(segment==input$segment_filter) %>%
-      # колонку для удаления перед выводом в график ставим в начало, чтобы не сбить нумерацию
-      select(region_enu, region, everything()) 
+  clean_df <- reactive({
+    req(raw_df())
+    
+    clean_names(raw_df())
   })
   
   
   # формируем time-series детализацию по аналогии с 3-им отчетом -------------------
   detail_df <- reactive({
-
-    req(cur_df())
-    ids <- req(input$stat_table_rows_selected) # проводим анализ при выборе строки в таблице
-    
-    # browser()
-    flog.info(paste0("Selected row num is ", ids, ". Data row: ", capture.output(str(cur_df()[ids, ]))))
-    # регион достаем из выбранной строки
-    # browser()
-    regions <- cur_df()$region_enu[ids]
-    
-    isolate({
-      # запрос временного ряда по выбранным данным
-      r <- buildReqTS(ch_db$table, begin=input$in_date_range[1], end=input$in_date_range[2],
-                      region=regions,
-                      # возьмем часовой интервал агрегации
-                      interval=60, 
-                      segment=input$segment_filter)
-      flog.info(paste0("DB request: ", r))    
-      # browser()
-      
-      tic()
-      # browser()
-      temp_df <- dbGetQuery(conn, r)
-      flog.info(paste0("Query by region: ", capture.output(toc())))
-      flog.info(paste0("Loaded ", nrow(temp_df), " rows"))    
-    })
-    
-    df <- temp_df %>%
-      # время смотрения, мин
-      mutate(total_duration=round(as.numeric(total_duration), 0)) %>%
-      # превращаем временной маркер в POSIX
-      mutate(timegroup=anytime(as.numeric(timegroup), tz="UTC")) %>%
-      as_tibble() %>%
-      mutate(stb_ratio=round(unique_stb/total_unique_stb, 3)) %>%      
-      # вернем обратно русские названия городов
-      left_join(cities_df, by=c("region"="translit")) %>%
-      # санация
-      mutate(russian=if_else(is.na(russian), str_c("_", region, "_"), russian)) %>%
-      rename(region_enu=region, region=russian)
-
-    # browser()
-    
-    df
   })
   
-#   msg <- reactiveVal("")
+  msg <- reactiveVal("")
 
   # таблица с выборкой по регионам ----------------------------
   output$stat_table <- DT::renderDataTable({
-    df <- req(cur_df()) %>%
-      # удаляем служебную информацию
-      select(-region_enu)
-    # browser()
+    df <- req(clean_df())
 
-    # сделаем мэпинг русских имен колонок и подсказок
-    colnames_df <- tibble(internal_name=names(df)) %>%
-      left_join(dict_df, by=c("internal_name"))
-      # поля строго заданы, санация сознательно не делается. Если что не так, надо справочник править
-
-    # https://stackoverflow.com/questions/39970097/tooltip-or-popover-in-shiny-datatables-for-row-names
-    colheader <- htmltools::withTags(
-      table(class = 'display',
-            thead(
-              tr(colnames_df %>%
-                   {purrr::map2(.$col_label, .$human_name_rus, ~th(title=.x, .y))})
-              )))
-    
-    # browser()
     # https://rstudio.github.io/DT/functions.html
     DT::datatable(df,
                   rownames=FALSE,
@@ -392,10 +247,8 @@ server <- function(input, output, session) {
                   selection=list(mode="multiple", target="row"),
                   # selection=list(mode="single", target="row"),
                   # selection="single",
-                  container=colheader,
                   options=list(dom='fltip', pageLength=7, lengthMenu=c(5, 7, 10, 15),
-                               order=list(list(3, 'desc')))) %>% # нумерация с 0
-      DT::formatPercentage("stb_ratio", 2)
+                               order=list(list(3, 'desc'))))
     })
   
   # вывод time-series графика по выбранному элементу ---------------------  
@@ -442,34 +295,7 @@ server <- function(input, output, session) {
                  ntop=as.integer(input$top_num))
   })  
 
-  # динамическое управление диапазоном дат ---------
-  observeEvent(input$history_depth, {
-    # $history_depth получаем как строку
-    date <- Sys.Date()-as.numeric(input$history_depth)
-    flog.info(paste0("Start date changed to  ", date))
-    # updateDateRangeInput(session, "in_date_range", start=date)
-   }
-  )
-
-  # установка даты на демо диапазон ---------  
-  observeEvent(input$set_test_dates_btn, {
-    updateDateRangeInput(session, "in_date_range", start="2016-05-01", end="2016-05-08")
-    })
-  # установка даты на сегодня ---------  
-  observeEvent(input$set_today_btn, {
-    updateDateRangeInput(session, "in_date_range", start=Sys.Date()-1, end=Sys.Date())
-  })
-
   observe({
-    # browser()
-    # управляем визуализацией кнопок выгрузки ----- 
-    if(!is.null(cur_df()) & nrow(cur_df())>0) {
-      shinyjs::enable("csv_download_btn")
-      shinyjs::enable("word_download_btn")
-    } else {
-      shinyjs::disable("csv_download_btn")
-      shinyjs::disable("word_download_btn")
-    }
     # управляем визуализацией табсета с детализированным графиком -----
     if(is.null(input$stat_table_rows_selected)) {
       shinyjs::hide("slice_panel_div")
@@ -480,22 +306,8 @@ server <- function(input, output, session) {
   
   # служебный вывод ---------------------  
   output$info_text <- renderText({
-    # msg()
-  })
-
-  # динамический выбор региона ---------
-  output$choose_region <- renderUI({
-    
-    data <- as.list(cities_df$translit)
-    names(data) <- cities_df$russian
-    
-    # browser()
-    
-    # создадим элемент
-    selectInput("region_filter", 
-                paste0("Регион (", length(data), ")"),
-                multiple=TRUE,
-                choices=data, width = "100%")
+    msg()
+    pplan()
   })
 
   # обработчики кнопок выгрузки файлов --------------------------------------------------
