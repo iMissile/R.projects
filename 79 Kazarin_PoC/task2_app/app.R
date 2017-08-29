@@ -219,14 +219,14 @@ server <- function(input, output, session) {
   raw_df <- reactive({
     fname <- req(input$project_plan$datapath)
     flog.info(paste0("Loading '", fname, "'"))
-    df <- read_excel(fname) %>%
+    read_excel(fname) %>%
       select(1:19) # отрезали примечания
   })  
 
   clean_df <- reactive({
     req(raw_df())
     
-    clean_names(raw_df())
+    cleanNames(raw_df()) %>% rebaseCost()
   })
   
   
