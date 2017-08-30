@@ -80,7 +80,7 @@ clean_df <- df0 %>%
   # свернем все типы затрат, после этого к исходным индексам возвращаться уже нельзя
   gather(12:15, key="est_cost_entry", value="est_cost") %>%
   select(oks_type, oks_code, ossr_code, ssr_chap, indirect_cost, 
-         est_cost_entry, est_cost, `9: Наименование СД`, cost_element, internal_id) %>%
+         est_cost_entry, est_cost, "9: Наименование СД", cost_element, internal_id) %>%
   # элементы без кода вида затрат (cost_element) являются промежуточными подытогами, их тоже надо исключать
   # но сразу исключать нельзя, надо сначала выделить косвенные затраты
   # filter(complete.cases(.)) %>% 
@@ -179,13 +179,66 @@ final_df %<>% group_by(ssr_chap) %>%
   mutate(ch9=if_else(est_cost_entry %in% c(12, 13), est_cost, 0)/s1213 * v[["09"]]) %>%
   mutate(ch10=if_else(est_cost_entry %in% c(12, 13, 14, 15), est_cost, 0)/s1215 * v[["10"]]) %>%
   mutate(ch12=if_else(est_cost_entry %in% c(12, 13, 14, 15), est_cost, 0)/s1215 * v[["12"]]) %>%
+  mutate(overcost=round(ch1+ch8+ch9+ch10+ch12, 2)) %>%
+  select(-ch1, -ch8, -ch9,-ch10, -ch12) %>%
   ungroup()
 
 # проверили
 # final_df %>% summarise_at(c("ch1", "ch8", "ch9", "ch10", "ch12"), sum)
-final_df %>% summarise_at(vars(ch1, ch8, ch9, ch10, ch12), sum)
+# final_df %>% summarise_at(vars(ch1, ch8, ch9, ch10, ch12), sum)
 
 write_csv(final_df, "task2.txt")
+
+# посчитаем слайд 2, "Полная сметная стоимость в разрезе объектов ССР"
+df <- final_df %>%
+  group_by(oks_code, ossr_code) %>%
+  mutate(direct_cost=sum(est_cost), indirect_cost=sum(overcost))
+
+# 
+oks_dict <- tibble(oks_code=c("0001", "0002"), oks_name=c("ДКС.2В", "УКПГ.2В"))
+
+df <- final_df %>%
+  group_by(oks_code) %>%
+  summarise(direct_cost=sum(est_cost), indirect_cost=sum(overcost)) %>%
+  left_join(oks_dict)
+
+# нарисуем график с разбивкой по классам ОССР
+reg_df <- df %>%
+  top_n(ntop, channel_duration) %>%
+  # может возникнуть ситуация, когда все значения top_n одинаковы. тогда надо брать выборку
+  filter(row_number()<=ntop) %>%
+  arrange(desc(channel_duration)) %>%
+  mutate(label=format(channel_duration, big.mark=" "))
+
+df0 <- final_df %>%
+  filter(oks_code=="0002") %>%
+  group_by(ossr_code) %>%
+  summarise(direct_cost=sum(est_cost), indirect_cost=sum(overcost)) %>%
+  mutate(total_cost=direct_cost+indirect_cost) %>%
+  # свернем типы затрат
+  gather(indirect_cost, direct_cost, key=type, value=cost) %>%
+  mutate(label=format(cost, big.mark=" "))
+  
+# brewer.pal(n=9, name="Greens")[4]
+gp <- ggplot(df0, aes(fct_reorder(as.factor(ossr_code), total_cost, .desc=FALSE), cost)) +
+  scale_fill_brewer(palette="Dark2") +
+  geom_bar(aes(fill=type), alpha=0.5, stat="identity", position="stack") +
+  # geom_text(aes(label=label), hjust=+1.1, colour="blue") + # для вертикальных
+  # geom_label(aes(label=label), fill="white", colour="black", fontface="bold", hjust=+1.1) +
+  geom_label(aes(label=label), position = position_stack(vjust = 0.5), 
+             fill="white", colour="black", fontface="bold", hjust=.5) +
+  # geom_text_repel(aes(label=label), fontface = 'bold', color = 'blue', nudge_y=0) +
+  # scale_x_discrete("Передача", breaks=df2$order, labels=df2$channelName) +
+  theme_ipsum_rc(base_size=20,
+                 subtitle_size=14,
+                 axis_title_size=18) +  
+  # theme(axis.text.x = element_text(angle=90)) +
+  ylab("Затраты, руб") +
+  xlab("Класс ОССР") +
+  ggtitle("Структура затрат", subtitle="В разрезе классов ОССР")
+  # coord_flip() 
+
+gp
 
 stop()
 # промежуточный анализ полученных данных

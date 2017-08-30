@@ -46,7 +46,7 @@ ui <-
   navbarPage(
   # title=HTML('<div><a href="http://devoteam.com/"><img src="./img/devoteam_176px.png" width="80%"></a></div>'),
   title = "Сметная стоимость объектов",
-  tabPanel("Рейтинг пользовательской активности", value="general_panel"),
+  tabPanel("Проектная смета", value="general_panel"),
   tabPanel("About", value="about"),
   # windowTitle="CC4L",
   # collapsible=TRUE,
@@ -74,39 +74,7 @@ ui <-
       column(2, fileInput('project_plan', 'Выбор .xlsx файла с планом',
                           #accept=c('application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')),
                           accept = c('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'))
-      ),
-      column(2, dateRangeInput("in_date_range",
-                               label="Диапазон дат",
-                               start=Sys.Date()-1, end=Sys.Date(),
-                               # на время отладки
-                               # start="2017-06-28", end="2017-06-30",
-                               # min = Sys.Date() - 10, 
-                               max = Sys.Date(),
-                               separator=" - ", format="dd/mm/yyyy",
-                               startview="month", language='ru', weekstart=1)
-      ), 
-      column(1, selectInput("history_depth", "История", 
-                            choices = c("1 месяц"=30, "2 недели"=14,
-                                        "1 неделя"=7, "3 дня"=3, "1 день"=1), selected=1)),
-      #column(1, selectInput("min_watch_time", "Мин. время",
-      #                      choices = c("5 сек"=5, "10 сек"=10, 
-      #                                  "20 сек"=20, "30 сек"=30), selected = 10)),
-      #column(1, selectInput("max_watch_time", "Макс. время",
-      #                      choices = c("1 час"=1, "2 часа"=2, 
-      #                                  "3 часа"=3, "4 часа"=4), selected = 2)),
-      column(6, uiOutput("choose_region")),
-      column(2, selectInput("segment_filter", "Сегмент",
-                            choices = c("Все"="all",
-                                        "DVB-C"="DVB-C", 
-                                        "IPTV"="IPTV", 
-                                        "DVB-S"="DVB-S"), selected="all"))
-    ),
-    fluidRow(
-      column(4, {}),
-      column(2, selectInput("select_ch_table", "Таблица", choices=NULL)),
-      column(2, actionButton("set_today_btn", "На сегодня", class='rightAlign')),
-      column(2, actionButton("set_test_dates_btn", "На демо дату", class='rightAlign')),
-      column(2, actionButton("process_btn", "Применить", class = 'rightAlign'))
+      )
     ),
     # https://stackoverflow.com/questions/28960189/bottom-align-a-button-in-r-shiny
     tags$style(type='text/css', "#set_today_btn {margin-top: 25px;}"),
@@ -117,7 +85,7 @@ ui <-
     tabsetPanel(
       id = "main_panel",
       selected="table_tab",
-      tabPanel("Таблица", value="table_tab",
+      tabPanel("Полная сметная стоимость", value="table_tab",
                fluidRow(
                  p(),
                  column(12, div(withSpinner(DT::dataTableOutput("stat_table"))), style="font-size: 90%")
@@ -133,51 +101,39 @@ ui <-
                  column(12, textOutput("info_text"))
                )               
       ),
-      tabPanel("График", value = "graph_tab",
+      tabPanel("Empty", value="graph_tab",
                fluidRow(
-                 p(),
-                 #column(11, {}),
-                 column(12, div(selectInput("top_num", "Кол-во в ТОП:", 
-                                        choices=c(3, 5, 7, 10, 20), 
-                                         selected=5), 
-                               class='rightAlign'))
+                 # p()
+                 # column(11, {}),
+                 # column(12, div(selectInput("top_num", "Кол-во в ТОП:", 
+                 #                        choices=c(3, 5, 7, 10, 20), 
+                 #                        selected=5), 
+                 #                class='rightAlign'))
                ),
                fluidRow(
-                 p(),
-                 jqui_sortabled(
-                   div(id='top10_plots',
-                       column(6, div(withSpinner(plotOutput('top10_duration_plot', height="500px")))),
-                       column(6, div(withSpinner(plotOutput('top10_stb_plot', height="500px"))))
-                       )))
+                 # p(),
+                 # jqui_sortabled(
+                 #   div(id='top10_plots',
+                 #       column(6, div(withSpinner(plotOutput('top10_duration_plot', height="500px")))),
+                 #       column(6, div(withSpinner(plotOutput('top10_stb_plot', height="500px"))))
+                 #       ))
+                 )
                )
       ),
     # https://github.com/daattali/shinyjs/issues/121
     div(id="slice_panel_div", 
     tabsetPanel(
       id = "slice_panel",
-      selected="ts_tab",
-      tabPanel("Временной график", value="ts_tab",
+      selected="slice_table_tab",
+      tabPanel("Разрез объектов ССР", value="slice_table_tab",
                fluidRow(
-                 column(10, plotOutput("subset_plot")),
-                 column(2, selectInput("y_ts_plot", "Параметр по Y:",
-                                       c("кол-во уник. STB"="unique_stb",
-                                         "всего уник. STB"="total_unique_stb",
-                                         "суммарное время"="total_duration",
-                                         "кол-во просмотров"="watch_events",
-                                         "% уник. STB"="stb_ratio")),
-                            selectInput("type_ts_plot", "Тип графика:",
-                                        c("гистограмма"="barplot",
-                                          "линейная"="lineplot"))
-                        )
+                 column(12, div(withSpinner(DT::dataTableOutput("slice_table"))), style="font-size: 90%")
                )
       ),
-      tabPanel("Аналитика по выборке", value = "topn_tab",
+      tabPanel("Графическая структура затрат", value = "slice_graph_tab",
                fluidRow(
                  p(),
-                 column(12, div(selectInput("slice_top", "Кол-во в ТОП:",
-                                            choices=c(3, 5, 7, 10, 20),
-                                            selected=5),
-                                class='rightAlign'))
+                 column(12, div(withSpinner(plotOutput('slice_plot', height="500px"))))
                )
       )
     )
@@ -229,6 +185,37 @@ server <- function(input, output, session) {
     cleanNames(raw_df()) %>% rebaseCost()
   })
   
+  oks_summary_df <- reactive({
+    req(clean_df())
+    oks_dict <- tibble(oks_code=c("0001", "0002"), oks_name=c("ДКС.2В", "УКПГ.2В"))
+    
+    df <- clean_df() %>%
+      group_by(oks_code) %>%
+      summarise(direct_cost=sum(est_cost), indirect_cost=sum(overcost)) %>%
+      left_join(oks_dict) %>%
+      select(oks_code, oks_name, everything())
+  })
+  
+  # формируем срез в зависимости от выбранной строки и параметров -------------------
+  slice_df <- reactive({
+    
+    req(clean_df())
+    ids <- req(input$stat_table_rows_selected) # проводим анализ при выборе строки в таблице
+    flog.info(paste0("Selected row num is ", ids, ". Data row: ", capture.output(str(oks_summary_df()[ids, ]))))
+    # ОКС достаем из выбранной строки
+    oks_code <- oks_summary_df()[[ids, "oks_code"]]
+    oks_code_val <- enquo(oks_code) # превратили в строку
+
+    df <- clean_df() %>%
+      filter(oks_code==!!oks_code_val) %>%
+      select(-oks_type, -est_cost_entry) %>%
+      rename(direct_cost=est_cost, indirect_cost=overcost) %>%
+      # move to end
+      select(-indirect_cost, -direct_cost, everything()) %>%
+      arrange(desc(direct_cost))
+    df
+  })
+  
   
   # формируем time-series детализацию по аналогии с 3-им отчетом -------------------
   detail_df <- reactive({
@@ -236,44 +223,58 @@ server <- function(input, output, session) {
   
   msg <- reactiveVal("")
 
-  # таблица с выборкой по регионам ----------------------------
+  # таблица-свертка по ОКС  ----------------------------
   output$stat_table <- DT::renderDataTable({
-    df <- req(clean_df())
+    df <- req(oks_summary_df())
 
     # https://rstudio.github.io/DT/functions.html
     DT::datatable(df,
+                  class='cell-border stripe',
                   rownames=FALSE,
+                  colnames=c('Код ОКС'='oks_code', 'Наименование ОКС'='oks_name',
+                             'Прямые затраты'='direct_cost', 'Косвенные затраты'='indirect_cost'),
                   filter='bottom',
-                  selection=list(mode="multiple", target="row"),
-                  # selection=list(mode="single", target="row"),
+                  # selection=list(mode="multiple", target="row"),
+                  selection=list(mode="single", target="row"),
                   # selection="single",
-                  options=list(dom='fltip', pageLength=7, lengthMenu=c(5, 7, 10, 15),
+                  options=list(dom='fltip', #autoWidth=TRUE, 
+                               pageLength=7, lengthMenu=c(5, 7, 10, 15),
                                order=list(list(3, 'desc'))))
     })
   
-  # вывод time-series графика по выбранному элементу ---------------------  
-  output$subset_plot <- renderPlot({
-    shiny::validate(
-      need(!is.null(detail_df()), "NULL value can't be renederd"),
-      need(nrow(detail_df())>0, "0 rows -- nothing to draw") 
-    )
-    plotRegionHistory(detail_df(), input$y_ts_plot, input$type_ts_plot, publish_set=font_sizes[["screen"]])
+  # таблица-детализация по ОКС в разрезе ССР  ----------------------------
+  output$slice_table <- DT::renderDataTable({
+    df <- req(slice_df())
+    # browser()
+
+    # https://rstudio.github.io/DT/functions.html
+    DT::datatable(df,
+                  class='cell-border stripe',
+                  rownames=FALSE,
+                  colnames=c('Код ОКС'='oks_code', 'Код ОССР'='ossr_code', 'Глава ССР'='ssr_chap',
+                             'Наименование ОКС'='sd_name',
+                             'Прямые затраты'='direct_cost', 'Косвенные затраты'='indirect_cost'),
+                  filter='bottom',
+                  # selection=list(mode="multiple", target="row"),
+                  selection=list(mode="single", target="row"),
+                  # selection="single",
+                  options=list(dom='fltip', #autoWidth=TRUE, 
+                               pageLength=7, lengthMenu=c(5, 7, 10, 15)))
   })
     
-    
-  # график Топ10 каналов по суммарному времени просмотра -------------
-    
-  output$duration_plot <- renderPlot({
-    shiny::validate(
-      need(!is.null(cur_df()), "NULL value can't be renederd"),
-      need(nrow(cur_df())>0, "0 rows -- nothing to draw")
-      )
-
-    plotTop10Duration(cur_df(), publish_set=font_sizes[["screen"]], 
-                      ntop=as.integer(input$top_num))
-    })    
- 
   
+  # график структуры затра в разрезе ОССР -------------
+  output$slice_plot <- renderPlot({
+    req(slice_df())
+    # shiny::validate(
+    #   need(!is.null(cur_df()), "NULL value can't be renederd"),
+    #   need(nrow(cur_df())>0, "0 rows -- nothing to draw")
+    #   )
+    
+    # browser()
+    plotOSSRslice(slice_df())
+  })    
+
   # график Топ10 каналов по суммарному времени просмотра -------------
   output$top10_duration_plot <- renderPlot({
     shiny::validate(
@@ -337,24 +338,6 @@ server <- function(input, output, session) {
       print(doc, target=file)  
     }
   )  
-  onBookmark(function(state) {
-    #state$values$event_filter <- input$event_filter
-    #state$values$intensity <- input$intensity
-  })
-  
-  onRestored(function(state){
-    # input-ы сохраняются штатным образом, главное их восстановить. 
-    # восстанавливаем не из values, а из input
-    # browser()
-    updateSelectInput(session, "event_filter", selected=state$input$event_filter)
-    updateSelectInput(session, "prefix_filter", selected=state$input$prefix_filter)
-    updateSelectInput(session, "serial_mask", selected=state$input$serial_mask)
-    # shinyjs::delay(800, {})
-    updateSliderInput(session, "duration_range", value=state$input$duration_range)
-    updateDateRangeInput(session, "in_date_range",
-                         start=state$input$in_date_range[1], 
-                         end=state$input$in_date_range[2])
-  }) 
   
   # динамичекое обновление url в location bar
   observe({
@@ -369,24 +352,3 @@ server <- function(input, output, session) {
 }
 
 shinyApp(ui = ui, server = server)
-
-# =================================
-# msg()
-# row с 1, col с 0 
-# m <- req(input$stat_table_cells_selected)
-# m <- req(input$stat_table_rows_selected)
-
-# s <- input$stat_table_rows_all
-# paste(m, s)
-# df <- cur_df()
-# значение ячейки
-
-# колонка с 0 + удаленный регион на английском
-# df[[m[[1]], m[[2]]+2]]
-# имя колонки
-# colnames(df)[[m[[2]]+2]]
-
-# browser()
-# flog.info(paste0("Selected row num is ", m, ". Data row: ", capture.output(str(df[m, ]))))
-# собираем select для получения time-series данных
-# m

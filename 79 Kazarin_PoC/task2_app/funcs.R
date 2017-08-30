@@ -41,7 +41,7 @@ cleanNames <- function(df0){
     rename_at(12:16, 
               funs(c("строительные работы", "монтажные работы", "оборудование", "прочие работы", "всего"))) %>%
     rename_at(12:17, funs(c("12", "13", "14", "15", "16", "internal_id"))) %>%
-    rename_at(8, funs(c("cost_element"))) %>%  
+    rename_at(8:9, funs(c("cost_element", "sd_name"))) %>%  
     slice(6:n())
   
   df0
@@ -69,8 +69,10 @@ rebaseCost <- function(df0){
     # свернем все типы затрат, после этого к исходным индексам возвращаться уже нельзя
     gather(12:15, key="est_cost_entry", value="est_cost") %>%
     # через ` ` имена колонок в Shiny App под Windows не отлавливает
+    # select(oks_type, oks_code, ossr_code, ssr_chap, indirect_cost, 
+    #        est_cost_entry, est_cost, "9: Наименование СД", cost_element, internal_id) %>%
     select(oks_type, oks_code, ossr_code, ssr_chap, indirect_cost, 
-           est_cost_entry, est_cost, "9: Наименование СД", cost_element, internal_id) %>%
+          est_cost_entry, est_cost, sd_name, cost_element, internal_id) %>%
     # элементы без кода вида затрат (cost_element) являются промежуточными подытогами, их тоже надо исключать
     # но сразу исключать нельзя, надо сначала выделить косвенные затраты
     # filter(complete.cases(.)) %>% 
@@ -145,4 +147,38 @@ rebaseCost <- function(df0){
     ungroup()
   
   final_df
+}
+
+plotOSSRslice <- function(df){
+  # рисуем структуру затра в разрезе классов ОССР
+  # на вход поуступает выборка по проекту (ОКС код уникален)
+  
+  df0 <- df %>%
+    group_by(ossr_code) %>%
+    summarise(direct_cost=sum(direct_cost), indirect_cost=sum(indirect_cost)) %>%
+    mutate(total_cost=direct_cost+indirect_cost) %>%
+    # свернем типы затрат
+    gather(indirect_cost, direct_cost, key=type, value=cost) %>%
+    mutate(label=format(cost, big.mark=" "))
+  
+  # brewer.pal(n=9, name="Greens")[4]
+  gp <- ggplot(df0, aes(fct_reorder(as.factor(ossr_code), total_cost, .desc=FALSE), cost)) +
+    scale_fill_brewer(palette="Dark2") +
+    geom_bar(aes(fill=type), alpha=0.5, stat="identity", position="stack") +
+    # geom_text(aes(label=label), hjust=+1.1, colour="blue") + # для вертикальных
+    # geom_label(aes(label=label), fill="white", colour="black", fontface="bold", hjust=+1.1) +
+    geom_label(aes(label=label), position = position_stack(vjust = 0.5), 
+               fill="white", colour="black", fontface="bold", hjust=.5) +
+    # geom_text_repel(aes(label=label), fontface = 'bold', color = 'blue', nudge_y=0) +
+    # scale_x_discrete("Передача", breaks=df2$order, labels=df2$channelName) +
+    theme_ipsum_rc(base_size=20,
+                   subtitle_size=14,
+                   axis_title_size=18) +  
+    # theme(axis.text.x = element_text(angle=90)) +
+    ylab("Затраты, руб") +
+    xlab("Класс ОССР") +
+    ggtitle("Структура затрат", subtitle="В разрезе классов ОССР")
+  # coord_flip() 
+  
+  gp  
 }
