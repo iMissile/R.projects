@@ -20,6 +20,12 @@
     "col_label": "подсказка (date)"
   },
   {
+    "db_field": "switchEvent",
+    "human_name_rus": "тип перекл.",
+    "can_be_grouped": true,
+    "col_label": "подсказка (switchEvent)"
+  },
+  {
     "db_field": "duration",
     "human_name_rus": "длительность",
     "can_be_grouped": false,
@@ -50,7 +56,7 @@
   {
     "db_field": "serial",
     "human_name_rus": "S/N",
-    "can_be_grouped": false,
+    "can_be_grouped": true,
     "aggr_ops": "unique:ratio",
     "col_label": "подсказка (serial)"
   },

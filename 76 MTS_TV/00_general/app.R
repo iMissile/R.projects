@@ -143,7 +143,7 @@ ui <-
     ),
     h3("Выборка"),
     fluidRow(
-      column(12, verbatimTextOutput('info_text')),
+      column(12, verbatimTextOutput('info_text1')),
       # https://stackoverflow.com/questions/23233497/outputting-multiple-lines-of-text-with-rendertext-in-r-shiny
       tags$style(type="text/css", "#info_text {white-space: pre-wrap;}")
     ),
@@ -311,15 +311,24 @@ server <- function(input, output, session) {
     flog.info(paste0("Table: ", capture.output(head(df, 2))))
     flog.info(paste0("Loaded ", nrow(df), " rows"))
 
+    # t <- df %>% head(5) %>% select_if(function(x){cat(" <- "); str(x); cat(" ->\n"); TRUE})
     # для переменных, содержащих %-ную долю, надо применить округление
     # составим список имен колонок для которых мы ожидаем получить долевую часть
     ratio_vars <- var_model_df %>%
       filter(!is.na(ratio_type)) %>%
       filter(internal_name %in% names(df)) %>%
       pull(internal_name)
-    
-    res_df <- df %>% mutate_at(vars(one_of(ratio_vars)), ~(round(.x*100, 2)))
-    
+    # всех остальных переменных применяем округление до 1
+    # составим список имен колонок
+    non_ratio_vars <- var_model_df %>%
+      filter(is.na(ratio_type)) %>%
+      filter(internal_name %in% names(df)) %>%
+      pull(internal_name)
+
+    res_df <- df %>% 
+      mutate_at(vars(one_of(ratio_vars)), ~(round(.x*100, 2))) %>%
+      mutate_at(vars(one_of(non_ratio_vars)), ~(round(.x, 0)))
+
     res_df
   })  
 
@@ -369,7 +378,7 @@ server <- function(input, output, session) {
                   rownames=FALSE,
                   filter='bottom',
                   container=colheader,
-                  options=list(dom='fltip', pageLength=7, lengthMenu=c(5, 7, 10, 15))
+                  options=list(dom='fltip', pageLength=7, lengthMenu=c(5, 7, 10, 15, 50))
                   )
     })
   
