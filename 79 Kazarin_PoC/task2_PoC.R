@@ -1,5 +1,6 @@
 library(tidyverse)
 library(lubridate)
+library(forcats)
 library(readr)
 library(readxl)
 library(stringi)
@@ -8,7 +9,10 @@ library(anytime)
 library(config)
 library(tictoc)
 library(pryr)
+library(hrbrthemes)
+library(ggthemes)
 library(wrapr)
+library(openxlsx)
 # library(config)
 packageVersion("dplyr")
 
@@ -203,13 +207,6 @@ df <- final_df %>%
   left_join(oks_dict)
 
 # нарисуем график с разбивкой по классам ОССР
-reg_df <- df %>%
-  top_n(ntop, channel_duration) %>%
-  # может возникнуть ситуация, когда все значения top_n одинаковы. тогда надо брать выборку
-  filter(row_number()<=ntop) %>%
-  arrange(desc(channel_duration)) %>%
-  mutate(label=format(channel_duration, big.mark=" "))
-
 df0 <- final_df %>%
   filter(oks_code=="0002") %>%
   group_by(ossr_code) %>%
@@ -231,7 +228,8 @@ gp <- ggplot(df0, aes(fct_reorder(as.factor(ossr_code), total_cost, .desc=FALSE)
   # scale_x_discrete("Передача", breaks=df2$order, labels=df2$channelName) +
   theme_ipsum_rc(base_size=20,
                  subtitle_size=14,
-                 axis_title_size=18) +  
+                 axis_title_size=18) +
+  theme_solarized(light=FALSE) +
   # theme(axis.text.x = element_text(angle=90)) +
   ylab("Затраты, руб") +
   xlab("Класс ОССР") +
