@@ -35,6 +35,52 @@ if (TRUE) {
 }
 
 # выделим только те данные, которые нам интересны для scoreboard
+pattern <- c("Выпуск ТК СКБК ОБФ", "Отгрузка ТК СКБК", "Склад ТК СКБК",
+             "Выпуск ТК ПЗБМ ОБФ", "Отгрузка ТК ПЗБМ", "Склад ТК ПЗБМ"
+             ) %>%
+  stri_replace_all_regex("(.+)", "($1)") %>%
+  stri_join(collapse="|")
+
+# pattern <- "(Выпуск ТК СКБК ОБФ)|(Выпуск ТК СКБК ОБФ \\d.+НИ)|(Склад ТК (ПЗБМ)|(СКБК))|(Склад ТК СКБК)|(Отгрузка ТК СКБК)|(Отгрузка ТК СКБК.+НИ)"
+# pattern <- "(Выпуск ТК СКБК ОБФ)|(Выпуск ТК СКБК ОБФ \\d.+НИ)|(Склад ТК ПЗБМ|СКБК)"
+# stri_detect_regex("Капитальный ремонт ТО СКБК ОБФ 3", pattern) # -- дает TRUE
+
+# stri_detect_regex("Капитальный ремонт ТО СКБК ОБФ 3", pattern) # -- дает TRUE
+
+subset_df <- raw_df %>% 
+  filter(stri_detect_regex(name, pattern=pattern)) %>%
+  mutate_at(vars(docdate), as_date)
+
+# выбираем данные на конкретную дату
+c_date <- dmy("10.09.2015") # current date
+
+score_df <- subset_df %>%
+  # погасим нетекущие даты для всех записей кроме Выпуска
+  mutate(skip=!stri_detect_regex(name, pattern="Выпуск ТК .+ ОБФ \\d$") & docdate!=c_date) %>%
+  filter(!skip) %>%
+  # сначала рассклассифицируем по датам, потом по типам
+  mutate(coltype=case_when(
+    docdate == c_date ~ "today",
+    docdate == c_date-days(1) ~ "today_minus_1",
+    docdate == c_date-days(2) ~ "today_minus_1",
+    TRUE ~ as.character(NA)
+  )) %>%
+  mutate(coltype=case_when(
+    stri_detect_regex(name, pattern="Отгрузка .+% НИ$") ~ "shipment_pcumm",
+    stri_detect_regex(name, pattern="Отгрузка .+ НИ$") ~ "shipment_cumm",
+    stri_detect_regex(name, pattern="Отгрузка .+$") ~ "shipment",
+    stri_detect_regex(name, pattern="Склад .+") ~ "stock",
+    TRUE ~ coltype
+  )) %>%
+  # filter(complete.cases(.)) # так не годится, могут быть значения где нет плановых показателей. теряем склад
+  filter_at(vars(actualvalue, coltype), all_vars(!is.na(.)))
+  
+df <- score_df %>%
+  unite(actualvalue, planvalue, col=values) %>%
+  spread(date, values) %>%
+  # теперь превращаем отдельные строки в колонки
+  mutate("shipment"=today)
+
 
 stop()
 
