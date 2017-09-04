@@ -270,8 +270,11 @@ equip_df
 options(digits=6)
 spta_df <- equip_df %>% 
   group_by(element, site) %>%
-  summarise(total=sum(q*amount), afr7=mean(afr7)) %>%
-  mutate(spta=round(total*afr7/100, digits=2)) %>%
+  summarise(total=sum(q*amount), afr=mean(afr), afr9=mean(afr)*9) %>%
+  mutate(spta=round(total*afr9/100, digits=2)) %>%
+  # fits <- 10^9/mtbf # mtbf -- в часах
+  # AFR = 1-exp(-8760/MTBF{в часах})
+  mutate(lambda=1/(-8760/log(1-afr/100))) %>%
   #filter(spta<0.5) %>%
   arrange(site, desc(spta))
 
