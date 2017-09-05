@@ -74,6 +74,18 @@ ui <-
       column(2, fileInput('project_plan', 'Выбор .xlsx файла с планом',
                           #accept=c('application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')),
                           accept = c('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'))
+      ),
+      column(2, dateInput("in_date",
+                          label="Дата",
+                          # start=Sys.Date()-1, end=Sys.Date(),
+                          # при демонстрации на пилотных данных
+                          value="2015-09-10",
+                          min="2015-09-01", 
+                          max="2015-09-30",
+                          # min = Sys.Date() - 10, 
+                          # max = Sys.Date(),
+                          format="dd-mm-yyyy",
+                          startview="month", language='ru', weekstart=1)
       )
     ),
     # https://stackoverflow.com/questions/28960189/bottom-align-a-button-in-r-shiny
@@ -170,7 +182,9 @@ server <- function(input, output, session) {
     
   score_df <- reactive({
     # выбираем данные на конкретную дату
-    c_date <- dmy("10.09.2015") # current date
+    # c_date <- dmy("10.09.2015") # current date
+    # browser()
+    c_date <- ymd(input$in_date) # current date
     
     # надо будет добавить сюда еще Итого
     df0 <- req(subset_df()) %>%

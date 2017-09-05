@@ -76,10 +76,23 @@ ggplot(score_df, aes(x=docdate, y=actualvalue)) +
   geom_point(aes(y=planvalue), colour="blue", shape=16, size=3) +
   geom_label(aes(label=label), position = position_stack(vjust = 0.5), 
              fill="white", colour="black", fontface="bold", hjust=.5) +
-  facet_wrap(~material, nrow=1)
+  facet_wrap(~material, nrow=1, scales="free_y")
 
 
 stop()
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 scale_fill_manual(
