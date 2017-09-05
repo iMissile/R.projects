@@ -20,10 +20,11 @@ packageVersion("dplyr")
 data_file <- "./data/KPI_example.xls"
 getwd()
 
-raw_df <- read_excel(data_file)
+raw_df <- read_excel(data_file) %>%
+  mutate_at(vars(docdate), as_date)
 
 # поглядим сводку по данным ---------------------
-if (TRUE) {
+if (FALSE) {
   tic()
   # посчитаем количество уникальных значений в колонках
   dist_cols <- raw_df %>% map_df(n_distinct)
@@ -34,22 +35,15 @@ if (TRUE) {
   toc()
 }
 
-# выделим только те данные, которые нам интересны для scoreboard
-pattern <- c("Выпуск ТК СКБК ОБФ", "Отгрузка ТК СКБК", "Склад ТК СКБК",
-             "Выпуск ТК ПЗБМ ОБФ", "Отгрузка ТК ПЗБМ", "Склад ТК ПЗБМ"
-) %>%
-  stri_replace_all_regex("(.+)", "($1)") %>%
-  stri_join(collapse="|")
-
-# pattern <- "(Выпуск ТК СКБК ОБФ)|(Выпуск ТК СКБК ОБФ \\d.+НИ)|(Склад ТК (ПЗБМ)|(СКБК))|(Склад ТК СКБК)|(Отгрузка ТК СКБК)|(Отгрузка ТК СКБК.+НИ)"
-# pattern <- "(Выпуск ТК СКБК ОБФ)|(Выпуск ТК СКБК ОБФ \\d.+НИ)|(Склад ТК ПЗБМ|СКБК)"
-# stri_detect_regex("Капитальный ремонт ТО СКБК ОБФ 3", pattern) # -- дает TRUE
-
-# stri_detect_regex("Капитальный ремонт ТО СКБК ОБФ 3", pattern) # -- дает TRUE
-
 subset_df <- raw_df %>% 
-  filter(stri_detect_regex(name, pattern=pattern)) %>%
-  mutate_at(vars(docdate), as_date)
+  mutate(deparse=stri_replace_all_regex(name, "(.+\\sТК)\\s+(СКБК|ПЗБМ)\\s?(ОБФ\\s\\d)?\\s?(.*)", 
+                                        "$1_$2_$3_$4")) %>%
+  separate(deparse, into=c("operation", "group", "material", "kpi"), sep="_") %>%
+  # выберем только интересующие операции
+  filter(operation %in% c("Выпуск ТК", "Склад ТК", "Отгрузка ТК")) %>%
+  # и выкинем весь служебный шлак
+  select(-id, -unit, -firmcode, -docnum)
+
 
 # выбираем данные на конкретную дату
 c_date <- dmy("10.09.2015") # current date
@@ -385,4 +379,31 @@ stop()
 write_csv(df1, "clean_xdr.csv")
 
 df <- df1
+
+# область проверок =================================
+
+# попробуем восстановить структурную схему исходных данных
+sample_data <- read_delim("
+                          Выпуск ТК СКБК ОБФ 3
+                          Выпуск ТК СКБК ОБФ 3 НИ
+                          Выпуск ТК СКБК ОБФ 3 % НИ
+                          Склад ТК СКБК
+                          Отгрузка ТК СКБК
+                          Отгрузка ТК СКБК НИ
+                          Отгрузка ТК СКБК % НИ
+                          Выпуск ТК ПЗБМ ОБФ 1
+                          Выпуск ТК ПЗБМ ОБФ 1 НИ
+                          Выпуск ТК ПЗБМ ОБФ 1 % НИ
+                          Отгрузка ТК ПЗБМ
+                          Отгрузка ТК ПЗБМ НИ
+                          Отгрузка ТК ПЗБМ % НИ
+                          Склад ТК ПЗБМ", col_names=FALSE, delim="\n", trim_ws=TRUE, locale=locale("ru", encoding="windows-1251"))
+
+df <- sample_data %>%
+  mutate(deparse=stri_replace_all_regex(X1, "(.+\\sТК)\\s+(СКБК|ПЗБМ)\\s?(ОБФ\\s\\d)?\\s?(.*)", 
+                                        "$1_$2_$3_$4")) %>%
+  separate(deparse, into=c("operation", "group", "material", "kpi"), sep="_")
+
+
+stop()
 
