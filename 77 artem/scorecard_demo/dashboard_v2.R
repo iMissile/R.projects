@@ -37,7 +37,7 @@ if (TRUE) {
 # выделим только те данные, которые нам интересны для scoreboard
 pattern <- c("Выпуск ТК СКБК ОБФ", "Отгрузка ТК СКБК", "Склад ТК СКБК",
              "Выпуск ТК ПЗБМ ОБФ", "Отгрузка ТК ПЗБМ", "Склад ТК ПЗБМ"
-             ) %>%
+) %>%
   stri_replace_all_regex("(.+)", "($1)") %>%
   stri_join(collapse="|")
 
@@ -76,14 +76,14 @@ score_df <- subset_df %>%
   )) %>%
   # filter(complete.cases(.)) # так не годится, могут быть значения где нет плановых показателей. теряем склад
   filter_at(vars(actualvalue, coltype), all_vars(!is.na(.)))
-  
+
 df <- score_df %>%
   unite(actualvalue, planvalue, col=values) %>%
   spread(coltype, values) %>%
   # теперь превращаем отдельные строки в колонки
   select(-firmcode, docnum, skip) %>%
   # 
-#
+  #
   mutate("shipment"=today)
 
 
@@ -95,9 +95,9 @@ stop()
 # различные виды join не подойдут, поскольку мы хотим оставить все строки, вне зависимости от результата
 # сливать по именам опасно, вдруг есть дубли
 names_df <- raw_df %>%
-  {tibble(name_c2=gather(.[2, ], key=name, value=v)$v,
-          name_c3=gather(.[3, ], key=name, value=v)$v,
-          name_c4=gather(.[4, ], key=name, value=v)$v)} %>%
+{tibble(name_c2=gather(.[2, ], key=name, value=v)$v,
+        name_c3=gather(.[3, ], key=name, value=v)$v,
+        name_c4=gather(.[4, ], key=name, value=v)$v)} %>%
   # http://www.markhneedham.com/blog/2015/06/28/r-dplyr-update-rows-with-earlierprevious-rows-values/
   # mutate(name_c2 = na.locf(name_c2)) %>%
   fill(name_c2) %>%
@@ -128,7 +128,7 @@ df0 <- raw_df %>%
             funs(c("oks_type", "oks_code", "ossr_type", "ossr_code", "ssr_chap"))) %>%
   # именуем колонки для последующей свертки
   rename_at(12:16, 
-          funs(c("строительные работы", "монтажные работы", "оборудование", "прочие работы", "всего"))) %>%
+            funs(c("строительные работы", "монтажные работы", "оборудование", "прочие работы", "всего"))) %>%
   rename_at(12:17, funs(c("12", "13", "14", "15", "16", "internal_id"))) %>%
   rename_at(8, funs(c("cost_element"))) %>%  
   slice(6:n())
@@ -180,13 +180,13 @@ calc_cost <- function(chap, df){
   calc_rules <- list("01"=12:15, "08"=12:15,
                      "09"=12:15, "10"=12:15, "12"=12:15)
   res <- df %>%
-      filter(est_cost_entry %in% calc_rules[[chap]]) %>%
-      summarise(res=sum(est_cost)) %>%
-      pull(res)
+    filter(est_cost_entry %in% calc_rules[[chap]]) %>%
+    summarise(res=sum(est_cost)) %>%
+    pull(res)
   print(res)    
   res
 }
-  
+
 indirect_df <- clean_df %>%
   filter(indirect_cost) %>%
   # filter(!is.na(cost_element)) %>% # уже исключили выше
@@ -206,30 +206,30 @@ final_df <- clean_df %>%
 
 # промежуточные упражнения с группировками
 if(FALSE){
-# коэффициенты распределения по Главам 1, 8, 9
-t1 <- final_df %>% 
-  group_by(ssr_chap) %>%
-  filter(est_cost_entry %in% c(12, 13)) %>%
-  summarise(s=sum(est_cost)) %>%
-  # считаем пропорции
-  mutate(`01`=s/sum(s), `08`=`01`, `09`=`01`) %>%
-  select(-s)
-
-# коэффициенты распределения по Главам 10, 12
-t2 <- final_df %>% 
-  group_by(ssr_chap) %>%
-  filter(est_cost_entry %in% c(12, 13, 14, 15)) %>%
-  summarise(s=sum(est_cost)) %>%
-  # считаем пропорции
-  mutate(`10`=s/sum(s), `12`=`10`) %>%
-  select(-s)
-
-tr <- left_join(t1, t2, by="ssr_chap") %>% 
-  gather(`01`,`08`,`09`, `10`, `12`, key=indirect_chap, value=ratio) %>%
-  # подсоединим косвенные затраты по Главе
-  left_join(indirect_df, by=c("indirect_chap"="ssr_chap")) %>%
-  mutate(cost_raise=ratio*chap_indirect_сost) %>%
-  arrange(ssr_chap)# %>%
+  # коэффициенты распределения по Главам 1, 8, 9
+  t1 <- final_df %>% 
+    group_by(ssr_chap) %>%
+    filter(est_cost_entry %in% c(12, 13)) %>%
+    summarise(s=sum(est_cost)) %>%
+    # считаем пропорции
+    mutate(`01`=s/sum(s), `08`=`01`, `09`=`01`) %>%
+    select(-s)
+  
+  # коэффициенты распределения по Главам 10, 12
+  t2 <- final_df %>% 
+    group_by(ssr_chap) %>%
+    filter(est_cost_entry %in% c(12, 13, 14, 15)) %>%
+    summarise(s=sum(est_cost)) %>%
+    # считаем пропорции
+    mutate(`10`=s/sum(s), `12`=`10`) %>%
+    select(-s)
+  
+  tr <- left_join(t1, t2, by="ssr_chap") %>% 
+    gather(`01`,`08`,`09`, `10`, `12`, key=indirect_chap, value=ratio) %>%
+    # подсоединим косвенные затраты по Главе
+    left_join(indirect_df, by=c("indirect_chap"="ssr_chap")) %>%
+    mutate(cost_raise=ratio*chap_indirect_сost) %>%
+    arrange(ssr_chap)# %>%
   # spread(indirect_chap, cost_raise)
 }
 
@@ -281,7 +281,7 @@ df0 <- final_df %>%
   # свернем типы затрат
   gather(indirect_cost, direct_cost, key=type, value=cost) %>%
   mutate(label=format(cost, big.mark=" "))
-  
+
 # brewer.pal(n=9, name="Greens")[4]
 gp <- ggplot(df0, aes(fct_reorder(as.factor(ossr_code), total_cost, .desc=FALSE), cost)) +
   scale_fill_brewer(palette="Dark2") +
@@ -300,7 +300,7 @@ gp <- ggplot(df0, aes(fct_reorder(as.factor(ossr_code), total_cost, .desc=FALSE)
   ylab("Затраты, руб") +
   xlab("Класс ОССР") +
   ggtitle("Структура затрат", subtitle="В разрезе классов ОССР")
-  # coord_flip() 
+# coord_flip() 
 
 gp
 
@@ -325,7 +325,7 @@ ss <- clean_df %>%
   filter(indirect_cost) %>%
   filter(!(ssr_chap %in% c("01", "08", "09", "10", "12"))) %>%
   arrange(ssr_chap)
-  
+
 
 # распределим косвенные затраты по главам 2-7 --------
 # для этого определим коэффициент косвенных затрат и на него увеличим все основные
