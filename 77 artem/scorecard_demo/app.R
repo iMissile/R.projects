@@ -85,7 +85,7 @@ ui <-
     tabsetPanel(
       id = "main_panel",
       selected="graph_tab",
-      tabPanel("Полная сметная стоимость", value="table_tab",
+      tabPanel("none", value="table_tab",
                fluidRow(
                  p(),
                  column(12, div(withSpinner(DT::dataTableOutput("stat_table"))), style="font-size: 90%")
@@ -103,8 +103,10 @@ ui <-
       ),
       tabPanel("График", value="graph_tab",
                fluidRow(
-                 p(),
-                 column(12, div(withSpinner(plotOutput('output_plot', height="300px"))))
+                 # column(12, {}),
+                 # p(),
+                 column(12, h3("Выпуск продукции \U21D1, \U21E7"),
+                        div(withSpinner(plotOutput('output_plot', height="300px"))))
                )
                )
       ),
