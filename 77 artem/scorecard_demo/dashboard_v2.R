@@ -44,32 +44,50 @@ subset_df <- raw_df %>%
   # и выкинем весь служебный шлак
   select(-id, -unit, -firmcode, -docnum)
 
-
 # выбираем данные на конкретную дату
 c_date <- dmy("10.09.2015") # current date
 
-score_df <- subset_df %>%
-  # погасим нетекущие даты для всех записей кроме Выпуска
-  mutate(skip=!stri_detect_regex(name, pattern="Выпуск ТК .+ ОБФ \\d$") & docdate!=c_date) %>%
-  filter(!skip) %>%
-  # сначала рассклассифицируем по датам, потом по типам
-  mutate(coltype=case_when(
-    docdate == c_date ~ "today",
-    docdate == c_date-days(1) ~ "today_minus_1",
-    docdate == c_date-days(2) ~ "today_minus_2",
-    TRUE ~ as.character(NA)
-  )) %>%
-  mutate(coltype=case_when(
-    stri_detect_regex(name, pattern="Отгрузка .+% НИ$") ~ "shipment_pcumm",
-    stri_detect_regex(name, pattern="Отгрузка .+ НИ$") ~ "shipment_cumm",
-    stri_detect_regex(name, pattern="Отгрузка .+$") ~ "shipment",
-    stri_detect_regex(name, pattern="Склад .+") ~ "stock",
-    stri_detect_regex(name, pattern="Выпуск .+% НИ$") ~ "output_pcumm",
-    stri_detect_regex(name, pattern="Выпуск .+ НИ$") ~ "output_cumm",
-    TRUE ~ coltype
-  )) %>%
-  # filter(complete.cases(.)) # так не годится, могут быть значения где нет плановых показателей. теряем склад
-  filter_at(vars(actualvalue, coltype), all_vars(!is.na(.)))
+# надо будет добавить сюда еще Итого
+df0 <- subset_df %>%
+  filter(docdate>=c_date-days(2) & docdate<=c_date) %>%
+  filter(material!="" & kpi=="")
+
+# надо будет сформировать и добавить сюда еще "Итого"
+df1 <- df0 %>%
+  group_by(docdate, kpi) %>%
+  summarise(actualvalue=sum(actualvalue), planvalue=sum(planvalue), material="Итого") %>%
+  ungroup()
+
+score_df <- bind_rows(df0, df1) %>%
+  # filter(docdate>=c_date-days(2) & docdate<=c_date) %>%
+  # filter(material!="" & kpi=="") %>%
+  mutate(status=as.factor(if_else(is.na(planvalue), TRUE, actualvalue>planvalue))) %>%
+  mutate(label=format(actualvalue, big.mark=" "))
+
+ggplot(score_df, aes(x=docdate, y=actualvalue)) +
+  geom_bar(aes(fill=status), stat="identity") +
+  scale_fill_manual(
+    values=c("FALSE"="brown1", "TRUE"="chartreuse4"),
+    # breaks=c("4", "6", "8"),
+    # ручное управление, сортировка по алфафиту
+    labels=c("просадка", "в плане")
+  ) +
+  # нарисуем плановое значение точкой
+  geom_point(aes(y=planvalue), colour="blue", shape=16, size=3) +
+  geom_label(aes(label=label), position = position_stack(vjust = 0.5), 
+             fill="white", colour="black", fontface="bold", hjust=.5) +
+  facet_wrap(~material, nrow=1)
+
+
+stop()
+
+
+scale_fill_manual(
+  values=c("1"="chartreuse4", "0"="brown1"),
+  # breaks=c("4", "6", "8"),
+  labels=c("four", "six")
+) +
+  
 
 df <- score_df %>%
   unite(actualvalue, planvalue, col=values) %>%
