@@ -47,10 +47,22 @@ subset_df <- raw_df %>%
 # выбираем данные на конкретную дату
 c_date <- dmy("10.09.2015") # current date
 
+# df0 <- subset_df %>%
+#   filter(docdate==c_date) %>%
+#   filter(!(operation=="Выпуск ТК" & kpi==""))# %>%
+#   # пересчитаем planvalue исходя из факта и % исполнения
+#   #mutate(planvalue=if_else(is.na(planvalue))
+# 
+# 
+# stop()
+ 
+ 
+# обработка Выпуска ОБФ ---------------------------
 # надо будет добавить сюда еще Итого
 df0 <- subset_df %>%
   filter(docdate>=c_date-days(2) & docdate<=c_date) %>%
-  filter(material!="" & kpi=="")
+  # накопительный итог включаем в общее рассмотрение
+  filter(material!="" & kpi %in% c("", "НИ"))
 
 # надо будет сформировать и добавить сюда еще "Итого"
 df1 <- df0 %>%
@@ -62,21 +74,36 @@ score_df <- bind_rows(df0, df1) %>%
   # filter(docdate>=c_date-days(2) & docdate<=c_date) %>%
   # filter(material!="" & kpi=="") %>%
   mutate(status=as.factor(if_else(is.na(planvalue), TRUE, actualvalue>planvalue))) %>%
-  mutate(label=format(actualvalue, big.mark=" "))
+  mutate(label_up=format(actualvalue, big.mark=" ")) %>%
+  mutate(label_down=stri_join(format(round(actualvalue/planvalue*100, digits=0), big.mark=" "), "%")) %>%
+  # unite(material, kpi, col=composed_kpi, sep="-")
+  mutate(composed_kpi=if_else(kpi=="", material, stri_join(material, kpi, sep="-"))) %>%
+  mutate(opacity=if_else(docdate==c_date, "Mark", "Hide"))
+
 
 ggplot(score_df, aes(x=docdate, y=actualvalue)) +
-  geom_bar(aes(fill=status), stat="identity") +
+  geom_bar(aes(fill=status, alpha=opacity), stat="identity") +
   scale_fill_manual(
     values=c("FALSE"="brown1", "TRUE"="chartreuse4"),
     # breaks=c("4", "6", "8"),
     # ручное управление, сортировка по алфафиту
     labels=c("просадка", "в плане")
   ) +
+  scale_alpha_manual(values=c("Hide"=0.3, "Mark"=1)) +
   # нарисуем плановое значение точкой
-  geom_point(aes(y=planvalue), colour="blue", shape=16, size=3) +
-  geom_label(aes(label=label), position = position_stack(vjust = 0.5), 
+  geom_point(aes(y=planvalue), colour="goldenrod", shape=4, size=3, stroke=3) +
+  geom_label(aes(label=label_up), position = position_stack(vjust = 0.6), 
              fill="white", colour="black", fontface="bold", hjust=.5) +
-  facet_wrap(~material, nrow=1, scales="free_y")
+  geom_label(aes(label=label_down), position = position_stack(vjust = 0.4), 
+             fill="white", colour="black", fontface="bold", hjust=.5) +
+  # facet_wrap(~composed_kpi, nrow=1, scales="free_y")
+  # facet_wrap(~material+kpi, nrow=1, scales="free_y")
+  facet_grid(kpi~material, scales="free") +
+  scale_y_log10(
+    # breaks = scales::trans_breaks("log10", function(x) 10^x)
+    # labels = scales::trans_format("log10", scales::math_format(10^.x))
+  ) +
+  annotation_logticks()
 
 
 stop()

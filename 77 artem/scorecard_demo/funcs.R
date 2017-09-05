@@ -1,23 +1,35 @@
 plotOutputScore <- function(df){
   gp <- ggplot(df, aes(x=docdate, y=actualvalue)) +
-    geom_bar(aes(fill=status), stat="identity") +
+    geom_bar(aes(fill=status, alpha=opacity), stat="identity") +
     scale_fill_manual(
-      # values=c("FALSE"="brown1", "TRUE"="chartreuse4"),
-      values=c("FALSE"="firebrick", "TRUE"="forestgreen"),
+      values=c("FALSE"="brown1", "TRUE"="chartreuse4"),
       # breaks=c("4", "6", "8"),
       # ручное управление, сортировка по алфафиту
       labels=c("просадка", "в плане")
     ) +
+    scale_alpha_manual(values=c("Hide"=0.3, "Mark"=1)) +
     # нарисуем плановое значение точкой
-    geom_point(aes(y=planvalue), colour="blue", shape=16, size=3) +
-    geom_label(aes(label=label), position = position_stack(vjust = 0.5), 
+    geom_point(aes(y=planvalue), colour="goldenrod", shape=4, size=3, stroke=3) +
+    geom_label(aes(label=label_up), position = position_stack(vjust = 0.6), 
                fill="white", colour="black", fontface="bold", hjust=.5) +
-    facet_wrap(~material, nrow=1, scales="free_y") +
+    geom_label(aes(label=label_down), position = position_stack(vjust = 0.4), 
+               fill="white", colour="black", fontface="bold", hjust=.5) +
+    # facet_wrap(~composed_kpi, nrow=1, scales="free_y")
+    # facet_wrap(~material+kpi, nrow=1, scales="free_y")
+    facet_grid(kpi~material, scales="free_y") +
+    scale_y_log10(
+      # breaks = scales::trans_breaks("log10", function(x) 10^x)
+      # labels = scales::trans_format("log10", scales::math_format(10^.x))
+    ) +
+    annotation_logticks() +
     theme_ipsum_rc(base_size=20,
-                   subtitle_size=14,
+                   # plot_title_size=10,
+                   subtitle_size=18,
+                   # caption_size=12,
+                   strip_text_size=16, # заголовок в facet
                    axis_title_size=18) +  
     # theme(axis.text.x = element_text(angle=90)) +
-    ylab("Количетво, т") +
+    ylab("Количеcтво, т") +
     xlab("Дата")
   
   gp  

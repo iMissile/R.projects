@@ -115,10 +115,10 @@ ui <-
       ),
       tabPanel("График", value="graph_tab",
                fluidRow(
-                 # column(12, {}),
+                 column(2, {}),
                  # p(),
-                 column(12, h3("Выпуск продукции \U21D1, \U21E7"),
-                        div(withSpinner(plotOutput('output_plot', height="300px"))))
+                 column(10, h3("Выпуск продукции \U21D1, \U21E7"),
+                        div(withSpinner(plotOutput('output_plot', height="600px"))))
                )
                )
       ),
@@ -189,18 +189,22 @@ server <- function(input, output, session) {
     # надо будет добавить сюда еще Итого
     df0 <- req(subset_df()) %>%
       filter(docdate>=c_date-days(2) & docdate<=c_date) %>%
-      filter(material!="" & kpi=="")
+      # накопительный итог включаем в общее рассмотрение
+      filter(material!="" & kpi %in% c("", "НИ"))
     
     # надо будет сформировать и добавить сюда еще "Итого"
     df1 <- df0 %>%
-      group_by(docdate) %>%
-      summarise(actualvalue=sum(actualvalue), planvalue=sum(planvalue), material="Итого", kpi="")    
+      group_by(docdate, kpi) %>%
+      summarise(actualvalue=sum(actualvalue), planvalue=sum(planvalue), material="Итого") %>%
+      ungroup()    
     
     bind_rows(df0, df1) %>%
-      filter(docdate>=c_date-days(2) & docdate<=c_date) %>%
-      filter(material!="" & kpi=="") %>%
-      mutate(status=as.character(if_else(is.na(planvalue), TRUE, actualvalue>planvalue))) %>%
-      mutate(label=format(actualvalue, big.mark=" "))
+      mutate(status=as.factor(if_else(is.na(planvalue), TRUE, actualvalue>planvalue))) %>%
+      mutate(label_up=format(actualvalue, big.mark=" ")) %>%
+      mutate(label_down=stri_join(format(round(actualvalue/planvalue*100, digits=0), big.mark=" "), "%")) %>%
+      # unite(material, kpi, col=composed_kpi, sep="-")
+      mutate(composed_kpi=if_else(kpi=="", material, stri_join(material, kpi, sep="-"))) %>%
+      mutate(opacity=if_else(docdate==c_date, "Mark", "Hide"))
   })
   
   
