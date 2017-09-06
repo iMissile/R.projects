@@ -9,6 +9,7 @@ library(pryr)
 #library(ggthemes)
 library(plot3D)
 library(plotly)
+library(plot3Drgl)
 
 getwd()
 
@@ -27,7 +28,8 @@ raw_df <- tidyr::expand(tibble(angle=c("0.786398", "-0.784398"),
 
 clean_df <- raw_df %>%
   spread(axis, value) %>%
-  filter(complete.cases(.))
+  filter(complete.cases(.)) %>%
+  mutate(xx=x, yy=timestamp, zz=y*10^15)
 
 plus_df <- clean_df %>%
   filter(angle>0)
@@ -40,18 +42,59 @@ write_csv(select(minus_df, -angle_str), "./data/combined_minus.csv")
 # попробуем порисовать через plot3D
 # http://www.sthda.com/english/wiki/impressive-package-for-3d-and-4d-graph-r-software-and-data-visualization
 
-y0 <- minus_df$timestamp
-z0 <- minus_df$y
-x0 <- minus_df$x
-
-y1 <- plus_df$timestamp
-z1 <- plus_df$y
-x1 <- plus_df$x
+x_m <- minus_df$xx
+y_m <- minus_df$yy
+z_m <- minus_df$zz
 
 
-scatter3D(x0, y0, z0, phi=0, bty="g", type="l",  ticktype="detailed", lwd=1)
-scatter3D(x0, y0, z0, colvar=NULL, col="blue", pch=19, cex=0.5)
+x_p <- plus_df$xx
+y_p <- plus_df$yy
+z_p <- plus_df$zz
+
+
+# нарисуем минусовой угол
+scatter3D(x_m, y_m, z_m, bty="b2", colvar=NULL, col="chartreuse4", 
+          ticktype="detailed",
+          xlim=c(min(clean_df$xx), max(clean_df$xx)),
+          zlim=c(min(clean_df$zz), max(clean_df$zz)),
+          theta=20, phi=20, 
+          pch=1, cex=0.5)
+# нарисуем плюсовой угол
+scatter3D(x_p, y_p, z_p, bty="b2", colvar=NULL, col="brown1", 
+          #ticktype="detailed",
+          pch=1, cex=0.5, add=TRUE)
+
+# нарисуем тень плюсового угла на плоскости xy
+scatter3D(x_p, y_p, rep_along(y_p, min(clean_df$zz)), bty="b2", colvar=NULL, col="grey", 
+          #ticktype="detailed",
+          pch=20, cex=0.5, add=TRUE)
+# нарисуем тень плюсового угла на плоскости zy
+scatter3D(rep_along(y_p, min(clean_df$xx)), y_p, z_p, bty="b2", colvar=NULL, col="grey", 
+          #ticktype="detailed",
+          pch=20, cex=0.5, add=TRUE)
+
+# нарисуем тень минусового угла на плоскости xy
+scatter3D(x_m, y_m, rep_along(y_m, min(clean_df$zz)), bty="b2", colvar=NULL, col="goldenrod", 
+          #ticktype="detailed",
+          pch=20, cex=0.5, add=TRUE)
+# нарисуем тень минусового угла на плоскости zy
+scatter3D(rep_along(y_m, min(clean_df$xx)), y_m, z_m, bty="b2", colvar=NULL, col="goldenrod", 
+          #ticktype="detailed",
+          pch=20, cex=0.5, add=TRUE)
+
+
+stop()
+
+scatter3D(x2, y0, z0, bty="b2", colvar=NULL, col="green", add=TRUE)
+
+
+scatter3D(x0, y0, z0, phi=0, bty="g", type="l",  ticktype="detailed", lwd=1, col=gg.col(10))
+scatter3D(x0, y0, z0, phi=0, bty="g", type="p",  ticktype="detailed", lwd=1, col=gg.col(10))
+
+# plotrgl()
+
 scatter3D(x1, y1, z1, colvar=NULL, col="red", pch=19, cex=0.5, add=TRUE)
+plotrgl()
 
 
 # Open a new png device to print the figure out to (or use tiff, pdf, etc).
@@ -65,9 +108,9 @@ dev.off() #close the png device to save the figure.
 
 # попробуем порисовать через plot3D
 # https://plot.ly/r/3d-line-plots/
-sample_df <- df0 %>%
+sample_df <- minus_df %>%
   sample_frac(0.1, replace=FALSE) %>%
   arrange(timestamp)
 
-plot_ly(sample_df, x = ~x, y = ~y, z = ~timestamp, type = 'scatter3d', mode = 'lines',
-             line=list(width = 2))
+plot_ly(sample_df, x = ~x, y = ~y, z = ~timestamp, type = 'scatter3d', mode = 'lines', line=list(width = 2))
+plot_ly(sample_df, x = ~x, y = ~y, z = ~timestamp, type = 'scatter3d', mode = 'points', line=list(width = 2))
