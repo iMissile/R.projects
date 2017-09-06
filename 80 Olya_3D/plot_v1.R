@@ -29,7 +29,9 @@ raw_df <- tidyr::expand(tibble(angle=c("0.786398", "-0.784398"),
 clean_df <- raw_df %>%
   spread(axis, value) %>%
   filter(complete.cases(.)) %>%
-  mutate(xx=x, yy=timestamp, zz=y*10^15)
+  mutate(xx=x, yy=timestamp) %>%
+  mutate(zz=y*10^15) %>% # для Re
+  mutate(zz=y) # для Im
 
 plus_df <- clean_df %>%
   filter(angle>0)
@@ -46,42 +48,52 @@ x_m <- minus_df$xx
 y_m <- minus_df$yy
 z_m <- minus_df$zz
 
-
 x_p <- plus_df$xx
 y_p <- plus_df$yy
 z_p <- plus_df$zz
 
+
+# Open a new png device to print the figure out to (or use tiff, pdf, etc).
+png(filename = "figure.png", width = 3600, height = 2000, units = 'px', res=300)
 
 # нарисуем минусовой угол
 scatter3D(x_m, y_m, z_m, bty="b2", colvar=NULL, col="chartreuse4", 
           ticktype="detailed",
           xlim=c(min(clean_df$xx), max(clean_df$xx)),
           zlim=c(min(clean_df$zz), max(clean_df$zz)),
+          xlab = "Ex", ylab ="Время", zlab="Ey",
           theta=20, phi=20, 
-          pch=1, cex=0.5)
+          alpha=0.15,
+          pch=16, cex=0.5)
 # нарисуем плюсовой угол
 scatter3D(x_p, y_p, z_p, bty="b2", colvar=NULL, col="brown1", 
           #ticktype="detailed",
-          pch=1, cex=0.5, add=TRUE)
+          alpha=0.15,
+          pch=16, cex=0.5, add=TRUE)
 
 # нарисуем тень плюсового угла на плоскости xy
-scatter3D(x_p, y_p, rep_along(y_p, min(clean_df$zz)), bty="b2", colvar=NULL, col="grey", 
+scatter3D(x_p, y_p, rep_along(y_p, min(clean_df$zz)), bty="b2", colvar=NULL, col="lightpink", 
           #ticktype="detailed",
-          pch=20, cex=0.5, add=TRUE)
+          alpha=0.15,
+          pch=16, cex=0.5, add=TRUE)
 # нарисуем тень плюсового угла на плоскости zy
-scatter3D(rep_along(y_p, min(clean_df$xx)), y_p, z_p, bty="b2", colvar=NULL, col="grey", 
+scatter3D(rep_along(y_p, min(clean_df$xx)), y_p, z_p, bty="b2", colvar=NULL, col="lightpink", 
           #ticktype="detailed",
-          pch=20, cex=0.5, add=TRUE)
+          alpha=0.15,
+          pch=16, cex=0.5, add=TRUE)
 
 # нарисуем тень минусового угла на плоскости xy
-scatter3D(x_m, y_m, rep_along(y_m, min(clean_df$zz)), bty="b2", colvar=NULL, col="goldenrod", 
+scatter3D(x_m, y_m, rep_along(y_m, min(clean_df$zz)), bty="b2", colvar=NULL, col="darkseagreen1", 
           #ticktype="detailed",
-          pch=20, cex=0.5, add=TRUE)
+          alpha=0.15,
+          pch=16, cex=0.5, add=TRUE)
 # нарисуем тень минусового угла на плоскости zy
-scatter3D(rep_along(y_m, min(clean_df$xx)), y_m, z_m, bty="b2", colvar=NULL, col="goldenrod", 
+scatter3D(rep_along(y_m, min(clean_df$xx)), y_m, z_m, bty="b2", colvar=NULL, col="darkseagreen1", 
           #ticktype="detailed",
-          pch=20, cex=0.5, add=TRUE)
+          alpha=0.15,
+          pch=16, cex=0.5, add=TRUE)
 
+dev.off() #close the png device to save the figure. 
 
 stop()
 
