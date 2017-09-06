@@ -47,10 +47,11 @@ ui <-
   # title=HTML('<div><a href="http://devoteam.com/"><img src="./img/devoteam_176px.png" width="80%"></a></div>'),
   title = "Scoreboard",
   tabPanel("Выпуск\\отгрузка", value="general_panel"),
-  tabPanel("About", value="about"),
+  tabPanel("Настройки", value="config_panel"),
+  selected="config_panel",
   # windowTitle="CC4L",
   # collapsible=TRUE,
-  id="tsp",
+  id="navbar",
   # theme=shinytheme("flatly"),
   theme=shinytheme("yeti"),
   # shinythemes::themeSelector(),
@@ -62,38 +63,40 @@ ui <-
   # ----------------
   conditionalPanel(
     # general panel -----------------------
-    condition = "input.tsp == 'general_panel'",
+    condition = "input.navbar == 'config_panel'",
     fluidRow(
-      tags$style(type='text/css', '#cweather_text {white-space:pre;}')
-      # tags$style(type='text/css', 'div {background-color: #000с00;}'), 
-      
-      #column(6, h2("Типовая форма"), h3(textOutput("cweather_text", inline=TRUE))),
-      #column(6, h2("Заполнитель"))
-      ),
-    fluidRow(
-      column(2, fileInput('project_plan', 'Выбор .xlsx файла с планом',
-                          #accept=c('application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')),
-                          accept = c('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'))
-      ),
-      column(2, dateInput("in_date",
-                          label="Дата",
-                          # start=Sys.Date()-1, end=Sys.Date(),
-                          # при демонстрации на пилотных данных
-                          value="2015-09-10",
-                          min="2015-09-01", 
-                          max="2015-09-30",
-                          # min = Sys.Date() - 10, 
-                          # max = Sys.Date(),
-                          format="dd-mm-yyyy",
-                          startview="month", language='ru', weekstart=1)
+      column(4, fileInput('project_plan', 'Выбор .xlsx файла с KPI',
+                          accept=c('application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'))
+                          #accept = c('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'))
       )
+    )
     ),
+  # ----------------
+  conditionalPanel(
+    # general panel -----------------------
+    condition = "input.navbar == 'general_panel'",
     # https://stackoverflow.com/questions/28960189/bottom-align-a-button-in-r-shiny
-    tags$style(type='text/css', "#set_today_btn {margin-top: 25px;}"),
-    tags$style(type='text/css', "#set_test_dates_btn {margin-top: 25px;}"),
-    tags$style(type='text/css', "#process_btn {margin-top: 25px;}"),
-
-    #tags$style(type='text/css', "#in_date_range { position: absolute; top: 50%; transform: translateY(-80%); }"),
+    
+    fluidRow(
+      column(8, {}),
+      column(2, 
+             dateInput("in_date",
+                       # label="Дата",
+                       label=NULL,
+                       # start=Sys.Date()-1, end=Sys.Date(),
+                       # при демонстрации на пилотных данных
+                       value="2015-09-10",
+                       min="2015-09-01", 
+                       max="2015-09-30",
+                       # min = Sys.Date() - 10, 
+                       # max = Sys.Date(),
+                       format="dd-mm-yyyy",
+                       startview="month", language='ru', weekstart=1)
+      ),
+      column(1, actionButton("prev_date_btn", "\U21D0 -1 день", width="100%")),
+      column(1, actionButton("next_date_btn", "+1 день \U21D2", width="100%"))
+    ),
+    
     tabsetPanel(
       id = "main_panel",
       selected="graph_tab",
@@ -113,15 +116,14 @@ ui <-
                  column(12, textOutput("info_text"))
                )               
       ),
-      tabPanel("График", value="graph_tab",
+      tabPanel("Выпуск", value="graph_tab",
                fluidRow(
-                 column(2, {}),
-                 # p(),
-                 column(10, h3("Выпуск продукции \U21D1, \U21E7"),
+                 column(12, h3("Выпуск продукции \U21D1, \U21E7")),
+                 column(10, 
                         div(withSpinner(plotOutput('output_plot', height="600px"))))
                )
-               )
-      ),
+      )
+    ),
     # https://github.com/daattali/shinyjs/issues/121
     div(id="slice_panel_div", 
     tabsetPanel(

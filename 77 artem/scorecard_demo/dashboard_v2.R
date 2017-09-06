@@ -21,10 +21,12 @@ data_file <- "./data/KPI_example.xls"
 getwd()
 
 raw_df <- read_excel(data_file) %>%
+  # на самом деле % НИ считается из НИ и его можно просто выкинуть
+  filter(!stri_detect_regex(name, pattern=".*% НИ$")) %>%
   mutate_at(vars(docdate), as_date)
 
 # поглядим сводку по данным ---------------------
-if (FALSE) {
+if (TRUE) {
   tic()
   # посчитаем количество уникальных значений в колонках
   dist_cols <- raw_df %>% map_df(n_distinct)
