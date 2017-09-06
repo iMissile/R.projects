@@ -45,7 +45,7 @@ assign("last.warning", NULL, envir = baseenv())
 ui <- 
   navbarPage(
   # title=HTML('<div><a href="http://devoteam.com/"><img src="./img/devoteam_176px.png" width="80%"></a></div>'),
-  title = "Демо Форма",
+  title = "Scoreboard",
   tabPanel("Выпуск\\отгрузка", value="general_panel"),
   tabPanel("About", value="about"),
   # windowTitle="CC4L",
