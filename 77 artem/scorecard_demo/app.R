@@ -99,27 +99,17 @@ ui <-
     tabsetPanel(
       id = "main_panel",
       selected="graph_tab",
-      tabPanel("none", value="table_tab",
-               fluidRow(
-                 p(),
-                 column(12, div(withSpinner(DT::dataTableOutput("stat_table"))), style="font-size: 90%")
-               ),
-               p(),
-               fluidRow(
-                 column(8, {}),
-                 column(2, downloadButton("csv_download_btn", label="Экспорт (Excel)", class = 'rightAlign')),
-                 column(2, downloadButton("word_download_btn", label="Экспорт (Word)", class = 'rightAlign'))
-               ),
-               fluidRow(
-                 #column(10, plotOutput("subset_plot")),
-                 column(12, textOutput("info_text"))
-               )               
-      ),
       tabPanel("Выпуск", value="graph_tab",
                fluidRow(
                  column(12, h3("Выпуск продукции \U21D1, \U21E7")),
                  column(10, 
                         div(withSpinner(plotOutput('output_plot', height="600px"))))
+               )
+      ),
+      tabPanel("Метрики", value="table_tab",
+               fluidRow(
+                 p(),
+                 column(12, div(withSpinner(DT::dataTableOutput("stat_table"))), style="font-size: 90%")
                )
       )
     ),
@@ -167,9 +157,21 @@ server <- function(input, output, session) {
     fname <- req(input$project_plan$datapath)
     flog.info(paste0("Loading '", fname, "'"))
     read_excel(fname) %>%
+      # на самом деле % НИ считается из НИ и его можно просто выкинуть
+      filter(!stri_detect_regex(name, pattern=".*% НИ$")) %>%
       mutate_at(vars(docdate), as_date)
   })  
 
+  raw_kpi_df <- reactive({
+    # немного подрихтованные исходные kpi
+    df <- req(raw_df()) %>%
+      mutate(ratio=round(actualvalue/planvalue*100, digits=1)) %>%
+      group_by(docdate) %>%
+      arrange(desc(docdate), ratio)
+      
+    df
+  })  
+  
   subset_df <- reactive({
     req(raw_df()) %>% 
       mutate(deparse=stri_replace_all_regex(name, "(.+\\sТК)\\s+(СКБК|ПЗБМ)\\s?(ОБФ\\s\\d)?\\s?(.*)", 
@@ -213,7 +215,7 @@ server <- function(input, output, session) {
 
   # таблица-свертка по ОКС  ----------------------------
   output$stat_table <- DT::renderDataTable({
-    df <- req(score_df())
+    df <- req(raw_kpi_df())
 
     # https://rstudio.github.io/DT/functions.html
     DT::datatable(df,
@@ -224,8 +226,8 @@ server <- function(input, output, session) {
                   selection=list(mode="single", target="row"),
                   # selection="single",
                   options=list(dom='fltip', #autoWidth=TRUE, 
-                               pageLength=7, lengthMenu=c(5, 7, 10, 15),
-                               order=list(list(3, 'desc'))))
+                               pageLength=10, lengthMenu=c(5, 7, 10, 15)
+                               ))
     })
   
     
