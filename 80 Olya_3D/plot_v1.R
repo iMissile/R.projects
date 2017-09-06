@@ -56,8 +56,8 @@ z_p <- plus_df$zz
 # Open a new png device to print the figure out to (or use tiff, pdf, etc).
 png(filename = "figure.png", width = 3600, height = 2000, units = 'px', res=300)
 
-# нарисуем минусовой угол
-scatter3D(x_m, y_m, z_m, bty="b2", colvar=NULL, col="chartreuse4", 
+# нарисуем тень плюсового угла на плоскости xy
+scatter3D(x_p, y_p, rep_along(y_p, min(clean_df$zz)), bty="b2", colvar=NULL, col="lightpink", 
           ticktype="detailed",
           xlim=c(min(clean_df$xx), max(clean_df$xx)),
           zlim=c(min(clean_df$zz), max(clean_df$zz)),
@@ -65,17 +65,6 @@ scatter3D(x_m, y_m, z_m, bty="b2", colvar=NULL, col="chartreuse4",
           theta=20, phi=20, 
           alpha=0.15,
           pch=16, cex=0.5)
-# нарисуем плюсовой угол
-scatter3D(x_p, y_p, z_p, bty="b2", colvar=NULL, col="brown1", 
-          #ticktype="detailed",
-          alpha=0.15,
-          pch=16, cex=0.5, add=TRUE)
-
-# нарисуем тень плюсового угла на плоскости xy
-scatter3D(x_p, y_p, rep_along(y_p, min(clean_df$zz)), bty="b2", colvar=NULL, col="lightpink", 
-          #ticktype="detailed",
-          alpha=0.15,
-          pch=16, cex=0.5, add=TRUE)
 # нарисуем тень плюсового угла на плоскости zy
 scatter3D(rep_along(y_p, min(clean_df$xx)), y_p, z_p, bty="b2", colvar=NULL, col="lightpink", 
           #ticktype="detailed",
@@ -92,6 +81,17 @@ scatter3D(rep_along(y_m, min(clean_df$xx)), y_m, z_m, bty="b2", colvar=NULL, col
           #ticktype="detailed",
           alpha=0.15,
           pch=16, cex=0.5, add=TRUE)
+
+# нарисуем плюсовой угол
+scatter3D(x_p, y_p, z_p, bty="b2", colvar=NULL, col="brown1", 
+          #ticktype="detailed",
+          alpha=0.4,
+          pch=16, cex=0.5, add=TRUE)
+# нарисуем минусовой угол
+scatter3D(x_m, y_m, z_m, bty="b2", colvar=NULL, col="chartreuse4", 
+          alpha=0.4,
+          pch=16, cex=0.5, add=TRUE)
+
 
 dev.off() #close the png device to save the figure. 
 
