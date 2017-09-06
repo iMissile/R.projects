@@ -30,8 +30,8 @@ clean_df <- raw_df %>%
   spread(axis, value) %>%
   filter(complete.cases(.)) %>%
   mutate(xx=x, yy=timestamp) %>%
-  mutate(zz=y*10^15) %>% # для Re
-  mutate(zz=y) # для Im
+  mutate(zz=y*10^15) #%>% # для Re
+  # mutate(zz=y) # для Im
 
 plus_df <- clean_df %>%
   filter(angle>0)
@@ -54,12 +54,13 @@ z_p <- plus_df$zz
 
 
 # Open a new png device to print the figure out to (or use tiff, pdf, etc).
-png(filename = "figure.png", width = 3600, height = 2000, units = 'px', res=300)
+png(filename="figure.png", width = 3600, height = 2000, units = 'px', res=300)
 
 # нарисуем тень плюсового угла на плоскости xy
 scatter3D(x_p, y_p, rep_along(y_p, min(clean_df$zz)), bty="b2", colvar=NULL, col="lightpink", 
           ticktype="detailed",
           xlim=c(min(clean_df$xx), max(clean_df$xx)),
+          ylim=c(min(clean_df$yy), max(clean_df$yy)),
           zlim=c(min(clean_df$zz), max(clean_df$zz)),
           xlab = "Ex", ylab ="Время", zlab="Ey",
           theta=20, phi=20, 
@@ -72,12 +73,12 @@ scatter3D(rep_along(y_p, min(clean_df$xx)), y_p, z_p, bty="b2", colvar=NULL, col
           pch=16, cex=0.5, add=TRUE)
 
 # нарисуем тень минусового угла на плоскости xy
-scatter3D(x_m, y_m, rep_along(y_m, min(clean_df$zz)), bty="b2", colvar=NULL, col="darkseagreen1", 
+scatter3D(x_m, y_m, rep_along(y_m, min(clean_df$zz)), bty="b2", colvar=NULL, col="lightskyblue1", 
           #ticktype="detailed",
           alpha=0.15,
           pch=16, cex=0.5, add=TRUE)
 # нарисуем тень минусового угла на плоскости zy
-scatter3D(rep_along(y_m, min(clean_df$xx)), y_m, z_m, bty="b2", colvar=NULL, col="darkseagreen1", 
+scatter3D(rep_along(y_m, min(clean_df$xx)), y_m, z_m, bty="b2", colvar=NULL, col="lightskyblue1", 
           #ticktype="detailed",
           alpha=0.15,
           pch=16, cex=0.5, add=TRUE)
@@ -85,13 +86,12 @@ scatter3D(rep_along(y_m, min(clean_df$xx)), y_m, z_m, bty="b2", colvar=NULL, col
 # нарисуем плюсовой угол
 scatter3D(x_p, y_p, z_p, bty="b2", colvar=NULL, col="brown1", 
           #ticktype="detailed",
-          alpha=0.4,
+          alpha=0.6,
           pch=16, cex=0.5, add=TRUE)
 # нарисуем минусовой угол
-scatter3D(x_m, y_m, z_m, bty="b2", colvar=NULL, col="chartreuse4", 
-          alpha=0.4,
+scatter3D(x_m, y_m, z_m, bty="b2", colvar=NULL, col="dodgerblue3", #"chartreuse4", 
+          alpha=0.6,
           pch=16, cex=0.5, add=TRUE)
-
 
 dev.off() #close the png device to save the figure. 
 
