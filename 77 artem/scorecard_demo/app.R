@@ -48,10 +48,9 @@ ui <-
   title = "Scoreboard",
   tabPanel("Выпуск\\отгрузка", value="general_panel"),
   tabPanel("Настройки", value="config_panel"),
+  id="mainNavbarPage",
   selected="config_panel",
-  # windowTitle="CC4L",
   # collapsible=TRUE,
-  id="navbar",
   # theme=shinytheme("flatly"),
   theme=shinytheme("yeti"),
   # shinythemes::themeSelector(),
@@ -63,31 +62,31 @@ ui <-
   # ----------------
   conditionalPanel(
     # general panel -----------------------
-    condition = "input.navbar == 'config_panel'",
+    condition = "input.mainNavbarPage == 'config_panel'",
     fluidRow(
       column(4, fileInput('project_plan', 'Выбор .xlsx файла с KPI',
-                          accept=c('application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'))
-                          #accept = c('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'))
+                          #accept=c('application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'))
+                          accept = c('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'))
       )
     )
     ),
   # ----------------
   conditionalPanel(
     # general panel -----------------------
-    condition = "input.navbar == 'general_panel'",
+    condition = "input.mainNavbarPage == 'general_panel'",
     # https://stackoverflow.com/questions/28960189/bottom-align-a-button-in-r-shiny
     
     fluidRow(
       column(8, {}),
       column(2, 
-             dateInput("in_date",
+             dateInput("view_date",
                        # label="Дата",
                        label=NULL,
                        # start=Sys.Date()-1, end=Sys.Date(),
                        # при демонстрации на пилотных данных
                        value="2015-09-10",
-                       min="2015-09-01", 
-                       max="2015-09-30",
+                       # min="2015-09-01", 
+                       # max="2015-09-30",
                        # min = Sys.Date() - 10, 
                        # max = Sys.Date(),
                        format="dd-mm-yyyy",
@@ -154,7 +153,7 @@ server <- function(input, output, session) {
   flog.info(paste0("App started"))
 
   shinyjs::hide("slice_panel_div")
-  
+
   # создание параметров оформления для различных видов графиков (screen\publish) ------
   font_sizes <- list(
     "screen"=list(base_size=20, axis_title_size=18, subtitle_size=15),
@@ -186,7 +185,7 @@ server <- function(input, output, session) {
     # выбираем данные на конкретную дату
     # c_date <- dmy("10.09.2015") # current date
     # browser()
-    c_date <- ymd(input$in_date) # current date
+    c_date <- ymd(input$view_date) # current date
     
     # надо будет добавить сюда еще Итого
     df0 <- req(subset_df()) %>%
@@ -237,13 +236,24 @@ server <- function(input, output, session) {
   })    
 
   
-  observe({
-    # управляем визуализацией табсета с детализированным графиком -----
-    if(is.null(input$stat_table_rows_selected)) {
-      shinyjs::hide("slice_panel_div")
-    } else {
-      shinyjs::show("slice_panel_div")
-    }
+  # обработчики событий ------------------------------
+  
+  # переключаем панель после загрузки
+  observeEvent((input$project_plan$datapath), {
+    # browser()
+    flog.info(paste0("Switching to general panel"))
+    updateNavbarPage(session, "mainNavbarPage", selected="general_panel")
+    # Run JS code that simply shows a message
+    # runjs("var today = new Date(); alert(today);")
+    #flog.info(paste0("Switching to general panel again"))
+  })  
+
+  # динамическое управление датой ---------
+  observeEvent((input$prev_date_btn), {
+    date <- input$view_date-days(1)
+    # if(date>input$view_date){}
+    flog.info(paste0("View date changed to  ", date))
+    updateDateInput(session, "view_date", value=date)
   })  
   
   # служебный вывод ---------------------  
@@ -251,34 +261,6 @@ server <- function(input, output, session) {
     msg()
   })
 
-  # обработчики кнопок выгрузки файлов --------------------------------------------------
-  # выгрузка таблицы в CSV -----------------------  
-  output$csv_download_btn <- downloadHandler(
-    filename = function() {
-      paste0("user_activity_data-", Sys.Date(), ".csv", sep="")
-    },
-    content = function(file) {
-      cur_df() %>%
-        # сделаем вывод в формате, принимаемым Excel
-        write.table(file, na="NA", append=FALSE, col.names=TRUE, 
-                    row.names=FALSE, sep=";", fileEncoding="windows-1251")
-    }
-  )
-  
-  # выгрузка таблицы в Word -----------------------
-  output$word_download_btn <- downloadHandler(
-    filename = function() {
-      name <- paste0("user_activity_report-", Sys.Date(), ".docx", sep="")
-      flog.info(paste0("Word report: '", name, "'"))
-      name
-    },
-    content = function(file) {
-      doc <- cur_df() %>% # select(-total_unique_stb) %>% # пока убираем, чтобы была консистентная подстановка
-        gen_word_report(publish_set=font_sizes[["word_A4"]], dict=dict_df)
-      print(doc, target=file)  
-    }
-  )  
-  
   # динамичекое обновление url в location bar
   observe({
     # Trigger this observer every time an input changes
