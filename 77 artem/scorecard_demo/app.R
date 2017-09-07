@@ -60,9 +60,7 @@ ui <-
   # http://stackoverflow.com/questions/25387844/right-align-elements-in-shiny-mainpanel/25390164
   tags$head(tags$style(".rightAlign{float:right;}")), 
 
-  # ----------------
-  conditionalPanel(
-    # general panel -----------------------
+  conditionalPanel( # config panel -----------------------
     condition = "input.mainNavbarPage == 'config_panel'",
     fluidRow(
       column(4, fileInput('project_plan', 'Выбор .xlsx файла с KPI',
@@ -71,9 +69,7 @@ ui <-
       )
     )
     ),
-  # ----------------
-  conditionalPanel(
-    # general panel -----------------------
+  conditionalPanel( # general panel -----------------------
     condition = "input.mainNavbarPage == 'general_panel'",
     # https://stackoverflow.com/questions/28960189/bottom-align-a-button-in-r-shiny
     
@@ -264,7 +260,11 @@ server <- function(input, output, session) {
       plotKPIts(df)
   })    
   
-  
+  # служебный вывод ---------------------  
+  output$info_text <- renderText({
+    msg()
+  })
+
   # обработчики событий ------------------------------
   
   # переключаем панель после загрузки
@@ -299,11 +299,6 @@ server <- function(input, output, session) {
                 label=paste0("Метрики (", length(l), ")"),
                 choices=l)
   })  
-
-  # служебный вывод ---------------------  
-  output$info_text <- renderText({
-    msg()
-  })
 
   # динамичекое обновление url в location bar
   observe({
