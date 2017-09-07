@@ -182,3 +182,22 @@ plotOSSRslice <- function(df){
   
   gp  
 }
+
+# Локализация названий колонок в датасете --------------
+getRusColnames <- function(df) {
+  colnames_df <- tribble(
+    ~col_name, ~human_name_rus, ~col_label, 
+    "oks_code", "Код ОКС", "Код ОКС",
+    "oks_name", "Наименование ОКС", "Наименование ОКС",
+    "ossr_type", "Код вида ОССР", "Код вида ОССР",
+    "ossr_code", "Код ОССР", "Код ОССР",
+    "ssr_chap", "Глава ССР", "Глава ССР",
+    "direct_cost", "Прямые затраты", "Прямые затраты",
+    "indirect_cost", "Косвенные затраты", "Косвенные затраты"
+  )
+  
+  tibble(name=names(df)) %>%
+    left_join(colnames_df, by=c("name"="col_name")) %>%
+    # санация
+    mutate_at(vars(human_name_rus, col_label), ~if_else(is.na(.x), name, .x))
+}

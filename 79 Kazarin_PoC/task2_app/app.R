@@ -131,14 +131,14 @@ ui <-
           tabsetPanel(
             id = "slice_panel",
             selected="slice_table_tab",
-            tabPanel("Разрез объектов ССР", value="slice_table_tab",
+            tabPanel("Разрез объектов", value="slice_table_tab", # ----------------
                      fluidRow(
                        p(),
                        column(12, div(withSpinner(DT::dataTableOutput("slice_table"))), 
                               style="font-size: 90%")
                      )
             ),
-            tabPanel("Графическая структура затрат", value = "slice_graph_tab",
+            tabPanel("Графическая структура затрат", value = "slice_graph_tab", # ----------------
                      fluidRow(
                        p(),
                        column(12, div(withSpinner(plotOutput('slice_plot', height="500px"))))
@@ -146,11 +146,14 @@ ui <-
             )
           ),
           width=10
-        ),
-        sidebarPanel(
-          selectInput("dataset", "Choose a dataset:",
-                      choices = c("rock", "pressure", "cars")),
-          
+        ), # ----------------
+        sidebarPanel( 
+          selectInput("slice_filter", "Представить в разрезе:",
+                      choices=c('Все данные'=' ',
+                                'Код вида ОССР'='ossr_type', 
+                                'Код ОССР'='ossr_code', 
+                                'Глава ССР'='ssr_chap')
+                      ),
           numericInput("obs", "Observations:", 10),
           width=2
         )
@@ -158,8 +161,7 @@ ui <-
   ),
   shinyjs::useShinyjs()  # Include shinyjs
 )
-
-
+  
 # ================================================================
 server <- function(input, output, session) {
 
@@ -214,10 +216,10 @@ server <- function(input, output, session) {
   
   # формируем срез в зависимости от выбранной строки и параметров -------------------
   slice_df <- reactive({
-    
     req(clean_df())
     ids <- req(input$stat_table_rows_selected) # проводим анализ при выборе строки в таблице
-    flog.info(paste0("Selected row num is ", ids, ". Data row: ", capture.output(str(oks_summary_df()[ids, ]))))
+    flog.info(paste0("Selected row num is ", ids, ". Data row: ",
+                     capture.output(str(oks_summary_df()[ids, ]))))
     # ОКС достаем из выбранной строки
     oks_code <- oks_summary_df()[[ids, "oks_code"]]
     oks_code_val <- enquo(oks_code) # превратили в строку
@@ -237,7 +239,6 @@ server <- function(input, output, session) {
   # таблица-свертка по ОКС  ----------------------------
   output$stat_table <- DT::renderDataTable({
     df <- req(oks_summary_df())
-
     # https://rstudio.github.io/DT/functions.html
     DT::datatable(df,
                   class='cell-border stripe',
