@@ -101,17 +101,17 @@ ui <-
     tabsetPanel( 
       id = "main_panel",
       selected="kpi_table_tab",
+      tabPanel("Метрики (сводка)", value="kpi_table_tab",
+               fluidRow(
+                 p(),
+                 column(12, div(withSpinner(DT::dataTableOutput("stat_table"))), style="font-size: 90%")
+               )
+      ),
       tabPanel("Выпуск", value="graph_tab",
                fluidRow(
                  column(12, h3("Выпуск продукции \U21D1, \U21E7")),
                  column(10, 
                         div(withSpinner(plotOutput('output_plot', height="600px"))))
-               )
-      ),
-      tabPanel("Метрики (сводка)", value="kpi_table_tab",
-               fluidRow(
-                 p(),
-                 column(12, div(withSpinner(DT::dataTableOutput("stat_table"))), style="font-size: 90%")
                )
       ),
       tabPanel("Метрики (TS график)", value="kpi_ts_tab",
@@ -160,7 +160,7 @@ server <- function(input, output, session) {
     read_excel(fname) %>%
       # на самом деле % НИ считается из НИ и его можно просто выкинуть
       filter(!stri_detect_regex(name, pattern=".*% НИ$")) %>%
-      mutate(ratio=round(actualvalue/planvalue, digits=1)) %>%
+      mutate(ratio=round(actualvalue/planvalue, digits=3)) %>%
       mutate_at(vars(docdate), as_date)
   })  
 
