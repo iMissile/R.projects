@@ -27,6 +27,7 @@ library(shinyBS)
 library(shinyjs)
 library(shinyWidgets)
 library(shinycssloaders)
+library(DT)
 library(anytime)
 library(tictoc)
 library(digest)
@@ -96,9 +97,10 @@ ui <-
       column(1, actionButton("next_date_btn", "+1 день \U21D2", width="100%"))
     ),
     
-    tabsetPanel(
+    # панели основного окна ------------------
+    tabsetPanel( 
       id = "main_panel",
-      selected="graph_tab",
+      selected="kpi_table_tab",
       tabPanel("Выпуск", value="graph_tab",
                fluidRow(
                  column(12, h3("Выпуск продукции \U21D1, \U21E7")),
@@ -106,7 +108,7 @@ ui <-
                         div(withSpinner(plotOutput('output_plot', height="600px"))))
                )
       ),
-      tabPanel("Метрики", value="table_tab",
+      tabPanel("Метрики", value="kpi_table_tab",
                fluidRow(
                  p(),
                  column(12, div(withSpinner(DT::dataTableOutput("stat_table"))), style="font-size: 90%")
@@ -159,15 +161,23 @@ server <- function(input, output, session) {
     read_excel(fname) %>%
       # на самом деле % НИ считается из НИ и его можно просто выкинуть
       filter(!stri_detect_regex(name, pattern=".*% НИ$")) %>%
+      mutate(ratio=round(actualvalue/planvalue, digits=1)) %>%
       mutate_at(vars(docdate), as_date)
   })  
 
+  # список различных исходных KPI
+  kpi_list <- reactive({
+    
+  })
   raw_kpi_df <- reactive({
     # немного подрихтованные исходные kpi
+    # browser()
     df <- req(raw_df()) %>%
-      mutate(ratio=round(actualvalue/planvalue*100, digits=1)) %>%
-      group_by(docdate) %>%
-      arrange(desc(docdate), ratio)
+      filter(docdate==ymd(input$view_date)) %>%
+      select(-id, -docdate) %>%
+      arrange(ratio)
+      # group_by(docdate) %>%
+      # arrange(desc(docdate), ratio)
       
     df
   })  
@@ -210,10 +220,9 @@ server <- function(input, output, session) {
       mutate(opacity=if_else(docdate==c_date, "Mark", "Hide"))
   })
   
-  
   msg <- reactiveVal("")
 
-  # таблица-свертка по ОКС  ----------------------------
+  # подкрашенная таблица по сырым KPI ----------------------------
   output$stat_table <- DT::renderDataTable({
     df <- req(raw_kpi_df())
 
@@ -226,18 +235,25 @@ server <- function(input, output, session) {
                   selection=list(mode="single", target="row"),
                   # selection="single",
                   options=list(dom='fltip', #autoWidth=TRUE, 
-                               pageLength=10, lengthMenu=c(5, 7, 10, 15)
-                               ))
-    })
-  
-    
-  
+                               pageLength=15, lengthMenu=c(5, 7, 10, 15)
+                               )
+    ) %>% 
+      formatStyle("ratio",
+                  target="row",
+                  backgroundColor=styleInterval(
+                    c(-0.001, 0.95, .999), 
+                    ## c("ightskyblue1", "lightpink1", "lightgoldenrod1", "darkseagreen1"))
+                    # здесь надо указывать CSS цвета!
+                    c("LightSkyBlue", "LightPink ", "LightGoldenRodYellow", "DarkSeaGreen"))
+      ) %>%
+      formatPercentage("ratio", digits=1)
+  })
+
   # график структур  -------------
   output$output_plot <- renderPlot({
     plotOutputScore(req(score_df()))
   })    
 
-  
   # обработчики событий ------------------------------
   
   # переключаем панель после загрузки
@@ -257,7 +273,15 @@ server <- function(input, output, session) {
     flog.info(paste0("View date changed to  ", date))
     updateDateInput(session, "view_date", value=date)
   })  
+  observeEvent((input$next_date_btn), {
+    date <- input$view_date+days(1)
+    # if(date>input$view_date){}
+    flog.info(paste0("View date changed to  ", date))
+    updateDateInput(session, "view_date", value=date)
+  })  
   
+  
+    
   # служебный вывод ---------------------  
   output$info_text <- renderText({
     msg()

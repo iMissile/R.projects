@@ -34,3 +34,21 @@ plotOutputScore <- function(df){
   
   gp  
 }
+
+
+plotKPIts <- function(df){
+  kpis_df <- df %>%
+    mutate(status=ratio>=1)
+  
+  ggplot(kpis_df, aes(docdate, actualvalue)) +
+    # "lightpink" 
+    geom_area(aes(y=planvalue), fill="navajowhite", alpha=0.5) +
+    geom_line(linetype=2, size=1) +
+    geom_point(aes(fill=status), shape=21, size=3, stroke=1.5, alpha=0.5) +
+    scale_fill_manual(
+      values=c("FALSE"="brown1", "TRUE"="chartreuse4"),
+      # breaks=c("4", "6", "8"),
+      # ручное управление, сортировка по алфафиту
+      labels=c("просадка", "в плане")
+    )
+}
