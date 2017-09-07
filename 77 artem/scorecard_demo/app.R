@@ -108,24 +108,23 @@ ui <-
                         div(withSpinner(plotOutput('output_plot', height="600px"))))
                )
       ),
-      tabPanel("Метрики", value="kpi_table_tab",
+      tabPanel("Метрики (сводка)", value="kpi_table_tab",
                fluidRow(
                  p(),
                  column(12, div(withSpinner(DT::dataTableOutput("stat_table"))), style="font-size: 90%")
                )
-      )
-    ),
-    # https://github.com/daattali/shinyjs/issues/121
-    div(id="slice_panel_div", 
-    tabsetPanel(
-      id = "slice_panel",
-      selected="slice_table_tab",
-      tabPanel("Разрез объектов ССР", value="slice_table_tab",
+      ),
+      tabPanel("Метрики (TS график)", value="kpi_ts_tab",
                fluidRow(
-                 column(12, div(withSpinner(DT::dataTableOutput("slice_table"))), style="font-size: 90%")
-               )
+                 column(12, div(withSpinner(plotOutput('kpi_ts_plot', height="500px"))))
+               ),
+               column(4,     
+                      selectInput("kpi_filter", 
+                                  label="Метрики",
+                                  multiple=FALSE,
+                                  selectize=TRUE,
+                                  choices=NULL, width="100%"))
       )
-    )
     )
   ),
   shinyjs::useShinyjs()  # Include shinyjs
@@ -167,8 +166,11 @@ server <- function(input, output, session) {
 
   # список различных исходных KPI
   kpi_list <- reactive({
-    
+    # тут обычный char vector
+    unique(raw_df()$name) %>% 
+      sort(decreasing=F)
   })
+  
   raw_kpi_df <- reactive({
     # немного подрихтованные исходные kpi
     # browser()
@@ -254,6 +256,15 @@ server <- function(input, output, session) {
     plotOutputScore(req(score_df()))
   })    
 
+  # time-series график по выбранной метрике  -------------
+  output$kpi_ts_plot <- renderPlot({
+    df <- req(raw_df()) %>%
+      filter(name %in% input$kpi_filter)
+    
+      plotKPIts(df)
+  })    
+  
+  
   # обработчики событий ------------------------------
   
   # переключаем панель после загрузки
@@ -279,9 +290,16 @@ server <- function(input, output, session) {
     flog.info(paste0("View date changed to  ", date))
     updateDateInput(session, "view_date", value=date)
   })  
-  
-  
-    
+
+  # динамическое управление списком доступных метрик для TS графиков ---------
+  observeEvent((kpi_list()), {
+    l <- req(kpi_list())
+    flog.info(paste0("Updating KPI list"))
+    updateSelectInput(session, "kpi_filter", 
+                label=paste0("Метрики (", length(l), ")"),
+                choices=l)
+  })  
+
   # служебный вывод ---------------------  
   output$info_text <- renderText({
     msg()
