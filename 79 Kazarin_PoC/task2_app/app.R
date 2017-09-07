@@ -258,20 +258,30 @@ server <- function(input, output, session) {
   output$slice_table <- DT::renderDataTable({
     df <- req(slice_df())
     # browser()
+    colnames_df <- getRusColnames(df)
+    # https://stackoverflow.com/questions/39970097/tooltip-or-popover-in-shiny-datatables-for-row-names
+    colheader <- htmltools::withTags(
+      table(class = 'display',
+            thead(
+              tr(colnames_df %>%
+              {purrr::map2(.$col_label, .$human_name_rus, ~th(title=.x, .y))})
+            )))    
+    
     # https://rstudio.github.io/DT/functions.html
     DT::datatable(df,
                   class='cell-border stripe',
                   rownames=FALSE,
-                  colnames=c(# 'Код ОКС'='oks_code', 
-                             'Код вида ОССР'='ossr_type', 
-                             'Код ОССР'='ossr_code', 
-                             'Глава ССР'='ssr_chap',
-                             'Наименование ОКС'='sd_name',
-                             'Прямые затраты'='direct_cost', 'Косвенные затраты'='indirect_cost'),
+                  # colnames=c(# 'Код ОКС'='oks_code', 
+                  #            'Код вида ОССР'='ossr_type', 
+                  #            'Код ОССР'='ossr_code', 
+                  #            'Глава ССР'='ssr_chap',
+                  #            'Наименование ОКС'='sd_name',
+                  #            'Прямые затраты'='direct_cost', 'Косвенные затраты'='indirect_cost'),
                   filter='bottom',
                   # selection=list(mode="multiple", target="row"),
                   selection=list(mode="single", target="row"),
                   # selection="single",
+                  container=colheader,
                   options=list(dom='fltip', #autoWidth=TRUE, 
                                pageLength=7, lengthMenu=c(5, 7, 10, 15)))
   })

@@ -199,5 +199,5 @@ getRusColnames <- function(df) {
   tibble(name=names(df)) %>%
     left_join(colnames_df, by=c("name"="col_name")) %>%
     # санация
-    mutate_at(vars(human_name_rus, col_label), ~if_else(is.na(.x), name, .x))
+    mutate_at(vars(human_name_rus, col_label), function(x, y=.$name) {if_else(is.na(x), y, x)})
 }

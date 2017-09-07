@@ -1,6 +1,6 @@
 # Single-file Shiny apps (http://shiny.rstudio.com/articles/single-file.html)
-# РћР±СЏР·Р°С‚РµР»СЊРЅРѕ РІ РєРѕРґРёСЂРѕРІРєРµ UTF-8
-rm(list=ls()) # РѕС‡РёСЃС‚РёРј РІСЃРµ РїРµСЂРµРјРµРЅРЅС‹Рµ
+# Обязательно в кодировке UTF-8
+rm(list=ls()) # очистим все переменные
 gc()
 
 library(tidyverse)
@@ -33,4 +33,10 @@ library(tictoc)
 library(digest)
 library(officer)
 
-eval(parse("funcs.R", encoding="UTF-8"))
+getwd()
+
+eval(parse("./task2_app/funcs.R", encoding="UTF-8"))
+
+df <- readRDS("./task2_app/df.rds")
+
+m <- getRusColnames(df)
