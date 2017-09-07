@@ -257,7 +257,18 @@ server <- function(input, output, session) {
   # таблица-детализация по ОКС в разрезе ССР  ----------------------------
   output$slice_table <- DT::renderDataTable({
     df <- req(slice_df())
-    # browser()
+    group_varname <- req(input$slice_filter)
+    flog.info(paste0("Group variable is '", group_varname, "'"))
+    if(group_varname != " "){
+      # если надо группировать, то применим группировку
+      # group_varname -- тестовая строка - имя поля
+      gv <- rlang::sym(group_varname)
+      df <- df %>%
+        group_by(!!gv) %>%
+        summarise(direct_cost=sum(direct_cost), indirect_cost=sum(indirect_cost)) %>%
+        ungroup() %>%
+        arrange(desc(direct_cost+indirect_cost))
+    }
     colnames_df <- getRusColnames(df)
     # https://stackoverflow.com/questions/39970097/tooltip-or-popover-in-shiny-datatables-for-row-names
     colheader <- htmltools::withTags(
@@ -271,12 +282,6 @@ server <- function(input, output, session) {
     DT::datatable(df,
                   class='cell-border stripe',
                   rownames=FALSE,
-                  # colnames=c(# 'Код ОКС'='oks_code', 
-                  #            'Код вида ОССР'='ossr_type', 
-                  #            'Код ОССР'='ossr_code', 
-                  #            'Глава ССР'='ssr_chap',
-                  #            'Наименование ОКС'='sd_name',
-                  #            'Прямые затраты'='direct_cost', 'Косвенные затраты'='indirect_cost'),
                   filter='bottom',
                   # selection=list(mode="multiple", target="row"),
                   selection=list(mode="single", target="row"),
