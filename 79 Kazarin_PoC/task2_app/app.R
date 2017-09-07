@@ -27,6 +27,7 @@ library(shinyBS)
 library(shinyjs)
 library(shinyWidgets)
 library(shinycssloaders)
+library(DT)
 library(anytime)
 library(tictoc)
 library(digest)
@@ -47,10 +48,10 @@ ui <-
   # title=HTML('<div><a href="http://devoteam.com/"><img src="./img/devoteam_176px.png" width="80%"></a></div>'),
   title = "Сметная стоимость объектов",
   tabPanel("Проектная смета", value="general_panel"),
-  tabPanel("About", value="about"),
-  # windowTitle="CC4L",
+  tabPanel("Настройки", value="config_panel"),
+  id="mainNavbarPage",
+  selected="config_panel",
   # collapsible=TRUE,
-  id="tsp",
   # theme=shinytheme("flatly"),
   theme=shinytheme("yeti"),
   # shinythemes::themeSelector(),
@@ -59,10 +60,8 @@ ui <-
   # http://stackoverflow.com/questions/25387844/right-align-elements-in-shiny-mainpanel/25390164
   tags$head(tags$style(".rightAlign{float:right;}")), 
 
-  # ----------------
-  conditionalPanel(
-    # general panel -----------------------
-    condition = "input.tsp == 'general_panel'",
+  conditionalPanel( # config panel -----------------------
+    condition = "input.mainNavbarPage == 'config_panel'",
     fluidRow(
       tags$style(type='text/css', '#cweather_text {white-space:pre;}')
       # tags$style(type='text/css', 'div {background-color: #000с00;}'), 
@@ -71,11 +70,14 @@ ui <-
       #column(6, h2("Заполнитель"))
       ),
     fluidRow(
-      column(2, fileInput('project_plan', 'Выбор .xlsx файла с планом',
+      column(4, fileInput('project_plan', 'Выбор .xlsx файла с планом',
                           #accept=c('application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')),
                           accept = c('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'))
       )
-    ),
+    )
+  ),
+  conditionalPanel( # general panel -----------------------
+    condition = "input.mainNavbarPage == 'general_panel'",
     # https://stackoverflow.com/questions/28960189/bottom-align-a-button-in-r-shiny
     tags$style(type='text/css', "#set_today_btn {margin-top: 25px;}"),
     tags$style(type='text/css', "#set_test_dates_btn {margin-top: 25px;}"),
@@ -85,13 +87,14 @@ ui <-
     tabsetPanel(
       id = "main_panel",
       selected="table_tab",
-      tabPanel("Полная сметная стоимость", value="table_tab",
+      tabPanel("Полная сметная стоимость", value="table_tab", # ---------
                fluidRow(
                  p(),
                  column(12, div(withSpinner(DT::dataTableOutput("stat_table"))), style="font-size: 90%")
                ),
                p(),
                fluidRow(
+                 # параметр разреза соответствует переменной группировки
                  column(8, {}),
                  column(2, downloadButton("csv_download_btn", label="Экспорт (Excel)", class = 'rightAlign')),
                  column(2, downloadButton("word_download_btn", label="Экспорт (Word)", class = 'rightAlign'))
@@ -101,7 +104,7 @@ ui <-
                  column(12, textOutput("info_text"))
                )               
       ),
-      tabPanel("Empty", value="graph_tab",
+      tabPanel("Empty", value="graph_tab", # ----------
                fluidRow(
                  # p()
                  # column(11, {}),
@@ -120,23 +123,37 @@ ui <-
                  )
                )
       ),
+    p(),
+    
     # https://github.com/daattali/shinyjs/issues/121
-    div(id="slice_panel_div", 
-    tabsetPanel(
-      id = "slice_panel",
-      selected="slice_table_tab",
-      tabPanel("Разрез объектов ССР", value="slice_table_tab",
-               fluidRow(
-                 column(12, div(withSpinner(DT::dataTableOutput("slice_table"))), style="font-size: 90%")
-               )
-      ),
-      tabPanel("Графическая структура затрат", value = "slice_graph_tab",
-               fluidRow(
-                 p(),
-                 column(12, div(withSpinner(plotOutput('slice_plot', height="500px"))))
-               )
-      )
-    )
+    div(id="slice_panel_div", # drill-down таблица ---------
+        mainPanel(
+          tabsetPanel(
+            id = "slice_panel",
+            selected="slice_table_tab",
+            tabPanel("Разрез объектов ССР", value="slice_table_tab",
+                     fluidRow(
+                       p(),
+                       column(12, div(withSpinner(DT::dataTableOutput("slice_table"))), 
+                              style="font-size: 90%")
+                     )
+            ),
+            tabPanel("Графическая структура затрат", value = "slice_graph_tab",
+                     fluidRow(
+                       p(),
+                       column(12, div(withSpinner(plotOutput('slice_plot', height="500px"))))
+                     )
+            )
+          ),
+          width=10
+        ),
+        sidebarPanel(
+          selectInput("dataset", "Choose a dataset:",
+                      choices = c("rock", "pressure", "cars")),
+          
+          numericInput("obs", "Observations:", 10),
+          width=2
+        )
     )
   ),
   shinyjs::useShinyjs()  # Include shinyjs
@@ -180,9 +197,8 @@ server <- function(input, output, session) {
   })  
 
   clean_df <- reactive({
-    req(raw_df())
-    
-    cleanNames(raw_df()) %>% rebaseCost()
+    # browser()
+    cleanNames(req(raw_df())) %>% rebaseCost()
   })
   
   oks_summary_df <- reactive({
@@ -208,17 +224,12 @@ server <- function(input, output, session) {
 
     df <- clean_df() %>%
       filter(oks_code==!!oks_code_val) %>%
-      select(-oks_type, -est_cost_entry) %>%
+      select(-oks_code, -oks_type, -est_cost_entry) %>%
       rename(direct_cost=est_cost, indirect_cost=overcost) %>%
       # move to end
       select(-indirect_cost, -direct_cost, everything()) %>%
       arrange(desc(direct_cost))
     df
-  })
-  
-  
-  # формируем time-series детализацию по аналогии с 3-им отчетом -------------------
-  detail_df <- reactive({
   })
   
   msg <- reactiveVal("")
@@ -246,12 +257,14 @@ server <- function(input, output, session) {
   output$slice_table <- DT::renderDataTable({
     df <- req(slice_df())
     # browser()
-
     # https://rstudio.github.io/DT/functions.html
     DT::datatable(df,
                   class='cell-border stripe',
                   rownames=FALSE,
-                  colnames=c('Код ОКС'='oks_code', 'Код ОССР'='ossr_code', 'Глава ССР'='ssr_chap',
+                  colnames=c(# 'Код ОКС'='oks_code', 
+                             'Код вида ОССР'='ossr_type', 
+                             'Код ОССР'='ossr_code', 
+                             'Глава ССР'='ssr_chap',
                              'Наименование ОКС'='sd_name',
                              'Прямые затраты'='direct_cost', 'Косвенные затраты'='indirect_cost'),
                   filter='bottom',
@@ -262,8 +275,7 @@ server <- function(input, output, session) {
                                pageLength=7, lengthMenu=c(5, 7, 10, 15)))
   })
     
-  
-  # график структуры затра в разрезе ОССР -------------
+  # график структуры затрат в разрезе ОССР -------------
   output$slice_plot <- renderPlot({
     req(slice_df())
     # shiny::validate(
@@ -275,25 +287,23 @@ server <- function(input, output, session) {
     plotOSSRslice(slice_df())
   })    
 
-  # график Топ10 каналов по суммарному времени просмотра -------------
-  output$top10_duration_plot <- renderPlot({
-    shiny::validate(
-      need(!is.null(cur_df()), "NULL value can't be renederd"),
-      need(nrow(cur_df())>0, "0 rows -- nothing to draw") 
-    )
-    
-    plotTop10Duration(cur_df(), publish_set=font_sizes[["screen"]], 
-                      ntop=as.integer(input$top_num))
-  })
   
-  # график Топ10 каналов по количеству уникальных приставок --------------
-  output$top10_stb_plot <-renderPlot({
-    shiny::validate(
-      need(!is.null(cur_df()), "NULL value can't be renederd"),
-      need(nrow(cur_df())>0, "0 rows -- nothing to draw") 
-    )
-    plotTop10STB(cur_df(), publish_set=font_sizes[["screen"]], 
-                 ntop=as.integer(input$top_num))
+  # служебный вывод ---------------------  
+  output$info_text <- renderText({
+    msg()
+    pplan()
+  })
+
+  # обработчики событий ------------------------------
+  
+  # переключаем панель после загрузки
+  observeEvent((input$project_plan$datapath), {
+    # browser()
+    flog.info(paste0("Switching to general panel"))
+    updateNavbarPage(session, "mainNavbarPage", selected="general_panel")
+    # Run JS code that simply shows a message
+    # runjs("var today = new Date(); alert(today);")
+    #flog.info(paste0("Switching to general panel again"))
   })  
 
   observe({
@@ -304,12 +314,6 @@ server <- function(input, output, session) {
       shinyjs::show("slice_panel_div")
     }
   })  
-  
-  # служебный вывод ---------------------  
-  output$info_text <- renderText({
-    msg()
-    pplan()
-  })
 
   # обработчики кнопок выгрузки файлов --------------------------------------------------
   # выгрузка таблицы в CSV -----------------------  

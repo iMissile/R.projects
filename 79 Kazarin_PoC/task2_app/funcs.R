@@ -71,7 +71,7 @@ rebaseCost <- function(df0){
     # через ` ` имена колонок в Shiny App под Windows не отлавливает
     # select(oks_type, oks_code, ossr_code, ssr_chap, indirect_cost, 
     #        est_cost_entry, est_cost, "9: Наименование СД", cost_element, internal_id) %>%
-    select(oks_type, oks_code, ossr_code, ssr_chap, indirect_cost, 
+    select(oks_type, oks_code, ossr_type, ossr_code, ssr_chap, indirect_cost, 
           est_cost_entry, est_cost, sd_name, cost_element, internal_id) %>%
     # элементы без кода вида затрат (cost_element) являются промежуточными подытогами, их тоже надо исключать
     # но сразу исключать нельзя, надо сначала выделить косвенные затраты
