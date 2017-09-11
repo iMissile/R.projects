@@ -31,6 +31,7 @@ library(anytime)
 library(tictoc)
 library(digest)
 library(officer)
+library(openxlsx)
 
 options(shiny.usecairo=TRUE)
 options(shiny.reactlog=TRUE)
@@ -45,7 +46,7 @@ assign("last.warning", NULL, envir = baseenv())
 # определеяем окружение в котором запускаемся
 Sys.setenv("R_CONFIG_ACTIVE"="media-tel-prod")
 Sys.setenv("R_CONFIG_ACTIVE"="media-tel-demo")
-#Sys.setenv("R_CONFIG_ACTIVE"="cti-demo")
+#Sys.setenv("R_CONFIG_ACTIVE"="cti")
 
 # ================================================================
 ui <- 
@@ -88,7 +89,7 @@ ui <-
                                start="2017-03-01", end="2017-03-02",
                                # min = Sys.Date() - 10, 
                                # max = Sys.Date(),
-                               separator = " - ", format = "dd/mm/yy",
+                               separator = " - ", format = "dd/mm/yyyy",
                                startview = "month", language = 'ru', weekstart=1)
       ), 
       #column(1, selectInput("history_depth", "История", 
@@ -136,9 +137,10 @@ ui <-
       column(6, uiOutput("choose_vars"))
     ),
     fluidRow(
-      column(11, actionButton("process_btn", "Применить", class = 'rightAlign')),
+      column(10, actionButton("process_btn", "Применить", class = 'rightAlign')),
       #column(1, div(bookmarkButton(label="Закладка..."), class = 'rightAlign')),
-      column(1, downloadButton("csv_download_btn", label="Экспорт (Excel)", class = 'rightAlign'))
+      column(1, downloadButton("csv_download_btn", label="Экспорт (CSV)", class = 'rightAlign')),
+      column(1, downloadButton("xls_download_btn", label="Экспорт (Excel)", class = 'rightAlign'))
       
     ),
     h3("Выборка"),
@@ -163,7 +165,6 @@ ui <-
   
 )
 
-
 # ================================================================
 server <- function(input, output, session) {
 
@@ -177,6 +178,7 @@ server <- function(input, output, session) {
   flog.info(paste0("App started in '", Sys.getenv("R_CONFIG_ACTIVE"), "' environment"))
 
   shinyjs::hide("csv_download_btn")
+  shinyjs::hide("xls_download_btn")
   
   # создание параметров оформления для различных видов графиков (screen\publish) ------
   font_sizes <- list(
@@ -403,8 +405,10 @@ server <- function(input, output, session) {
     # browser()
     if(!is.null(raw_df()) & nrow(raw_df())>0) {
       shinyjs::show("csv_download_btn")
+      shinyjs::show("xls_download_btn")
     } else {
       shinyjs::hide("csv_download_btn")
+      shinyjs::show("xls_download_btn")
     }
   })  
   
@@ -578,6 +582,25 @@ server <- function(input, output, session) {
         # сделаем вывод в формате, принимаемым Excel
         write.table(file, na="NA", append=FALSE, col.names=TRUE, 
                     row.names=FALSE, sep=";", fileEncoding="windows-1251")
+    }
+  )
+
+  # выгрузка таблицы в XLS -----------------------  
+  output$xls_download_btn <- downloadHandler(
+    filename = function() {
+      paste0("slice_", format(Sys.time(), "%F_%H-%M-%S"), ".xlsx", sep="")
+    },
+    content = function(filename) {
+      df <- cur_df()
+      # необходимо сделать русские названия колонок
+      names(df) <- tibble(name_enu=names(df)) %>%
+        left_join(dict_df, by=c("name_enu")) %>% 
+        # санация
+        mutate(name_rus={map2_chr(.$name_rus, .$name_enu, 
+                                  ~if_else(is.na(.x), .y, .x))}) %>% 
+        pull(name_rus)
+      # browser()
+      write.xlsx(df, file=filename, asTable = TRUE)
     }
   )
   
