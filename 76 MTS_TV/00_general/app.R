@@ -395,9 +395,21 @@ server <- function(input, output, session) {
 
   # фиксим даты на демо диапазон ---------  
   observeEvent(input$set_test_dates_btn, {
-    updateDateRangeInput(session, "in_date_range", start="2017-05-28", end="2017-05-30")
-    }
-  )
+    start <- "2017-03-01"
+    end <- "2017-03-02"
+    updateDateRangeInput(session, "in_date_range", start=start, end=end)
+  })
+  
+  # фиксим даты на демо диапазон в случае принудительного ручного обнуления полей дат ---------  
+  observeEvent(input$in_date_range, {
+    # фиксим сначала верхнюю дату
+    # browser()
+    bd <- input$in_date_range[1] # format: Date
+    ed <- input$in_date_range[2] # format: Date
+    if(is.na(ed)) ed <- ymd("2017-03-02")
+    if(is.na(bd) || bd>ed) bd <- ed-days(1)
+    updateDateRangeInput(session, "in_date_range", start=bd, end=ed)
+  })
   
   # управляем визуализацией кнопок выгрузки ----- 
   observeEvent(cur_df(), {
