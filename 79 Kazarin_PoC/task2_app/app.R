@@ -3,6 +3,9 @@
 rm(list=ls()) # очистим все переменные
 gc()
 
+# https://github.com/mexindian/ShinyTester
+# library(ShinyTester)
+# ShinyHierarchy("https://raw.githubusercontent.com/iMissile/R.projects/master/79 Kazarin_PoC/task2_app/")
 library(tidyverse)
 library(lubridate)
 library(scales)
