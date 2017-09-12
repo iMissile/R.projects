@@ -46,7 +46,7 @@ assign("last.warning", NULL, envir = baseenv())
 # определеяем окружение в котором запускаемся
 Sys.setenv("R_CONFIG_ACTIVE"="media-tel-prod")
 Sys.setenv("R_CONFIG_ACTIVE"="media-tel-demo")
-#Sys.setenv("R_CONFIG_ACTIVE"="cti")
+Sys.setenv("R_CONFIG_ACTIVE"="cti")
 
 # ================================================================
 ui <- 
@@ -137,15 +137,16 @@ ui <-
       column(6, uiOutput("choose_vars"))
     ),
     fluidRow(
-      column(10, actionButton("process_btn", "Применить", class = 'rightAlign')),
+      column(9, actionButton("set_today_dates_btn", "На сегодня...", class = 'rightAlign')),
+      column(1, actionButton("process_btn", "Применить", width="100%")),
       #column(1, div(bookmarkButton(label="Закладка..."), class = 'rightAlign')),
-      column(1, downloadButton("csv_download_btn", label="Экспорт (CSV)", class = 'rightAlign')),
-      column(1, downloadButton("xls_download_btn", label="Экспорт (Excel)", class = 'rightAlign'))
+      column(1, downloadButton("csv_download_btn", label="(CSV)")),
+      column(1, downloadButton("xls_download_btn", label="(Excel)"))
       
     ),
     h3("Выборка"),
     fluidRow(
-      column(12, verbatimTextOutput('info_text1')),
+      column(12, verbatimTextOutput('info_text')),
       # https://stackoverflow.com/questions/23233497/outputting-multiple-lines-of-text-with-rendertext-in-r-shiny
       tags$style(type="text/css", "#info_text {white-space: pre-wrap;}")
     ),
@@ -159,8 +160,8 @@ ui <-
                  # column(12, div(withSpinner(DT::dataTableOutput('stat_table'))), style="font-size: 90%")
                  column(12, div(DT::dataTableOutput('stat_table')), style="font-size: 90%")
                )
-               )
       )
+    )
   )
   
 )
@@ -307,7 +308,8 @@ server <- function(input, output, session) {
 
     tic()
     df <- dbGetQuery(con, r) %>%
-      as_tibble()
+      as_tibble() %>%
+      mutate_if(is.character, `Encoding<-`, "UTF-8")
     
     flog.info(paste0("Query: ", capture.output(toc())))
     flog.info(paste0("Table: ", capture.output(head(df, 2))))
@@ -348,6 +350,7 @@ server <- function(input, output, session) {
       # санация
       mutate(name_rus={map2_chr(.$name_rus, .$name_enu, 
                                 ~if_else(is.na(.x), .y, .x))})
+    
     # добавим форматный вывод для %-ных долей
     ratio_vars <- var_model_df %>%
       filter(!is.na(ratio_type)) %>%
@@ -380,7 +383,11 @@ server <- function(input, output, session) {
                   rownames=FALSE,
                   filter='bottom',
                   container=colheader,
-                  options=list(dom='fltip', pageLength=7, lengthMenu=c(5, 7, 10, 15, 50))
+                  options=list(dom='fltip', 
+                               pageLength=7, 
+                               lengthMenu=c(5, 7, 10, 15, 50),
+                               scrollCollapse=TRUE,
+                               scrollX=TRUE)
                   )
     })
   
@@ -388,7 +395,7 @@ server <- function(input, output, session) {
   observeEvent(input$history_depth, {
     # $history_depth получаем как строку
     date <- Sys.Date()-as.numeric(input$history_depth)
-    flog.info(paste0("Start date changed to  ", date))
+    flog.info(paste0("Start date changed to ", date))
     # updateDateRangeInput(session, "in_date_range", start=date)
     }
   )
@@ -399,18 +406,15 @@ server <- function(input, output, session) {
     end <- "2017-03-02"
     updateDateRangeInput(session, "in_date_range", start=start, end=end)
   })
-  
-  # фиксим даты на демо диапазон в случае принудительного ручного обнуления полей дат ---------  
-  observeEvent(input$in_date_range, {
-    # фиксим сначала верхнюю дату
-    # browser()
-    bd <- input$in_date_range[1] # format: Date
-    ed <- input$in_date_range[2] # format: Date
-    if(is.na(ed)) ed <- ymd("2017-03-02")
-    if(is.na(bd) || bd>ed) bd <- ed-days(1)
-    updateDateRangeInput(session, "in_date_range", start=bd, end=ed)
+
+  # фиксим даты на сегодняшнюю дату ---------  
+  observeEvent(input$set_today_dates_btn, {
+    end <- Sys.Date()
+    start <- end - days(1)
+    updateDateRangeInput(session, "in_date_range", start=start, end=end)
   })
   
+    
   # управляем визуализацией кнопок выгрузки ----- 
   observeEvent(cur_df(), {
     # msg(capture.output(str(session)))
@@ -420,7 +424,7 @@ server <- function(input, output, session) {
       shinyjs::show("xls_download_btn")
     } else {
       shinyjs::hide("csv_download_btn")
-      shinyjs::show("xls_download_btn")
+      shinyjs::hide("xls_download_btn")
     }
   })  
   
@@ -514,6 +518,16 @@ server <- function(input, output, session) {
   # генерируем SQL запрос ----------------
   observeEvent(input$process_btn, {
     # генерируем SQL запрос
+    # сначала проверим и пофиксим даты в элементе управления на демо диапазон 
+    # в случае принудительного ручного обнуления полей дат
+      # сначала верхнюю дату
+    bd <- input$in_date_range[1] # format: Date
+    ed <- input$in_date_range[2] # format: Date
+    if(is.na(ed)) ed <- ymd("2017-03-02")
+    if(is.na(bd) || bd>ed) bd <- ed-days(1)
+    updateDateRangeInput(session, "in_date_range", start=bd, end=ed)
+    
+    
 
     # собираем общие условия в соотв. с фильтрами
     where_string <- paste0(paste0(" date >= '", input$in_date_range[1], "' AND date <= '", input$in_date_range[2], "' "),

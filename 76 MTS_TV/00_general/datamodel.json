@@ -72,5 +72,17 @@
     "can_be_grouped": true,
     "aggr_ops": "unique",
     "col_label": "Производитель STB"
+  },
+  {
+    "db_field": "begin",
+    "human_name_rus": "начало",
+    "can_be_grouped": false,
+    "col_label": "подсказка (begin)"
+  },
+  {
+    "db_field": "end",
+    "human_name_rus": "окончание",
+    "can_be_grouped": false,
+    "col_label": "подсказка (end)"
   }
 ]
