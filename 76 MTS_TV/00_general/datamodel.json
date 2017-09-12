@@ -20,7 +20,7 @@
     "col_label": "подсказка (date)"
   },
   {
-    "db_field": "switchEvent",
+    "db_field": "switchevent",
     "human_name_rus": "тип перекл.",
     "can_be_grouped": true,
     "col_label": "подсказка (switchEvent)"

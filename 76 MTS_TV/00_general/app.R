@@ -140,13 +140,13 @@ ui <-
       column(9, actionButton("set_today_dates_btn", "На сегодня...", class = 'rightAlign')),
       column(1, actionButton("process_btn", "Применить", width="100%")),
       #column(1, div(bookmarkButton(label="Закладка..."), class = 'rightAlign')),
-      column(1, downloadButton("csv_download_btn", label="(CSV)")),
-      column(1, downloadButton("xls_download_btn", label="(Excel)"))
+      column(1, downloadButton("csv_download_btn", label="Сохр. CSV")),
+      column(1, downloadButton("xls_download_btn", label="Сохр. Excel"))
       
     ),
     h3("Выборка"),
     fluidRow(
-      column(12, verbatimTextOutput('info_text')),
+      column(12, verbatimTextOutput('info_text1')),
       # https://stackoverflow.com/questions/23233497/outputting-multiple-lines-of-text-with-rendertext-in-r-shiny
       tags$style(type="text/css", "#info_text {white-space: pre-wrap;}")
     ),
@@ -220,11 +220,9 @@ server <- function(input, output, session) {
     as_tibble()
 
   # создаем tidy модель данных
-  data_model_df <- {
-    df0 <- jsonlite::fromJSON("datamodel.json", simplifyDataFrame=TRUE) %>%
+  data_model_df <- jsonlite::fromJSON("datamodel.json", simplifyDataFrame=TRUE) %>%
       as_tibble()
-  }
-  
+
   # модель для переменных под агрегат
   var_model_df <- {    
     # построим модель переменных для вычисления
@@ -290,11 +288,17 @@ server <- function(input, output, session) {
     df
   }
   
-  # словарь для преобразований имен полей из английских в русские
-  # имена колонок -- группы и агрегаты из запроса
-  # сливаем модельные данные
-  dict_df <- dplyr::union(var_model_df %>% select(name_enu=internal_name, name_rus=visual_var_name),
-                         group_model_df %>% select(name_enu=internal_name, name_rus=visual_group_name))
+  dict_df <- {
+    # словарь для преобразований имен полей из английских в русские
+    # имена колонок -- группы и агрегаты из запроса
+    # но есть еще и просто переменные для переименования, у них флаг can_be_grouped=FALSE, aggr_ops=NA
+    df <- data_model_df %>%
+      filter(!can_be_grouped & is.na(aggr_ops))
+    # сливаем модельные данные
+    dplyr::union(var_model_df %>% select(name_enu=internal_name, name_rus=visual_var_name),
+                 group_model_df %>% select(name_enu=internal_name, name_rus=visual_group_name)) %>%
+                 dplyr::union(df %>% select(name_enu=db_field, name_rus=human_name_rus))
+  }
   
 
   # browser()
@@ -369,6 +373,7 @@ server <- function(input, output, session) {
     # color_bar("lightblue", function(x) formattable::normalize(x, 0, 100))))
 
     # https://stackoverflow.com/questions/39970097/tooltip-or-popover-in-shiny-datatables-for-row-names
+    # в конструкторе в качестве подсказки отображается англоязычный эквивалент колонки, но не исходная метаподсказка
     colheader <- htmltools::withTags(
      table(class = 'display',
            thead(
@@ -378,8 +383,9 @@ server <- function(input, output, session) {
     # browser()
     # https://rstudio.github.io/DT/functions.html
     DT::datatable(df,
-    # formattable превращает числа в строки, тем самым нарушая возможности сортровки
-    # as.datatable(fmt_df, # для сохранения параметров formattable
+                  # formattable превращает числа в строки, тем самым нарушая возможности сортровки
+                  # as.datatable(fmt_df, # для сохранения параметров formattable
+                  class='cell-border stripe',
                   rownames=FALSE,
                   filter='bottom',
                   container=colheader,
