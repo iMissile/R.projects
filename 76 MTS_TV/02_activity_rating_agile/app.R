@@ -416,7 +416,7 @@ server <- function(input, output, session) {
                   # selection=list(mode="single", target="row"),
                   # selection="single",
                   container=colheader,
-                  options=list(dom='fltip', pageLength=7, lengthMenu=c(5, 7, 10, 15),
+                  options=list(dom='fltip', pageLength=7, lengthMenu=c(5, 7, 10, 15, 50),
                                order=list(list(3, 'desc')))) %>% # нумерация с 0
       DT::formatPercentage("stb_ratio", 2)
     })

@@ -42,16 +42,22 @@ eval(parse("funcs.R", encoding="UTF-8"))
 # очистим все warnings():
 assign("last.warning", NULL, envir = baseenv())
 
-# определяем окружение в котором запускаемся
-if (Sys.info()["sysname"] == "Linux") {
-  # CTI стенд
-  Sys.setenv("R_CONFIG_ACTIVE"="cti-prod")
-  # Sys.setenv("R_CONFIG_ACTIVE"="cti-demo")
-}else{
-  # MT стенд
-  Sys.setenv("R_CONFIG_ACTIVE"="media-tel-prod")
-  Sys.setenv("R_CONFIG_ACTIVE"="media-tel-demo")
-}   
+# # определяем окружение в котором запускаемся
+# if (Sys.info()["sysname"] == "Linux") {
+#   # CTI стенд
+#   Sys.setenv("R_CONFIG_ACTIVE"="cti")
+#   # Sys.setenv("R_CONFIG_ACTIVE"="cti")
+# }else{
+#   # MT стенд
+#   Sys.setenv("R_CONFIG_ACTIVE"="media-tel-prod")
+#   Sys.setenv("R_CONFIG_ACTIVE"="media-tel-demo")
+# }   
+# MT стенд
+Sys.setenv("R_CONFIG_ACTIVE"="media-tel-prod")
+Sys.setenv("R_CONFIG_ACTIVE"="media-tel-demo")
+Sys.setenv("R_CONFIG_ACTIVE"="cti")
+
+
 
 # ================================================================
 ui <- 
