@@ -31,6 +31,7 @@ library(anytime)
 library(tictoc)
 library(digest)
 library(officer)
+library(openxlsx)
 
 options(shiny.usecairo=TRUE)
 options(shiny.reactlog=TRUE)
@@ -42,16 +43,22 @@ eval(parse("funcs.R", encoding="UTF-8"))
 # очистим все warnings():
 assign("last.warning", NULL, envir = baseenv())
 
-# определяем окружение в котором запускаемся
-if (Sys.info()["sysname"] == "Linux") {
-  # CTI стенд
-  Sys.setenv("R_CONFIG_ACTIVE"="cti-prod")
-  # Sys.setenv("R_CONFIG_ACTIVE"="cti-demo")
-}else{
-  # MT стенд
-  Sys.setenv("R_CONFIG_ACTIVE"="media-tel-prod")
-  Sys.setenv("R_CONFIG_ACTIVE"="media-tel-demo")
-}   
+# # определяем окружение в котором запускаемся
+# if (Sys.info()["sysname"] == "Linux") {
+#   # CTI стенд
+#   Sys.setenv("R_CONFIG_ACTIVE"="cti")
+#   # Sys.setenv("R_CONFIG_ACTIVE"="cti")
+# }else{
+#   # MT стенд
+#   Sys.setenv("R_CONFIG_ACTIVE"="media-tel-prod")
+#   Sys.setenv("R_CONFIG_ACTIVE"="media-tel-demo")
+# }   
+# MT стенд
+Sys.setenv("R_CONFIG_ACTIVE"="media-tel-prod")
+Sys.setenv("R_CONFIG_ACTIVE"="media-tel-demo")
+Sys.setenv("R_CONFIG_ACTIVE"="cti")
+
+
 
 # ================================================================
 ui <- 
@@ -59,7 +66,7 @@ ui <-
   # title=HTML('<div><a href="http://devoteam.com/"><img src="./img/devoteam_176px.png" width="80%"></a></div>'),
   title = "Статистика телесмотрения",
   tabPanel("Рейтинг пользовательской активности", value="general_panel"),
-  tabPanel("About", value="about"),
+  tabPanel("Настройки", value="config_panel"),
   # windowTitle="CC4L",
   # collapsible=TRUE,
   id="tsp",
@@ -95,8 +102,8 @@ ui <-
                                startview="month", language='ru', weekstart=1)
       ), 
       column(1, selectInput("history_depth", "История", 
-                            choices = c("1 месяц"=30, "2 недели"=14,
-                                        "1 неделя"=7, "3 дня"=3, "1 день"=1), selected=1)),
+                            choices = c("сутки"=1, "3 дня"=3, "неделя"=7, "месяц"=30), 
+                            selected=1)),
       #column(1, selectInput("min_watch_time", "Мин. время",
       #                      choices = c("5 сек"=5, "10 сек"=10, 
       #                                  "20 сек"=20, "30 сек"=30), selected = 10)),
@@ -111,10 +118,8 @@ ui <-
                                         "DVB-S"="DVB-S"), selected="all"))
     ),
     fluidRow(
-      column(4, {}),
-      column(2, selectInput("select_ch_table", "Таблица", choices=NULL)),
+      column(8, {}),
       column(2, actionButton("set_today_btn", "На сегодня", class='rightAlign')),
-      column(2, actionButton("set_test_dates_btn", "На демо дату", class='rightAlign')),
       column(2, actionButton("process_btn", "Применить", class = 'rightAlign'))
     ),
     # https://stackoverflow.com/questions/28960189/bottom-align-a-button-in-r-shiny
@@ -133,9 +138,10 @@ ui <-
                ),
                p(),
                fluidRow(
-                 column(8, {}),
-                 column(2, downloadButton("csv_download_btn", label="Экспорт (Excel)", class = 'rightAlign')),
-                 column(2, downloadButton("word_download_btn", label="Экспорт (Word)", class = 'rightAlign'))
+                 column(9, {}),
+                 column(1, downloadButton("csv_download_btn", label="Сохр. CSV", class='rightAlign')),
+                 column(1, downloadButton("xls_download_btn", label="Сохр. Excel", class='rightAlign')),
+                 column(1, downloadButton("word_download_btn", label="Сохр. Word", class='rightAlign'))
                ),
                fluidRow(
                  #column(10, plotOutput("subset_plot")),
@@ -179,22 +185,30 @@ ui <-
                                           "линейная"="lineplot"))
                         )
                )
-      ),
-      tabPanel("Аналитика по выборке", value = "topn_tab",
-               fluidRow(
-                 p(),
-                 column(12, div(selectInput("slice_top", "Кол-во в ТОП:",
-                                            choices=c(3, 5, 7, 10, 20),
-                                            selected=5),
-                                class='rightAlign'))
-               )
       )
+      # ,
+      # tabPanel("Аналитика по выборке", value = "topn_tab",
+      #          fluidRow(
+      #            p(),
+      #            column(12, div(selectInput("slice_top", "Кол-во в ТОП:",
+      #                                       choices=c(3, 5, 7, 10, 20),
+      #                                       selected=5),
+      #                           class='rightAlign'))
+      #          )
+      # )
     )
+    )
+  ),
+  conditionalPanel(
+    # general panel -----------------------
+    condition = "input.tsp=='config_panel'",
+    fluidRow(
+      column(2, selectInput("select_ch_table", "Таблица", choices=NULL)),
+      column(2, actionButton("set_test_dates_btn", "На демо дату", class='rightAlign'))
     )
   ),
   shinyjs::useShinyjs()  # Include shinyjs
 )
-
 
 # ================================================================
 server <- function(input, output, session) {
@@ -225,19 +239,26 @@ server <- function(input, output, session) {
   updateSelectInput(session, "select_ch_table", choices=unique(c(ch_db$table, "states")), selected=ch_db$table)
 
   # подгрузим таблицу преобразования транслита в русские названия городов -------
-  cities_df <- {
+  city_translit_df <- {
     flog.info("Loading cities translit table")
-    # подгрузим ограниченный список городов
-    city_subset <- read_csv("region.csv")
-    
     df <- req(dbGetQuery(conn, "SELECT * FROM regnames")  %>%
-                mutate_if(is.character, `Encoding<-`, "UTF-8") %>%
-                filter(translit %in% pull(city_subset)))
+                mutate_if(is.character, `Encoding<-`, "UTF-8"))
     flog.info(paste0("Cities translit table loaded ", nrow(df), " rows"))
     # dbDisconnect(con)
     df
   }
 
+  # подгрузим таблицу преобразования транслита в русские названия городов -------
+  cities_df <- {
+    # подгрузим ограниченный список городов
+    city_subset <- read_csv("region.csv", col_names=FALSE)
+    
+    df <- city_translit_df %>%
+      filter(translit %in% pull(city_subset))
+    # browser()
+    df
+  }
+  
   # словарь для преобразований имен полей из английских в русские
   # имена колонок -- группы и агрегаты из запроса
   # сливаем модельные данные
@@ -295,9 +316,10 @@ server <- function(input, output, session) {
     # browser()
     
     df %<>% # при пустом значении решает, что logi
-      left_join(cities_df, by=c("region"="translit")) %>%
+      # транслируем города в соотв. с ПОЛНОЙ таблицей транслита
+      left_join(city_translit_df, by=c("region"="translit")) %>%
       # санация
-      mutate(russian=if_else(is.na(russian), str_c("_", region, "_"), russian)) %>%
+      mutate(russian=if_else(is.na(russian), str_c("<<", region, ">>"), russian)) %>%
       rename(region_enu=region) %>%
       select(-date) %>%
       select(region=russian, everything())
@@ -351,10 +373,10 @@ server <- function(input, output, session) {
       mutate(timegroup=anytime(as.numeric(timegroup), tz="UTC")) %>%
       as_tibble() %>%
       mutate(stb_ratio=round(unique_stb/total_unique_stb, 3)) %>%      
-      # вернем обратно русские названия городов
-      left_join(cities_df, by=c("region"="translit")) %>%
+      # вернем обратно русские названия городов (берем из полной таблицы)
+      left_join(city_translit_df, by=c("region"="translit")) %>%
       # санация
-      mutate(russian=if_else(is.na(russian), str_c("_", region, "_"), russian)) %>%
+      mutate(russian=if_else(is.na(russian), str_c("<<", region, ">>"), russian)) %>%
       rename(region_enu=region, region=russian)
 
     # browser()
@@ -387,6 +409,7 @@ server <- function(input, output, session) {
     # browser()
     # https://rstudio.github.io/DT/functions.html
     DT::datatable(df,
+                  class='cell-border stripe',
                   rownames=FALSE,
                   filter='bottom',
                   selection=list(mode="multiple", target="row"),
@@ -445,9 +468,9 @@ server <- function(input, output, session) {
   # динамическое управление диапазоном дат ---------
   observeEvent(input$history_depth, {
     # $history_depth получаем как строку
-    date <- Sys.Date()-as.numeric(input$history_depth)
-    flog.info(paste0("Start date changed to  ", date))
-    # updateDateRangeInput(session, "in_date_range", start=date)
+    date <- Sys.Date()-days(as.numeric(input$history_depth))
+    flog.info(paste0("Start date changed to ", date))
+    updateDateRangeInput(session, "in_date_range", start=date)
    }
   )
 
@@ -489,8 +512,6 @@ server <- function(input, output, session) {
     data <- as.list(cities_df$translit)
     names(data) <- cities_df$russian
     
-    # browser()
-    
     # создадим элемент
     selectInput("region_filter", 
                 paste0("Регион (", length(data), ")"),
@@ -505,10 +526,22 @@ server <- function(input, output, session) {
       paste0("user_activity_data-", Sys.Date(), ".csv", sep="")
     },
     content = function(file) {
+      # browser()
       cur_df() %>%
         # сделаем вывод в формате, принимаемым Excel
         write.table(file, na="NA", append=FALSE, col.names=TRUE, 
                     row.names=FALSE, sep=";", fileEncoding="windows-1251")
+    }
+  )
+
+  # выгрузка таблицы в XLS -----------------------  
+  output$xls_download_btn <- downloadHandler(
+    filename = function() {
+      paste0("user_activity_data-", Sys.Date(), ".xlsx", sep="")
+    },
+    content = function(file) {
+      df <- cur_df()
+      write.xlsx(df, file=file, asTable = TRUE)
     }
   )
   

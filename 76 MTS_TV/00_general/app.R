@@ -221,7 +221,7 @@ server <- function(input, output, session) {
   # подгрузим таблицу преобразования транслита в русские названия городов -------
   cities_df <- {
     # подгрузим ограниченный список городов
-    city_subset <- read_csv("region.csv")
+    city_subset <- read_csv("region.csv", col_names=FALSE)
     
     df <- city_translit_df %>%
       filter(translit %in% pull(city_subset))
@@ -364,7 +364,8 @@ server <- function(input, output, session) {
         left_join(select(city_translit_df, -date), by=c("region"="translit")) %>%
         # санация
         mutate(region=if_else(is.na(russian), str_c("<<", region, ">>"), russian)) %>%
-        select(region, -russian, everything())
+        # select(region, -russian, everything())
+        select(-russian)
     }
     
     df
@@ -668,7 +669,7 @@ server <- function(input, output, session) {
     filename = function() {
       paste0("slice_", format(Sys.time(), "%F_%H-%M-%S"), ".xlsx", sep="")
     },
-    content = function(filename) {
+    content = function(file) {
       df <- cur_df()
       # необходимо сделать русские названия колонок
       names(df) <- tibble(name_enu=names(df)) %>%
@@ -677,8 +678,7 @@ server <- function(input, output, session) {
         mutate(name_rus={map2_chr(.$name_rus, .$name_enu, 
                                   ~if_else(is.na(.x), .y, .x))}) %>% 
         pull(name_rus)
-      # browser()
-      write.xlsx(df, file=filename, asTable = TRUE)
+      write.xlsx(df, file=file, asTable = TRUE)
     }
   )
   

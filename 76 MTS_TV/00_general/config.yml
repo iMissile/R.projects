@@ -28,7 +28,7 @@ cti:
     port: 8123
     user: 'default'
     password: ''  
-    table: 'states'
+    table: 'view_states_tg1h'
 
 media-tel-prod:
   postgres:

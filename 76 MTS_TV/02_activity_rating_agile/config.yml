@@ -14,7 +14,7 @@ default:
     password: ''  
     table: 'states'
 
-cti-prod:
+cti:
   postgres:
     driver: 'PostgreSQL'
     host: '172.16.33.76'
@@ -28,23 +28,7 @@ cti-prod:
     port: 8123
     user: 'default'
     password: ''  
-    table: 'states'
-
-cti-demo:
-  postgres:
-    driver: 'PostgreSQL'
-    host: '172.16.33.76'
-    uid: 'stat'
-    pwd: 'stat'  
-    port: 5432
-    database: 'stat'
-
-  clickhouse:
-    host: '172.16.33.74'
-    port: 8123
-    user: 'default'
-    password: ''  
-    table: 'view_simstates'
+    table: 'view_states_tg1h'
 
 media-tel-prod:
   postgres:
