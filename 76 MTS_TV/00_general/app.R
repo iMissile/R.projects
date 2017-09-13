@@ -43,7 +43,7 @@ eval(parse("funcs.R", encoding="UTF-8"))
 # очистим все warnings():
 assign("last.warning", NULL, envir = baseenv())
 
-# определеяем окружение в котором запускаемся
+# определяем окружение в котором запускаемся
 Sys.setenv("R_CONFIG_ACTIVE"="media-tel-prod")
 Sys.setenv("R_CONFIG_ACTIVE"="media-tel-demo")
 Sys.setenv("R_CONFIG_ACTIVE"="cti")
@@ -54,7 +54,7 @@ ui <-
   # title=HTML('<div><a href="http://devoteam.com/"><img src="./img/devoteam_176px.png" width="80%"></a></div>'),
   title="Статистика телесмотрения",
   tabPanel("Форма запросов", value="general_panel"),
-  tabPanel("About", value="about"),
+  tabPanel("Настройки", value="config_panel"),
   # windowTitle="CC4L",
   # collapsible=TRUE,
   id="tsp",
@@ -62,8 +62,6 @@ ui <-
   theme=shinytheme("yeti"),
   # shinythemes::themeSelector(),
   # includeCSS("styles.css"),
-  shinyjs::useShinyjs(),  # Include shinyjs
-  
 
   # http://stackoverflow.com/questions/25387844/right-align-elements-in-shiny-mainpanel/25390164
   tags$head(tags$style(".rightAlign{float:right;}")), 
@@ -137,7 +135,14 @@ ui <-
       column(6, uiOutput("choose_vars"))
     ),
     fluidRow(
-      column(9, actionButton("set_today_dates_btn", "На сегодня...", class = 'rightAlign')),
+      column(8, actionButton("reset_btn", "Сброс", class = 'rightAlign')),
+      # column(8, tags$a(href="javascript:history.go(0)", 
+      #                    popify(tags$i(class="fa fa-refresh fa-5x"),
+      #                         title="Reload", 
+      #                         content="Рестарт сессии",
+      #                         placement="right"))      
+      # ),
+      column(1, actionButton("set_today_dates_btn", "На сегодня")),
       column(1, actionButton("process_btn", "Применить", width="100%")),
       #column(1, div(bookmarkButton(label="Закладка..."), class = 'rightAlign')),
       column(1, downloadButton("csv_download_btn", label="Сохр. CSV")),
@@ -146,7 +151,7 @@ ui <-
     ),
     h3("Выборка"),
     fluidRow(
-      column(12, verbatimTextOutput('info_text1')),
+      column(12, verbatimTextOutput('info_text')),
       # https://stackoverflow.com/questions/23233497/outputting-multiple-lines-of-text-with-rendertext-in-r-shiny
       tags$style(type="text/css", "#info_text {white-space: pre-wrap;}")
     ),
@@ -162,15 +167,22 @@ ui <-
                )
       )
     )
-  )
-  
+  ),
+  conditionalPanel(
+    # general panel -----------------------
+    condition = "input.tsp=='config_panel'",
+    fluidRow(
+      column(2, checkboxInput("debug_cbx", label="Диагностический вывод", value = FALSE, width = NULL))
+    )
+  ),
+  shinyjs::useShinyjs()  # Include shinyjs
 )
 
 # ================================================================
 server <- function(input, output, session) {
 
   setBookmarkExclude(c("stat_table")) # таблицу восстановить мы не можем и не должны
-  
+
   # статические переменные ------------------------------------------------
   log_name <- "app.log"
   
@@ -191,26 +203,29 @@ server <- function(input, output, session) {
   # Sys.getenv("R_CONFIG_ACTIVE")
   ch_db <- config::get("clickhouse") # достаем параметры подключения
   # создаем коннект к инстансу CH -----------
-  con <- dbConnect(clickhouse(), host=ch_db$host, port=ch_db$port, user=ch_db$user, password=ch_db$password)
-  # if (Sys.info()["sysname"] == "Linux") {
-  #   # CTI стенд
-  #   con <- dbConnect(clickhouse(), host="172.16.33.74", port=8123L, user="default", password="")
-  # }else{
-  #   # MT стенд
-  #   con <- dbConnect(clickhouse(), host="10.0.0.44", port=8123L, user="default", password="")
-  # }      
-  
+  conn <- dbConnect(clickhouse(), host=ch_db$host, port=ch_db$port, user=ch_db$user, password=ch_db$password)
+
+  # заполним список доступных к выбору таблиц
+  updateSelectInput(session, "select_ch_table", choices=unique(c(ch_db$table, "states")), selected=ch_db$table)
+
+  # подгрузим таблицу преобразования транслита в русские названия городов -------
+  city_translit_df <- {
+    flog.info("Loading cities translit table")
+    df <- req(dbGetQuery(conn, "SELECT * FROM regnames")  %>%
+                mutate_if(is.character, `Encoding<-`, "UTF-8"))
+    flog.info(paste0("Cities translit table loaded ", nrow(df), " rows"))
+    # dbDisconnect(con)
+    df
+  }
+
   # подгрузим таблицу преобразования транслита в русские названия городов -------
   cities_df <- {
-    flog.info("Loading cities translit table")
     # подгрузим ограниченный список городов
     city_subset <- read_csv("region.csv")
     
-    df <- req(dbGetQuery(con, "SELECT * FROM regnames")  %>%
-                mutate_if(is.character, `Encoding<-`, "UTF-8") %>%
-                filter(translit %in% pull(city_subset)))
-    flog.info(paste0("Cities translit table loaded ", nrow(df), " rows"))
-    # dbDisconnect(con)
+    df <- city_translit_df %>%
+      filter(translit %in% pull(city_subset))
+    # browser()
     df
   }
 
@@ -311,7 +326,7 @@ server <- function(input, output, session) {
     flog.info(paste0("DB request: ", r))
 
     tic()
-    df <- dbGetQuery(con, r) %>%
+    df <- dbGetQuery(conn, r) %>%
       as_tibble() %>%
       mutate_if(is.character, `Encoding<-`, "UTF-8")
     
@@ -341,13 +356,25 @@ server <- function(input, output, session) {
   })  
 
   cur_df <- reactive({
-    req(raw_df())
+    df <- req(raw_df())
+    # сделаем русские имена городов, если таковые есть в выборке
+    if("region" %in% names(df) & nrow(df)>0){
+      df %<>% # при пустом значении решает, что logi
+        # транслируем города в соотв. с ПОЛНОЙ таблицей транслита
+        left_join(select(city_translit_df, -date), by=c("region"="translit")) %>%
+        # санация
+        mutate(region=if_else(is.na(russian), str_c("<<", region, ">>"), russian)) %>%
+        select(region, -russian, everything())
+    }
+    
+    df
   })
   
   # таблица с выборкой по каналам ----------------------------
   output$stat_table <- DT::renderDataTable({
     df <- req(cur_df())
-
+    
+    # browser()
     # делаем русские имена колонок в выводе
     colnames_df <- tibble(name_enu=names(df)) %>%
       left_join(dict_df, by=c("name_enu")) %>%
@@ -397,6 +424,25 @@ server <- function(input, output, session) {
                   )
     })
   
+  # управляем отображением дебаг информации --------
+  observeEvent(input$debug_cbx, {
+    shinyjs::toggle("info_text")
+  })
+  
+  # ресет фильтров ---------
+  observeEvent(input$reset_btn, {
+    # shinyjs::
+    reset("in_date_range")
+    reset("serial_mask")
+    reset("duration_range")
+    reset("prefix_filter")
+    reset("event_filter")
+    reset("region_filter")
+    reset("channel_filter")
+    reset("debug_cbx")
+    reset("group_var1")
+  })
+   
   # динамическое управление диапазоном дат ---------
   observeEvent(input$history_depth, {
     # $history_depth получаем как строку
@@ -416,7 +462,7 @@ server <- function(input, output, session) {
   # фиксим даты на сегодняшнюю дату ---------  
   observeEvent(input$set_today_dates_btn, {
     end <- Sys.Date()
-    start <- end - days(1)
+    start <- end - days(4)
     updateDateRangeInput(session, "in_date_range", start=start, end=end)
   })
   
