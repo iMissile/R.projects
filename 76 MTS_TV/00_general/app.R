@@ -463,7 +463,7 @@ server <- function(input, output, session) {
   # фиксим даты на сегодняшнюю дату ---------  
   observeEvent(input$set_today_dates_btn, {
     end <- Sys.Date()
-    start <- end - days(4)
+    start <- end - days(2)
     updateDateRangeInput(session, "in_date_range", start=start, end=end)
   })
   

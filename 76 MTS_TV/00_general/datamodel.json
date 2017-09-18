@@ -23,7 +23,7 @@
     "db_field": "switchevent",
     "human_name_rus": "тип перекл.",
     "can_be_grouped": true,
-    "col_label": "подсказка (switchEvent)"
+    "col_label": "подсказка (switchevent)"
   },
   {
     "db_field": "duration",
