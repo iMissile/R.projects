@@ -32,6 +32,7 @@ library(tictoc)
 library(digest)
 library(officer)
 library(openxlsx)
+library(assertr)
 
 options(shiny.usecairo=TRUE)
 options(shiny.reactlog=TRUE)
@@ -44,8 +45,7 @@ eval(parse("funcs.R", encoding="UTF-8"))
 assign("last.warning", NULL, envir = baseenv())
 
 # определяем окружение в котором запускаемся
-Sys.setenv("R_CONFIG_ACTIVE"="media-tel-prod")
-Sys.setenv("R_CONFIG_ACTIVE"="media-tel-demo")
+Sys.setenv("R_CONFIG_ACTIVE"="media-tel")
 Sys.setenv("R_CONFIG_ACTIVE"="cti")
 
 # ================================================================
@@ -119,10 +119,7 @@ ui <-
                                       "008 - IPTV: EKT"="*008", 
                                       "009 - DVB-C: EKT"="*009"), 
                             multiple=TRUE, width="100%")),
-      column(6, selectInput("event_filter", "Тип переключения канала",
-                            choices=c("CHPLUS", "INIT", "DIGIT", "PREVIOUS_CHANNEL",
-                                      "CHMINUS", "FULLSCREEN_EPG", "ENTER", "PVR", 
-                                      "REMINDER", "MAIN_MENU", "FILE", "VOD", "CATCH_UP"), 
+      column(6, selectInput("event_filter", "Тип переключения канала", choices=NULL,
                             multiple=TRUE, width="100%"))
     ),
     h3("Агрегаты"),
@@ -169,7 +166,7 @@ ui <-
     )
   ),
   conditionalPanel(
-    # general panel -----------------------
+    # config panel -----------------------
     condition = "input.tsp=='config_panel'",
     fluidRow(
       column(2, checkboxInput("debug_cbx", label="Диагностический вывод", value = FALSE, width = NULL))
@@ -199,6 +196,10 @@ server <- function(input, output, session) {
     "word_A4"=list(base_size=14, axis_title_size=12, subtitle_size=11)
   )
   
+  # выставим даты на первоначальный диапазон данных
+  updateDateRangeInput(session, "in_date_range", 
+                       start=config::get("initial_values")$begin_time_range, 
+                       end=config::get("initial_values")$end_time_range)
   
   # Sys.getenv("R_CONFIG_ACTIVE")
   ch_db <- config::get("clickhouse") # достаем параметры подключения
@@ -211,8 +212,14 @@ server <- function(input, output, session) {
   # подгрузим таблицу преобразования транслита в русские названия городов -------
   city_translit_df <- {
     flog.info("Loading cities translit table")
-    df <- req(dbGetQuery(conn, "SELECT * FROM regnames")  %>%
-                mutate_if(is.character, `Encoding<-`, "UTF-8"))
+    df <- req(dbGetQuery(conn, "SELECT * FROM regnames")) %>%
+      verify(has_all_names("date", "russian", "translit")) %>%
+      mutate_if(is.character, `Encoding<-`, "UTF-8") %>%
+      # для каждой строки перевода возьмем самое старшее значение
+      group_by(translit) %>%
+      filter(date==max(date)) %>%
+      ungroup() %>% 
+      select(-date)
     flog.info(paste0("Cities translit table loaded ", nrow(df), " rows"))
     # dbDisconnect(con)
     df
@@ -229,8 +236,17 @@ server <- function(input, output, session) {
     df
   }
 
+  # подгрузим таблицу перевода тэгов, используется для формирования запросов (enu) и отображения (rus)  -------
+  # tag, enu, rus
+  tag_dict_df <- read_excel("tag_dict.xlsx") %>%
+    verify(has_all_names("tag", "enu", "rus"))
+  # заполним список доступных к выбору событий
+  updateSelectInput(session, "event_filter", 
+                    choices=tag_dict_df %>% filter(tag=="switchevent") %>% {setNames(.$enu, .$rus)}, 
+                    selected=NULL)
+
   # подгрузим таблицу преобразования идентификатора канала в русское название ----
-  progs_df <- jsonlite::fromJSON("./channels.json", simplifyDataFrame=TRUE) %>% 
+  progs_df <- jsonlite::fromJSON("channels.json", simplifyDataFrame=TRUE) %>% 
     select(channelId, channelName=name) %>%
     as_tibble()
 
@@ -356,16 +372,32 @@ server <- function(input, output, session) {
   })  
 
   cur_df <- reactive({
-    df <- req(raw_df())
+    df <- raw_df()    
+    shiny::validate(
+      need(df, "data.frame structure must be defined"),
+      # при пустом значении tibble решает, что тип переменной -- logi
+      need(nrow(df)>0, "В рамках установленных ограничений данные полностью отсутствуют")
+    )
+
     # сделаем русские имена городов, если таковые есть в выборке
-    if("region" %in% names(df) & nrow(df)>0){
-      df %<>% # при пустом значении решает, что logi
+    if("region" %in% names(df)){
+      df %<>% 
         # транслируем города в соотв. с ПОЛНОЙ таблицей транслита
-        left_join(select(city_translit_df, -date), by=c("region"="translit")) %>%
+        left_join(city_translit_df, by=c("region"="translit")) %>%
         # санация
         mutate(region=if_else(is.na(russian), str_c("<<", region, ">>"), russian)) %>%
         # select(region, -russian, everything())
         select(-russian)
+    }
+
+    # переведем события, если таковые есть в выборке
+    if("switchevent" %in% names(df)){
+      df %<>%
+        # транслируем событие переключения
+        left_join(filter(tag_dict_df, tag=="switchevent"), by=c("switchevent"="enu")) %>%
+        # санация, для уже определенной колонки ее позиция остается неизменной
+        mutate(switchevent=if_else(is.na(rus), switchevent, rus)) %>% 
+        select(-tag, -rus)
     }
     
     df
@@ -442,6 +474,7 @@ server <- function(input, output, session) {
     reset("channel_filter")
     reset("debug_cbx")
     reset("group_var1")
+    reset("selected_vars")
   })
    
   # динамическое управление диапазоном дат ---------
@@ -548,12 +581,10 @@ server <- function(input, output, session) {
 
   # динамический выбор региона ---------
   output$choose_region <- renderUI({
-    data <- as.list(cities_df$translit)
-    names(data) <- cities_df$russian
+    data <- cities_df %>% {setNames(object=.$translit, .$russian)}
     selectInput("region_filter", 
                 paste0("Регион (", length(data), ")"),
-                multiple=TRUE,
-                choices=data, width = "100%")
+                multiple=TRUE, choices=data, width = "100%")
   })
 
   # динамический выбор канала ---------
@@ -580,15 +611,13 @@ server <- function(input, output, session) {
     if(is.na(bd) || bd>ed) bd <- ed-days(1)
     updateDateRangeInput(session, "in_date_range", start=bd, end=ed)
     
-    
-
     # собираем общие условия в соотв. с фильтрами
     where_string <- paste0(paste0(" date >= '", input$in_date_range[1], "' AND date <= '", input$in_date_range[2], "' "),
                            paste0("AND duration >= ", input$duration_range[1]*60, " AND duration <= ", input$duration_range[2]*60, " "),
                            buildReqFilter("region", input$region_filter, add=TRUE),
                            buildReqFilter("prefix", input$prefix_filter, add=TRUE),
                            buildReqFilter("channelId", input$channel_filter, add=TRUE),
-                           buildReqFilter("switchEvent", input$event_filter, add=TRUE),
+                           buildReqFilter("switchevent", input$event_filter, add=TRUE),
                            ifelse(input$serial_mask=="", "", paste0(" AND like(serial, '%", input$serial_mask, "%') "))
     ) 
     

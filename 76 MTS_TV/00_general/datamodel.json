@@ -26,8 +26,8 @@
     "col_label": "подсказка (switchevent)"
   },
   {
-    "db_field": "duration",
-    "human_name_rus": "длительность",
+    "db_field": "duration_minutes",
+    "human_name_rus": "длительность (минуты)",
     "can_be_grouped": false,
     "aggr_ops": "min, max, mean, sum:ratio",
     "col_label": "подсказка (duration)"
