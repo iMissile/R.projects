@@ -31,6 +31,8 @@ library(anytime)
 library(tictoc)
 library(digest)
 library(officer)
+library(openxlsx)
+library(assertr)
 
 options(shiny.usecairo=TRUE)
 options(shiny.reactlog=TRUE)
@@ -42,16 +44,21 @@ eval(parse("funcs.R", encoding="UTF-8"))
 # очистим все warnings():
 assign("last.warning", NULL, envir = baseenv())
 
-# определяем окружение в котором запускаемся
-if (Sys.info()["sysname"] == "Linux") {
-  # CTI стенд
-  Sys.setenv("R_CONFIG_ACTIVE"="cti-prod")
-  # Sys.setenv("R_CONFIG_ACTIVE"="cti-demo")
-}else{
-  # MT стенд
-  Sys.setenv("R_CONFIG_ACTIVE"="media-tel-prod")
-  Sys.setenv("R_CONFIG_ACTIVE"="media-tel-demo")
-}   
+# # определяем окружение в котором запускаемся
+# if (Sys.info()["sysname"] == "Linux") {
+#   # CTI стенд
+#   Sys.setenv("R_CONFIG_ACTIVE"="cti")
+#   # Sys.setenv("R_CONFIG_ACTIVE"="cti")
+# }else{
+#   # MT стенд
+#   Sys.setenv("R_CONFIG_ACTIVE"="media-tel-prod")
+#   Sys.setenv("R_CONFIG_ACTIVE"="media-tel-demo")
+# }   
+# MT стенд
+Sys.setenv("R_CONFIG_ACTIVE"="media-tel")
+Sys.setenv("R_CONFIG_ACTIVE"="cti")
+
+
 
 # ================================================================
 ui <- 
@@ -59,7 +66,7 @@ ui <-
   # title=HTML('<div><a href="http://devoteam.com/"><img src="./img/devoteam_176px.png" width="80%"></a></div>'),
   title = "Статистика телесмотрения",
   tabPanel("Рейтинг каналов", value="general_panel"),
-  tabPanel("About", value="about"),
+  tabPanel("Настройки", value="config_panel"),
   # windowTitle="CC4L",
   # collapsible=TRUE,
   id="tsp",
@@ -90,13 +97,13 @@ ui <-
                                # на время отладки
                                # start="2017-06-28", end="2017-06-30",
                                # min = Sys.Date() - 10, 
-                               max = Sys.Date(),
+                               # max = Sys.Date(),
                                separator=" - ", format="dd/mm/yyyy",
                                startview="month", language='ru', weekstart=1)
       ), 
       column(1, selectInput("history_depth", "История", 
-                            choices = c("1 месяц"=30, "2 недели"=14,
-                                        "1 неделя"=7, "3 дня"=3, "1 день"=1), selected=1)),
+                            choices = c("сутки"=1, "3 дня"=3, "неделя"=7, "месяц"=30), 
+                            selected=1)),
       #column(1, selectInput("min_watch_time", "Мин. время",
       #                      choices = c("5 сек"=5, "10 сек"=10, 
       #                                  "20 сек"=20, "30 сек"=30), selected = 10)),
@@ -111,10 +118,8 @@ ui <-
                                         "DVB-S"="DVB-S"), selected="all"))
     ),
     fluidRow(
-      column(4, {}),
-      column(2, selectInput("select_ch_table", "Таблица", choices=NULL)),
+      column(8, {}),
       column(2, actionButton("set_today_btn", "На сегодня", class='rightAlign')),
-      column(2, actionButton("set_test_dates_btn", "На демо дату", class='rightAlign')),
       column(2, actionButton("process_btn", "Применить", class = 'rightAlign'))
       ),
     # https://stackoverflow.com/questions/28960189/bottom-align-a-button-in-r-shiny
@@ -133,9 +138,10 @@ ui <-
                ),
                p(),
                fluidRow(
-                 column(8, {}),
-                 column(2, downloadButton("csv_download_btn", label="Экспорт (Excel)", class = 'rightAlign')),
-                 column(2, downloadButton("word_download_btn", label="Экспорт (Word)", class = 'rightAlign'))
+                 column(10, {}),
+                 column(1, downloadButton("csv_download_btn", label="Сохр. CSV", class='rightAlign')),
+                 column(1, downloadButton("xls_download_btn", label="Сохр. Excel", class='rightAlign'))
+                 #column(1, downloadButton("word_download_btn", label="Сохр. Word", class='rightAlign'))
                )
       ),
       tabPanel("График", value = "graph_tab",
@@ -154,9 +160,21 @@ ui <-
     #)
     
   ),
+ conditionalPanel(
+    # config panel -----------------------
+    condition = "input.tsp=='config_panel'",
+    fluidRow(
+      column(2, selectInput("select_ch_table", "Таблица", choices=NULL)),
+      column(2, actionButton("set_test_dates_btn", "На демо дату", class='rightAlign'))
+    )# , 
+    # helpText("Демо данные (work DB)",
+    #          "┌──────────min(begin)─┬──────────max(begin)─┐",
+    #          "│ 2017-08-14 12:36:47 │ 2017-08-21 16:51:51 │",
+    #          "└─────────────────────┴─────────────────────┘"
+    #          )
+ ),
   shinyjs::useShinyjs()  # Include shinyjs
 )
-
 
 # ================================================================
 server <- function(input, output, session) {
@@ -176,6 +194,11 @@ server <- function(input, output, session) {
     "word_A4"=list(base_size=14, axis_title_size=12, subtitle_size=11)
   )
   
+  # выставим даты на первоначальный диапазон данных
+  updateDateRangeInput(session, "in_date_range", 
+                       start=config::get("initial_values")$begin_time_range, 
+                       end=config::get("initial_values")$end_time_range)
+  
   # Sys.getenv("R_CONFIG_ACTIVE")
   ch_db <- config::get("clickhouse") # достаем параметры подключения
   # создаем коннект к инстансу CH -----------
@@ -185,16 +208,23 @@ server <- function(input, output, session) {
   updateSelectInput(session, "select_ch_table", choices=unique(c(ch_db$table, "states")), selected=ch_db$table)
 
   # подгрузим таблицу преобразования транслита в русские названия городов -------
-  cities_df <- {
+  city_translit_df <- {
     flog.info("Loading cities translit table")
-    # подгрузим ограниченный список городов
-    city_subset <- read_csv("region.csv")
-    
     df <- req(dbGetQuery(conn, "SELECT * FROM regnames")  %>%
-                mutate_if(is.character, `Encoding<-`, "UTF-8") %>%
-                filter(translit %in% pull(city_subset)))
+                mutate_if(is.character, `Encoding<-`, "UTF-8"))
     flog.info(paste0("Cities translit table loaded ", nrow(df), " rows"))
     # dbDisconnect(con)
+    df
+  }
+
+  # подгрузим таблицу преобразования транслита в русские названия городов -------
+  cities_df <- {
+    # подгрузим ограниченный список городов
+    city_subset <- read_csv("region.csv", col_names=FALSE)
+    
+    df <- city_translit_df %>%
+      filter(translit %in% pull(city_subset))
+    # browser()
     df
   }
   
@@ -210,10 +240,10 @@ server <- function(input, output, session) {
       as_tibble() %>%
       # если есть поле в БД, а внутреннее представление не задано, то прозрачно транслируем
       mutate(internal_name={map2_chr(.$db_field, .$internal_name, ~if_else(!is.na(.x) & is.na(.y), .x, .y))})
-  }  
+  }
   
   # подгрузим таблицу преобразования идентификатора канала в русское название ----
-  progs_df <- jsonlite::fromJSON("./channels.json", simplifyDataFrame=TRUE) %>% 
+  progs_df <- jsonlite::fromJSON("channels.json", simplifyDataFrame=TRUE) %>% 
     select(channelId, channelName=name)
   
   # реактивные переменные -------------------
@@ -234,21 +264,20 @@ server <- function(input, output, session) {
       flog.info(paste0("DB request: ", r))
     })
     
+    # !!! исправляем непонятно чей косяк: если вложенный select дает 0 строк, то его имя транслируется как NULL
+    # выяснили -- косяк CH
     # browser()
+    # names(temp_df)[[3]] <- "total_unique_stb"
     tic()
     temp_df <- dbGetQuery(conn, r) %>%
-      as_tibble()
-
+      as_tibble() %>%
+      verify(has_all_names("channelId", "unique_stb", "total_unique_stb",
+                           "channel_duration", "watch_events"))
     flog.info(paste0("Query: ", capture.output(toc())))
     flog.info(paste0("Table: ", capture.output(head(temp_df, 2))))
     # system.time(df <- readRDS("./data/tvstream4.rds"))
     flog.info(paste0("Loaded ", nrow(temp_df), " rows"))
     
-    # !!! исправляем непонятно чей косяк: если вложенный select дает 0 строк, то его имя транслируется как NULL
-    # browser()
-    names(temp_df)[[3]] <- "total_unique_stb"
-    
-    # browser()
     df <- temp_df %>%
       # время смотрения, мин
       mutate(channel_duration=round(as.numeric(channel_duration), 0)) %>%
@@ -262,20 +291,21 @@ server <- function(input, output, session) {
       mutate(duration_per_stb=round(channel_duration/unique_stb, 0))
       # %>% mutate_at(vars(mean_duration, ratio_per_stb, watch_ratio, duration_per_stb), funs(round), digits=1)
 
-    # browser()
-    # dbDisconnect(con)
     as_tibble(df)
   })  
 
   cur_df <- reactive({
-    req(raw_df()) %>%
+    df <- req(raw_df()) %>%
       mutate_at(vars(channelId), as.character) %>%
       left_join(progs_df, by=c("channelId")) %>%
       # санация
       mutate(channelName=if_else(is.na(channelName), 
-                                 str_c("_", channelId, "_"), 
+                                 str_c("<<", channelId, ">>"), 
                                  channelName)) %>%
-      select(channelName, channelId, everything())
+      select(channelName, channelId, everything()) %>%
+      # форматируем отображение в excel
+      mutate_at(vars(stb_ratio, watch_ratio), `class<-`, "percentage")
+    df
   })
   
   msg <- reactiveVal("")
@@ -301,6 +331,7 @@ server <- function(input, output, session) {
     # browser()
     # https://rstudio.github.io/DT/functions.html
     DT::datatable(df,
+                  class='cell-border stripe',
                   rownames=FALSE,
                   filter='bottom',
                   # только после жесткой фиксации колонок
@@ -332,9 +363,9 @@ server <- function(input, output, session) {
   # динамическое управление диапазоном дат ---------
   observeEvent(input$history_depth, {
     # $history_depth получаем как строку
-    date <- Sys.Date()-as.numeric(input$history_depth)
+    date <- Sys.Date()-days(as.numeric(input$history_depth))
     flog.info(paste0("Start date changed to  ", date))
-    # updateDateRangeInput(session, "in_date_range", start=date)
+    updateDateRangeInput(session, "in_date_range", start=date)
     }
   )
 
@@ -351,9 +382,11 @@ server <- function(input, output, session) {
     # browser()
     # управляем визуализацией кнопок выгрузки ----- 
     if(!is.null(cur_df()) & nrow(cur_df())>0) {
+      shinyjs::enable("xls_download_btn")
       shinyjs::enable("csv_download_btn")
       shinyjs::enable("word_download_btn")
     } else {
+      shinyjs::disable("xls_download_btn")
       shinyjs::disable("csv_download_btn")
       shinyjs::disable("word_download_btn")
     }
@@ -370,6 +403,7 @@ server <- function(input, output, session) {
     data <- as.list(cities_df$translit)
     names(data) <- cities_df$russian
     # browser()
+    # создадим элемент
     selectInput("region_filter", 
                 paste0("Регион (", length(data), ")"),
                 multiple=TRUE,
@@ -380,7 +414,7 @@ server <- function(input, output, session) {
   # выгрузка таблицы в CSV -----------------------  
   output$csv_download_btn <- downloadHandler(
     filename = function() {
-      paste0("channel_rating_data-", Sys.Date(), ".csv", sep="")
+      paste0("channel_rating_data-", format(Sys.time(), "%F_%H-%M-%S"), ".csv", sep="")
     },
     content = function(file) {
       cur_df() %>%
@@ -389,16 +423,37 @@ server <- function(input, output, session) {
                     row.names=FALSE, sep=";", fileEncoding="windows-1251")
     }
   )
+
+  # выгрузка таблицы в XLS -----------------------  
+  output$xls_download_btn <- downloadHandler(
+    filename = function() {
+      paste0("channel_rating_data-", format(Sys.time(), "%F_%H-%M-%S"), ".xlsx", sep="")
+    },
+    content = function(file) {
+      df <- cur_df()
+      # необходимо сделать русские названия колонок
+      names(df) <- tibble(internal_name=names(df)) %>%
+        left_join(dict_df, by=c("internal_name")) %>%
+        pull(human_name_rus)
+      # write.xlsx(df, file=file, asTable=TRUE, colWidths="auto")
+      n <-length(df)
+      wb <- createWorkbook()
+      addWorksheet(wb, "Выгрузка", zoom=85)
+      writeDataTable(wb, sheet=1, x=df)
+      setColWidths(wb, sheet=1, cols=1:n, widths=c(60, 60, rep(20, n-2)))
+      addWorksheet(wb, "Описание")
+      saveWorkbook(wb, file, overwrite=TRUE)
+    }
+  )
   
   # выгрузка таблицы в Word -----------------------
   output$word_download_btn <- downloadHandler(
     filename = function() {
-      name <- paste0("channel_rating_report-", Sys.Date(), ".docx", sep="")
+      name <- paste0("channel_rating_report-", format(Sys.time(), "%F_%H-%M-%S"), ".docx", sep="")
       flog.info(paste0("Word report: '", name, "'"))
       name
     },
     content = function(file) {
-      # browser();
       doc <- cur_df() %>% # select(-total_unique_stb) %>% # пока убираем, чтобы была консистентная подстановка
         gen_word_report(publish_set=font_sizes[["word_A4"]], dict=dict_df)
       print(doc, target=file)  

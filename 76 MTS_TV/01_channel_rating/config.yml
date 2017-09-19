@@ -14,7 +14,11 @@ default:
     password: ''  
     table: 'states'
 
-cti-prod:
+  initial_values:
+    begin_time_range: "2017-09-12"
+    end_time_range: "2017-09-18"
+
+cti:
   postgres:
     driver: 'PostgreSQL'
     host: '172.16.33.76'
@@ -28,25 +32,13 @@ cti-prod:
     port: 8123
     user: 'default'
     password: ''  
-    table: 'states'
+    table: 'view_states_tg1h'
 
-cti-demo:
-  postgres:
-    driver: 'PostgreSQL'
-    host: '172.16.33.76'
-    uid: 'stat'
-    pwd: 'stat'  
-    port: 5432
-    database: 'stat'
+  initial_values:
+    begin_time_range: "2017-09-12"
+    end_time_range: "2017-09-18"
 
-  clickhouse:
-    host: '172.16.33.74'
-    port: 8123
-    user: 'default'
-    password: ''  
-    table: 'view_simstates'
-
-media-tel-prod:
+media-tel:
   postgres:
     driver: 'PostgreSQL'
     host: '10.0.0.177'
@@ -56,26 +48,14 @@ media-tel-prod:
     database: 'channel_list'
 
   clickhouse:
-    host: '10.0.0.44'
+    host: '10.0.0.234'
     port: 8123
     user: 'default'
     password: ''  
     table: 'states'
 
-media-tel-demo:
-  postgres:
-    driver: 'PostgreSQL'
-    host: '10.0.0.177'
-    uid: 'puser'
-    pwd: 'puser'  
-    port: 5432
-    database: 'channel_list'
-
-  clickhouse:
-    host: '10.0.0.44'
-    port: 8123
-    user: 'default'
-    password: ''  
-    table: 'demostates'
+  initial_values:
+    begin_time_range: "2017-08-14"
+    end_time_range: "2017-08-21"
 
 

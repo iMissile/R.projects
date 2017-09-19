@@ -44,6 +44,7 @@ buildReqLimits <- function(begin, end, region=NULL, prefix=NULL, channel=NULL, e
                 paste0(" AND duration>0*60 AND duration <2*60*60 "),
                 buildReqFilter("region", region, add=TRUE),
                 buildReqFilter("prefix", prefix, add=TRUE),
+                buildReqFilter("segment", segment, add=TRUE),
                 buildReqFilter("channelId", channel, add=TRUE),
                 buildReqFilter("switchEvent", event, add=TRUE),
                 ifelse(serial_mask=="", "", paste0(" AND like(serial, '%", serial_mask, "%') "))
@@ -98,7 +99,7 @@ plotTop10Duration <- function(df, publish_set, ntop=10){
     theme_ipsum_rc(base_size=publish_set[["base_size"]],
                    subtitle_size=publish_set[["subtitle_size"]],
                    axis_title_size=publish_set[["axis_title_size"]]) +  
-    theme(axis.text.x = element_text(angle=90)) +
+    # theme(axis.text.x = element_text(angle=90)) +
     ylab("Суммарное количество минут") +
     xlab("Канал") +
     ggtitle("Топ 10 каналов", subtitle="По времени телесмотрения") +
@@ -128,7 +129,7 @@ plotTop10STB <- function(df, publish_set, ntop=10){
     theme_ipsum_rc(base_size=publish_set[["base_size"]], 
                    subtitle_size=publish_set[["subtitle_size"]],
                    axis_title_size=publish_set[["axis_title_size"]]) +  
-    theme(axis.text.x = element_text(angle=90)) +
+    # theme(axis.text.x = element_text(angle=90)) +
     ylab("Количество уникальных приставок") +
     xlab("Канал") +
     ggtitle("Топ 10 каналов", subtitle="По количеству уникальных приставок") +
