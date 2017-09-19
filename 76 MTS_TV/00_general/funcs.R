@@ -24,6 +24,7 @@ hgroup.enum <- function(date, hour_bin=NULL, min_bin=5){
   dt
 }
 
+
 # взято из formattable::formatter.R
 dvt_color_bar <- function(color = "lightgray", fun = "proportion", ...) {
   fun <- match.fun(fun)

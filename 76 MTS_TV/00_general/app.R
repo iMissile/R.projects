@@ -357,16 +357,23 @@ server <- function(input, output, session) {
       filter(!is.na(ratio_type)) %>%
       filter(internal_name %in% names(df)) %>%
       pull(internal_name)
-    # всех остальных переменных применяем округление до 1
-    # составим список имен колонок
+    # для всех остальных агрегатных числовых переменных применяем округление до 1
     non_ratio_vars <- var_model_df %>%
       filter(is.na(ratio_type)) %>%
       filter(internal_name %in% names(df)) %>%
       pull(internal_name)
+    # browser()
 
+    # составим список оставшихся переменных
+    other_vars <- names(df) %>% {.[!(. %in% var_model_df$internal_name)]}
+    
     res_df <- df %>% 
-      mutate_at(vars(one_of(ratio_vars)), ~(round(.x*100, 2))) %>%
-      mutate_at(vars(one_of(non_ratio_vars)), ~(round(.x, 0)))
+      mutate_at(vars(one_of(ratio_vars)), ~(round(.x, 4))) %>%
+      # добавим маркер форматирования для вывода в excel
+      mutate_at(vars(one_of(ratio_vars)), `class<-`, "percentage") %>%
+      mutate_at(vars(one_of(non_ratio_vars)), ~(round(.x, 0))) %>%
+      # прогоним по оставшимся переменным
+      mutate_at(vars(other_vars), ~{if(is.numeric(.x)) round(.x, 0) else .x})
 
     res_df
   })  
@@ -454,7 +461,8 @@ server <- function(input, output, session) {
                                lengthMenu=c(5, 7, 10, 15, 50),
                                scrollCollapse=TRUE,
                                scrollX=TRUE)
-                  )
+                  ) %>%
+      DT::formatPercentage(ratio_vars, digits=2)
     })
   
   # управляем отображением дебаг информации --------
@@ -707,6 +715,8 @@ server <- function(input, output, session) {
         mutate(name_rus={map2_chr(.$name_rus, .$name_enu, 
                                   ~if_else(is.na(.x), .y, .x))}) %>% 
         pull(name_rus)
+      # %-ное форматирование долевых колонок мы установили при формировании источника
+      # browser()
       write.xlsx(df, file=file, asTable = TRUE)
     }
   )

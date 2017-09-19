@@ -67,6 +67,18 @@
     "col_label": "подсказка (timegroup1h)"
   },
   {
+    "db_field": "timegroup1m",
+    "human_name_rus": "месяц",
+    "can_be_grouped": true,
+    "col_label": "подсказка (timegroup1m)"
+  },
+  {
+    "db_field": "timegroup1w",
+    "human_name_rus": "неделя",
+    "can_be_grouped": true,
+    "col_label": "подсказка (timegroup1w)"
+  },
+  {
     "db_field": "vendor",
     "human_name_rus": "вендор STB",
     "can_be_grouped": true,
