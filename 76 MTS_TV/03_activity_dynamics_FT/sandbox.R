@@ -214,3 +214,15 @@ gp <- ggplot(reg_df, aes(fct_reorder(as.factor(region), total_duration, .desc=FA
   coord_flip() 
 
 gp
+
+# -------------- делаем срез по совокупному количетву событий
+df <- readRDS("df.rds")
+ntop <- 10
+
+ch_df <- df %>%
+  rename(value=watch_events) %>%
+  group_by(channelName) %>%
+  summarize(s=sum(value)) %>%
+  arrange(desc(s)) %>%
+  filter(row_number()<=ntop)
+

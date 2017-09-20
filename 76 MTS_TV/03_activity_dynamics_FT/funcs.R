@@ -18,6 +18,7 @@ buildReqLimits <- function(begin, end, region=NULL, prefix=NULL, channel=NULL, e
                 paste0(" AND duration>0*60 AND duration <2*60*60 "),
                 buildReqFilter("region", region, add=TRUE),
                 buildReqFilter("prefix", prefix, add=TRUE),
+                buildReqFilter("segment", segment, add=TRUE),
                 buildReqFilter("channelId", channel, add=TRUE),
                 buildReqFilter("switchEvent", event, add=TRUE),
                 ifelse(serial_mask=="", "", paste0(" AND like(serial, '%", serial_mask, "%') "))
@@ -52,18 +53,37 @@ buildReqDynamic <- function(db_table, begin, end, region=NULL, interval=60, chan
     "ORDER BY timestamp DESC", sep=" ")
   }
 
-plotAreaplotActivity <- function(df, publish_set, ntop=10){ 
+theme_dvt <- function(target="screen"){
+  # создание параметров оформления для различных видов графиков (screen\publish) ------
+  flog.info(paste0("target is '", target, "'"))
+
+  if(target=="screen"){
+    ret <- theme_ipsum_rc(base_size=20, axis_title_size=18, subtitle_size=15)
+  } else {
+    if(target=="word_A4"){
+      ret <- theme_ipsum_rc(base_size=14, axis_title_size=12, subtitle_size=11)
+    } else {
+      flog.error("Incorrect target, use default settings")
+      ret <- theme_ipsum_rc()
+    }}
   
-  flog.info(paste0("publish_set is ", capture.output(str(publish_set))))
+  ret + theme(axis.text.x = element_text(angle=90))
+}
+
+plotAreaplotActivity <- function(df, target, ntop=10){ 
+  # для устранения DDoS обрежем количество отображаемой информации
+  # на входе временная развертка, сначала определим top 10 каналов по всему объему
+  df %<>% rename(value=watch_events) # обезличили
+
+  ch_df <- df %>%
+    group_by(channelName) %>%
+    summarize(s=sum(value)) %>%
+    arrange(desc(s)) %>%
+    # может возникнуть ситуация, когда все значения top_n одинаковы. тогда надо брать выборку
+    filter(row_number()<=ntop)    
   
-  # browser()
-  reg_df <- df %>%
-    rename(value=watch_events) # обезличили
-#     group_by(channelName)
-#     top_n(ntop, value) %>%
-# # может возникнуть ситуация, когда все значения top_n одинаковы. тогда надо брать выборку
-#     filter(row_number()<=ntop) %>%
-#     arrange(desc(value))
+  reg_df <- df %>% 
+    semi_join(ch_df, by="channelName")
 
   g <- guide_legend("Каналы")
   gp <- ggplot(reg_df, aes(timegroup, value, color=channelName)) +
@@ -72,27 +92,28 @@ plotAreaplotActivity <- function(df, publish_set, ntop=10){
     geom_area(aes(colour=channelName, fill=channelName), alpha=0.5, position="stack") +
     guides(colour=g, fill=g) +
     scale_x_datetime(labels=date_format(format="%d.%m.%y%n%H:%M", tz="UTC")) +
-    theme_ipsum_rc(base_size=publish_set[["base_size"]], 
-                   axis_title_size=publish_set[["axis_title_size"]]) +  
-    theme(axis.text.x = element_text(angle=90)) +
+    theme_dvt(target) +
     ylab("Количество событий") +
     xlab("Временной интервал")
 
   gp
   }
 
-plotLineplotActivity <- function(df, publish_set, ntop=10){
+plotLineplotActivity <- function(df, target, ntop=10){
+  # для устранения DDoS обрежем количество отображаемой информации
+  # на входе временная развертка, сначала определим top 10 каналов по всему объему
+  df %<>% rename(value=watch_events) # обезличили
+  
+  ch_df <- df %>%
+    group_by(channelName) %>%
+    summarize(s=sum(value)) %>%
+    arrange(desc(s)) %>%
+    # может возникнуть ситуация, когда все значения top_n одинаковы. тогда надо брать выборку
+    filter(row_number()<=ntop)    
+  
+  reg_df <- df %>% 
+    semi_join(ch_df, by="channelName")
 
-  flog.info(paste0("publish_set is ", capture.output(str(publish_set))))
-  
-  # browser()
-  reg_df <- df %>%
-    rename(value=watch_events) # обезличили
-  # top_n(ntop, value) %>%
-  #   # может возникнуть ситуация, когда все значения top_n одинаковы. тогда надо брать выборку
-  #   filter(row_number()<=ntop) %>%
-  #   arrange(desc(value))
-  
   g <- guide_legend("Каналы")
   gp <- ggplot(reg_df, aes(timegroup, value, color=channelName)) +
     geom_line(lwd=1.2, alpha=0.5) +
@@ -100,9 +121,7 @@ plotLineplotActivity <- function(df, publish_set, ntop=10){
     guides(colour=g, fill=g) +
     # geom_area(aes(colour=channelName, fill=channelName), alpha=0.5, position="stack") +
     scale_x_datetime(labels=date_format(format="%d.%m.%y%n%H:%M", tz="UTC")) +
-    theme_ipsum_rc(base_size=publish_set[["base_size"]], 
-                   axis_title_size=publish_set[["axis_title_size"]]) +  
-    theme(axis.text.x = element_text(angle=90)) +
+    theme_dvt(target) +  
     ylab("Количество событий") +
     xlab("Временной интервал")
   
@@ -110,11 +129,7 @@ plotLineplotActivity <- function(df, publish_set, ntop=10){
 }
 
 # Генерация word файла для выгрузки средcтвами officer -------------
-gen_word_report <- function(df, template_fname, publish_set=NULL, dict){
-  if(is.na(publish_set)){
-    flog.error("publish_set is NULL")
-    return(NULL)
-  }
+gen_word_report <- function(df, template_fname, dict){
   # считаем данные для вставки -----------------------------------
   n_out <- ifelse(nrow(df)<80, nrow(df), 80)
   out_df <- df %>% 
@@ -130,14 +145,15 @@ gen_word_report <- function(df, template_fname, publish_set=NULL, dict){
     
   }
   
+  target <- "word_A4"
   # создаем файл ------------------------------------------
   doc <- read_docx() %>% # read_docx(path="./TV_report_template.docx") %>%
     body_add_par(value=paste0("Первые ", n_out, " строк данных"), style="heading 1") %>%
     body_add_table(value=out_df, style="table_template") %>% 
     body_add_par(value="ТОП 10 по времени просмотра", style="heading 2") %>%
-    body_add_gg(value=plotAreaplotActivity(df, publish_set=publish_set), style = "centered") %>%
+    body_add_gg(value=plotAreaplotActivity(df, target), style = "centered") %>%
     body_add_par(value="ТОП 10 по количеству уникальных приставок", style="heading 2") %>%
-    body_add_gg(value=plotLineplotActivity(df, publish_set=publish_set), style="centered")
+    body_add_gg(value=plotLineplotActivity(df, target), style="centered")
   
   doc
   
