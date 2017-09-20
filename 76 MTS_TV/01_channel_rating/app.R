@@ -32,6 +32,7 @@ library(tictoc)
 library(digest)
 library(officer)
 library(openxlsx)
+library(assertive)
 library(assertr)
 
 options(shiny.usecairo=TRUE)
@@ -57,8 +58,6 @@ assign("last.warning", NULL, envir = baseenv())
 # MT стенд
 Sys.setenv("R_CONFIG_ACTIVE"="media-tel")
 Sys.setenv("R_CONFIG_ACTIVE"="cti")
-
-
 
 # ================================================================
 ui <- 
@@ -165,7 +164,8 @@ ui <-
     condition = "input.tsp=='config_panel'",
     fluidRow(
       column(2, selectInput("select_ch_table", "Таблица", choices=NULL)),
-      column(2, actionButton("set_test_dates_btn", "На демо дату", class='rightAlign'))
+      column(2, actionButton("set_test_dates_btn", "На демо дату", class='rightAlign')),
+      column(2, checkboxInput("debug_cbx", label="Диагностический вывод", value = FALSE, width = NULL))
     )# , 
     # helpText("Демо данные (work DB)",
     #          "┌──────────min(begin)─┬──────────max(begin)─┐",
@@ -187,18 +187,10 @@ server <- function(input, output, session) {
   flog.appender(appender.tee(log_name))
   flog.threshold(TRACE)
   flog.info(paste0("App started in '", Sys.getenv("R_CONFIG_ACTIVE"), "' environment"))
+  
+  # префикс имени файла при генерации выгрузок
+  fname_prefix <- "channel_rating_"
 
-  # создание параметров оформления для различных видов графиков (screen\publish) ------
-  font_sizes <- list(
-    "screen"=list(base_size=20, axis_title_size=18, subtitle_size=15),
-    "word_A4"=list(base_size=14, axis_title_size=12, subtitle_size=11)
-  )
-  
-  # выставим даты на первоначальный диапазон данных
-  updateDateRangeInput(session, "in_date_range", 
-                       start=config::get("initial_values")$begin_time_range, 
-                       end=config::get("initial_values")$end_time_range)
-  
   # Sys.getenv("R_CONFIG_ACTIVE")
   ch_db <- config::get("clickhouse") # достаем параметры подключения
   # создаем коннект к инстансу CH -----------
@@ -246,6 +238,11 @@ server <- function(input, output, session) {
   progs_df <- jsonlite::fromJSON("channels.json", simplifyDataFrame=TRUE) %>% 
     select(channelId, channelName=name)
   
+  # выставим даты на первоначальный диапазон данных
+  updateDateRangeInput(session, "in_date_range", 
+                       start=config::get("initial_values")$begin_time_range, 
+                       end=config::get("initial_values")$end_time_range)
+  
   # реактивные переменные -------------------
   raw_df <- reactive({
     input$process_btn # обновлять будем вручную
@@ -275,7 +272,6 @@ server <- function(input, output, session) {
                            "channel_duration", "watch_events"))
     flog.info(paste0("Query: ", capture.output(toc())))
     flog.info(paste0("Table: ", capture.output(head(temp_df, 2))))
-    # system.time(df <- readRDS("./data/tvstream4.rds"))
     flog.info(paste0("Loaded ", nrow(temp_df), " rows"))
     
     df <- temp_df %>%
@@ -319,7 +315,6 @@ server <- function(input, output, session) {
     colnames_df <- tibble(internal_name=names(df)) %>%
       left_join(dict_df, by=c("internal_name"))
       # поля строго заданы, санация сознательно не делается. Если что не так, надо справочник править
-
     # https://stackoverflow.com/questions/39970097/tooltip-or-popover-in-shiny-datatables-for-row-names
     colheader <- htmltools::withTags(
       table(class = 'display',
@@ -336,7 +331,7 @@ server <- function(input, output, session) {
                   filter='bottom',
                   # только после жесткой фиксации колонок
                   container=colheader,
-                  options=list(dom='fltip', pageLength=7, lengthMenu=c(5, 7, 10, 15),
+                  options=list(dom='fltip', pageLength=7, lengthMenu=c(5, 7, 10, 15, 50),
                                order=list(list(3, 'desc')))) %>%
       DT::formatPercentage("watch_ratio", 2) %>%
       DT::formatPercentage("stb_ratio", 2)
@@ -348,7 +343,7 @@ server <- function(input, output, session) {
       need(!is.null(cur_df()), "NULL value can't be renederd"),
       need(nrow(cur_df())>0, "0 rows -- nothing to draw") 
     )
-    plotTop10Duration(cur_df(), publish_set=font_sizes[["screen"]])
+    plotTop10Duration(cur_df(), target="screen")
   })
   
   # график Топ10 каналов по количеству уникальных приставок --------------
@@ -357,13 +352,13 @@ server <- function(input, output, session) {
       need(!is.null(cur_df()), "NULL value can't be renederd"),
       need(nrow(cur_df())>0, "0 rows -- nothing to draw") 
     )
-    plotTop10STB(cur_df(), publish_set=font_sizes[["screen"]])
+    plotTop10STB(cur_df(), target="screen")
   })  
 
   # динамическое управление диапазоном дат ---------
   observeEvent(input$history_depth, {
     # $history_depth получаем как строку
-    date <- Sys.Date()-days(as.numeric(input$history_depth))
+    date <- input$in_date_range[1]-days(as.numeric(input$history_depth))
     flog.info(paste0("Start date changed to  ", date))
     updateDateRangeInput(session, "in_date_range", start=date)
     }
@@ -402,7 +397,7 @@ server <- function(input, output, session) {
     
     data <- as.list(cities_df$translit)
     names(data) <- cities_df$russian
-    # browser()
+    
     # создадим элемент
     selectInput("region_filter", 
                 paste0("Регион (", length(data), ")"),
@@ -414,7 +409,7 @@ server <- function(input, output, session) {
   # выгрузка таблицы в CSV -----------------------  
   output$csv_download_btn <- downloadHandler(
     filename = function() {
-      paste0("channel_rating_data-", format(Sys.time(), "%F_%H-%M-%S"), ".csv", sep="")
+      paste0(fname_prefix, "data-", format(Sys.time(), "%F_%H-%M-%S"), ".csv", sep="")
     },
     content = function(file) {
       cur_df() %>%
@@ -427,7 +422,7 @@ server <- function(input, output, session) {
   # выгрузка таблицы в XLS -----------------------  
   output$xls_download_btn <- downloadHandler(
     filename = function() {
-      paste0("channel_rating_data-", format(Sys.time(), "%F_%H-%M-%S"), ".xlsx", sep="")
+      paste0(fname_prefix, "data-", format(Sys.time(), "%F_%H-%M-%S"), ".xlsx", sep="")
     },
     content = function(file) {
       df <- cur_df()
@@ -449,13 +444,13 @@ server <- function(input, output, session) {
   # выгрузка таблицы в Word -----------------------
   output$word_download_btn <- downloadHandler(
     filename = function() {
-      name <- paste0("channel_rating_report-", format(Sys.time(), "%F_%H-%M-%S"), ".docx", sep="")
+      name <- paste0(fname_prefix, "report-", format(Sys.time(), "%F_%H-%M-%S"), ".docx", sep="")
       flog.info(paste0("Word report: '", name, "'"))
       name
     },
     content = function(file) {
       doc <- cur_df() %>% # select(-total_unique_stb) %>% # пока убираем, чтобы была консистентная подстановка
-        gen_word_report(publish_set=font_sizes[["word_A4"]], dict=dict_df)
+        gen_word_report(dict=dict_df)
       print(doc, target=file)  
     }
   )  

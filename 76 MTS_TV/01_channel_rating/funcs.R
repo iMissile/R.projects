@@ -77,11 +77,27 @@ buildReq <- function(db_table, begin, end, region=NULL, segment="all"){
     "GROUP BY channelId", sep=" ")
 }
 
-# построение гистограммы ТОП 10 по времени просмотра для отчета 'Рейтинг по каналам' ----------------
-plotTop10Duration <- function(df, publish_set, ntop=10){
+theme_dvt <- function(target="screen"){
+  # создание параметров оформления для различных видов графиков (screen\publish) ------
+  flog.info(paste0("Target is '", target, "'"))
+
+  if(target=="screen"){
+    ret <- theme_ipsum_rc(base_size=20, axis_title_size=18, subtitle_size=15)
+  } else {
+    if(target=="word_A4"){
+      ret <- theme_ipsum_rc(base_size=14, axis_title_size=12, subtitle_size=11)
+    } else {
+      flog.error("Incorrect target, use default settings")
+      ret <- theme_ipsum_rc()
+    }}
   
-  flog.info(paste0("publish_set is ", capture.output(str(publish_set))))
+  ret # + theme(axis.text.x = element_text(angle=90))
+}
+
+# построение гистограммы ТОП 10 по времени просмотра для отчета 'Рейтинг по каналам' ----------------
+plotTop10Duration <- function(df, target, ntop=10){
   # выберем наиболее программы c позиции эфирного времени
+  tic()
   reg_df <- df %>%
     top_n(ntop, channel_duration) %>%
 # может возникнуть ситуация, когда все значения top_n одинаковы. тогда надо брать выборку
@@ -96,23 +112,20 @@ plotTop10Duration <- function(df, publish_set, ntop=10){
     # geom_text_repel(aes(label=label), fontface = 'bold', color = 'blue', nudge_y=0) +
     # scale_x_discrete("Передача", breaks=df2$order, labels=df2$channelName) +
     scale_y_log10() +
-    theme_ipsum_rc(base_size=publish_set[["base_size"]],
-                   subtitle_size=publish_set[["subtitle_size"]],
-                   axis_title_size=publish_set[["axis_title_size"]]) +  
-    # theme(axis.text.x = element_text(angle=90)) +
+    theme_dvt(target) +
     ylab("Суммарное количество минут") +
     xlab("Канал") +
     ggtitle("Топ 10 каналов", subtitle="По времени телесмотрения") +
     coord_flip() 
   
+  flog.info(paste0("Building Top10Duration Plot: ", capture.output(toc())))
   gp
 }
 
 # построение гистограммы ТОП 10 по количеству уникальных приставок для отчета 'Рейтинг по каналам' ----------------
-plotTop10STB <- function(df, publish_set, ntop=10){
-  
-  flog.info(paste0("publish_set is ", capture.output(str(publish_set))))
+plotTop10STB <- function(df, target, ntop=10){
   # выберем наиболее программы c позиции эфирного времени
+  tic()
   reg_df <- df %>%
     top_n(ntop, unique_stb) %>%
     filter(row_number()<=ntop) %>% # на случай одинаковых значений
@@ -126,24 +139,18 @@ plotTop10STB <- function(df, publish_set, ntop=10){
     # geom_text_repel(aes(label=label), fontface = 'bold', color = 'blue', nudge_y=0) +
     # scale_x_discrete("Передача", breaks=df2$order, labels=df2$channelName) +
     scale_y_log10() +
-    theme_ipsum_rc(base_size=publish_set[["base_size"]], 
-                   subtitle_size=publish_set[["subtitle_size"]],
-                   axis_title_size=publish_set[["axis_title_size"]]) +  
-    # theme(axis.text.x = element_text(angle=90)) +
+    theme_dvt(target) + 
     ylab("Количество уникальных приставок") +
     xlab("Канал") +
     ggtitle("Топ 10 каналов", subtitle="По количеству уникальных приставок") +
     coord_flip() 
   
+  flog.info(paste0("Building Top10STB Plot: ", capture.output(toc())))
   gp
 }
 
 # Генерация word файла для выгрузки средcтвами officer -------------
-gen_word_report <- function(df, template_fname, publish_set=NULL, dict){
-  if(is.na(publish_set)){
-    flog.error("publish_set is NULL")
-    return(NULL)
-  }
+gen_word_report <- function(df, template_fname, dict){
   # считаем данные для вставки -----------------------------------
   n_out <- ifelse(nrow(df)<80, nrow(df), 80)
   out_df <- df %>% 
@@ -157,17 +164,17 @@ gen_word_report <- function(df, template_fname, publish_set=NULL, dict){
     colnames_df <- tibble(internal_name=names(out_df)) %>%
       left_join(dict, by=c("internal_name"))
     names(out_df) <- colnames_df$human_name_rus
-    
   }
   
+  target <- "word_A4"
   # создаем файл ------------------------------------------
   doc <- read_docx() %>% # read_docx(path="./TV_report_template.docx") %>%
     body_add_par(value=paste0("Первые ", n_out, " строк данных"), style="heading 1") %>%
     body_add_table(value=out_df, style="table_template") %>% 
     body_add_par(value="ТОП 10 по времени просмотра", style="heading 2") %>%
-    body_add_gg(value=plotTop10Duration(df, publish_set=publish_set), style = "centered") %>%
+    body_add_gg(value=plotTop10Duration(df, target), style = "centered") %>%
     body_add_par(value="ТОП 10 по количеству уникальных приставок", style="heading 2") %>%
-    body_add_gg(value=plotTop10STB(df, publish_set=publish_set), style="centered")
+    body_add_gg(value=plotTop10STB(df, target), style="centered")
   
   doc
   
