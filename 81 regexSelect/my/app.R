@@ -1,8 +1,8 @@
 library(shiny)
 library(ggplot2)
 getwd()
-source("./R/regexSelect.R")
-source("./R/regexSelectUI.R")
+source("regexSelect.R")
+source("regexSelectUI.R")
 
 ui <- fluidPage(
   selectInput('var','Choose Variable',
@@ -16,7 +16,11 @@ server <- function(input, output, session) {
   
   observeEvent(input$var,{ 
     output$regexchoose<-shiny::renderUI({
-      regexSelectUI(id = "a", label = input$var,choices = unique(diamonds[[input$var]]))
+      regexSelectUI(id = "a", label = input$var,
+                    choices = unique(diamonds[[input$var]]),
+                    # checkbox.inline =TRUE,
+                    checkbox.show=TRUE
+                    )
     })
   })
   
