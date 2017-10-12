@@ -55,7 +55,7 @@ buildReqDynamic <- function(db_table, begin, end, region=NULL, interval=60, chan
 
 theme_dvt <- function(target="screen"){
   # создание параметров оформления для различных видов графиков (screen\publish) ------
-  flog.info(paste0("target is '", target, "'"))
+  flog.info(paste0("Target is '", target, "'"))
 
   if(target=="screen"){
     ret <- theme_ipsum_rc(base_size=20, axis_title_size=18, subtitle_size=15)
@@ -67,12 +67,13 @@ theme_dvt <- function(target="screen"){
       ret <- theme_ipsum_rc()
     }}
   
-  ret + theme(axis.text.x = element_text(angle=90))
+  ret # + theme(axis.text.x = element_text(angle=90))
 }
 
 plotAreaplotActivity <- function(df, target, ntop=10){ 
   # для устранения DDoS обрежем количество отображаемой информации
   # на входе временная развертка, сначала определим top 10 каналов по всему объему
+  tic()
   df %<>% rename(value=watch_events) # обезличили
 
   ch_df <- df %>%
@@ -95,13 +96,15 @@ plotAreaplotActivity <- function(df, target, ntop=10){
     theme_dvt(target) +
     ylab("Количество событий") +
     xlab("Временной интервал")
-
+  
+  flog.info(paste0("Building AreaPlot: ", capture.output(toc())))
   gp
   }
 
 plotLineplotActivity <- function(df, target, ntop=10){
   # для устранения DDoS обрежем количество отображаемой информации
   # на входе временная развертка, сначала определим top 10 каналов по всему объему
+  tic()
   df %<>% rename(value=watch_events) # обезличили
   
   ch_df <- df %>%
@@ -125,6 +128,7 @@ plotLineplotActivity <- function(df, target, ntop=10){
     ylab("Количество событий") +
     xlab("Временной интервал")
   
+  flog.info(paste0("Building LinePlot: ", capture.output(toc())))
   gp
 }
 
@@ -142,7 +146,6 @@ gen_word_report <- function(df, template_fname, dict){
     colnames_df <- tibble(internal_name=names(out_df)) %>%
       left_join(dict, by=c("internal_name"))
     names(out_df) <- colnames_df$human_name_rus
-    
   }
   
   target <- "word_A4"

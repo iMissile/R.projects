@@ -24,8 +24,6 @@ library(config)
 source("clickhouse.R")
 
 
-
-
 rm(list=ls()) # очистим все переменные
 df0 <- jsonlite::fromJSON("datamodel.json", simplifyDataFrame=TRUE)
 

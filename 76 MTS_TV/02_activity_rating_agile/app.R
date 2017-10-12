@@ -32,6 +32,8 @@ library(tictoc)
 library(digest)
 library(officer)
 library(openxlsx)
+library(assertive)
+library(assertr)
 
 options(shiny.usecairo=TRUE)
 options(shiny.reactlog=TRUE)
@@ -54,11 +56,8 @@ assign("last.warning", NULL, envir = baseenv())
 #   Sys.setenv("R_CONFIG_ACTIVE"="media-tel-demo")
 # }   
 # MT стенд
-Sys.setenv("R_CONFIG_ACTIVE"="media-tel-prod")
-Sys.setenv("R_CONFIG_ACTIVE"="media-tel-demo")
+Sys.setenv("R_CONFIG_ACTIVE"="media-tel")
 Sys.setenv("R_CONFIG_ACTIVE"="cti")
-
-
 
 # ================================================================
 ui <- 
@@ -97,7 +96,7 @@ ui <-
                                # на время отладки
                                # start="2017-06-28", end="2017-06-30",
                                # min = Sys.Date() - 10, 
-                               max = Sys.Date(),
+                               # max = Sys.Date(),
                                separator=" - ", format="dd/mm/yyyy",
                                startview="month", language='ru', weekstart=1)
       ), 
@@ -138,10 +137,10 @@ ui <-
                ),
                p(),
                fluidRow(
-                 column(9, {}),
+                 column(10, {}),
                  column(1, downloadButton("csv_download_btn", label="Сохр. CSV", class='rightAlign')),
-                 column(1, downloadButton("xls_download_btn", label="Сохр. Excel", class='rightAlign')),
-                 column(1, downloadButton("word_download_btn", label="Сохр. Word", class='rightAlign'))
+                 column(1, downloadButton("xls_download_btn", label="Сохр. Excel", class='rightAlign'))
+                 #column(1, downloadButton("word_download_btn", label="Сохр. Word", class='rightAlign'))
                ),
                fluidRow(
                  #column(10, plotOutput("subset_plot")),
@@ -200,7 +199,7 @@ ui <-
     )
   ),
   conditionalPanel(
-    # general panel -----------------------
+    # config panel -----------------------
     condition = "input.tsp=='config_panel'",
     fluidRow(
       column(2, selectInput("select_ch_table", "Таблица", choices=NULL)),
@@ -221,14 +220,11 @@ server <- function(input, output, session) {
   flog.appender(appender.tee(log_name))
   flog.threshold(TRACE)
   flog.info(paste0("App started in '", Sys.getenv("R_CONFIG_ACTIVE"), "' environment"))
+  
+  # префикс имени файла при генерации выгрузок
+  fname_prefix <- "user_activity_"
 
   shinyjs::hide("slice_panel_div")
-  
-  # создание параметров оформления для различных видов графиков (screen\publish) ------
-  font_sizes <- list(
-    "screen"=list(base_size=20, axis_title_size=18, subtitle_size=15),
-    "word_A4"=list(base_size=14, axis_title_size=12, subtitle_size=11)
-  )
   
   # Sys.getenv("R_CONFIG_ACTIVE")
   ch_db <- config::get("clickhouse") # достаем параметры подключения
@@ -278,6 +274,7 @@ server <- function(input, output, session) {
   raw_df <- reactive({
     input$process_btn # обновлять будем вручную
     req(input$select_ch_table)
+    
     isolate({
       # r <- buildReq(begin=today(), end=today()+days(1), regions)
       # flog.info(paste0("Applied time filter [", input$in_date_range[1], "; ", input$in_date_range[2], "]"))
@@ -291,18 +288,18 @@ server <- function(input, output, session) {
       flog.info(paste0("DB request: ", r))
     })
     
-    # browser()
+    # !!! исправляем непонятно чей косяк: если вложенный select дает 0 строк, то его имя транслируется как NULL
+    # выяснили -- косяк CH
+    # names(temp_df)[[3]] <- "total_unique_stb"
     tic()
     temp_df <- dbGetQuery(conn, r) %>%
-      as_tibble()
+      as_tibble() %>%
+      verify(has_all_names("total_unique_stb"))
 
     flog.info(paste0("Query: ", capture.output(toc())))
     flog.info(paste0("Table: ", capture.output(head(temp_df, 2))))
-    # system.time(df <- readRDS("./data/tvstream4.rds"))
     flog.info(paste0("Loaded ", nrow(temp_df), " rows"))
     
-    # !!! исправляем непонятно чей косяк: если вложенный select дает 0 строк, то его имя транслируется как NULL
-    names(temp_df)[[3]] <- "total_unique_stb"
     
     # browser()
     df <- temp_df %>%
@@ -427,7 +424,7 @@ server <- function(input, output, session) {
       need(!is.null(detail_df()), "NULL value can't be renederd"),
       need(nrow(detail_df())>0, "0 rows -- nothing to draw") 
     )
-    plotRegionHistory(detail_df(), input$y_ts_plot, input$type_ts_plot, publish_set=font_sizes[["screen"]])
+    plotRegionHistory(detail_df(), input$y_ts_plot, input$type_ts_plot, target="screen")
   })
     
     
@@ -439,36 +436,35 @@ server <- function(input, output, session) {
       need(nrow(cur_df())>0, "0 rows -- nothing to draw")
       )
 
-    plotTop10Duration(cur_df(), publish_set=font_sizes[["screen"]], 
-                      ntop=as.integer(input$top_num))
+    plotTop10Duration(cur_df(), target="screen", ntop=as.integer(input$top_num))
     })    
  
   
-  # график Топ10 каналов по суммарному времени просмотра -------------
+  # левый график  -------------
+  # Топ10 каналов по суммарному времени просмотра
   output$top10_duration_plot <- renderPlot({
     shiny::validate(
       need(!is.null(cur_df()), "NULL value can't be renederd"),
       need(nrow(cur_df())>0, "0 rows -- nothing to draw") 
     )
     
-    plotTop10Duration(cur_df(), publish_set=font_sizes[["screen"]], 
-                      ntop=as.integer(input$top_num))
+    plotTop10Duration(cur_df(), target="screen", ntop=as.integer(input$top_num))
   })
   
-  # график Топ10 каналов по количеству уникальных приставок --------------
+  # правый график --------------
+  # Топ10 каналов по количеству уникальных приставок
   output$top10_stb_plot <-renderPlot({
     shiny::validate(
       need(!is.null(cur_df()), "NULL value can't be renederd"),
       need(nrow(cur_df())>0, "0 rows -- nothing to draw") 
     )
-    plotTop10STB(cur_df(), publish_set=font_sizes[["screen"]], 
-                 ntop=as.integer(input$top_num))
+    plotTop10STB(cur_df(), target="screen", ntop=as.integer(input$top_num))
   })  
 
   # динамическое управление диапазоном дат ---------
   observeEvent(input$history_depth, {
     # $history_depth получаем как строку
-    date <- Sys.Date()-days(as.numeric(input$history_depth))
+    date <- input$in_date_range[1]-days(as.numeric(input$history_depth))
     flog.info(paste0("Start date changed to ", date))
     updateDateRangeInput(session, "in_date_range", start=date)
    }
@@ -487,9 +483,11 @@ server <- function(input, output, session) {
     # browser()
     # управляем визуализацией кнопок выгрузки ----- 
     if(!is.null(cur_df()) & nrow(cur_df())>0) {
+      shinyjs::enable("xls_download_btn")
       shinyjs::enable("csv_download_btn")
       shinyjs::enable("word_download_btn")
     } else {
+      shinyjs::disable("xls_download_btn")
       shinyjs::disable("csv_download_btn")
       shinyjs::disable("word_download_btn")
     }
@@ -523,10 +521,9 @@ server <- function(input, output, session) {
   # выгрузка таблицы в CSV -----------------------  
   output$csv_download_btn <- downloadHandler(
     filename = function() {
-      paste0("user_activity_data-", Sys.Date(), ".csv", sep="")
+      paste0(fname_prefix, "data-", format(Sys.time(), "%F_%H-%M-%S"), ".csv", sep="")
     },
     content = function(file) {
-      # browser()
       cur_df() %>%
         # сделаем вывод в формате, принимаемым Excel
         write.table(file, na="NA", append=FALSE, col.names=TRUE, 
@@ -537,24 +534,35 @@ server <- function(input, output, session) {
   # выгрузка таблицы в XLS -----------------------  
   output$xls_download_btn <- downloadHandler(
     filename = function() {
-      paste0("user_activity_data-", Sys.Date(), ".xlsx", sep="")
+      paste0(fname_prefix, "data-", format(Sys.time(), "%F_%H-%M-%S"), ".xlsx", sep="")
     },
     content = function(file) {
       df <- cur_df()
-      write.xlsx(df, file=file, asTable = TRUE)
+      # необходимо сделать русские названия колонок
+      names(df) <- tibble(internal_name=names(df)) %>%
+        left_join(dict_df, by=c("internal_name")) %>%
+        pull(human_name_rus)
+      # write.xlsx(df, file=file, asTable=TRUE, colWidths="auto")
+      n <-length(df)
+      wb <- createWorkbook()
+      addWorksheet(wb, "Выгрузка", zoom=85)
+      writeDataTable(wb, sheet=1, x=df)
+      setColWidths(wb, sheet=1, cols=1:n, widths=c(60, 60, rep(20, n-2)))
+      addWorksheet(wb, "Описание")
+      saveWorkbook(wb, file, overwrite=TRUE)
     }
   )
   
   # выгрузка таблицы в Word -----------------------
   output$word_download_btn <- downloadHandler(
     filename = function() {
-      name <- paste0("user_activity_report-", Sys.Date(), ".docx", sep="")
+      name <- paste0(fname_prefix, "report-", format(Sys.time(), "%F_%H-%M-%S"), ".docx", sep="")
       flog.info(paste0("Word report: '", name, "'"))
       name
     },
     content = function(file) {
       doc <- cur_df() %>% # select(-total_unique_stb) %>% # пока убираем, чтобы была консистентная подстановка
-        gen_word_report(publish_set=font_sizes[["word_A4"]], dict=dict_df)
+        gen_word_report(dict=dict_df)
       print(doc, target=file)  
     }
   )  

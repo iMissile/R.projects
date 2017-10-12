@@ -14,6 +14,10 @@ default:
     password: ''  
     table: 'states'
 
+  initial_values:
+    begin_time_range: "2017-09-12"
+    end_time_range: "2017-09-18"
+
 cti:
   postgres:
     driver: 'PostgreSQL'
@@ -30,7 +34,11 @@ cti:
     password: ''  
     table: 'view_states_tg1h'
 
-media-tel-prod:
+  initial_values:
+    begin_time_range: "2017-09-12"
+    end_time_range: "2017-09-18"
+
+media-tel:
   postgres:
     driver: 'PostgreSQL'
     host: '10.0.0.177'
@@ -40,26 +48,14 @@ media-tel-prod:
     database: 'channel_list'
 
   clickhouse:
-    host: '10.0.0.44'
+    host: '10.0.0.234'
     port: 8123
     user: 'default'
     password: ''  
     table: 'states'
 
-media-tel-demo:
-  postgres:
-    driver: 'PostgreSQL'
-    host: '10.0.0.177'
-    uid: 'puser'
-    pwd: 'puser'  
-    port: 5432
-    database: 'channel_list'
-
-  clickhouse:
-    host: '10.0.0.44'
-    port: 8123
-    user: 'default'
-    password: ''  
-    table: 'manystates'
+  initial_values:
+    begin_time_range: "2017-08-14"
+    end_time_range: "2017-08-21"
 
 

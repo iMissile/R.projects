@@ -1,5 +1,30 @@
 [
   {
+    "db_field": "program_title",
+    "human_name_rus": "название передачи",
+    "col_label": "Название передачи"
+  },
+  {
+    "db_field": "program_id",
+    "human_name_rus": "ID передачи",
+    "col_label": "ID передачи"
+  },
+  {
+    "db_field": "program_start_time",
+    "human_name_rus": "время начала",
+    "col_label": "время начала передачи"
+  },
+  {
+    "db_field": "program_watch_time",
+    "human_name_rus": "общее телесмотрение, мин",
+    "col_label": "Общая продолжительность просмотра передачи"
+  },
+  {
+    "db_field": "mean_watch_time",
+    "human_name_rus": "Среднее телесмотрение",
+    "col_label": "Средняя продолжительность смотрения передачи"
+  },
+  {
     "db_field": "region",
     "human_name_rus": "регион",
     "col_label": "Название региона, указанного в настройках STB"
@@ -22,7 +47,7 @@
   {
     "internal_name": "watch_events",
     "human_name_rus": "кол-во просмотров",
-    "col_label": "Суммарное количество событий телесмотрения в регионе"
+    "col_label": "Суммарное количество событий телесмотрения"
   },
   {
     "internal_name": "stb_ratio",
@@ -40,6 +65,11 @@
     "col_label": "подсказка (channelId)"
   },
   {
+    "db_field": "channel_id",
+    "human_name_rus": "канал (ID)",
+    "col_label": "подсказка (channelId)"
+  },
+  {
     "internal_name": "channelName",
     "human_name_rus": "канал",
     "col_label": "Название телеканала"
@@ -48,6 +78,11 @@
     "internal_name": "channel_duration",
     "human_name_rus": "суммарное время, мин",
     "col_label": "Суммарное время телесмотрения всеми STB в регионе"
+  },
+  {
+    "internal_name": "program_duration",
+    "human_name_rus": "длительность, мин",
+    "col_label": "Длительность телепередачи"
   },
   {
     "internal_name": "mean_duration",

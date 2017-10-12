@@ -81,6 +81,7 @@ buildReqLimits <- function(begin, end, region=NULL, prefix=NULL, channel=NULL, e
                 paste0(" AND duration>0*60 AND duration <2*60*60 "),
                 buildReqFilter("region", region, add=TRUE),
                 buildReqFilter("prefix", prefix, add=TRUE),
+                buildReqFilter("segment", segment, add=TRUE),
                 buildReqFilter("channelId", channel, add=TRUE),
                 buildReqFilter("switchEvent", event, add=TRUE),
                 ifelse(serial_mask=="", "", paste0(" AND like(serial, '%", serial_mask, "%') "))
@@ -120,11 +121,7 @@ buildReqStep1 <- function(db_table, begin, end, region=NULL, interval=60, channe
 }
 
 # Генерация word файла для выгрузки средcтвами officer -------------
-gen_word_report <- function(df, template_fname, publish_set=NULL, dict){
-  if(is.na(publish_set)){
-    flog.error("publish_set is NULL")
-    return(NULL)
-  }
+gen_word_report <- function(df, template_fname, dict){
   # считаем данные для вставки -----------------------------------
   n_out <- ifelse(nrow(df)<80, nrow(df), 80)
   out_df <- df %>% 
@@ -137,17 +134,17 @@ gen_word_report <- function(df, template_fname, publish_set=NULL, dict){
     colnames_df <- tibble(internal_name=names(out_df)) %>%
       left_join(dict, by=c("internal_name"))
     names(out_df) <- colnames_df$human_name_rus
-    
   }
   
+  target <- "word_A4"
   # создаем файл ------------------------------------------
   doc <- read_docx() %>% # read_docx(path="./TV_report_template.docx") %>%
     body_add_par(value=paste0("Первые ", n_out, " строк данных"), style="heading 1") %>%
     body_add_table(value=out_df, style="table_template") %>% 
     body_add_par(value="ТОП 10 по времени просмотра", style="heading 2") %>%
-    body_add_gg(value=plotAreaplotActivity(df, publish_set=publish_set), style = "centered") %>%
+    body_add_gg(value=plotAreaplotActivity(df, target), style = "centered") %>%
     body_add_par(value="ТОП 10 по количеству уникальных приставок", style="heading 2") %>%
-    body_add_gg(value=plotLineplotActivity(df, publish_set=publish_set), style="centered")
+    body_add_gg(value=plotLineplotActivity(df, target), style="centered")
   
   doc
   

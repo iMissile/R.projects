@@ -1,29 +1,3 @@
-hgroup.enum <- function(date, hour_bin=NULL, min_bin=5){
-  # привязываем все измерения, которые попали в промежуток [0, t] к точке измерения.
-  # точки измерения могут быть кратны 1, 2, 3, 4, 6, 12 часам, определяется hour.bin
-  # отсчет измерений идет с 0:00
-  # поправка для лаборатории. для группировки меньше часа допускается указывать числа меньше 1
-  # 0.5 -- раз в полчаса.0.25 -- раз в 15 минут
-  # если hour.bin=NULL, то идет привязка к интервалам min.bin, заданном в минутах
-  # необходим пакет lubridate
-  
-  tick_time <- date
-  
-  if (is.null(hour_bin)){
-    # привязываем к минутным интервалам
-    n <- floor(minute(tick_time)/min_bin)
-    dt <- floor_date(tick_time, unit="hour") + minutes(n * min_bin)
-    
-  }else{
-    # привязываем к часовым интервалам
-    if (hour_bin < 1 & !(hour_bin %in% c(0.25, 0.5))) hour_bin=1
-    n <- floor((hour(tick_time)*60 + minute(tick_time))/ (hour_bin*60))
-    dt <- floor_date(tick_time, unit="day") + minutes(n * hour_bin*60)
-  }
-  
-  dt
-}
-
 buildReqFilter <- function(field, conditions, add=TRUE){
   # потенциально надо проверять условия еще на NA, character(0)
   ifelse(((length(conditions) == 0) && (typeof(conditions) == "character")) || 
@@ -50,7 +24,6 @@ buildReqLimits <- function(begin, end, region=NULL, prefix=NULL, channel=NULL, e
                 ifelse(serial_mask=="", "", paste0(" AND like(serial, '%", serial_mask, "%') "))
   )   
 }
-
 
 # построение запроса для отчета 'Активность пользователей по регионам' ----------------
 buildReq <- function(db_table, begin, end, region=NULL, segment="all"){
@@ -104,10 +77,28 @@ buildReqTS <- function(db_table, begin, end, region=NULL, interval=60, segment="
     "WHERE", where_string, 
     "GROUP BY timestamp, region ",
     "ORDER BY timestamp  DESC", sep=" ")
+  }
+
+theme_dvt <- function(target="screen"){
+  # создание параметров оформления для различных видов графиков (screen\publish) ------
+  flog.info(paste0("Target is '", target, "'"))
+
+  if(target=="screen"){
+    ret <- theme_ipsum_rc(base_size=20, axis_title_size=18, subtitle_size=15)
+  } else {
+    if(target=="word_A4"){
+      ret <- theme_ipsum_rc(base_size=14, axis_title_size=12, subtitle_size=11)
+    } else {
+      flog.error("Incorrect target, use default settings")
+      ret <- theme_ipsum_rc()
+    }}
+  
+  ret # + theme(axis.text.x = element_text(angle=90))
 }
 
 # построение time-series отчета по выбранному региону
-plotRegionHistory <- function(df, var_name, plot_type, publish_set){
+plotRegionHistory <- function(df, var_name, plot_type, target){
+  tic()
   reg_df <- df %>%
     rename(value=watch_events) # обезличили
 
@@ -119,8 +110,7 @@ plotRegionHistory <- function(df, var_name, plot_type, publish_set){
     scale_color_brewer(palette="Dark2") +
     scale_fill_brewer(palette="Dark2") +
     scale_x_datetime(labels=date_format(format="%d.%m.%y%n%H:%M", tz="UTC")) +
-    theme_ipsum_rc(base_size=publish_set[["base_size"]], 
-                   axis_title_size=publish_set[["axis_title_size"]]) +  
+    theme_dvt(target) +  
     # theme(axis.text.x = element_text(angle=90)) +
     ylab("Метрика") +
     xlab("Временной интервал")
@@ -135,15 +125,15 @@ plotRegionHistory <- function(df, var_name, plot_type, publish_set){
       geom_bar(alpha=0.8, stat="identity", position="dodge")
   }
   
+  flog.info(paste0("Building Time-Series Plot: ", capture.output(toc())))
   gp
 }
 
 # построение гистограммы ТОП N по времени телесмотрения ----------------
 # для отчета 'Рейтинг пользователей по регионам' 
-plotTop10Duration <- function(df, publish_set, ntop=10){
-  
-  flog.info(paste0("publish_set is ", capture.output(str(publish_set))))
-  # выберем наиболее программы c позиции эфирного времени
+plotTop10Duration <- function(df, target, ntop=10){
+  # выберем наиболее популярные программы c позиции эфирного времени
+  tic()
   reg_df <- df %>%
     top_n(ntop, total_duration) %>%
     # может возникнуть ситуация, когда все значения top_n одинаковы. тогда надо брать выборку
@@ -158,23 +148,21 @@ plotTop10Duration <- function(df, publish_set, ntop=10){
     # geom_text_repel(aes(label=label), fontface = 'bold', color = 'blue', nudge_y=0) +
     # scale_x_discrete("Передача", breaks=df2$order, labels=df2$channelName) +
     scale_y_log10() +
-    theme_ipsum_rc(base_size=publish_set[["base_size"]],
-                   subtitle_size=publish_set[["subtitle_size"]],
-                   axis_title_size=publish_set[["axis_title_size"]]) +  
+    theme_dvt(target) +
     # theme(axis.text.x = element_text(angle=90)) +
     ylab("Время телесмотрения") +
     xlab("Регион") +
     ggtitle("Топ N регионов", subtitle="По суммарному времени телесмотрения, мин") +
     coord_flip() 
   
+  flog.info(paste0("Building Top10Duration: ", capture.output(toc())))
   gp
 }
 
 # построение гистограммы ТОП 10 по количеству уникальных приставок для отчета 'Рейтинг по каналам' ----------------
-plotTop10STB <- function(df, publish_set, ntop=10){
-  
-  flog.info(paste0("publish_set is ", capture.output(str(publish_set))))
-  # выберем наиболее программы c позиции эфирного времени
+plotTop10STB <- function(df, target, ntop=10){
+  # выберем наиболее популярные программы c позиции эфирного времени
+  tic()
   reg_df <- df %>%
     top_n(ntop, unique_stb) %>%
     filter(row_number()<=ntop) %>% # на случай одинаковых значений
@@ -189,24 +177,18 @@ plotTop10STB <- function(df, publish_set, ntop=10){
     # geom_text_repel(aes(label=label), fontface = 'bold', color = 'blue', nudge_y=0) +
     # scale_x_discrete("Передача", breaks=df2$order, labels=df2$channelName) +
     scale_y_log10() +
-    theme_ipsum_rc(base_size=publish_set[["base_size"]], 
-                   subtitle_size=publish_set[["subtitle_size"]],
-                   axis_title_size=publish_set[["axis_title_size"]]) +  
-    # theme(axis.text.x = element_text(angle=90)) +
+    theme_dvt(target) + 
     ylab("Количество приставок") +
     xlab("Регион") +
     ggtitle("Топ N регионов", subtitle="По количеству приставок") +
     coord_flip() 
   
+  flog.info(paste0("Building Top10STB: ", capture.output(toc())))
   gp
 }
 
 # Генерация word файла для выгрузки средcтвами officer -------------
-gen_word_report <- function(df, template_fname, publish_set=NULL, dict){
-  if(is.na(publish_set)){
-    flog.error("publish_set is NULL")
-    return(NULL)
-  }
+gen_word_report <- function(df, template_fname, dict){
   # считаем данные для вставки -----------------------------------
   n_out <- ifelse(nrow(df)<80, nrow(df), 80)
   out_df <- df %>% 
@@ -220,17 +202,17 @@ gen_word_report <- function(df, template_fname, publish_set=NULL, dict){
     colnames_df <- tibble(internal_name=names(out_df)) %>%
       left_join(dict, by=c("internal_name"))
     names(out_df) <- colnames_df$human_name_rus
-    
   }
   
+  target <- "word_A4"
   # создаем файл ------------------------------------------
   doc <- read_docx() %>% # read_docx(path="./TV_report_template.docx") %>%
     body_add_par(value=paste0("Первые ", n_out, " строк данных"), style="heading 1") %>%
     body_add_table(value=out_df, style="table_template") %>% 
     body_add_par(value="ТОП 10 по времени просмотра", style="heading 2") %>%
-    body_add_gg(value=plotTop10Duration(df, publish_set=publish_set), style = "centered") %>%
+    body_add_gg(value=plotTop10Duration(df, target), style = "centered") %>%
     body_add_par(value="ТОП 10 по количеству уникальных приставок", style="heading 2") %>%
-    body_add_gg(value=plotTop10STB(df, publish_set=publish_set), style="centered")
+    body_add_gg(value=plotTop10STB(df, target), style="centered")
   
   doc
   

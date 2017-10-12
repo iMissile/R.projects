@@ -348,7 +348,7 @@ server <- function(input, output, session) {
                   filter='bottom',
                   # только после жесткой фиксации колонок
                   container=colheader,
-                  options=list(dom='fltip', pageLength=7, lengthMenu=c(5, 7, 10, 15),
+                  options=list(dom='fltip', pageLength=7, lengthMenu=c(5, 7, 10, 15, 50),
                                order=list(list(2, 'desc')), # нумерация с 0
                                # columnDefs=list(list(width="160px", targets="_all"),
                                #                 list(className='dt-center', targets="_all")),
@@ -426,7 +426,7 @@ server <- function(input, output, session) {
     
     data <- as.list(cities_df$translit)
     names(data) <- cities_df$russian
-    # browser()
+    
     # создадим элемент
     selectInput("region_filter", 
                 paste0("Регион (", length(data), ")"),

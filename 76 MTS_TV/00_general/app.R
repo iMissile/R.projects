@@ -32,6 +32,7 @@ library(tictoc)
 library(digest)
 library(officer)
 library(openxlsx)
+library(assertive)
 library(assertr)
 
 options(shiny.usecairo=TRUE)
@@ -160,7 +161,7 @@ ui <-
                fluidRow(
                  p(),
                  # column(12, div(withSpinner(DT::dataTableOutput('stat_table'))), style="font-size: 90%")
-                 column(12, div(DT::dataTableOutput('stat_table')), style="font-size: 90%")
+                 column(12, div(DT::dataTableOutput("stat_table")), style="font-size: 90%")
                )
       )
     )
@@ -186,15 +187,12 @@ server <- function(input, output, session) {
   flog.appender(appender.tee(log_name))
   flog.threshold(TRACE)
   flog.info(paste0("App started in '", Sys.getenv("R_CONFIG_ACTIVE"), "' environment"))
+  
+  # префикс имени файла при генерации выгрузок
+  fname_prefix <- "slice_"
 
   shinyjs::hide("csv_download_btn")
   shinyjs::hide("xls_download_btn")
-  
-  # создание параметров оформления для различных видов графиков (screen\publish) ------
-  font_sizes <- list(
-    "screen"=list(base_size=20, axis_title_size=18, subtitle_size=15),
-    "word_A4"=list(base_size=14, axis_title_size=12, subtitle_size=11)
-  )
   
   # выставим даты на первоначальный диапазон данных
   updateDateRangeInput(session, "in_date_range", 
@@ -704,7 +702,7 @@ server <- function(input, output, session) {
   # выгрузка таблицы в XLS -----------------------  
   output$xls_download_btn <- downloadHandler(
     filename = function() {
-      paste0("slice_", format(Sys.time(), "%F_%H-%M-%S"), ".xlsx", sep="")
+      paste0(fname_prefix, "", format(Sys.time(), "%F_%H-%M-%S"), ".xlsx", sep="")
     },
     content = function(file) {
       df <- cur_df()
@@ -717,7 +715,14 @@ server <- function(input, output, session) {
         pull(name_rus)
       # %-ное форматирование долевых колонок мы установили при формировании источника
       # browser()
-      write.xlsx(df, file=file, asTable = TRUE)
+      # write.xlsx(df, file=file, asTable=TRUE, colWidths="auto")
+      n <-length(df)
+      wb <- createWorkbook()
+      addWorksheet(wb, "Выгрузка", zoom=85)
+      writeDataTable(wb, sheet=1, x=df)
+      setColWidths(wb, sheet=1, cols=1:n, widths=30)
+      addWorksheet(wb, "Описание")
+      saveWorkbook(wb, file, overwrite=TRUE)
     }
   )
   
