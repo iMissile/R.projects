@@ -421,7 +421,7 @@ guimgr.overall-gui-state = {'windowing-policy': 'combined-window',
                  'user_data': {}},
         'window-alloc': (0,
                          11,
-                         1932,
+                         1934,
                          1051)}]}
 guimgr.recent-documents = [loc('excel_convert.py')]
 guimgr.visual-state = {loc('file:C:/Users/Ilya/Desktop/mTail.exe'): {'attrib'\
