@@ -13,6 +13,18 @@ gD <- igraph::simplify(igraph::graph.data.frame(edge_list, directed=FALSE))
 # plot params -- http://igraph.org/r/doc/plot.common.html
 plot(gD, layout=layout_with_fr(gD), vertex.size=5, vertex.label=NA)
 
+nodes <- data.frame(name=V(gD)$name, stringsAsFactors=FALSE)
+links <- as.data.frame(as_edgelist(gD, names=FALSE)) %>%
+  purrr::set_names(c("source", "target")) %>%
+  # для js необходимо сместить индексы на 0
+  # It looks like Source/Target is not zero-indexed. This is required in JavaScript and so your plot may not render.
+  modify(~ .-1) %>%
+  mutate(value=1)
+
+sankeyNetwork(Links=links, Nodes=nodes,
+              Source="source", Target="target",
+              Value="value", NodeID="name",
+              fontSize=12, nodeWidth=30)
 stop()
 
 # Open a new png device to print the figure out to (or use tiff, pdf, etc).
