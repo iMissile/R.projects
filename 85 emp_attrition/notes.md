@@ -1,0 +1,1 @@
+- Data source is a [Telco Customer Churn data set](https://www.ibm.com/communities/analytics/watson-analytics-blog/predictive-insights-in-the-telco-customer-churn-data-set/)
