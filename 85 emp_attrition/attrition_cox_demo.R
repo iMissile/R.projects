@@ -8,6 +8,7 @@ library(readxl)     # Super simple excel reader
 library(survival)
 library(survminer)
 library(broom)
+library(listviewer)
 
 
 # Read excel data
@@ -24,16 +25,59 @@ hr_data <- hr_data_raw %>%
 
 summary(hr_data$tenure)
 
-cfit <- coxph(Surv(tenure, event) ~ as.factor(Education), data=hr_data)
+# сомтрим без параметризации
+cfit <- coxph(Surv(tenure, event) ~ Gender, data=hr_data)
+summary(cfit) # "Event History Analysis with R", p.36
+ggsurvplot(survfit(cfit), data=hr_data, palette="#2E9FDF", ggtheme=theme_minimal(),
+           title="График дожития (анализ увольнений)",
+           xlab="Кол-во месяцев до увольнения")
+
+# https://github.com/kassambara/survminer/issues/67
+#%%%%%%%%%%%%%%%%%%%%%%%%
+# we construct a new data frame with two rows, 
+# one for each value of sex; the other covariates are fixed to their average values 
+# Create the new data 
+new_df <- data.frame(Gender=c("Female", "Male"), stringsAsFactors=FALSE)
+fit <- survfit(cfit, newdata=new_df)
+ggsurvplot(fit, data=hr_data, legend.labs=c("Female","Male"),
+           conf.int=TRUE, palette="Dark2", 
+           censor=FALSE, surv.median.line="hv")
+
+
+jsonedit(fit)
+
+# Create a forest plot
+ggforest(cfit)
+ftest <- cox.zph(cfit)
+ftest
+ggcoxzph(ftest)
+# ggcoxdiagnostics(cfit, type="deviance", ox.scale="time")
+
+stop()
+
+cfit <- coxph(Surv(tenure, event) ~ as.factor(Gender), data=hr_data)
+jsonedit(cfit)
 sfit <- survfit(cfit)
 class(sfit)
 
 head(tidy(sfit))
 glance(sfit)
 
+
+
+ggadjustedcurves(cfit, data=hr_data,
+                    variable  = hr_data[, "Gender"],   # Variable of interest
+                    legend.title = "Gender",        # Change legend title
+                    palette = "npg",             # nature publishing group color palettes
+                    curv.size = 2                # Change line size
+)
+
+ggadjustedcurves(cfit, variable="Gender", data=hr_data)
+ggadjustedcurves(cfit, data=hr_data)
+
 # https://github.com/kassambara/survminer/issues/67
 # без нового data.frame ggsurvplot работать не будет
-ggsurvplot(survfit(cfit), palette="#2E9FDF", ggtheme=theme_minimal(),
+ggsurvplot(survfit(cfit), data=hr_data, palette="#2E9FDF", ggtheme=theme_minimal(),
            title="График дожития (анализ увольнений)",
            xlab="Кол-во лет до увольнения")
 
