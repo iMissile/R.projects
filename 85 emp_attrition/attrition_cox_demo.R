@@ -25,12 +25,17 @@ hr_data <- hr_data_raw %>%
 
 summary(hr_data$tenure)
 
-# сомтрим без параметризации
+# смотрим без параметризации
 cfit <- coxph(Surv(tenure, event) ~ Gender, data=hr_data)
 summary(cfit) # "Event History Analysis with R", p.36
 ggsurvplot(survfit(cfit), data=hr_data, palette="#2E9FDF", ggtheme=theme_minimal(),
            title="График дожития (анализ увольнений)",
            xlab="Кол-во месяцев до увольнения")
+
+# посмотрим среднее
+# https://stackoverflow.com/questions/43173044/how-to-compute-the-mean-survival-time
+print(survfit(cfit), print.rmean=TRUE)
+
 
 # https://github.com/kassambara/survminer/issues/67
 #%%%%%%%%%%%%%%%%%%%%%%%%
@@ -42,6 +47,16 @@ fit <- survfit(cfit, newdata=new_df)
 ggsurvplot(fit, data=hr_data, legend.labs=c("Female","Male"),
            conf.int=TRUE, palette="Dark2", 
            censor=FALSE, surv.median.line="hv")
+
+# попробуем другие параметры
+cfit <- coxph(Surv(tenure, event) ~ OverTime, data=hr_data)
+summary(cfit)
+fit <- survfit(cfit, newdata=data.frame(OverTime=c("Yes", "No"), stringsAsFactors=FALSE))
+ggsurvplot(fit, data=hr_data, legend.labs=c("Yes","No"),
+           conf.int=TRUE, palette="Dark2", 
+           censor=FALSE, surv.median.line="hv")
+
+
 
 
 jsonedit(fit)
