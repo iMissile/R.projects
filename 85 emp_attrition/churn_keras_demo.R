@@ -1,4 +1,6 @@
 # http://www.business-science.io/business/2017/11/28/customer_churn_analysis_keras.html
+# Using Customer Behavior Data to Improve Customer Retention
+# https://www.ibm.com/communities/analytics/watson-analytics-blog/predictive-insights-in-the-telco-customer-churn-data-set/
 
 # Load libraries
 library(keras)
@@ -27,7 +29,7 @@ glimpse(churn_data_tbl)
 
 # Split test/training sets
 set.seed(100)
-train_test_split <- initial_split(churn_data_tbl, prop = 0.8)
+train_test_split <- initial_split(churn_data_tbl, prop=0.8)
 train_test_split
 
 # Retrieve train and test sets
@@ -136,3 +138,58 @@ estimates_keras_tbl <- tibble(
 )
 
 estimates_keras_tbl
+
+options(yardstick.event_first=FALSE)
+
+# Confusion Table
+estimates_keras_tbl %>% conf_mat(truth, estimate)
+
+# Accuracy
+estimates_keras_tbl %>% metrics(truth, estimate)
+# AUC
+estimates_keras_tbl %>% roc_auc(truth, class_prob)
+# Precision
+tibble(
+  precision = estimates_keras_tbl %>% precision(truth, estimate),
+  recall    = estimates_keras_tbl %>% recall(truth, estimate)
+)
+
+# EXPLAIN THE MODEL WITH LIME
+# LIME stands for Local Interpretable Model-agnostic Explanations
+class(model_keras)
+# Setup lime::model_type() function for keras
+model_type.keras.models.Sequential <- function(x, ...) {
+  return("classification")
+}
+
+# Setup lime::predict_model() function for keras
+predict_model.keras.models.Sequential <- function(x, newdata, type, ...) {
+  pred <- predict_proba(object=x, x=as.matrix(newdata))
+  return(data.frame(Yes=pred, No=1-pred))
+}
+
+# Test our predict_model() function
+predict_model(x=model_keras, newdata=x_test_tbl, type='raw') %>%
+  tibble::as_tibble()
+
+# Run lime() on training set
+explainer <- lime::lime(
+  x              = x_train_tbl, 
+  model          = model_keras, 
+  bin_continuous = FALSE)
+
+# Run explain() on explainer
+explanation <- lime::explain(
+  x_test_tbl[1:10,], 
+  explainer    = explainer, 
+  n_labels     = 1, 
+  n_features   = 4,
+  kernel_width = 0.5)
+
+plot_features(explanation) +
+  labs(title = "LIME Feature Importance Visualization",
+       subtitle = "Hold Out (Test) Set, First 10 Cases Shown")
+
+plot_explanations(explanation) +
+  labs(title = "LIME Feature Importance Heatmap",
+       subtitle = "Hold Out (Test) Set, First 10 Cases Shown")
