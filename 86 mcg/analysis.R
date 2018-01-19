@@ -19,40 +19,84 @@ library(diffobj)
 
 windowsFonts(robotoC="Roboto Condensed")
 
-tic("Parsing GSM")
-flist <- dir(path="./data/", pattern="stats_mcg_gsm_.*[.]csv", full.names=TRUE)
-raw_df <- flist %>% 
-  # head(10) %>%
-  # purrr::map_df(process_gsm, .id=NULL)
-  purrr::map_dfr(read_delim, col_names=FALSE, col_types="ccc", delim=";", .id=NULL)
-toc()
+loadGsmData <- function(){
+  flist <- dir(path="./data/", pattern="stats_mcg_gsm_.*[.]csv", full.names=TRUE)
+  raw_df <- flist %>% 
+    # head(10) %>%
+    # purrr::map_df(process_gsm, .id=NULL)
+    purrr::map_dfr(read_delim, col_names=FALSE, col_types="ccc", delim=";", .id=NULL)
 
-# постпроцессинг, все данные как строки, это принципиально!
-# сливаем последовательные строчки
-df0 <- bind_cols(list(head(raw_df, -1), tail(raw_df, -1))) %>% 
-  select(1:4)
+  # постпроцессинг, все данные как строки, это принципиально!
+  # сливаем последовательные строчки
+  df0 <- bind_cols(list(head(raw_df, -1), tail(raw_df, -1))) %>% 
+    select(1:4)
+  
+  # вытащим первую строку в качестве имен
+  data_names <- df0 %>%
+    slice(1) %>% 
+    unlist(., use.names=FALSE)
+  
+  df1 <- df0 %>%
+    purrr::set_names(dplyr::coalesce(c("site", NA, NA, "tms"), data_names)) %>%
+    mutate(idx=row_number() %% 2) %>%
+    filter(idx==0)
+  
+  gsm_df <- df1 %>%
+    mutate(timestamp=anytime(tms, tz="Europe/Moscow", asUTC=FALSE)) %>%
+    mutate_at(vars(fda_failed, fda_success), as.numeric) %>%
+    select(-tms, -idx) %>%
+    tidyr::gather("fda_failed", "fda_success", key="fda_type", value="fda_value")
+  
+  gsm_df
+}
 
-# вытащим первую строку в качестве имен
-data_names <- df0 %>%
-  slice(1) %>% 
-  unlist(., use.names=FALSE)
+loadMainData <- function(){
+  flist <- dir(path="./data/", pattern="stats_mcg_main_.*[.]csv", full.names=TRUE)
+  raw_df <- flist %>% 
+    # head(10) %>%
+    # purrr::map_df(process_gsm, .id=NULL)
+    purrr::map_dfr(read_delim, col_names=FALSE, 
+                   col_types=stri_flatten(rep("c", 13)), 
+                   delim=";", .id=NULL)
+  
+  df0 <- raw_df %>%
+    mutate(tms=ifelse(X2=="sms_mo", X1, NA)) %>%
+    fill(tms, .direction="down")
+  
+  # вытащим первую строку в качестве имен
+  data_names <- df0 %>%
+    slice(1) %>% 
+    unlist(., use.names=FALSE)
+  
+  df1 <- df0 %>%
+    purrr::set_names(c("node", data_names[2:13], "tms")) %>%
+    mutate(idx=row_number() %% 3) %>%
+    filter(idx!=1)
+  
+  df2 <- df1 %>%
+    mutate(timestamp=anytime(tms, tz="Europe/Moscow", asUTC=FALSE)) %>%
+    mutate_at(vars(-node, -timestamp), as.numeric) %>%
+    select(-tms, -idx) %>%
+    select(timestamp, node, everything()) 
+  
+  main_df <- df2 %>%
+    tidyr::gather(key="key", value="value", -timestamp, -node)
+  
+  main_df
+}
 
-df1 <- df0 %>%
-  purrr::set_names(dplyr::coalesce(c("site", NA, NA, "tms"), data_names)) %>%
-  mutate(idx=row_number() %% 2) %>%
-  filter(idx==0)
-
-gsm_df <- df1 %>%
-  mutate(timestamp=anytime(tms, tz="Europe/Moscow", asUTC=FALSE)) %>%
-  mutate_at(vars(fda_failed, fda_success), as.numeric) %>%
-  select(-tms, -idx) %>%
-  tidyr::gather("fda_failed", "fda_success", key="fda_type", value="fda_value")
-
-tic()  
+tic("Loading & processing GSM")
+gsm_df <- loadGsmData()
 saveRDS(gsm_df, "gsm_df.rds")
 toc()
 
-# нарисуем график по gsm
+tic("Loading & processing Main")
+main_df <- loadMainData()
+saveRDS(main_df, "main_df.rds")
+toc()
+
+
+# ================= визуализация  GSM результатов ======================
 sub_df <- gsm_df %>%
   filter(timestamp %within% interval(dmy("11.12.2017"), dmy("12.12.2017")))
 
@@ -73,6 +117,32 @@ ggplot(sub_df, aes(timestamp, fda_value, color=fda_type)) +
                    minor_breaks=date_breaks("6 hours")
                    ) +  
   theme_ipsum_rc(base_family="robotoC", base_size=14) +
+  ylab("Показатель") +
+  xlab("Дата")  
+
+
+# ================= визуализация  Main результатов ======================
+sub_df <- main_df %>%
+  filter(timestamp %within% interval(dmy("10.12.2017"), dmy("12.12.2017")))
+
+sub_df <- main_df
+
+ggplot(sub_df, aes(timestamp, value, color=node)) +
+  geom_line(linetype=1, size=0.5) +
+  # geom_point(aes(fill=fda_type), shape=21, size=2, stroke=.5, alpha=0.5) +
+  # geom_label(aes(label=actualvalue)) +
+  # geom_label_repel(aes(label=fda_value),
+  #                  fontface = 'bold', # color = 'white',
+  #                  box.padding = unit(0.35, "lines"),
+  #                  point.padding = unit(0.5, "lines"),
+  #                  segment.color = 'grey50'
+  # ) +
+  scale_x_datetime(labels=date_format("%d.%m%n%H:%M", tz="Europe/Moscow"),
+                   breaks=date_breaks("1 days"),
+                   minor_breaks=date_breaks("6 hours")
+  ) + 
+  facet_wrap( ~ key, scales="free", ncol=4) +
+  theme_ipsum_rc(base_family="robotoC", base_size=13) +
   ylab("Показатель") +
   xlab("Дата")  
 
@@ -121,3 +191,6 @@ process_gsm <- function(fname, ...){
   # print(s)
   df
 }
+
+# = отладка для main данных
+
