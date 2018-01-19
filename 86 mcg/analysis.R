@@ -19,32 +19,33 @@ library(diffobj)
 
 windowsFonts(robotoC="Roboto Condensed")
 
-# выносим процесс загрузки в отдельный файл для того, чтобы иметь возможность делать потом прогресс бар и логирование
-process_gsm <- function(fname, ...){
-  print(fname)
-  raw_df <- read_delim(fname, col_names=FALSE, delim=';')
-  # сливаем с задержкой
-  df <- bind_cols(list(head(raw_df, -1), tail(raw_df, -1))) %>% 
-    mutate(idx=row_number() %% 2) %>%
-    filter(idx==1) %>%
-    select(tms=X1, site=X11, fda_success=X21, fda_failed=X31)
-  # problems(df)
-  s <- spec(df)
-  # print(s)
-  df
-}
-
 tic("Parsing GSM")
 flist <- dir(path="./data/", pattern="stats_mcg_gsm_.*[.]csv", full.names=TRUE)
-df0 <- flist %>% 
+raw_df <- flist %>% 
   # head(10) %>%
-  purrr::map_df(process_gsm, .id=NULL)
+  # purrr::map_df(process_gsm, .id=NULL)
+  purrr::map_dfr(read_delim, col_names=FALSE, col_types="ccc", delim=";", .id=NULL)
 toc()
 
-gsm_df <- df0 %>%
+# постпроцессинг, все данные как строки, это принципиально!
+# сливаем последовательные строчки
+df0 <- bind_cols(list(head(raw_df, -1), tail(raw_df, -1))) %>% 
+  select(1:4)
+
+# вытащим первую строку в качестве имен
+data_names <- df0 %>%
+  slice(1) %>% 
+  unlist(., use.names=FALSE)
+
+df1 <- df0 %>%
+  purrr::set_names(dplyr::coalesce(c("site", NA, NA, "tms"), data_names)) %>%
+  mutate(idx=row_number() %% 2) %>%
+  filter(idx==0)
+
+gsm_df <- df1 %>%
   mutate(timestamp=anytime(tms, tz="Europe/Moscow", asUTC=FALSE)) %>%
   mutate_at(vars(fda_failed, fda_success), as.numeric) %>%
-  select(-tms) %>%
+  select(-tms, -idx) %>%
   tidyr::gather("fda_failed", "fda_success", key="fda_type", value="fda_value")
 
 tic()  
@@ -89,7 +90,34 @@ df <- bind_cols(list(head(raw_df, -1), tail(raw_df, -1))) %>%
   select(1:4)
 
 # purrr::set_names(c("timestamp", "target")) %>%
+# вытащим первую строку в качестве имен
+data_names <- df %>%
+  slice(1) %>% 
+  unlist(., use.names=FALSE)
 
+df1 <- df %>%
+  purrr::set_names(dplyr::coalesce(c("timestamp", NA, NA, "site"), data_names))
+  
 
+# # https://stackoverflow.com/questions/42769650/using-column-index-in-dplyrs-rename
+# df1 <- df %>%
+#   purrr::set_names(data_names) %T>% 
+#   {colnames(.)[1]="timestamp"; colnames(.)[4]="site"}
+  
 
 # diffPrint(target=gsm_df, current=m)
+
+# выносим процесс загрузки в отдельный файл для того, чтобы иметь возможность делать потом прогресс бар и логирование
+process_gsm <- function(fname, ...){
+  print(fname)
+  raw_df <- read_delim(fname, col_names=FALSE, delim=';')
+  # сливаем с задержкой
+  df <- bind_cols(list(head(raw_df, -1), tail(raw_df, -1))) %>% 
+    mutate(idx=row_number() %% 2) %>%
+    filter(idx==1) %>%
+    select(tms=X1, site=X11, fda_success=X21, fda_failed=X31)
+  # problems(df)
+  s <- spec(df)
+  # print(s)
+  df
+}
