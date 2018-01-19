@@ -123,13 +123,15 @@ ggplot(sub_df, aes(timestamp, fda_value, color=fda_type)) +
 
 # ================= визуализация  Main результатов ======================
 sub_df <- main_df %>%
-  filter(timestamp %within% interval(dmy("10.12.2017"), dmy("12.12.2017")))
+  filter(timestamp %within% interval(dmy("12.12.2017"), dmy("17.12.2017"))) %>%
+  filter(!(key %in% c("sms_other", "sms_other_acc", "sms_other_rej")))
 
 sub_df <- main_df
 
 ggplot(sub_df, aes(timestamp, value, color=node)) +
-  geom_line(linetype=1, size=0.5) +
-  # geom_point(aes(fill=fda_type), shape=21, size=2, stroke=.5, alpha=0.5) +
+  geom_line(linetype=1, size=0.7) +
+  # geom_smooth(stat="smooth") +
+  # geom_point(aes(fill=node), shape=21, size=2, stroke=.5, alpha=0.5) +
   # geom_label(aes(label=actualvalue)) +
   # geom_label_repel(aes(label=fda_value),
   #                  fontface = 'bold', # color = 'white',
@@ -138,10 +140,10 @@ ggplot(sub_df, aes(timestamp, value, color=node)) +
   #                  segment.color = 'grey50'
   # ) +
   scale_x_datetime(labels=date_format("%d.%m%n%H:%M", tz="Europe/Moscow"),
-                   breaks=date_breaks("1 days"),
-                   minor_breaks=date_breaks("6 hours")
+                   breaks=date_breaks("1 days")#,
+                   #minor_breaks=date_breaks("12 hours")
   ) + 
-  facet_wrap( ~ key, scales="free", ncol=4) +
+  facet_wrap( ~ key, scales="free", ncol=3) +
   theme_ipsum_rc(base_family="robotoC", base_size=13) +
   ylab("Показатель") +
   xlab("Дата")  
