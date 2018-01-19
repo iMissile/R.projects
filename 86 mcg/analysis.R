@@ -23,8 +23,7 @@ m <- head(df, -1)
 # сливаем с задержкой
 gsm_df <- bind_cols(list(head(df, -1), tail(df, -1))) %>% 
   mutate(idx=row_number() %% 2) %>%
-  filter(idx==1)
-
-
-
+  filter(idx==1) %>%
+  purrr::set_names(c("timestamp", "target")) %>%
+  
 # diffPrint(target=gsm_df, current=m)
