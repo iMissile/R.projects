@@ -5,6 +5,7 @@ library(textreadr)
 # library(tm)
 library(udpipe)
 library(tidytext)
+library(extrafont)
 library(wordcloud)
 
 # docx_doc <- system.file("docs/Yasmine_Interview_Transcript.docx", package = "textreadr")
@@ -34,13 +35,17 @@ an <- udpipe_annotate(udmodel, x=txt) %>% as_tibble()
 
 # сделаем wordcloud
 an_wc <- an %>%
-  filter(!(upos %in% c("CCONJ", "PUNCT", "ADP", "NUM", "ADV"))) %>%
+  filter(!(upos %in% c("CCONJ", "PUNCT", "ADP", "NUM", "ADV", "PRON"))) %>%
   select(lemma) %>%
   count(lemma, sort=TRUE)
 
+set.seed(1234)
+png("wordcloud.png", width=600, height=600)
 an_wc %$% wordcloud(lemma, n, min.freq=1,
           max.words=100, random.order=FALSE, 
-          rot.per=0.35, colors=brewer.pal(8, "Dark2"))
+          rot.per=0.35, colors=brewer.pal(8, "Dark2"),
+          family="mono", font=2)
+dev.off()
 
 
 # --------------- tidytext
