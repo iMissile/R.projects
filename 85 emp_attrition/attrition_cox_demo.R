@@ -52,11 +52,12 @@ ggsurvplot(fit, data=hr_data, legend.labs=c("Female","Male"),
 cfit <- coxph(Surv(tenure, event) ~ OverTime, data=hr_data)
 summary(cfit)
 fit <- survfit(cfit, newdata=data.frame(OverTime=c("Yes", "No"), stringsAsFactors=FALSE))
-ggsurvplot(fit, data=hr_data, legend.labs=c("Yes","No"),
+ggsurvplot(fit, data=hr_data, legend.labs=c("Переработка","Норма"),
            conf.int=TRUE, palette="Dark2", 
-           censor=FALSE, surv.median.line="hv")
-
-
+           censor=FALSE, surv.median.line="hv",
+           title="График дожития (анализ увольнений)",
+           xlab="Кол-во месяцев до увольнения",
+           ylab="Вероятность доработки до указанного срока")
 
 
 jsonedit(fit)
