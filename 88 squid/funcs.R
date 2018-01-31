@@ -81,7 +81,7 @@ plotTopIpDownload <- function(df, subtitle) {
   if(nrow(df)==0) return(NULL)
   
   # -------------- нарисуем Top10 по IP за последние N минут ----
-  df <- df0 %>%
+  df0 <- df %>%
     # mutate(timegroup=hgroup.enum(timestamp, mins_bin=60)) %>%
     # mutate(date=lubridate::date(timegroup)) %>%
     # filter(date==date(now()-days(1))) %>%
@@ -98,7 +98,7 @@ plotTopIpDownload <- function(df, subtitle) {
     mutate(label=format(volume, big.mark=" ")) %>%
     mutate(ip=fct_reorder(ip, volume))
 
-  gp <- ggplot(df, aes(ip, volume)) + 
+  gp <- ggplot(df0, aes(ip, volume)) + 
     geom_bar(fill=brewer.pal(n=9, name="Blues")[4], 
              alpha=0.5, stat="identity") +
     geom_label(aes(label=label), fill="white", colour="black", fontface="bold", hjust=+1.1) +

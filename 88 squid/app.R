@@ -175,63 +175,11 @@ server <- function(input, output, session) {
   flog.threshold(TRACE)
   flog.info(glue("App started in <{Sys.getenv('R_CONFIG_ACTIVE')}> environment"))
 
-  # префикс имени файла при генерации выгрузок
-  fname_prefix <- "channel_rating_"
-
-  # создаем коннект к инстансу CH -----------
-  conn <- dbConnect(clickhouse(), host=ch_db$host, port=ch_db$port, user=ch_db$user, password=ch_db$password)
-
-  # заполним список доступных к выбору таблиц
-  updateSelectInput(session, "select_ch_table", choices=unique(c(ch_db$table, "states")), selected=ch_db$table)
-
-  # загрузим лог squid -------
-  squid_df <- loadSquidLog()
-
-  # подгрузим таблицу преобразования идентификатора канала в русское название ----
-  progs_df <- "../common_data/channels.json" %T>% 
-    {flog.info(glue("Loading channel list from '{.}'"))} %>%
-    jsonlite::fromJSON(simplifyDataFrame=TRUE) %>% 
-    select(channelId, channelName=name) %>%
-    as_tibble()
-
-  # словарь для преобразований имен полей из английских в русские
-  # имена колонок -- группы и агрегаты из запроса
-  # сливаем модельные данные
-  dict_df <- {
-    df0 <- jsonlite::fromJSON("data_dict.json", simplifyDataFrame=TRUE)
-    
-    # на всякий случай защитимся от случая, когда вообще не определено поле internal_name
-    if (!("internal_name" %in% names(df0))){
-      df0$internal_name <- NA
-      flog.info("data_dict has no 'internal_name' variable'")
-    }
-    
-    df1 <- as_tibble(df0) %>%
-      # если есть поле в БД, а внутреннее представление не задано, то прозрачно транслируем
-      mutate(internal_name=dplyr::coalesce(internal_name, db_field))
-      # mutate(internal_name={map2_chr(.$db_field, .$internal_name, ~if_else(!is.na(.x) & is.na(.y), .x, .y))})
-    
-    df1
-  }
-  
-  # выставим даты на первоначальный диапазон данных
-  local({
-    # поскольку на глубину просмотра выставлен обработчик, то его инициализируем первым
-    # updateSelectInput(session, "history_depth", selected=1)
-    # выставим даты на первоначальный диапазон данных, если даты пустуют (""), то на месяц назад от даты запуска
-    start <- config::get("initial_values")$begin_time_range %>%
-      {if_else(.=="", as.character(Sys.Date()-months(1)), .)}
-    end <- config::get("initial_values")$end_time_range %>%
-      {if_else(.=="", as.character(Sys.Date()), .)}
-    flog.info(glue("Setting date_range to initial values: [{start} -- {end}]"))
-    updateDateRangeInput(session, "in_date_range", start=start, end=end)
-  })
-  
   # реактивные переменные -------------------
   squid_df <- reactive({
     input$process_btn # обновлять будем вручную
     # загрузим лог squid -------
-    loadSquidLog()
+    loadSquidLog("./data/access.log")
     })  
 
   
@@ -257,21 +205,37 @@ server <- function(input, output, session) {
   
   # график Топ10 каналов по суммарному времени просмотра -------------
   output$top10_5min_plot <- renderPlot({
+    df <- squid_df()
     shiny::validate(
-      need(!is.null(squid_df()), "NULL value can't be renederd"),
-      need(nrow(squid_df())>0, "0 rows -- nothing to draw") 
+      need(!is.null(df), "NULL value can't be renederd"),
+      need(nrow(df)>0, "0 rows -- nothing to draw") 
     )
-    plotTop10Duration(cur_df(), target="screen")
+    # filter(timestamp > now()-days(2)) %>%    
+    plotTopIpDownload(filter(df, timestamp>now()-days(1)), subtitle="за последние 5 минут")
+  })
+
+  output$top10_30min_plot <- renderPlot({
+    df <- squid_df()
+    shiny::validate(
+      need(!is.null(df), "NULL value can't be renederd"),
+      need(nrow(df)>0, "0 rows -- nothing to draw") 
+    )
+    # filter(timestamp > now()-days(2)) %>%    
+    plotTopIpDownload(filter(df, timestamp>now()-days(2)), subtitle="за последние 30 минут")
+  })
+
+  output$top10_1day_plot <- renderPlot({
+    df <- squid_df()
+    shiny::validate(
+      need(!is.null(df), "NULL value can't be renederd"),
+      need(nrow(df)>0, "0 rows -- nothing to draw") 
+    )
+    # filter(timestamp > now()-days(2)) %>%    
+    plotTopIpDownload(filter(df, timestamp>now()-days(3)), subtitle="за последние сутки")
   })
   
-  # график Топ10 каналов по количеству уникальных приставок --------------
-  output$top10_stb_plot <- renderPlot({
-    shiny::validate(
-      need(!is.null(cur_df()), "NULL value can't be renederd"),
-      need(nrow(cur_df())>0, "0 rows -- nothing to draw") 
-    )
-    plotTop10STB(cur_df(), target="screen")
-  })  
+    
+    
 
   # динамическое управление диапазоном дат ---------
   observeEvent(input$history_depth, {
@@ -296,7 +260,7 @@ server <- function(input, output, session) {
   observe({
     # управляем визуализацией кнопок выгрузки -----
     btn_names <- c("csv_download_btn", "xls_download_btn", "word_download_btn")
-    if(checkmate::testDataFrame(cur_df(), min.rows=1))
+    if(checkmate::testDataFrame(squid_df(), min.rows=1))
       purrr::walk(btn_names, shinyjs::enable)
     else
       purrr::walk(btn_names, shinyjs::disable)
@@ -307,21 +271,6 @@ server <- function(input, output, session) {
     msg()
   })
 
-  # динамический выбор региона ---------
-  output$choose_region <- renderUI({
-    # выберем нужные данные
-    data <- cities_df %>% 
-      filter(subset==TRUE) %>%
-      arrange(id) %>% 
-      {rlang::set_names(.$translit, .$russian)}
-    
-    selectizeInput("region_filter", 
-                label=glue("Регион ({length(data)})"),
-                multiple=TRUE, choices=data,
-                options=list(placeholder="Выберите города...", maxOptions=2000),
-                width="100%")
-  })
-
   # обработчики кнопок выгрузки файлов --------------------------------------------------
   # выгрузка таблицы в CSV -----------------------  
   output$csv_download_btn <- downloadHandler(
@@ -329,7 +278,7 @@ server <- function(input, output, session) {
       glue("{fname_prefix}data-{format(Sys.time(), '%F_%H-%M-%S')}.csv")
     },
     content = function(file) {
-      req(cur_df()) %>%
+      req(squid_df()) %>%
         # сделаем вывод в формате, принимаемым Excel
         write.table(file, na="NA", append=FALSE, col.names=TRUE, 
                     row.names=FALSE, sep=";", fileEncoding="windows-1251")
@@ -342,7 +291,7 @@ server <- function(input, output, session) {
       glue("{fname_prefix}data-{format(Sys.time(), '%F_%H-%M-%S')}.xlsx")
     },
     content = function(file) {
-      req(cur_df()) %>%
+      req(squid_df()) %>%
         genExcelReport(dict=dict_df) %>%
         saveWorkbook(file, overwrite=TRUE)
     }
@@ -356,7 +305,7 @@ server <- function(input, output, session) {
       name
     },
     content = function(file) {
-      doc <- req(cur_df()) %>% # select(-total_unique_stb) %>% # пока убираем, чтобы была консистентная подстановка
+      doc <- req(squid_df()) %>% # select(-total_unique_stb) %>% # пока убираем, чтобы была консистентная подстановка
         genWordReport(dict=dict_df)
       print(doc, target=file)  
     }
