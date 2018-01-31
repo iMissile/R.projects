@@ -1,0 +1,991 @@
+2018/01/29 12:21:42 kid1| Set Current Directory to /var/spool/squid
+2018/01/29 12:21:42 kid1| Starting Squid Cache version 3.5.20 for x86_64-redhat-linux-gnu...
+2018/01/29 12:21:42 kid1| Service Name: squid
+2018/01/29 12:21:42 kid1| Process ID 5235
+2018/01/29 12:21:42 kid1| Process Roles: worker
+2018/01/29 12:21:42 kid1| With 16384 file descriptors available
+2018/01/29 12:21:42 kid1| Initializing IP Cache...
+2018/01/29 12:21:42 kid1| DNS Socket created at [::], FD 6
+2018/01/29 12:21:42 kid1| DNS Socket created at 0.0.0.0, FD 8
+2018/01/29 12:21:42 kid1| Adding nameserver 77.88.8.8 from /etc/resolv.conf
+2018/01/29 12:21:42 kid1| Adding nameserver 8.8.8.8 from /etc/resolv.conf
+2018/01/29 12:21:42 kid1| Logfile: opening log daemon:/var/log/squid/access.log
+2018/01/29 12:21:42 kid1| Logfile Daemon: opening log /var/log/squid/access.log
+2018/01/29 12:21:42 kid1| Local cache digest enabled; rebuild/rewrite every 3600/3600 sec
+2018/01/29 12:21:42 kid1| Store logging disabled
+2018/01/29 12:21:42 kid1| Swap maxSize 0 + 262144 KB, estimated 20164 objects
+2018/01/29 12:21:42 kid1| Target number of buckets: 1008
+2018/01/29 12:21:42 kid1| Using 8192 Store buckets
+2018/01/29 12:21:42 kid1| Max Mem  size: 262144 KB
+2018/01/29 12:21:42 kid1| Max Swap size: 0 KB
+2018/01/29 12:21:42 kid1| Using Least Load store dir selection
+2018/01/29 12:21:42 kid1| Set Current Directory to /var/spool/squid
+2018/01/29 12:21:42 kid1| Finished loading MIME types and icons.
+2018/01/29 12:21:42 kid1| HTCP Disabled.
+2018/01/29 12:21:42 kid1| Squid plugin modules loaded: 0
+2018/01/29 12:21:42 kid1| Adaptation support is off.
+2018/01/29 12:21:42 kid1| Accepting HTTP Socket connections at local=[::]:3128 remote=[::] FD 11 flags=9
+2018/01/29 12:21:43 kid1| storeLateRelease: released 0 objects
+2018/01/29 12:34:53| Set Current Directory to /var/spool/squid
+2018/01/29 12:34:53 kid1| Preparing for shutdown after 158 requests
+2018/01/29 12:34:53 kid1| Waiting 30 seconds for active connections to finish
+2018/01/29 12:34:53 kid1| Closing HTTP port [::]:3128
+2018/01/29 12:34:54| Set Current Directory to /var/spool/squid
+2018/01/29 12:34:54| Creating missing swap directories
+2018/01/29 12:34:54| /var/spool/squid exists
+2018/01/29 12:34:54| Making directories in /var/spool/squid/00
+2018/01/29 12:34:54| Making directories in /var/spool/squid/01
+2018/01/29 12:34:54| Making directories in /var/spool/squid/02
+2018/01/29 12:34:54| Making directories in /var/spool/squid/03
+2018/01/29 12:34:54| Making directories in /var/spool/squid/04
+2018/01/29 12:34:54| Making directories in /var/spool/squid/05
+2018/01/29 12:34:54| Making directories in /var/spool/squid/06
+2018/01/29 12:34:54| Making directories in /var/spool/squid/07
+2018/01/29 12:34:54| Making directories in /var/spool/squid/08
+2018/01/29 12:34:54| Making directories in /var/spool/squid/09
+2018/01/29 12:34:54| Making directories in /var/spool/squid/0A
+2018/01/29 12:34:54| Making directories in /var/spool/squid/0B
+2018/01/29 12:34:54| Making directories in /var/spool/squid/0C
+2018/01/29 12:34:54| Making directories in /var/spool/squid/0D
+2018/01/29 12:34:54| Making directories in /var/spool/squid/0E
+2018/01/29 12:34:54| Making directories in /var/spool/squid/0F
+2018/01/29 12:34:54| Making directories in /var/spool/squid/10
+2018/01/29 12:34:54| Making directories in /var/spool/squid/11
+2018/01/29 12:34:54| Making directories in /var/spool/squid/12
+2018/01/29 12:34:54| Making directories in /var/spool/squid/13
+2018/01/29 12:34:54| Making directories in /var/spool/squid/14
+2018/01/29 12:34:54| Making directories in /var/spool/squid/15
+2018/01/29 12:34:54| Making directories in /var/spool/squid/16
+2018/01/29 12:34:54| Making directories in /var/spool/squid/17
+2018/01/29 12:34:54| Making directories in /var/spool/squid/18
+2018/01/29 12:34:54| Making directories in /var/spool/squid/19
+2018/01/29 12:34:54| Making directories in /var/spool/squid/1A
+2018/01/29 12:34:54| Making directories in /var/spool/squid/1B
+2018/01/29 12:34:54| Making directories in /var/spool/squid/1C
+2018/01/29 12:34:54| Making directories in /var/spool/squid/1D
+2018/01/29 12:34:54| Making directories in /var/spool/squid/1E
+2018/01/29 12:34:54| Making directories in /var/spool/squid/1F
+2018/01/29 12:34:54| Making directories in /var/spool/squid/20
+2018/01/29 12:34:54| Making directories in /var/spool/squid/21
+2018/01/29 12:34:54| Making directories in /var/spool/squid/22
+2018/01/29 12:34:54| Making directories in /var/spool/squid/23
+2018/01/29 12:34:54| Making directories in /var/spool/squid/24
+2018/01/29 12:34:54| Making directories in /var/spool/squid/25
+2018/01/29 12:34:54| Making directories in /var/spool/squid/26
+2018/01/29 12:34:54| Making directories in /var/spool/squid/27
+2018/01/29 12:34:54| Making directories in /var/spool/squid/28
+2018/01/29 12:34:54| Making directories in /var/spool/squid/29
+2018/01/29 12:34:54| Making directories in /var/spool/squid/2A
+2018/01/29 12:34:54| Making directories in /var/spool/squid/2B
+2018/01/29 12:34:54| Making directories in /var/spool/squid/2C
+2018/01/29 12:34:54| Making directories in /var/spool/squid/2D
+2018/01/29 12:34:54| Making directories in /var/spool/squid/2E
+2018/01/29 12:34:54| Making directories in /var/spool/squid/2F
+2018/01/29 12:34:54| Making directories in /var/spool/squid/30
+2018/01/29 12:34:54| Making directories in /var/spool/squid/31
+2018/01/29 12:34:54| Making directories in /var/spool/squid/32
+2018/01/29 12:34:54| Making directories in /var/spool/squid/33
+2018/01/29 12:34:54| Making directories in /var/spool/squid/34
+2018/01/29 12:34:54| Making directories in /var/spool/squid/35
+2018/01/29 12:34:54| Making directories in /var/spool/squid/36
+2018/01/29 12:34:54| Making directories in /var/spool/squid/37
+2018/01/29 12:34:54| Making directories in /var/spool/squid/38
+2018/01/29 12:34:54| Making directories in /var/spool/squid/39
+2018/01/29 12:34:54| Making directories in /var/spool/squid/3A
+2018/01/29 12:34:54| Making directories in /var/spool/squid/3B
+2018/01/29 12:34:54| Making directories in /var/spool/squid/3C
+2018/01/29 12:34:54| Making directories in /var/spool/squid/3D
+2018/01/29 12:34:54| Making directories in /var/spool/squid/3E
+2018/01/29 12:34:54| Making directories in /var/spool/squid/3F
+2018/01/29 12:34:54 kid1| Set Current Directory to /var/spool/squid
+2018/01/29 12:34:54 kid1| Starting Squid Cache version 3.5.20 for x86_64-redhat-linux-gnu...
+2018/01/29 12:34:54 kid1| Service Name: squid
+2018/01/29 12:34:54 kid1| Process ID 5283
+2018/01/29 12:34:54 kid1| Process Roles: worker
+2018/01/29 12:34:54 kid1| With 16384 file descriptors available
+2018/01/29 12:34:54 kid1| Initializing IP Cache...
+2018/01/29 12:34:54 kid1| DNS Socket created at [::], FD 6
+2018/01/29 12:34:54 kid1| DNS Socket created at 0.0.0.0, FD 8
+2018/01/29 12:34:54 kid1| Adding nameserver 77.88.8.8 from /etc/resolv.conf
+2018/01/29 12:34:54 kid1| Adding nameserver 8.8.8.8 from /etc/resolv.conf
+2018/01/29 12:34:54 kid1| Logfile: opening log daemon:/var/log/squid/access.log
+2018/01/29 12:34:54 kid1| Logfile Daemon: opening log /var/log/squid/access.log
+2018/01/29 12:34:54 kid1| Unlinkd pipe opened on FD 14
+2018/01/29 12:34:54 kid1| Local cache digest enabled; rebuild/rewrite every 3600/3600 sec
+2018/01/29 12:34:54 kid1| Store logging disabled
+2018/01/29 12:34:54 kid1| Swap maxSize 268435456 + 262144 KB, estimated 20669046 objects
+2018/01/29 12:34:54 kid1| Target number of buckets: 1033452
+2018/01/29 12:34:54 kid1| Using 1048576 Store buckets
+2018/01/29 12:34:54 kid1| Max Mem  size: 262144 KB
+2018/01/29 12:34:54 kid1| Max Swap size: 268435456 KB
+2018/01/29 12:34:54 kid1| Rebuilding storage in /var/spool/squid (no log)
+2018/01/29 12:34:54 kid1| Using Least Load store dir selection
+2018/01/29 12:34:54 kid1| Set Current Directory to /var/spool/squid
+2018/01/29 12:34:54 kid1| Finished loading MIME types and icons.
+2018/01/29 12:34:54 kid1| HTCP Disabled.
+2018/01/29 12:34:54 kid1| Squid plugin modules loaded: 0
+2018/01/29 12:34:54 kid1| Adaptation support is off.
+2018/01/29 12:34:54 kid1| Accepting HTTP Socket connections at local=[::]:3128 remote=[::] FD 16 flags=9
+2018/01/29 12:34:54 kid1| Done scanning /var/spool/squid dir (0 entries)
+2018/01/29 12:34:54 kid1| Finished rebuilding storage from disk.
+2018/01/29 12:34:54 kid1|         0 Entries scanned
+2018/01/29 12:34:54 kid1|         0 Invalid entries.
+2018/01/29 12:34:54 kid1|         0 With invalid flags.
+2018/01/29 12:34:54 kid1|         0 Objects loaded.
+2018/01/29 12:34:54 kid1|         0 Objects expired.
+2018/01/29 12:34:54 kid1|         0 Objects cancelled.
+2018/01/29 12:34:54 kid1|         0 Duplicate URLs purged.
+2018/01/29 12:34:54 kid1|         0 Swapfile clashes avoided.
+2018/01/29 12:34:54 kid1|   Took 0.13 seconds (  0.00 objects/sec).
+2018/01/29 12:34:54 kid1| Beginning Validation Procedure
+2018/01/29 12:34:54 kid1|   Completed Validation Procedure
+2018/01/29 12:34:54 kid1|   Validated 0 Entries
+2018/01/29 12:34:54 kid1|   store_swap_size = 0.00 KB
+2018/01/29 12:34:55 kid1| storeLateRelease: released 0 objects
+2018/01/29 12:35:07| Set Current Directory to /var/spool/squid
+2018/01/29 12:35:07 kid1| Preparing for shutdown after 0 requests
+2018/01/29 12:35:07 kid1| Waiting 30 seconds for active connections to finish
+2018/01/29 12:35:07 kid1| Closing HTTP port [::]:3128
+2018/01/29 12:35:35 kid1| Set Current Directory to /var/spool/squid
+2018/01/29 12:35:35 kid1| Starting Squid Cache version 3.5.20 for x86_64-redhat-linux-gnu...
+2018/01/29 12:35:35 kid1| Service Name: squid
+2018/01/29 12:35:35 kid1| Process ID 5311
+2018/01/29 12:35:35 kid1| Process Roles: worker
+2018/01/29 12:35:35 kid1| With 16384 file descriptors available
+2018/01/29 12:35:35 kid1| Initializing IP Cache...
+2018/01/29 12:35:35 kid1| DNS Socket created at [::], FD 6
+2018/01/29 12:35:35 kid1| DNS Socket created at 0.0.0.0, FD 8
+2018/01/29 12:35:35 kid1| Adding nameserver 77.88.8.8 from /etc/resolv.conf
+2018/01/29 12:35:35 kid1| Adding nameserver 8.8.8.8 from /etc/resolv.conf
+2018/01/29 12:35:35 kid1| Logfile: opening log daemon:/var/log/squid/access.log
+2018/01/29 12:35:35 kid1| Logfile Daemon: opening log /var/log/squid/access.log
+2018/01/29 12:35:35 kid1| Unlinkd pipe opened on FD 14
+2018/01/29 12:35:35 kid1| Local cache digest enabled; rebuild/rewrite every 3600/3600 sec
+2018/01/29 12:35:35 kid1| Store logging disabled
+2018/01/29 12:35:35 kid1| Swap maxSize 268435456 + 262144 KB, estimated 20669046 objects
+2018/01/29 12:35:35 kid1| Target number of buckets: 1033452
+2018/01/29 12:35:35 kid1| Using 1048576 Store buckets
+2018/01/29 12:35:35 kid1| Max Mem  size: 262144 KB
+2018/01/29 12:35:35 kid1| Max Swap size: 268435456 KB
+2018/01/29 12:35:35 kid1| Rebuilding storage in /var/spool/squid (dirty log)
+2018/01/29 12:35:35 kid1| Using Least Load store dir selection
+2018/01/29 12:35:35 kid1| Set Current Directory to /var/spool/squid
+2018/01/29 12:35:35 kid1| Finished loading MIME types and icons.
+2018/01/29 12:35:35 kid1| HTCP Disabled.
+2018/01/29 12:35:35 kid1| Squid plugin modules loaded: 0
+2018/01/29 12:35:35 kid1| Adaptation support is off.
+2018/01/29 12:35:35 kid1| Accepting HTTP Socket connections at local=[::]:3128 remote=[::] FD 17 flags=9
+2018/01/29 12:35:35 kid1| Done reading /var/spool/squid swaplog (0 entries)
+2018/01/29 12:35:35 kid1| Store rebuilding is 0.00% complete
+2018/01/29 12:35:35 kid1| Finished rebuilding storage from disk.
+2018/01/29 12:35:35 kid1|         0 Entries scanned
+2018/01/29 12:35:35 kid1|         0 Invalid entries.
+2018/01/29 12:35:35 kid1|         0 With invalid flags.
+2018/01/29 12:35:35 kid1|         0 Objects loaded.
+2018/01/29 12:35:35 kid1|         0 Objects expired.
+2018/01/29 12:35:35 kid1|         0 Objects cancelled.
+2018/01/29 12:35:35 kid1|         0 Duplicate URLs purged.
+2018/01/29 12:35:35 kid1|         0 Swapfile clashes avoided.
+2018/01/29 12:35:35 kid1|   Took 0.01 seconds (  0.00 objects/sec).
+2018/01/29 12:35:35 kid1| Beginning Validation Procedure
+2018/01/29 12:35:35 kid1|   Completed Validation Procedure
+2018/01/29 12:35:35 kid1|   Validated 0 Entries
+2018/01/29 12:35:35 kid1|   store_swap_size = 0.00 KB
+2018/01/29 12:35:36 kid1| storeLateRelease: released 0 objects
+2018/01/29 12:40:46 kid1| Preparing for shutdown after 233 requests
+2018/01/29 12:40:46 kid1| Waiting 30 seconds for active connections to finish
+2018/01/29 12:40:46 kid1| Closing HTTP port [::]:3128
+2018/01/29 12:41:53 kid1| Set Current Directory to /var/spool/squid
+2018/01/29 12:41:53 kid1| Starting Squid Cache version 3.5.20 for x86_64-redhat-linux-gnu...
+2018/01/29 12:41:53 kid1| Service Name: squid
+2018/01/29 12:41:53 kid1| Process ID 5361
+2018/01/29 12:41:53 kid1| Process Roles: worker
+2018/01/29 12:41:53 kid1| With 16384 file descriptors available
+2018/01/29 12:41:53 kid1| Initializing IP Cache...
+2018/01/29 12:41:53 kid1| DNS Socket created at [::], FD 6
+2018/01/29 12:41:53 kid1| DNS Socket created at 0.0.0.0, FD 8
+2018/01/29 12:41:53 kid1| Adding nameserver 77.88.8.8 from /etc/resolv.conf
+2018/01/29 12:41:53 kid1| Adding nameserver 8.8.8.8 from /etc/resolv.conf
+2018/01/29 12:41:53 kid1| Logfile: opening log daemon:/var/log/squid/access.log
+2018/01/29 12:41:53 kid1| Logfile Daemon: opening log /var/log/squid/access.log
+2018/01/29 12:41:53 kid1| Unlinkd pipe opened on FD 14
+2018/01/29 12:41:53 kid1| Local cache digest enabled; rebuild/rewrite every 3600/3600 sec
+2018/01/29 12:41:53 kid1| Store logging disabled
+2018/01/29 12:41:53 kid1| Swap maxSize 268435456 + 262144 KB, estimated 20669046 objects
+2018/01/29 12:41:53 kid1| Target number of buckets: 1033452
+2018/01/29 12:41:53 kid1| Using 1048576 Store buckets
+2018/01/29 12:41:53 kid1| Max Mem  size: 262144 KB
+2018/01/29 12:41:53 kid1| Max Swap size: 268435456 KB
+2018/01/29 12:41:53 kid1| Rebuilding storage in /var/spool/squid (dirty log)
+2018/01/29 12:41:53 kid1| Using Least Load store dir selection
+2018/01/29 12:41:53 kid1| Set Current Directory to /var/spool/squid
+2018/01/29 12:41:53 kid1| Finished loading MIME types and icons.
+2018/01/29 12:41:53 kid1| HTCP Disabled.
+2018/01/29 12:41:53 kid1| Squid plugin modules loaded: 0
+2018/01/29 12:41:53 kid1| Adaptation support is off.
+2018/01/29 12:41:53 kid1| Accepting HTTP Socket connections at local=[::]:3128 remote=[::] FD 17 flags=9
+2018/01/29 12:41:53 kid1| Done reading /var/spool/squid swaplog (89 entries)
+2018/01/29 12:41:53 kid1| Finished rebuilding storage from disk.
+2018/01/29 12:41:53 kid1|        89 Entries scanned
+2018/01/29 12:41:53 kid1|         0 Invalid entries.
+2018/01/29 12:41:53 kid1|         0 With invalid flags.
+2018/01/29 12:41:53 kid1|        89 Objects loaded.
+2018/01/29 12:41:53 kid1|         0 Objects expired.
+2018/01/29 12:41:53 kid1|         0 Objects cancelled.
+2018/01/29 12:41:53 kid1|         0 Duplicate URLs purged.
+2018/01/29 12:41:53 kid1|         0 Swapfile clashes avoided.
+2018/01/29 12:41:53 kid1|   Took 0.01 seconds (8510.23 objects/sec).
+2018/01/29 12:41:53 kid1| Beginning Validation Procedure
+2018/01/29 12:41:53 kid1|   Completed Validation Procedure
+2018/01/29 12:41:53 kid1|   Validated 89 Entries
+2018/01/29 12:41:53 kid1|   store_swap_size = 1724.00 KB
+2018/01/29 12:41:54 kid1| storeLateRelease: released 0 objects
+2018/01/29 12:46:39| Set Current Directory to /var/spool/squid
+2018/01/29 12:46:39 kid1| Preparing for shutdown after 442 requests
+2018/01/29 12:46:39 kid1| Waiting 30 seconds for active connections to finish
+2018/01/29 12:46:39 kid1| Closing HTTP port [::]:3128
+2018/01/29 12:46:39 kid1| Set Current Directory to /var/spool/squid
+2018/01/29 12:46:39 kid1| Starting Squid Cache version 3.5.20 for x86_64-redhat-linux-gnu...
+2018/01/29 12:46:39 kid1| Service Name: squid
+2018/01/29 12:46:39 kid1| Process ID 5390
+2018/01/29 12:46:39 kid1| Process Roles: worker
+2018/01/29 12:46:39 kid1| With 16384 file descriptors available
+2018/01/29 12:46:39 kid1| Initializing IP Cache...
+2018/01/29 12:46:39 kid1| DNS Socket created at [::], FD 6
+2018/01/29 12:46:39 kid1| DNS Socket created at 0.0.0.0, FD 8
+2018/01/29 12:46:39 kid1| Adding nameserver 77.88.8.8 from /etc/resolv.conf
+2018/01/29 12:46:39 kid1| Adding nameserver 8.8.8.8 from /etc/resolv.conf
+2018/01/29 12:46:39 kid1| Logfile: opening log daemon:/var/log/squid/access.log
+2018/01/29 12:46:39 kid1| Logfile Daemon: opening log /var/log/squid/access.log
+2018/01/29 12:46:39 kid1| Unlinkd pipe opened on FD 14
+2018/01/29 12:46:39 kid1| Local cache digest enabled; rebuild/rewrite every 3600/3600 sec
+2018/01/29 12:46:39 kid1| Store logging disabled
+2018/01/29 12:46:39 kid1| Swap maxSize 268435456 + 262144 KB, estimated 20669046 objects
+2018/01/29 12:46:39 kid1| Target number of buckets: 1033452
+2018/01/29 12:46:39 kid1| Using 1048576 Store buckets
+2018/01/29 12:46:39 kid1| Max Mem  size: 262144 KB
+2018/01/29 12:46:39 kid1| Max Swap size: 268435456 KB
+2018/01/29 12:46:39 kid1| Rebuilding storage in /var/spool/squid (dirty log)
+2018/01/29 12:46:39 kid1| Using Least Load store dir selection
+2018/01/29 12:46:39 kid1| Set Current Directory to /var/spool/squid
+2018/01/29 12:46:39 kid1| Finished loading MIME types and icons.
+2018/01/29 12:46:39 kid1| HTCP Disabled.
+2018/01/29 12:46:39 kid1| Squid plugin modules loaded: 0
+2018/01/29 12:46:39 kid1| Adaptation support is off.
+2018/01/29 12:46:39 kid1| Accepting HTTP Socket connections at local=[::]:3128 remote=[::] FD 17 flags=9
+2018/01/29 12:46:39 kid1| Done reading /var/spool/squid swaplog (166 entries)
+2018/01/29 12:46:39 kid1| Finished rebuilding storage from disk.
+2018/01/29 12:46:39 kid1|       159 Entries scanned
+2018/01/29 12:46:39 kid1|         0 Invalid entries.
+2018/01/29 12:46:39 kid1|         0 With invalid flags.
+2018/01/29 12:46:39 kid1|       152 Objects loaded.
+2018/01/29 12:46:39 kid1|         0 Objects expired.
+2018/01/29 12:46:39 kid1|         0 Objects cancelled.
+2018/01/29 12:46:39 kid1|         1 Duplicate URLs purged.
+2018/01/29 12:46:39 kid1|         6 Swapfile clashes avoided.
+2018/01/29 12:46:39 kid1|   Took 0.01 seconds (15009.38 objects/sec).
+2018/01/29 12:46:39 kid1| Beginning Validation Procedure
+2018/01/29 12:46:39 kid1|   Completed Validation Procedure
+2018/01/29 12:46:39 kid1|   Validated 152 Entries
+2018/01/29 12:46:39 kid1|   store_swap_size = 2716.00 KB
+2018/01/29 12:46:40 kid1| storeLateRelease: released 0 objects
+2018/01/29 12:47:27| Set Current Directory to /var/spool/squid
+2018/01/29 12:47:27 kid1| Reconfiguring Squid Cache (version 3.5.20)...
+2018/01/29 12:47:27 kid1| Closing HTTP port [::]:3128
+2018/01/29 12:47:27 kid1| Logfile: closing log daemon:/var/log/squid/access.log
+2018/01/29 12:47:27 kid1| Logfile Daemon: closing log daemon:/var/log/squid/access.log
+2018/01/29 12:47:27 kid1| Startup: Initializing Authentication Schemes ...
+2018/01/29 12:47:27 kid1| Startup: Initialized Authentication Scheme 'basic'
+2018/01/29 12:47:27 kid1| Startup: Initialized Authentication Scheme 'digest'
+2018/01/29 12:47:27 kid1| Startup: Initialized Authentication Scheme 'negotiate'
+2018/01/29 12:47:27 kid1| Startup: Initialized Authentication Scheme 'ntlm'
+2018/01/29 12:47:27 kid1| Startup: Initialized Authentication.
+2018/01/29 12:47:27 kid1| Processing Configuration File: /etc/squid/squid.conf (depth 0)
+2018/01/29 12:47:27 kid1| Warning: empty ACL: acl block dstdomain "/etc/squid/block_sites"
+2018/01/29 12:47:27 kid1| Initializing https proxy context
+2018/01/29 12:47:27 kid1| Logfile: opening log daemon:/var/log/squid/access.log
+2018/01/29 12:47:27 kid1| Logfile Daemon: opening log /var/log/squid/access.log
+2018/01/29 12:47:27 kid1| Squid plugin modules loaded: 0
+2018/01/29 12:47:27 kid1| Adaptation support is off.
+2018/01/29 12:47:27 kid1| Store logging disabled
+2018/01/29 12:47:27 kid1| DNS Socket created at [::], FD 9
+2018/01/29 12:47:27 kid1| DNS Socket created at 0.0.0.0, FD 10
+2018/01/29 12:47:27 kid1| Adding nameserver 77.88.8.8 from /etc/resolv.conf
+2018/01/29 12:47:27 kid1| Adding nameserver 8.8.8.8 from /etc/resolv.conf
+2018/01/29 12:47:27 kid1| HTCP Disabled.
+2018/01/29 12:47:27 kid1| Finished loading MIME types and icons.
+2018/01/29 12:47:27 kid1| Accepting HTTP Socket connections at local=[::]:3128 remote=[::] FD 17 flags=9
+2018/01/29 12:48:47| Set Current Directory to /var/spool/squid
+2018/01/29 12:48:47 kid1| Reconfiguring Squid Cache (version 3.5.20)...
+2018/01/29 12:48:47 kid1| Closing HTTP port [::]:3128
+2018/01/29 12:48:47 kid1| Logfile: closing log daemon:/var/log/squid/access.log
+2018/01/29 12:48:47 kid1| Logfile Daemon: closing log daemon:/var/log/squid/access.log
+2018/01/29 12:48:47 kid1| Startup: Initializing Authentication Schemes ...
+2018/01/29 12:48:47 kid1| Startup: Initialized Authentication Scheme 'basic'
+2018/01/29 12:48:47 kid1| Startup: Initialized Authentication Scheme 'digest'
+2018/01/29 12:48:47 kid1| Startup: Initialized Authentication Scheme 'negotiate'
+2018/01/29 12:48:47 kid1| Startup: Initialized Authentication Scheme 'ntlm'
+2018/01/29 12:48:47 kid1| Startup: Initialized Authentication.
+2018/01/29 12:48:47 kid1| Processing Configuration File: /etc/squid/squid.conf (depth 0)
+2018/01/29 12:48:47 kid1| Warning: empty ACL: acl block dstdomain "/etc/squid/url_blacklist"
+2018/01/29 12:48:47 kid1| Initializing https proxy context
+2018/01/29 12:48:47 kid1| Logfile: opening log daemon:/var/log/squid/access.log
+2018/01/29 12:48:47 kid1| Logfile Daemon: opening log /var/log/squid/access.log
+2018/01/29 12:48:47 kid1| Squid plugin modules loaded: 0
+2018/01/29 12:48:47 kid1| Adaptation support is off.
+2018/01/29 12:48:47 kid1| Store logging disabled
+2018/01/29 12:48:47 kid1| DNS Socket created at [::], FD 9
+2018/01/29 12:48:47 kid1| DNS Socket created at 0.0.0.0, FD 10
+2018/01/29 12:48:47 kid1| Adding nameserver 77.88.8.8 from /etc/resolv.conf
+2018/01/29 12:48:47 kid1| Adding nameserver 8.8.8.8 from /etc/resolv.conf
+2018/01/29 12:48:47 kid1| HTCP Disabled.
+2018/01/29 12:48:47 kid1| Finished loading MIME types and icons.
+2018/01/29 12:48:47 kid1| Accepting HTTP Socket connections at local=[::]:3128 remote=[::] FD 16 flags=9
+2018/01/29 12:49:31| Set Current Directory to /var/spool/squid
+2018/01/29 12:49:31 kid1| Reconfiguring Squid Cache (version 3.5.20)...
+2018/01/29 12:49:31 kid1| Closing HTTP port [::]:3128
+2018/01/29 12:49:31 kid1| Logfile: closing log daemon:/var/log/squid/access.log
+2018/01/29 12:49:31 kid1| Logfile Daemon: closing log daemon:/var/log/squid/access.log
+2018/01/29 12:49:31 kid1| Startup: Initializing Authentication Schemes ...
+2018/01/29 12:49:31 kid1| Startup: Initialized Authentication Scheme 'basic'
+2018/01/29 12:49:31 kid1| Startup: Initialized Authentication Scheme 'digest'
+2018/01/29 12:49:31 kid1| Startup: Initialized Authentication Scheme 'negotiate'
+2018/01/29 12:49:31 kid1| Startup: Initialized Authentication Scheme 'ntlm'
+2018/01/29 12:49:31 kid1| Startup: Initialized Authentication.
+2018/01/29 12:49:31 kid1| Processing Configuration File: /etc/squid/squid.conf (depth 0)
+2018/01/29 12:49:31 kid1| Initializing https proxy context
+2018/01/29 12:49:31 kid1| Logfile: opening log daemon:/var/log/squid/access.log
+2018/01/29 12:49:31 kid1| Logfile Daemon: opening log /var/log/squid/access.log
+2018/01/29 12:49:31 kid1| Squid plugin modules loaded: 0
+2018/01/29 12:49:31 kid1| Adaptation support is off.
+2018/01/29 12:49:31 kid1| Store logging disabled
+2018/01/29 12:49:31 kid1| DNS Socket created at [::], FD 10
+2018/01/29 12:49:31 kid1| DNS Socket created at 0.0.0.0, FD 15
+2018/01/29 12:49:31 kid1| Adding nameserver 77.88.8.8 from /etc/resolv.conf
+2018/01/29 12:49:31 kid1| Adding nameserver 8.8.8.8 from /etc/resolv.conf
+2018/01/29 12:49:31 kid1| HTCP Disabled.
+2018/01/29 12:49:31 kid1| Finished loading MIME types and icons.
+2018/01/29 12:49:31 kid1| Accepting HTTP Socket connections at local=[::]:3128 remote=[::] FD 16 flags=9
+2018/01/29 13:15:14 kid1| local=10.0.0.246:3128 remote=10.0.0.130:58671 FD 48 flags=1: read/write failure: (113) No route to host
+2018/01/29 13:21:21| Set Current Directory to /var/spool/squid
+2018/01/29 13:21:21 kid1| Reconfiguring Squid Cache (version 3.5.20)...
+2018/01/29 13:21:21 kid1| Closing HTTP port [::]:3128
+2018/01/29 13:21:21 kid1| Logfile: closing log daemon:/var/log/squid/access.log
+2018/01/29 13:21:21 kid1| Logfile Daemon: closing log daemon:/var/log/squid/access.log
+2018/01/29 13:21:21 kid1| Startup: Initializing Authentication Schemes ...
+2018/01/29 13:21:21 kid1| Startup: Initialized Authentication Scheme 'basic'
+2018/01/29 13:21:21 kid1| Startup: Initialized Authentication Scheme 'digest'
+2018/01/29 13:21:21 kid1| Startup: Initialized Authentication Scheme 'negotiate'
+2018/01/29 13:21:21 kid1| Startup: Initialized Authentication Scheme 'ntlm'
+2018/01/29 13:21:21 kid1| Startup: Initialized Authentication.
+2018/01/29 13:21:21 kid1| Processing Configuration File: /etc/squid/squid.conf (depth 0)
+2018/01/29 13:21:21 kid1| Warning: empty ACL: acl block dstdomain "/etc/squid/url_blacklist"
+2018/01/29 13:21:21 kid1| Initializing https proxy context
+2018/01/29 13:21:21 kid1| Logfile: opening log daemon:/var/log/squid/access.log
+2018/01/29 13:21:21 kid1| Logfile Daemon: opening log /var/log/squid/access.log
+2018/01/29 13:21:21 kid1| Squid plugin modules loaded: 0
+2018/01/29 13:21:21 kid1| Adaptation support is off.
+2018/01/29 13:21:21 kid1| Store logging disabled
+2018/01/29 13:21:21 kid1| DNS Socket created at [::], FD 15
+2018/01/29 13:21:21 kid1| DNS Socket created at 0.0.0.0, FD 16
+2018/01/29 13:21:21 kid1| Adding nameserver 77.88.8.8 from /etc/resolv.conf
+2018/01/29 13:21:21 kid1| Adding nameserver 8.8.8.8 from /etc/resolv.conf
+2018/01/29 13:21:21 kid1| HTCP Disabled.
+2018/01/29 13:21:21 kid1| Finished loading MIME types and icons.
+2018/01/29 13:21:21 kid1| Accepting HTTP Socket connections at local=[::]:3128 remote=[::] FD 17 flags=9
+2018/01/29 21:31:58 kid1| local=172.16.255.253:42002 remote=13.126.221.13:443 FD 95 flags=1: read/write failure: (32) Broken pipe
+2018/01/29 21:31:58 kid1| local=172.16.255.253:41130 remote=13.126.65.15:443 FD 103 flags=1: read/write failure: (32) Broken pipe
+2018/01/30 15:59:36| Set Current Directory to /var/spool/squid
+2018/01/30 15:59:36 kid1| Preparing for shutdown after 40746 requests
+2018/01/30 15:59:36 kid1| Waiting 30 seconds for active connections to finish
+2018/01/30 15:59:36 kid1| Closing HTTP port [::]:3128
+2018/01/30 15:59:36 kid1| Set Current Directory to /var/spool/squid
+2018/01/30 15:59:36 kid1| Starting Squid Cache version 3.5.20 for x86_64-redhat-linux-gnu...
+2018/01/30 15:59:36 kid1| Service Name: squid
+2018/01/30 15:59:36 kid1| Process ID 7787
+2018/01/30 15:59:36 kid1| Process Roles: worker
+2018/01/30 15:59:36 kid1| With 16384 file descriptors available
+2018/01/30 15:59:36 kid1| Initializing IP Cache...
+2018/01/30 15:59:36 kid1| DNS Socket created at [::], FD 6
+2018/01/30 15:59:36 kid1| DNS Socket created at 0.0.0.0, FD 8
+2018/01/30 15:59:36 kid1| Adding nameserver 77.88.8.8 from /etc/resolv.conf
+2018/01/30 15:59:36 kid1| Adding nameserver 8.8.8.8 from /etc/resolv.conf
+2018/01/30 15:59:36 kid1| Logfile: opening log daemon:/var/log/squid/access.log
+2018/01/30 15:59:36 kid1| Logfile Daemon: opening log /var/log/squid/access.log
+2018/01/30 15:59:37 kid1| Unlinkd pipe opened on FD 14
+2018/01/30 15:59:37 kid1| createRemovalPolicy_heap: Unknown key type "GDFS". Using LRU
+2018/01/30 15:59:37 kid1| Local cache digest enabled; rebuild/rewrite every 3600/3600 sec
+2018/01/30 15:59:37 kid1| Store logging disabled
+2018/01/30 15:59:37 kid1| Swap maxSize 268435456 + 1048576 KB, estimated 20729540 objects
+2018/01/30 15:59:37 kid1| Target number of buckets: 1036477
+2018/01/30 15:59:37 kid1| Using 1048576 Store buckets
+2018/01/30 15:59:37 kid1| Max Mem  size: 1048576 KB
+2018/01/30 15:59:37 kid1| Max Swap size: 268435456 KB
+2018/01/30 15:59:37 kid1| Rebuilding storage in /var/spool/squid (dirty log)
+2018/01/30 15:59:37 kid1| Using Least Load store dir selection
+2018/01/30 15:59:37 kid1| Set Current Directory to /var/spool/squid
+2018/01/30 15:59:37 kid1| Finished loading MIME types and icons.
+2018/01/30 15:59:37 kid1| HTCP Disabled.
+2018/01/30 15:59:37 kid1| Squid plugin modules loaded: 0
+2018/01/30 15:59:37 kid1| Adaptation support is off.
+2018/01/30 15:59:37 kid1| Accepting HTTP Socket connections at local=[::]:3128 remote=[::] FD 17 flags=9
+2018/01/30 15:59:37 kid1| Done reading /var/spool/squid swaplog (2070 entries)
+2018/01/30 15:59:37 kid1| Finished rebuilding storage from disk.
+2018/01/30 15:59:37 kid1|      2007 Entries scanned
+2018/01/30 15:59:37 kid1|         2 Invalid entries.
+2018/01/30 15:59:37 kid1|         0 With invalid flags.
+2018/01/30 15:59:37 kid1|      1947 Objects loaded.
+2018/01/30 15:59:37 kid1|         0 Objects expired.
+2018/01/30 15:59:37 kid1|         0 Objects cancelled.
+2018/01/30 15:59:37 kid1|        60 Duplicate URLs purged.
+2018/01/30 15:59:37 kid1|         0 Swapfile clashes avoided.
+2018/01/30 15:59:37 kid1|   Took 0.12 seconds (16903.83 objects/sec).
+2018/01/30 15:59:37 kid1| Beginning Validation Procedure
+2018/01/30 15:59:37 kid1|   Completed Validation Procedure
+2018/01/30 15:59:37 kid1|   Validated 1947 Entries
+2018/01/30 15:59:37 kid1|   store_swap_size = 38220.00 KB
+2018/01/30 15:59:38 kid1| storeLateRelease: released 0 objects
+2018/01/30 16:16:35| Set Current Directory to /var/spool/squid
+2018/01/30 16:16:35 kid1| Preparing for shutdown after 815 requests
+2018/01/30 16:16:35 kid1| Waiting 30 seconds for active connections to finish
+2018/01/30 16:16:35 kid1| Closing HTTP port [::]:3128
+2018/01/30 16:16:51| cannot change current directory to /var/spool/squid: (2) No such file or directory
+2018/01/30 16:16:51| Current Directory is /
+2018/01/30 16:16:51| Creating missing swap directories
+2018/01/30 16:16:51| /home/cache exists
+2018/01/30 16:16:51| Making directories in /home/cache/00
+2018/01/30 16:16:51| Making directories in /home/cache/01
+2018/01/30 16:16:51| Making directories in /home/cache/02
+2018/01/30 16:16:51| Making directories in /home/cache/03
+2018/01/30 16:16:51| Making directories in /home/cache/04
+2018/01/30 16:16:51| Making directories in /home/cache/05
+2018/01/30 16:16:51| Making directories in /home/cache/06
+2018/01/30 16:16:51| Making directories in /home/cache/07
+2018/01/30 16:16:51| Making directories in /home/cache/08
+2018/01/30 16:16:51| Making directories in /home/cache/09
+2018/01/30 16:16:51| Making directories in /home/cache/0A
+2018/01/30 16:16:51| Making directories in /home/cache/0B
+2018/01/30 16:16:51| Making directories in /home/cache/0C
+2018/01/30 16:16:51| Making directories in /home/cache/0D
+2018/01/30 16:16:51| Making directories in /home/cache/0E
+2018/01/30 16:16:51| Making directories in /home/cache/0F
+2018/01/30 16:16:51| Making directories in /home/cache/10
+2018/01/30 16:16:51| Making directories in /home/cache/11
+2018/01/30 16:16:51| Making directories in /home/cache/12
+2018/01/30 16:16:51| Making directories in /home/cache/13
+2018/01/30 16:16:51| Making directories in /home/cache/14
+2018/01/30 16:16:51| Making directories in /home/cache/15
+2018/01/30 16:16:51| Making directories in /home/cache/16
+2018/01/30 16:16:51| Making directories in /home/cache/17
+2018/01/30 16:16:51| Making directories in /home/cache/18
+2018/01/30 16:16:51| Making directories in /home/cache/19
+2018/01/30 16:16:51| Making directories in /home/cache/1A
+2018/01/30 16:16:51| Making directories in /home/cache/1B
+2018/01/30 16:16:51| Making directories in /home/cache/1C
+2018/01/30 16:16:51| Making directories in /home/cache/1D
+2018/01/30 16:16:51| Making directories in /home/cache/1E
+2018/01/30 16:16:51| Making directories in /home/cache/1F
+2018/01/30 16:16:51| Making directories in /home/cache/20
+2018/01/30 16:16:51| Making directories in /home/cache/21
+2018/01/30 16:16:51| Making directories in /home/cache/22
+2018/01/30 16:16:51| Making directories in /home/cache/23
+2018/01/30 16:16:51| Making directories in /home/cache/24
+2018/01/30 16:16:51| Making directories in /home/cache/25
+2018/01/30 16:16:51| Making directories in /home/cache/26
+2018/01/30 16:16:51| Making directories in /home/cache/27
+2018/01/30 16:16:51| Making directories in /home/cache/28
+2018/01/30 16:16:51| Making directories in /home/cache/29
+2018/01/30 16:16:51| Making directories in /home/cache/2A
+2018/01/30 16:16:51| Making directories in /home/cache/2B
+2018/01/30 16:16:51| Making directories in /home/cache/2C
+2018/01/30 16:16:51| Making directories in /home/cache/2D
+2018/01/30 16:16:51| Making directories in /home/cache/2E
+2018/01/30 16:16:51| Making directories in /home/cache/2F
+2018/01/30 16:16:51| Making directories in /home/cache/30
+2018/01/30 16:16:51| Making directories in /home/cache/31
+2018/01/30 16:16:51| Making directories in /home/cache/32
+2018/01/30 16:16:51| Making directories in /home/cache/33
+2018/01/30 16:16:52| Making directories in /home/cache/34
+2018/01/30 16:16:52| Making directories in /home/cache/35
+2018/01/30 16:16:52| Making directories in /home/cache/36
+2018/01/30 16:16:52| Making directories in /home/cache/37
+2018/01/30 16:16:52| Making directories in /home/cache/38
+2018/01/30 16:16:52| Making directories in /home/cache/39
+2018/01/30 16:16:52| Making directories in /home/cache/3A
+2018/01/30 16:16:52| Making directories in /home/cache/3B
+2018/01/30 16:16:52| Making directories in /home/cache/3C
+2018/01/30 16:16:52| Making directories in /home/cache/3D
+2018/01/30 16:16:52| Making directories in /home/cache/3E
+2018/01/30 16:16:52| Making directories in /home/cache/3F
+2018/01/30 16:16:55 kid1| cannot change current directory to /var/spool/squid: (2) No such file or directory
+2018/01/30 16:16:55 kid1| Current Directory is /
+2018/01/30 16:16:55 kid1| Starting Squid Cache version 3.5.20 for x86_64-redhat-linux-gnu...
+2018/01/30 16:16:55 kid1| Service Name: squid
+2018/01/30 16:16:55 kid1| Process ID 8308
+2018/01/30 16:16:55 kid1| Process Roles: worker
+2018/01/30 16:16:55 kid1| With 16384 file descriptors available
+2018/01/30 16:16:55 kid1| Initializing IP Cache...
+2018/01/30 16:16:56 kid1| DNS Socket created at [::], FD 6
+2018/01/30 16:16:56 kid1| DNS Socket created at 0.0.0.0, FD 8
+2018/01/30 16:16:56 kid1| Adding nameserver 77.88.8.8 from /etc/resolv.conf
+2018/01/30 16:16:56 kid1| Adding nameserver 8.8.8.8 from /etc/resolv.conf
+2018/01/30 16:16:56 kid1| Logfile: opening log daemon:/var/log/squid/access.log
+2018/01/30 16:16:56 kid1| Logfile Daemon: opening log /var/log/squid/access.log
+2018/01/30 16:16:56 kid1| Unlinkd pipe opened on FD 14
+2018/01/30 16:16:56 kid1| createRemovalPolicy_heap: Unknown key type "GDFS". Using LRU
+2018/01/30 16:16:56 kid1| Local cache digest enabled; rebuild/rewrite every 3600/3600 sec
+2018/01/30 16:16:56 kid1| Store logging disabled
+2018/01/30 16:16:56 kid1| Swap maxSize 268435456 + 1048576 KB, estimated 20729540 objects
+2018/01/30 16:16:56 kid1| Target number of buckets: 1036477
+2018/01/30 16:16:56 kid1| Using 1048576 Store buckets
+2018/01/30 16:16:56 kid1| Max Mem  size: 1048576 KB
+2018/01/30 16:16:56 kid1| Max Swap size: 268435456 KB
+2018/01/30 16:16:56 kid1| Rebuilding storage in /home/cache (no log)
+2018/01/30 16:16:56 kid1| Using Least Load store dir selection
+2018/01/30 16:16:56 kid1| cannot change current directory to /var/spool/squid: (2) No such file or directory
+2018/01/30 16:16:56 kid1| Current Directory is /
+2018/01/30 16:16:57 kid1| Finished loading MIME types and icons.
+2018/01/30 16:16:57 kid1| HTCP Disabled.
+2018/01/30 16:16:57 kid1| Squid plugin modules loaded: 0
+2018/01/30 16:16:57 kid1| Adaptation support is off.
+2018/01/30 16:16:57 kid1| Accepting HTTP Socket connections at local=[::]:3128 remote=[::] FD 16 flags=9
+2018/01/30 16:16:57 kid1| Done scanning /home/cache dir (0 entries)
+2018/01/30 16:16:57 kid1| Finished rebuilding storage from disk.
+2018/01/30 16:16:57 kid1|         0 Entries scanned
+2018/01/30 16:16:57 kid1|         0 Invalid entries.
+2018/01/30 16:16:57 kid1|         0 With invalid flags.
+2018/01/30 16:16:57 kid1|         0 Objects loaded.
+2018/01/30 16:16:57 kid1|         0 Objects expired.
+2018/01/30 16:16:57 kid1|         0 Objects cancelled.
+2018/01/30 16:16:57 kid1|         0 Duplicate URLs purged.
+2018/01/30 16:16:57 kid1|         0 Swapfile clashes avoided.
+2018/01/30 16:16:57 kid1|   Took 0.83 seconds (  0.00 objects/sec).
+2018/01/30 16:16:57 kid1| Beginning Validation Procedure
+2018/01/30 16:16:57 kid1|   Completed Validation Procedure
+2018/01/30 16:16:57 kid1|   Validated 0 Entries
+2018/01/30 16:16:57 kid1|   store_swap_size = 0.00 KB
+2018/01/30 16:16:57 kid1| storeLateRelease: released 0 objects
+2018/01/30 16:20:49| Set Current Directory to /home/cache
+2018/01/30 16:20:49 kid1| Preparing for shutdown after 177 requests
+2018/01/30 16:20:49 kid1| Waiting 30 seconds for active connections to finish
+2018/01/30 16:20:49 kid1| Closing HTTP port [::]:3128
+2018/01/30 16:20:50 kid1| Set Current Directory to /home/cache
+2018/01/30 16:20:50 kid1| Starting Squid Cache version 3.5.20 for x86_64-redhat-linux-gnu...
+2018/01/30 16:20:50 kid1| Service Name: squid
+2018/01/30 16:20:50 kid1| Process ID 8554
+2018/01/30 16:20:50 kid1| Process Roles: worker
+2018/01/30 16:20:50 kid1| With 16384 file descriptors available
+2018/01/30 16:20:50 kid1| Initializing IP Cache...
+2018/01/30 16:20:50 kid1| DNS Socket created at [::], FD 6
+2018/01/30 16:20:50 kid1| DNS Socket created at 0.0.0.0, FD 8
+2018/01/30 16:20:50 kid1| Adding nameserver 77.88.8.8 from /etc/resolv.conf
+2018/01/30 16:20:50 kid1| Adding nameserver 8.8.8.8 from /etc/resolv.conf
+2018/01/30 16:20:50 kid1| Logfile: opening log daemon:/var/log/squid/access.log
+2018/01/30 16:20:50 kid1| Logfile Daemon: opening log /var/log/squid/access.log
+2018/01/30 16:20:50 kid1| Unlinkd pipe opened on FD 14
+2018/01/30 16:20:50 kid1| createRemovalPolicy_heap: Unknown key type "GDFS". Using LRU
+2018/01/30 16:20:50 kid1| Local cache digest enabled; rebuild/rewrite every 3600/3600 sec
+2018/01/30 16:20:50 kid1| Store logging disabled
+2018/01/30 16:20:50 kid1| Swap maxSize 268435456 + 1048576 KB, estimated 20729540 objects
+2018/01/30 16:20:50 kid1| Target number of buckets: 1036477
+2018/01/30 16:20:50 kid1| Using 1048576 Store buckets
+2018/01/30 16:20:50 kid1| Max Mem  size: 1048576 KB
+2018/01/30 16:20:50 kid1| Max Swap size: 268435456 KB
+2018/01/30 16:20:50 kid1| Rebuilding storage in /home/cache (dirty log)
+2018/01/30 16:20:50 kid1| Using Least Load store dir selection
+2018/01/30 16:20:50 kid1| Set Current Directory to /home/cache
+2018/01/30 16:20:50 kid1| Finished loading MIME types and icons.
+2018/01/30 16:20:50 kid1| HTCP Disabled.
+2018/01/30 16:20:50 kid1| Squid plugin modules loaded: 0
+2018/01/30 16:20:50 kid1| Adaptation support is off.
+2018/01/30 16:20:50 kid1| Accepting HTTP Socket connections at local=[::]:3128 remote=[::] FD 17 flags=9
+2018/01/30 16:20:50 kid1| Done reading /home/cache swaplog (8 entries)
+2018/01/30 16:20:50 kid1| Finished rebuilding storage from disk.
+2018/01/30 16:20:50 kid1|         7 Entries scanned
+2018/01/30 16:20:50 kid1|         1 Invalid entries.
+2018/01/30 16:20:50 kid1|         0 With invalid flags.
+2018/01/30 16:20:50 kid1|         7 Objects loaded.
+2018/01/30 16:20:50 kid1|         0 Objects expired.
+2018/01/30 16:20:50 kid1|         0 Objects cancelled.
+2018/01/30 16:20:50 kid1|         0 Duplicate URLs purged.
+2018/01/30 16:20:50 kid1|         0 Swapfile clashes avoided.
+2018/01/30 16:20:50 kid1|   Took 0.01 seconds (718.91 objects/sec).
+2018/01/30 16:20:50 kid1| Beginning Validation Procedure
+2018/01/30 16:20:50 kid1|   Completed Validation Procedure
+2018/01/30 16:20:50 kid1|   Validated 7 Entries
+2018/01/30 16:20:50 kid1|   store_swap_size = 40.00 KB
+2018/01/30 16:20:51 kid1| storeLateRelease: released 0 objects
+2018/01/30 16:30:49| Set Current Directory to /home/cache
+2018/01/30 16:30:49 kid1| Preparing for shutdown after 208 requests
+2018/01/30 16:30:49 kid1| Waiting 30 seconds for active connections to finish
+2018/01/30 16:30:49 kid1| Closing HTTP port [::]:3128
+2018/01/30 16:30:49 kid1| Set Current Directory to /home/cache
+2018/01/30 16:30:49 kid1| Starting Squid Cache version 3.5.20 for x86_64-redhat-linux-gnu...
+2018/01/30 16:30:49 kid1| Service Name: squid
+2018/01/30 16:30:49 kid1| Process ID 9102
+2018/01/30 16:30:49 kid1| Process Roles: worker
+2018/01/30 16:30:49 kid1| With 16384 file descriptors available
+2018/01/30 16:30:49 kid1| Initializing IP Cache...
+2018/01/30 16:30:49 kid1| DNS Socket created at [::], FD 6
+2018/01/30 16:30:49 kid1| DNS Socket created at 0.0.0.0, FD 8
+2018/01/30 16:30:49 kid1| Adding nameserver 77.88.8.8 from /etc/resolv.conf
+2018/01/30 16:30:49 kid1| Adding nameserver 8.8.8.8 from /etc/resolv.conf
+2018/01/30 16:30:49 kid1| Logfile: opening log daemon:/var/log/squid/access.log
+2018/01/30 16:30:49 kid1| Logfile Daemon: opening log /var/log/squid/access.log
+2018/01/30 16:30:49 kid1| Unlinkd pipe opened on FD 14
+2018/01/30 16:30:49 kid1| createRemovalPolicy_heap: Unknown key type "GDFS". Using LRU
+2018/01/30 16:30:49 kid1| Local cache digest enabled; rebuild/rewrite every 3600/3600 sec
+2018/01/30 16:30:49 kid1| Store logging disabled
+2018/01/30 16:30:49 kid1| Swap maxSize 268435456 + 1048576 KB, estimated 20729540 objects
+2018/01/30 16:30:49 kid1| Target number of buckets: 1036477
+2018/01/30 16:30:49 kid1| Using 1048576 Store buckets
+2018/01/30 16:30:49 kid1| Max Mem  size: 1048576 KB
+2018/01/30 16:30:49 kid1| Max Swap size: 268435456 KB
+2018/01/30 16:30:49 kid1| Rebuilding storage in /home/cache (dirty log)
+2018/01/30 16:30:49 kid1| Using Least Load store dir selection
+2018/01/30 16:30:49 kid1| Set Current Directory to /home/cache
+2018/01/30 16:30:49 kid1| Finished loading MIME types and icons.
+2018/01/30 16:30:49 kid1| HTCP Disabled.
+2018/01/30 16:30:49 kid1| Squid plugin modules loaded: 0
+2018/01/30 16:30:49 kid1| Adaptation support is off.
+2018/01/30 16:30:49 kid1| Accepting HTTP Socket connections at local=[::]:3128 remote=[::] FD 17 flags=9
+2018/01/30 16:30:49 kid1| Done reading /home/cache swaplog (23 entries)
+2018/01/30 16:30:49 kid1| Finished rebuilding storage from disk.
+2018/01/30 16:30:49 kid1|        23 Entries scanned
+2018/01/30 16:30:49 kid1|         0 Invalid entries.
+2018/01/30 16:30:49 kid1|         0 With invalid flags.
+2018/01/30 16:30:49 kid1|        23 Objects loaded.
+2018/01/30 16:30:49 kid1|         0 Objects expired.
+2018/01/30 16:30:49 kid1|         0 Objects cancelled.
+2018/01/30 16:30:49 kid1|         0 Duplicate URLs purged.
+2018/01/30 16:30:49 kid1|         0 Swapfile clashes avoided.
+2018/01/30 16:30:49 kid1|   Took 0.01 seconds (3093.06 objects/sec).
+2018/01/30 16:30:49 kid1| Beginning Validation Procedure
+2018/01/30 16:30:49 kid1|   Completed Validation Procedure
+2018/01/30 16:30:49 kid1|   Validated 23 Entries
+2018/01/30 16:30:49 kid1|   store_swap_size = 200.00 KB
+2018/01/30 16:30:50 kid1| storeLateRelease: released 0 objects
+2018/01/30 18:46:59 kid1| local=10.0.0.246:3128 remote=10.0.0.196:55764 FD 101 flags=1: read/write failure: (113) No route to host
+2018/01/30 18:47:03 kid1| local=10.0.0.246:3128 remote=10.0.0.196:56776 FD 157 flags=1: read/write failure: (113) No route to host
+2018/01/30 18:47:07 kid1| local=10.0.0.246:3128 remote=10.0.0.196:56106 FD 23 flags=1: read/write failure: (113) No route to host
+2018/01/31 09:13:45| Set Current Directory to /home/cache
+2018/01/31 09:13:45 kid1| Preparing for shutdown after 12452 requests
+2018/01/31 09:13:45 kid1| Waiting 30 seconds for active connections to finish
+2018/01/31 09:13:45 kid1| Closing HTTP port [::]:3128
+2018/01/31 09:13:45 kid1| Set Current Directory to /home/cache
+2018/01/31 09:13:45 kid1| Starting Squid Cache version 3.5.20 for x86_64-redhat-linux-gnu...
+2018/01/31 09:13:45 kid1| Service Name: squid
+2018/01/31 09:13:45 kid1| Process ID 32109
+2018/01/31 09:13:45 kid1| Process Roles: worker
+2018/01/31 09:13:45 kid1| With 16384 file descriptors available
+2018/01/31 09:13:45 kid1| Initializing IP Cache...
+2018/01/31 09:13:45 kid1| DNS Socket created at [::], FD 6
+2018/01/31 09:13:45 kid1| DNS Socket created at 0.0.0.0, FD 8
+2018/01/31 09:13:45 kid1| Adding nameserver 77.88.8.8 from /etc/resolv.conf
+2018/01/31 09:13:45 kid1| Adding nameserver 8.8.8.8 from /etc/resolv.conf
+2018/01/31 09:13:45 kid1| Logfile: opening log daemon:/var/log/squid/access.log
+2018/01/31 09:13:45 kid1| Logfile Daemon: opening log /var/log/squid/access.log
+2018/01/31 09:13:45 kid1| Unlinkd pipe opened on FD 14
+2018/01/31 09:13:45 kid1| createRemovalPolicy_heap: Unknown key type "GDFS". Using LRU
+2018/01/31 09:13:45 kid1| Local cache digest enabled; rebuild/rewrite every 3600/3600 sec
+2018/01/31 09:13:45 kid1| Store logging disabled
+2018/01/31 09:13:45 kid1| Swap maxSize 402653184 + 2097152 KB, estimated 31134641 objects
+2018/01/31 09:13:45 kid1| Target number of buckets: 1556732
+2018/01/31 09:13:45 kid1| Using 2097152 Store buckets
+2018/01/31 09:13:45 kid1| Max Mem  size: 2097152 KB
+2018/01/31 09:13:45 kid1| Max Swap size: 402653184 KB
+2018/01/31 09:13:45 kid1| Rebuilding storage in /home/cache (dirty log)
+2018/01/31 09:13:45 kid1| Using Least Load store dir selection
+2018/01/31 09:13:45 kid1| Set Current Directory to /home/cache
+2018/01/31 09:13:45 kid1| Finished loading MIME types and icons.
+2018/01/31 09:13:45 kid1| HTCP Disabled.
+2018/01/31 09:13:45 kid1| Squid plugin modules loaded: 0
+2018/01/31 09:13:45 kid1| Adaptation support is off.
+2018/01/31 09:13:45 kid1| Accepting HTTP Socket connections at local=[::]:3128 remote=[::] FD 17 flags=9
+2018/01/31 09:13:45 kid1| Done reading /home/cache swaplog (745 entries)
+2018/01/31 09:13:45 kid1| Finished rebuilding storage from disk.
+2018/01/31 09:13:45 kid1|       723 Entries scanned
+2018/01/31 09:13:45 kid1|         0 Invalid entries.
+2018/01/31 09:13:45 kid1|         0 With invalid flags.
+2018/01/31 09:13:45 kid1|       715 Objects loaded.
+2018/01/31 09:13:45 kid1|         0 Objects expired.
+2018/01/31 09:13:45 kid1|         0 Objects cancelled.
+2018/01/31 09:13:45 kid1|         8 Duplicate URLs purged.
+2018/01/31 09:13:45 kid1|         0 Swapfile clashes avoided.
+2018/01/31 09:13:45 kid1|   Took 0.02 seconds (38981.57 objects/sec).
+2018/01/31 09:13:45 kid1| Beginning Validation Procedure
+2018/01/31 09:13:45 kid1|   Completed Validation Procedure
+2018/01/31 09:13:45 kid1|   Validated 715 Entries
+2018/01/31 09:13:45 kid1|   store_swap_size = 540548.00 KB
+2018/01/31 09:13:46 kid1| storeLateRelease: released 0 objects
+2018/01/31 09:21:19| Set Current Directory to /home/cache
+2018/01/31 09:21:19 kid1| Preparing for shutdown after 199 requests
+2018/01/31 09:21:19 kid1| Waiting 30 seconds for active connections to finish
+2018/01/31 09:21:19 kid1| Closing HTTP port [::]:3128
+2018/01/31 09:24:01| Set Current Directory to /home/cache
+2018/01/31 09:24:01| Set Current Directory to /home/cache
+2018/01/31 09:24:02| Set Current Directory to /home/cache
+2018/01/31 09:24:02 kid1| Set Current Directory to /home/cache
+2018/01/31 09:24:02 kid1| Starting Squid Cache version 3.5.20 for x86_64-redhat-linux-gnu...
+2018/01/31 09:24:02 kid1| Service Name: squid
+2018/01/31 09:24:02 kid1| Process ID 1162
+2018/01/31 09:24:02 kid1| Process Roles: worker
+2018/01/31 09:24:02 kid1| With 16384 file descriptors available
+2018/01/31 09:24:02 kid1| Initializing IP Cache...
+2018/01/31 09:24:02 kid1| DNS Socket created at [::], FD 6
+2018/01/31 09:24:02 kid1| DNS Socket created at 0.0.0.0, FD 8
+2018/01/31 09:24:02 kid1| Adding nameserver 77.88.8.8 from /etc/resolv.conf
+2018/01/31 09:24:02 kid1| Adding nameserver 8.8.8.8 from /etc/resolv.conf
+2018/01/31 09:24:03 kid1| Logfile: opening log daemon:/var/log/squid/access.log
+2018/01/31 09:24:03 kid1| Logfile Daemon: opening log /var/log/squid/access.log
+2018/01/31 09:24:03 kid1| Unlinkd pipe opened on FD 14
+2018/01/31 09:24:03 kid1| createRemovalPolicy_heap: Unknown key type "GDFS". Using LRU
+2018/01/31 09:24:03 kid1| Local cache digest enabled; rebuild/rewrite every 3600/3600 sec
+2018/01/31 09:24:03 kid1| Store logging disabled
+2018/01/31 09:24:03 kid1| Swap maxSize 402653184 + 2097152 KB, estimated 31134641 objects
+2018/01/31 09:24:03 kid1| Target number of buckets: 1556732
+2018/01/31 09:24:03 kid1| Using 2097152 Store buckets
+2018/01/31 09:24:03 kid1| Max Mem  size: 2097152 KB
+2018/01/31 09:24:03 kid1| Max Swap size: 402653184 KB
+2018/01/31 09:24:03 kid1| Rebuilding storage in /home/cache (dirty log)
+2018/01/31 09:24:03 kid1| Using Least Load store dir selection
+2018/01/31 09:24:03 kid1| Set Current Directory to /home/cache
+2018/01/31 09:24:03 kid1| Finished loading MIME types and icons.
+2018/01/31 09:24:03 kid1| HTCP Disabled.
+2018/01/31 09:24:03 kid1| Squid plugin modules loaded: 0
+2018/01/31 09:24:03 kid1| Adaptation support is off.
+2018/01/31 09:24:03 kid1| Accepting HTTP Socket connections at local=[::]:3128 remote=[::] FD 17 flags=9
+2018/01/31 09:24:04 kid1| Done reading /home/cache swaplog (723 entries)
+2018/01/31 09:24:04 kid1| Finished rebuilding storage from disk.
+2018/01/31 09:24:04 kid1|       723 Entries scanned
+2018/01/31 09:24:04 kid1|         0 Invalid entries.
+2018/01/31 09:24:04 kid1|         0 With invalid flags.
+2018/01/31 09:24:04 kid1|       723 Objects loaded.
+2018/01/31 09:24:04 kid1|         0 Objects expired.
+2018/01/31 09:24:04 kid1|         0 Objects cancelled.
+2018/01/31 09:24:04 kid1|         0 Duplicate URLs purged.
+2018/01/31 09:24:04 kid1|         0 Swapfile clashes avoided.
+2018/01/31 09:24:04 kid1|   Took 0.62 seconds (1157.03 objects/sec).
+2018/01/31 09:24:04 kid1| Beginning Validation Procedure
+2018/01/31 09:24:04 kid1|   Completed Validation Procedure
+2018/01/31 09:24:04 kid1|   Validated 723 Entries
+2018/01/31 09:24:04 kid1|   store_swap_size = 540580.00 KB
+2018/01/31 09:24:04 kid1| storeLateRelease: released 0 objects
+2018/01/31 09:26:00| Set Current Directory to /home/cache
+2018/01/31 09:26:01| Set Current Directory to /home/cache
+2018/01/31 09:26:01 kid1| Reconfiguring Squid Cache (version 3.5.20)...
+2018/01/31 09:26:01 kid1| Closing HTTP port [::]:3128
+2018/01/31 09:26:01 kid1| Logfile: closing log daemon:/var/log/squid/access.log
+2018/01/31 09:26:01 kid1| Logfile Daemon: closing log daemon:/var/log/squid/access.log
+2018/01/31 09:26:01 kid1| Startup: Initializing Authentication Schemes ...
+2018/01/31 09:26:01 kid1| Startup: Initialized Authentication Scheme 'basic'
+2018/01/31 09:26:01 kid1| Startup: Initialized Authentication Scheme 'digest'
+2018/01/31 09:26:01 kid1| Startup: Initialized Authentication Scheme 'negotiate'
+2018/01/31 09:26:01 kid1| Startup: Initialized Authentication Scheme 'ntlm'
+2018/01/31 09:26:01 kid1| Startup: Initialized Authentication.
+2018/01/31 09:26:01 kid1| Processing Configuration File: /etc/squid/squid.conf (depth 0)
+2018/01/31 09:26:01 kid1| Warning: empty ACL: acl block dstdomain "/etc/squid/url_blacklist"
+2018/01/31 09:26:01 kid1| WARNING: use of 'reload-into-ims' in 'refresh_pattern' violates HTTP
+2018/01/31 09:26:01 kid1| Initializing https proxy context
+2018/01/31 09:26:01 kid1| Logfile: opening log daemon:/var/log/squid/access.log
+2018/01/31 09:26:01 kid1| Logfile Daemon: opening log /var/log/squid/access.log
+2018/01/31 09:26:01 kid1| Squid plugin modules loaded: 0
+2018/01/31 09:26:01 kid1| Adaptation support is off.
+2018/01/31 09:26:01 kid1| Store logging disabled
+2018/01/31 09:26:01 kid1| DNS Socket created at [::], FD 9
+2018/01/31 09:26:01 kid1| DNS Socket created at 0.0.0.0, FD 10
+2018/01/31 09:26:01 kid1| Adding nameserver 77.88.8.8 from /etc/resolv.conf
+2018/01/31 09:26:01 kid1| Adding nameserver 8.8.8.8 from /etc/resolv.conf
+2018/01/31 09:26:01 kid1| HTCP Disabled.
+2018/01/31 09:26:01 kid1| Finished loading MIME types and icons.
+2018/01/31 09:26:01 kid1| Accepting HTTP Socket connections at local=[::]:3128 remote=[::] FD 17 flags=9
+2018/01/31 09:26:01| Set Current Directory to /home/cache
+2018/01/31 09:26:01| Set Current Directory to /home/cache
+2018/01/31 09:26:01 kid1| Reconfiguring Squid Cache (version 3.5.20)...
+2018/01/31 09:26:01 kid1| Closing HTTP port [::]:3128
+2018/01/31 09:26:01 kid1| Logfile: closing log daemon:/var/log/squid/access.log
+2018/01/31 09:26:01 kid1| Logfile Daemon: closing log daemon:/var/log/squid/access.log
+2018/01/31 09:26:01 kid1| Startup: Initializing Authentication Schemes ...
+2018/01/31 09:26:01 kid1| Startup: Initialized Authentication Scheme 'basic'
+2018/01/31 09:26:01 kid1| Startup: Initialized Authentication Scheme 'digest'
+2018/01/31 09:26:01 kid1| Startup: Initialized Authentication Scheme 'negotiate'
+2018/01/31 09:26:01 kid1| Startup: Initialized Authentication Scheme 'ntlm'
+2018/01/31 09:26:01 kid1| Startup: Initialized Authentication.
+2018/01/31 09:26:01 kid1| Processing Configuration File: /etc/squid/squid.conf (depth 0)
+2018/01/31 09:26:01 kid1| Warning: empty ACL: acl block dstdomain "/etc/squid/url_blacklist"
+2018/01/31 09:26:01 kid1| WARNING: use of 'reload-into-ims' in 'refresh_pattern' violates HTTP
+2018/01/31 09:26:01 kid1| Initializing https proxy context
+2018/01/31 09:26:01 kid1| Logfile: opening log daemon:/var/log/squid/access.log
+2018/01/31 09:26:01 kid1| Logfile Daemon: opening log /var/log/squid/access.log
+2018/01/31 09:26:01 kid1| Squid plugin modules loaded: 0
+2018/01/31 09:26:01 kid1| Adaptation support is off.
+2018/01/31 09:26:01 kid1| Store logging disabled
+2018/01/31 09:26:01 kid1| DNS Socket created at [::], FD 9
+2018/01/31 09:26:01 kid1| DNS Socket created at 0.0.0.0, FD 10
+2018/01/31 09:26:01 kid1| Adding nameserver 77.88.8.8 from /etc/resolv.conf
+2018/01/31 09:26:01 kid1| Adding nameserver 8.8.8.8 from /etc/resolv.conf
+2018/01/31 09:26:01 kid1| HTCP Disabled.
+2018/01/31 09:26:01 kid1| Finished loading MIME types and icons.
+2018/01/31 09:26:01 kid1| Accepting HTTP Socket connections at local=[::]:3128 remote=[::] FD 17 flags=9
+2018/01/31 09:26:01| Set Current Directory to /home/cache
+2018/01/31 09:26:01| Set Current Directory to /home/cache
+2018/01/31 09:26:01 kid1| Reconfiguring Squid Cache (version 3.5.20)...
+2018/01/31 09:26:01 kid1| Closing HTTP port [::]:3128
+2018/01/31 09:26:01 kid1| Logfile: closing log daemon:/var/log/squid/access.log
+2018/01/31 09:26:01 kid1| Logfile Daemon: closing log daemon:/var/log/squid/access.log
+2018/01/31 09:26:01 kid1| Startup: Initializing Authentication Schemes ...
+2018/01/31 09:26:01 kid1| Startup: Initialized Authentication Scheme 'basic'
+2018/01/31 09:26:01 kid1| Startup: Initialized Authentication Scheme 'digest'
+2018/01/31 09:26:01 kid1| Startup: Initialized Authentication Scheme 'negotiate'
+2018/01/31 09:26:01 kid1| Startup: Initialized Authentication Scheme 'ntlm'
+2018/01/31 09:26:01 kid1| Startup: Initialized Authentication.
+2018/01/31 09:26:01 kid1| Processing Configuration File: /etc/squid/squid.conf (depth 0)
+2018/01/31 09:26:01 kid1| Warning: empty ACL: acl block dstdomain "/etc/squid/url_blacklist"
+2018/01/31 09:26:01 kid1| WARNING: use of 'reload-into-ims' in 'refresh_pattern' violates HTTP
+2018/01/31 09:26:01 kid1| Initializing https proxy context
+2018/01/31 09:26:01 kid1| Logfile: opening log daemon:/var/log/squid/access.log
+2018/01/31 09:26:01 kid1| Logfile Daemon: opening log /var/log/squid/access.log
+2018/01/31 09:26:01 kid1| Squid plugin modules loaded: 0
+2018/01/31 09:26:01 kid1| Adaptation support is off.
+2018/01/31 09:26:01 kid1| Store logging disabled
+2018/01/31 09:26:01 kid1| DNS Socket created at [::], FD 9
+2018/01/31 09:26:01 kid1| DNS Socket created at 0.0.0.0, FD 10
+2018/01/31 09:26:01 kid1| Adding nameserver 77.88.8.8 from /etc/resolv.conf
+2018/01/31 09:26:01 kid1| Adding nameserver 8.8.8.8 from /etc/resolv.conf
+2018/01/31 09:26:01 kid1| HTCP Disabled.
+2018/01/31 09:26:01 kid1| Finished loading MIME types and icons.
+2018/01/31 09:26:01 kid1| Accepting HTTP Socket connections at local=[::]:3128 remote=[::] FD 17 flags=9
+2018/01/31 09:26:01| Set Current Directory to /home/cache
+2018/01/31 09:26:01| Set Current Directory to /home/cache
+2018/01/31 09:26:01 kid1| Reconfiguring Squid Cache (version 3.5.20)...
+2018/01/31 09:26:01 kid1| Closing HTTP port [::]:3128
+2018/01/31 09:26:01 kid1| Logfile: closing log daemon:/var/log/squid/access.log
+2018/01/31 09:26:01 kid1| Logfile Daemon: closing log daemon:/var/log/squid/access.log
+2018/01/31 09:26:01 kid1| Startup: Initializing Authentication Schemes ...
+2018/01/31 09:26:01 kid1| Startup: Initialized Authentication Scheme 'basic'
+2018/01/31 09:26:01 kid1| Startup: Initialized Authentication Scheme 'digest'
+2018/01/31 09:26:01 kid1| Startup: Initialized Authentication Scheme 'negotiate'
+2018/01/31 09:26:01 kid1| Startup: Initialized Authentication Scheme 'ntlm'
+2018/01/31 09:26:01 kid1| Startup: Initialized Authentication.
+2018/01/31 09:26:01 kid1| Processing Configuration File: /etc/squid/squid.conf (depth 0)
+2018/01/31 09:26:01 kid1| Warning: empty ACL: acl block dstdomain "/etc/squid/url_blacklist"
+2018/01/31 09:26:01 kid1| WARNING: use of 'reload-into-ims' in 'refresh_pattern' violates HTTP
+2018/01/31 09:26:01 kid1| Initializing https proxy context
+2018/01/31 09:26:01 kid1| Logfile: opening log daemon:/var/log/squid/access.log
+2018/01/31 09:26:01 kid1| Logfile Daemon: opening log /var/log/squid/access.log
+2018/01/31 09:26:01 kid1| Squid plugin modules loaded: 0
+2018/01/31 09:26:01 kid1| Adaptation support is off.
+2018/01/31 09:26:01 kid1| Store logging disabled
+2018/01/31 09:26:01 kid1| DNS Socket created at [::], FD 9
+2018/01/31 09:26:01 kid1| DNS Socket created at 0.0.0.0, FD 10
+2018/01/31 09:26:01 kid1| Adding nameserver 77.88.8.8 from /etc/resolv.conf
+2018/01/31 09:26:01 kid1| Adding nameserver 8.8.8.8 from /etc/resolv.conf
+2018/01/31 09:26:01 kid1| HTCP Disabled.
+2018/01/31 09:26:01 kid1| Finished loading MIME types and icons.
+2018/01/31 09:26:01 kid1| Accepting HTTP Socket connections at local=[::]:3128 remote=[::] FD 17 flags=9
+2018/01/31 09:26:01| Set Current Directory to /home/cache
+2018/01/31 09:26:03| Set Current Directory to /home/cache
+2018/01/31 09:26:03 kid1| Reconfiguring Squid Cache (version 3.5.20)...
+2018/01/31 09:26:03 kid1| Closing HTTP port [::]:3128
+2018/01/31 09:26:03 kid1| Logfile: closing log daemon:/var/log/squid/access.log
+2018/01/31 09:26:03 kid1| Logfile Daemon: closing log daemon:/var/log/squid/access.log
+2018/01/31 09:26:03 kid1| Startup: Initializing Authentication Schemes ...
+2018/01/31 09:26:03 kid1| Startup: Initialized Authentication Scheme 'basic'
+2018/01/31 09:26:03 kid1| Startup: Initialized Authentication Scheme 'digest'
+2018/01/31 09:26:03 kid1| Startup: Initialized Authentication Scheme 'negotiate'
+2018/01/31 09:26:03 kid1| Startup: Initialized Authentication Scheme 'ntlm'
+2018/01/31 09:26:03 kid1| Startup: Initialized Authentication.
+2018/01/31 09:26:03 kid1| Processing Configuration File: /etc/squid/squid.conf (depth 0)
+2018/01/31 09:26:03 kid1| Warning: empty ACL: acl block dstdomain "/etc/squid/url_blacklist"
+2018/01/31 09:26:03 kid1| WARNING: use of 'reload-into-ims' in 'refresh_pattern' violates HTTP
+2018/01/31 09:26:03 kid1| Initializing https proxy context
+2018/01/31 09:26:03 kid1| Logfile: opening log daemon:/var/log/squid/access.log
+2018/01/31 09:26:03 kid1| Logfile Daemon: opening log /var/log/squid/access.log
+2018/01/31 09:26:03 kid1| Squid plugin modules loaded: 0
+2018/01/31 09:26:03 kid1| Adaptation support is off.
+2018/01/31 09:26:03 kid1| Store logging disabled
+2018/01/31 09:26:03 kid1| DNS Socket created at [::], FD 10
+2018/01/31 09:26:03 kid1| DNS Socket created at 0.0.0.0, FD 17
+2018/01/31 09:26:03 kid1| Adding nameserver 77.88.8.8 from /etc/resolv.conf
+2018/01/31 09:26:03 kid1| Adding nameserver 8.8.8.8 from /etc/resolv.conf
+2018/01/31 09:26:03 kid1| HTCP Disabled.
+2018/01/31 09:26:03 kid1| Finished loading MIME types and icons.
+2018/01/31 09:26:03 kid1| Accepting HTTP Socket connections at local=[::]:3128 remote=[::] FD 65 flags=9
+2018/01/31 09:26:03| Set Current Directory to /home/cache
+2018/01/31 09:26:04| Set Current Directory to /home/cache
+2018/01/31 09:26:04 kid1| Reconfiguring Squid Cache (version 3.5.20)...
+2018/01/31 09:26:04 kid1| Closing HTTP port [::]:3128
+2018/01/31 09:26:04 kid1| Logfile: closing log daemon:/var/log/squid/access.log
+2018/01/31 09:26:04 kid1| Logfile Daemon: closing log daemon:/var/log/squid/access.log
+2018/01/31 09:26:04 kid1| Startup: Initializing Authentication Schemes ...
+2018/01/31 09:26:04 kid1| Startup: Initialized Authentication Scheme 'basic'
+2018/01/31 09:26:04 kid1| Startup: Initialized Authentication Scheme 'digest'
+2018/01/31 09:26:04 kid1| Startup: Initialized Authentication Scheme 'negotiate'
+2018/01/31 09:26:04 kid1| Startup: Initialized Authentication Scheme 'ntlm'
+2018/01/31 09:26:04 kid1| Startup: Initialized Authentication.
+2018/01/31 09:26:04 kid1| Processing Configuration File: /etc/squid/squid.conf (depth 0)
+2018/01/31 09:26:04 kid1| Warning: empty ACL: acl block dstdomain "/etc/squid/url_blacklist"
+2018/01/31 09:26:04 kid1| WARNING: use of 'reload-into-ims' in 'refresh_pattern' violates HTTP
+2018/01/31 09:26:04 kid1| Initializing https proxy context
+2018/01/31 09:26:04 kid1| Logfile: opening log daemon:/var/log/squid/access.log
+2018/01/31 09:26:04 kid1| Logfile Daemon: opening log /var/log/squid/access.log
+2018/01/31 09:26:04 kid1| Squid plugin modules loaded: 0
+2018/01/31 09:26:04 kid1| Adaptation support is off.
+2018/01/31 09:26:04 kid1| Store logging disabled
+2018/01/31 09:26:04 kid1| DNS Socket created at [::], FD 10
+2018/01/31 09:26:04 kid1| DNS Socket created at 0.0.0.0, FD 17
+2018/01/31 09:26:04 kid1| Adding nameserver 77.88.8.8 from /etc/resolv.conf
+2018/01/31 09:26:04 kid1| Adding nameserver 8.8.8.8 from /etc/resolv.conf
+2018/01/31 09:26:04 kid1| HTCP Disabled.
+2018/01/31 09:26:04 kid1| Finished loading MIME types and icons.
+2018/01/31 09:26:04 kid1| Accepting HTTP Socket connections at local=[::]:3128 remote=[::] FD 65 flags=9
+2018/01/31 09:27:36| Set Current Directory to /home/cache
+2018/01/31 09:27:36 kid1| Preparing for shutdown after 78 requests
+2018/01/31 09:27:36 kid1| Waiting 30 seconds for active connections to finish
+2018/01/31 09:27:36 kid1| Closing HTTP port [::]:3128
+2018/01/31 09:27:36 kid1| Set Current Directory to /home/cache
+2018/01/31 09:27:36 kid1| Starting Squid Cache version 3.5.20 for x86_64-redhat-linux-gnu...
+2018/01/31 09:27:36 kid1| Service Name: squid
+2018/01/31 09:27:36 kid1| Process ID 2029
+2018/01/31 09:27:36 kid1| Process Roles: worker
+2018/01/31 09:27:36 kid1| With 16384 file descriptors available
+2018/01/31 09:27:36 kid1| Initializing IP Cache...
+2018/01/31 09:27:36 kid1| DNS Socket created at [::], FD 6
+2018/01/31 09:27:36 kid1| DNS Socket created at 0.0.0.0, FD 8
+2018/01/31 09:27:36 kid1| Adding nameserver 77.88.8.8 from /etc/resolv.conf
+2018/01/31 09:27:36 kid1| Adding nameserver 8.8.8.8 from /etc/resolv.conf
+2018/01/31 09:27:36 kid1| Logfile: opening log daemon:/var/log/squid/access.log
+2018/01/31 09:27:36 kid1| Logfile Daemon: opening log /var/log/squid/access.log
+2018/01/31 09:27:37 kid1| Unlinkd pipe opened on FD 14
+2018/01/31 09:27:37 kid1| createRemovalPolicy_heap: Unknown key type "GDFS". Using LRU
+2018/01/31 09:27:37 kid1| Local cache digest enabled; rebuild/rewrite every 3600/3600 sec
+2018/01/31 09:27:37 kid1| Store logging disabled
+2018/01/31 09:27:37 kid1| Swap maxSize 402653184 + 2097152 KB, estimated 31134641 objects
+2018/01/31 09:27:37 kid1| Target number of buckets: 1556732
+2018/01/31 09:27:37 kid1| Using 2097152 Store buckets
+2018/01/31 09:27:37 kid1| Max Mem  size: 2097152 KB
+2018/01/31 09:27:37 kid1| Max Swap size: 402653184 KB
+2018/01/31 09:27:37 kid1| Rebuilding storage in /home/cache (dirty log)
+2018/01/31 09:27:37 kid1| Using Least Load store dir selection
+2018/01/31 09:27:37 kid1| Set Current Directory to /home/cache
+2018/01/31 09:27:37 kid1| Finished loading MIME types and icons.
+2018/01/31 09:27:37 kid1| HTCP Disabled.
+2018/01/31 09:27:37 kid1| Squid plugin modules loaded: 0
+2018/01/31 09:27:37 kid1| Adaptation support is off.
+2018/01/31 09:27:37 kid1| Accepting HTTP Socket connections at local=[::]:3128 remote=[::] FD 17 flags=9
+2018/01/31 09:27:37 kid1| Done reading /home/cache swaplog (726 entries)
+2018/01/31 09:27:37 kid1| Finished rebuilding storage from disk.
+2018/01/31 09:27:37 kid1|       726 Entries scanned
+2018/01/31 09:27:37 kid1|         0 Invalid entries.
+2018/01/31 09:27:37 kid1|         0 With invalid flags.
+2018/01/31 09:27:37 kid1|       726 Objects loaded.
+2018/01/31 09:27:37 kid1|         0 Objects expired.
+2018/01/31 09:27:37 kid1|         0 Objects cancelled.
+2018/01/31 09:27:37 kid1|         0 Duplicate URLs purged.
+2018/01/31 09:27:37 kid1|         0 Swapfile clashes avoided.
+2018/01/31 09:27:37 kid1|   Took 0.02 seconds (45292.91 objects/sec).
+2018/01/31 09:27:37 kid1| Beginning Validation Procedure
+2018/01/31 09:27:37 kid1|   Completed Validation Procedure
+2018/01/31 09:27:37 kid1|   Validated 726 Entries
+2018/01/31 09:27:37 kid1|   store_swap_size = 540592.00 KB
+2018/01/31 09:27:38 kid1| storeLateRelease: released 0 objects
