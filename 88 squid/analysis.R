@@ -16,20 +16,9 @@ windowsFonts(robotoC="Roboto Condensed")
 # m <- scp("10.0.0.246", path="/var/log/squid/access.log", keypasswd="zDhA8136!", user="root")
 
 # unicode test: я
-fname <- "./data/access.log"
-raw_df <- read_table2(fname, 
-                      col_names=c("timestamp", "duration", "client_address", "result_codes", 
-                                  "bytes", "request_method", "url", "user", "hierarcy_code", "type"),
-                      col_types=("nicciccccc")
-                      )
-df0 <- raw_df %>%
-  mutate(t=anytime(timestamp, tz="Europe/Moscow")) %>%
-  mutate(url=stri_replace_all_regex(url, 
-                                    pattern=c("^([a-z]*)://", "^www\\.", "([^/]+).+"),
-                                    replacement=c("", "", "$1"),
-                                    vectorize_all=FALSE)) %>%
-  mutate_at(vars(client_address), as.factor)
+df0 <- loadSquidLog("./data/access.log")
 
+stop()
 # -------------- нарисуем трафик ----
 
 df <- df0 %>%
@@ -78,7 +67,7 @@ df <- df0 %>%
   top_n(10, volume) %>%
   # может возникнуть ситуация, когда все значения top_n одинаковы. тогда надо брать выборку
   filter(row_number()<=10) %>%
-  filter(volume<1) %>%
+  filter(volume>1) %>%
   arrange(desc(volume)) %>%
   mutate(label=format(volume, big.mark=" "))
 
@@ -93,7 +82,7 @@ gp <- ggplot(plot_df, aes(ip, volume)) +
   theme_ipsum_rc(base_size=16, axis_title_size=14) +
   xlab("IP") +
   ylab("Суммарный Downlink, Мб") +
-  ggtitle("ТОП 10 скачивающих") +
+  ggtitle("ТОП 10 скачивающих", subtitle="По суммарному времени телесмотрения, мин") +
   coord_flip()
 
 gp

@@ -8,7 +8,7 @@
 #' @param hours_bin Duration (in hours) between arrangement points
 #' @param mins_bin Duration (in minutes) between arrangement points
 #' @export
-hgroup.enum <- function(date, hours_bin=NULL, mins_bin=5){
+hgroup.enum2 <- function(date, hours_bin=NULL, mins_bin=5){
   # привязываем все измерения, которые попали в промежуток [0, t] к точке измерения.
   # точки измерения могут быть кратны 1, 2, 3, 4, 6, 12 часам, определяется hour.bin
   # отсчет измерений идет с 0:00
@@ -33,6 +33,28 @@ hgroup.enum <- function(date, hours_bin=NULL, mins_bin=5){
   dt
 }
 
+loadSquidLog <- function(fname){
+  checkmate::qassert(fname, "S=1")
+  
+  raw_df <- read_table2(fname, 
+                        col_names=c("timestamp", "duration", "client_address", "result_codes", 
+                                    "bytes", "request_method", "url", "user", "hierarcy_code", "type"),
+                        col_types=("nicciccccc")
+  )
+  # browser()
+  df0 <- raw_df %>%
+    mutate_at(vars(timestamp), anytime, tz="Europe/Moscow") %>%
+    mutate(url=stri_replace_all_regex(url, 
+                                      pattern=c("^([a-z]*)://", "^www\\.", "([^/]+).+"),
+                                      replacement=c("", "", "$1"),
+                                      vectorize_all=FALSE)) %>%
+    mutate_at(vars(client_address), as.factor)
+  
+  df0
+}
+
+
+#=============================================
 getTimeframe <- function(days_back=7, days_forward=0){
   # если по каким-либо причинам наверху не определились с прогнозом (NA),
   # то полагаем что он есть и он равен базовому горизонту
@@ -45,21 +67,45 @@ getTimeframe <- function(days_back=7, days_forward=0){
   timeframe
 }
 
-plotTop10Download <- function(df) {
-  
-  flog.info(paste0("top10 download plot: nrow = ", nrow(df)))
+#' Title
+#'
+#' @param df raw traffic dataframe limited by time
+#' @param subtitle gplot subtitle
+#'
+#' @return
+#' @export
+#'
+#' @examples
+plotTopIpDownload <- function(df, subtitle) {
+  flog.info(paste0("Top10 IP download plot: nrow = ", nrow(df)))
   if(nrow(df)==0) return(NULL)
   
-  plot_df <- df %>%
+  # -------------- нарисуем Top10 по IP за последние N минут ----
+  df <- df0 %>%
+    # mutate(timegroup=hgroup.enum(timestamp, mins_bin=60)) %>%
+    # mutate(date=lubridate::date(timegroup)) %>%
+    # filter(date==date(now()-days(1))) %>%
+    # filter(timestamp > now()-days(2)) %>%
+    # filter(between(timestamp, anytime("2017-09-01"), anytime("2017-10-01")))
+    select(ip=client_address, bytes, url) %>%
+    group_by(ip) %>%
+    summarise(volume=round(sum(bytes)/1024/1024, 1)) %>% # Перевели в Мб
+    top_n(10, volume) %>%
+    # может возникнуть ситуация, когда все значения top_n одинаковы. тогда надо брать выборку
+    filter(row_number()<=10) %>%
+    filter(volume>1) %>%
+    arrange(desc(volume)) %>%
+    mutate(label=format(volume, big.mark=" ")) %>%
     mutate(ip=fct_reorder(ip, volume))
 
-  gp <- ggplot(plot_df, aes(ip, volume)) + 
+  gp <- ggplot(df, aes(ip, volume)) + 
     geom_bar(fill=brewer.pal(n=9, name="Blues")[4], 
              alpha=0.5, stat="identity") +
+    geom_label(aes(label=label), fill="white", colour="black", fontface="bold", hjust=+1.1) +
     theme_ipsum_rc(base_size=16, axis_title_size=14) +
     xlab("IP") +
     ylab("Суммарный Downlink, Мб") +
-    ggtitle("ТОП 10 скачивающих") +
+    ggtitle("ТОП 10 скачивающих", subtitle=subtitle) +
     coord_flip()
   
   gp
