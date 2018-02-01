@@ -90,22 +90,7 @@ ui <-
                                # max = Sys.Date(),
                                separator=" - ", format="dd/mm/yyyy",
                                startview="month", language='ru', weekstart=1)
-      ), 
-      column(1, selectInput("history_depth", "История", 
-                            choices = c("сутки"=1, "3 дня"=3, "неделя"=7, "месяц"=30), 
-                            selected=1)),
-      #column(1, selectInput("min_watch_time", "Мин. время",
-      #                      choices = c("5 сек"=5, "10 сек"=10, 
-      #                                  "20 сек"=20, "30 сек"=30), selected = 10)),
-      #column(1, selectInput("max_watch_time", "Макс. время",
-      #                      choices = c("1 час"=1, "2 часа"=2, 
-      #                                  "3 часа"=3, "4 часа"=4), selected = 2)),
-      column(6, uiOutput("choose_region")),
-      column(2, selectInput("segment_filter", "Сегмент",
-                            choices = c("Все"="all",
-                                        "DVB-C"="DVB-C", 
-                                        "IPTV"="IPTV", 
-                                        "DVB-S"="DVB-S"), selected="all"))
+      )
     ),
     fluidRow(
       column(8, {}),
@@ -122,26 +107,33 @@ ui <-
       id="main_panel",
       selected="table_tab",
       tabPanel("Таблица", value="table_tab",
-               fluidRow(
+               mainPanel(
+                 fluidRow(
+                   p(),
+                   column(12, div(withSpinner(DT::dataTableOutput("slice_table"))), 
+                          style="font-size: 90%")
+                 ), width=10), 
+      # ----------------
+               sidebarPanel(
                  p(),
-                 column(12, div(withSpinner(DT::dataTableOutput("stat_table"))), style="font-size: 90%")
-               ),
-               p(),
-               fluidRow(
-                 column(10, {}),
-                 column(1, downloadButton("csv_download_btn", label="Сохр. CSV", class='rightAlign')),
-                 column(1, downloadButton("xls_download_btn", label="Сохр. Excel", class='rightAlign'))
-                 #column(1, downloadButton("word_download_btn", label="Сохр. Word", class='rightAlign'))
-               )
+                 selectInput("slice_filter", "Представить в разрезе:",
+                             choices=c('Все данные'=' ',
+                                       'Код вида ОССР'='ossr_type', 
+                                       'Код ОССР'='ossr_code', 
+                                       'Глава ССР'='ssr_chap',
+                                       'Вид затрат'='cost_element')
+                 ),
+                 # numericInput("obs", "Observations:", 10),
+                 width=2)
       ),
-      tabPanel("График", value = "graph_tab",
+      tabPanel("График", value="graph_tab",
                fluidRow(
                  p(),
                  jqui_sortabled(
                    div(id='top10_plots',
-                 column(4, div(withSpinner(plotOutput('top10_5min_plot', height="500px")))),
-                 column(4, div(withSpinner(plotOutput('top10_30min_plot', height="500px")))),
-                 column(4, div(withSpinner(plotOutput('top10_1day_plot', height="500px"))))
+                 column(4, div(withSpinner(plotOutput('top10_left_plot', height="500px")))),
+                 column(4, div(withSpinner(plotOutput('top10_center_plot', height="500px")))),
+                 column(4, div(withSpinner(plotOutput('top10_right_plot', height="500px"))))
                        )))
                )
       )
@@ -176,13 +168,17 @@ server <- function(input, output, session) {
   flog.info(glue("App started in <{Sys.getenv('R_CONFIG_ACTIVE')}> environment"))
 
   # реактивные переменные -------------------
-  squid_df <- reactive({
+  raw_df <- reactive({
     input$process_btn # обновлять будем вручную
     # загрузим лог squid -------
-    loadSquidLog("./data/access.log")
-    })  
+    loadSquidLog("./data/acc.log")
+  })  
 
-  
+  squid_df <- reactive({
+    req(raw_df()) %>%
+      filter(timestamp>now()-days(2))
+  })  
+
   msg <- reactiveVal("")
 
   # таблица с выборкой по каналам ----------------------------
@@ -204,38 +200,24 @@ server <- function(input, output, session) {
     })
   
   # график Топ10 каналов по суммарному времени просмотра -------------
-  output$top10_5min_plot <- renderPlot({
-    df <- squid_df()
-    shiny::validate(
-      need(!is.null(df), "NULL value can't be renederd"),
-      need(nrow(df)>0, "0 rows -- nothing to draw") 
-    )
-    # filter(timestamp > now()-days(2)) %>%    
-    plotTopIpDownload(filter(df, timestamp>now()-days(1)), subtitle="за последние 5 минут")
+  output$top10_left_plot <- renderPlot({
+    df <- req(squid_df()) %>%
+      filter(timestamp>now()-days(1))
+      plotTopIpDownload(df, subtitle="за последние сутки")
   })
 
-  output$top10_30min_plot <- renderPlot({
-    df <- squid_df()
-    shiny::validate(
-      need(!is.null(df), "NULL value can't be renederd"),
-      need(nrow(df)>0, "0 rows -- nothing to draw") 
-    )
-    # filter(timestamp > now()-days(2)) %>%    
-    plotTopIpDownload(filter(df, timestamp>now()-days(2)), subtitle="за последние 30 минут")
+  output$top10_center_plot <- renderPlot({
+    df <- req(squid_df()) %>%
+      filter(timestamp>now()-minutes(30))
+    plotTopIpDownload(df, subtitle="за последние 30 минут")
   })
 
-  output$top10_1day_plot <- renderPlot({
-    df <- squid_df()
-    shiny::validate(
-      need(!is.null(df), "NULL value can't be renederd"),
-      need(nrow(df)>0, "0 rows -- nothing to draw") 
-    )
-    # filter(timestamp > now()-days(2)) %>%    
-    plotTopIpDownload(filter(df, timestamp>now()-days(3)), subtitle="за последние сутки")
+  output$top10_right_plot <- renderPlot({
+    df <- req(squid_df()) %>%
+      filter(timestamp>now()-minutes(20))
+    plotTopIpDownload(df, subtitle="за последние 5 минут")
   })
   
-    
-    
 
   # динамическое управление диапазоном дат ---------
   observeEvent(input$history_depth, {

@@ -1,7 +1,8 @@
-library(RCurl)
+# library(RCurl)
 library(tidyverse)
 library(magrittr)
 library(lubridate)
+library(httr)
 #library(webreadr)
 library(anytime)
 library(stringi)
@@ -13,13 +14,27 @@ library(futile.logger)
 eval(parse("funcs.R", encoding="UTF-8"))
 windowsFonts(robotoC="Roboto Condensed")
 
-# m <- scp("10.0.0.246", path="/var/log/squid/access.log", keypasswd="zDhA8136!", user="root")
+# m <- RCurl::scp("10.0.0.246", path="/var/log/squid/access.log", binary=FALSE, password="_pass_", user="root")
+m <- content(httr::GET("http://10.0.0.246/access.log"))
+write(m, "./data/acc.log")
+
+stop()
+
+# m2 <- rawToChar(m, multiple=FALSE)
+m <- RCurl::scp("10.0.0.246", path="/var/log/squid/access.log", binary=FALSE, key="id_rsa", user="root")
+df0 <- loadSquidLog(m)
 
 # unicode test: я
 df0 <- loadSquidLog("./data/access.log")
 
 stop()
 # -------------- нарисуем трафик ----
+
+df0 <- loadSquidLog("./data/acc.log")
+
+df <- df0 %>%
+  filter(timestamp>now()-minutes(30))
+plotTopIpDownload(df0, subtitle="за последние 5 минут")
 
 df <- df0 %>%
   mutate(timegroup=hgroup.enum(timestamp, mins_bin=5)) %>%

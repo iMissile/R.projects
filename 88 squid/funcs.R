@@ -92,17 +92,18 @@ plotTopIpDownload <- function(df, subtitle) {
     summarise(volume=round(sum(bytes)/1024/1024, 1)) %>% # Перевели в Мб
     top_n(10, volume) %>%
     # может возникнуть ситуация, когда все значения top_n одинаковы. тогда надо брать выборку
-    filter(row_number()<=10) %>%
-    filter(volume>1) %>%
     arrange(desc(volume)) %>%
+    filter(row_number()<=10) %>%
+    # уберем ненужный дребезг, все кто скачали менее 10Мб -- в топку
+    filter(!(volume<10 & row_number()>2)) %>%
     mutate(label=format(volume, big.mark=" ")) %>%
     mutate(ip=fct_reorder(ip, volume))
-
+  
   gp <- ggplot(df0, aes(ip, volume)) + 
     geom_bar(fill=brewer.pal(n=9, name="Blues")[4], 
              alpha=0.5, stat="identity") +
     geom_label(aes(label=label), fill="white", colour="black", fontface="bold", hjust=+1.1) +
-    theme_ipsum_rc(base_size=16, axis_title_size=14) +
+    theme_ipsum_rc(base_size=16, axis_title_size=14, subtitle_size=13) +
     xlab("IP") +
     ylab("Суммарный Downlink, Мб") +
     ggtitle("ТОП 10 скачивающих", subtitle=subtitle) +
