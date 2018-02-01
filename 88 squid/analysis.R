@@ -34,26 +34,26 @@ df0 <- loadSquidLog("./data/acc.log")
 
 df <- df0 %>%
   filter(timestamp>now()-minutes(30))
-plotTopIpDownload(df0, subtitle="за последние 5 минут")
+plotTopHostDownload(df0, subtitle="за последние 5 минут")
 
 df <- df0 %>%
   mutate(timegroup=hgroup.enum(timestamp, mins_bin=5)) %>%
   mutate(date=lubridate::date(timegroup)) %>%
   filter(date==date(now()-days(1))) %>%
-  select(timegroup, ip=client_address, bytes, url) %>%
-  group_by(timegroup, ip) %>%
+  select(timegroup, host, bytes, url) %>%
+  group_by(timegroup, host) %>%
   summarise(volume=round(sum(bytes)/1024/1024, 1)) %>% # Перевели в Мб
   top_n(10, volume) %>%
   filter()
 
 
 gp <- ggplot(df, aes(timegroup, volume)) + 
-  geom_line(aes(color=ip), alpha=0.8, lwd=1) +
-  geom_point(aes(color=ip), alpha=0.8, shape=1, size=2) +
+  geom_line(aes(color=host), alpha=0.8, lwd=1) +
+  geom_point(aes(color=host), alpha=0.8, shape=1, size=2) +
   # scale_y_continuous(trans='log10') +
   scale_color_brewer(palette="Set1") +
-  # facet_wrap(~ip, scales="free_y", ncol=4) +
-  facet_wrap(~ip, ncol=4) +
+  # facet_wrap(~host, scales="free_y", ncol=4) +
+  # facet_wrap(~host, ncol=4) +
   # guides(colour=g, fill=g, shape=g) +
   #scale_y_log10(breaks=trans_breaks("log10", function(x) 10^x),
   #              labels=trans_format("log10", math_format(10^.x))) +
@@ -69,15 +69,15 @@ gp
 # пытаемся изменить группировку
 # в ggplot для ручного управления порядком следования необходимо управлять параметром group
 # http://docs.ggplot2.org/current/aes_group_order.html
-# -------------- нарисуем Top10 по IP за последние N минут ----
+# -------------- нарисуем Top10 по HOST за последние N минут ----
 df <- df0 %>%
   # mutate(timegroup=hgroup.enum(timestamp, mins_bin=60)) %>%
   # mutate(date=lubridate::date(timegroup)) %>%
   # filter(date==date(now()-days(1))) %>%
   filter(timestamp > now()-days(2)) %>%
   # filter(between(timestamp, anytime("2017-09-01"), anytime("2017-10-01")))
-  select(ip=client_address, bytes, url) %>%
-  group_by(ip) %>%
+  select(host, bytes, url) %>%
+  group_by(host) %>%
   summarise(volume=round(sum(bytes)/1024/1024, 1)) %>% # Перевели в Мб
   top_n(10, volume) %>%
   # может возникнуть ситуация, когда все значения top_n одинаковы. тогда надо брать выборку
@@ -88,14 +88,16 @@ df <- df0 %>%
 
 
 plot_df <- df %>%
-  mutate(ip=fct_reorder(ip, volume))
+  mutate(host=fct_reorder(host, volume)) %>%
+  mutate(host=glue("{host}\n ФИО"))
 
-gp <- ggplot(plot_df, aes(ip, volume)) + 
+gp <- ggplot(plot_df, aes(host, volume)) + 
   geom_bar(fill=brewer.pal(n=9, name="Blues")[4], 
            alpha=0.5, stat="identity") +
+  #scale_x_discrete(labels=function(x) str_wrap(str_replace_all(x, "foo" , " "), width=40)) +
   geom_label(aes(label=label), fill="white", colour="black", fontface="bold", hjust=+1.1) +
   theme_ipsum_rc(base_size=16, axis_title_size=14) +
-  xlab("IP") +
+  xlab("HOST") +
   ylab("Суммарный Downlink, Мб") +
   ggtitle("ТОП 10 скачивающих", subtitle="По суммарному времени телесмотрения, мин") +
   coord_flip()

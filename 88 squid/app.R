@@ -74,8 +74,7 @@ ui <-
     condition="input.tsp=='general_panel'",
     fluidRow(
       column(8, {}),
-      column(2, actionButton("set_today_btn", "На сегодня", class='rightAlign')),
-      column(2, actionButton("process_btn", "Применить", class = 'rightAlign'))
+      column(2, actionButton("process_btn", "Обновить", class = 'rightAlign'))
       ),
     # https://stackoverflow.com/questions/28960189/bottom-align-a-button-in-r-shiny
     tags$style(type='text/css', "#set_today_btn {margin-top: 25px;}"),
@@ -85,19 +84,18 @@ ui <-
     #tags$style(type='text/css', "#in_date_range { position: absolute; top: 50%; transform: translateY(-80%); }"),
     tabsetPanel(
       id="main_panel",
-      selected="table_tab",
+      selected="graph_tab",
       tabPanel("Таблица", value="table_tab",
+               p(),
                mainPanel(
                  fluidRow(
-                   p(),
                    column(6, div(withSpinner(DT::dataTableOutput("url_volume_table"))), 
                           style="font-size: 90%"),
-                   column(6, div(withSpinner(DT::dataTableOutput("url_ip_volume_table"))), 
+                   column(6, div(withSpinner(DT::dataTableOutput("url_host_volume_table"))), 
                           style="font-size: 90%")
                  ), width=10), 
       # ----------------
                sidebarPanel(
-                 p(),
                  selectInput("depth_filter", "Глубина данных",
                              choices=c('Last 5 min'=5,
                                        'Last 30 min'=30, 
@@ -159,15 +157,15 @@ server <- function(input, output, session) {
   url_df <- reactive({
     df <- req(squid_df()) %>%
       filter(timestamp>now()-minutes(as.numeric(input$depth_filter))) %>%
-      select(ip=client_address, bytes, url) %>%
+      select(host, bytes, url) %>%
       group_by(url) %>%
       summarise(volume=round(sum(bytes)/1024/1024, 1)) %>% # Перевели в Мб
       arrange(desc(volume))
     df
   })
 
-  url_ip_df <- reactive(({
-    # посчитаем сводку по отдельным IP
+  url_host_df <- reactive(({
+    # посчитаем сводку по отдельным HOST
     req(url_df())
     ids <- req(input$url_volume_table_rows_selected) # проводим анализ при выборе строки в таблице
     flog.info(glue("Selected row num is {ids}. Data row: {capture.output(str(url_df()[ids, ]))}"))
@@ -176,8 +174,8 @@ server <- function(input, output, session) {
     url_val <- enquo(url) # превратили в строку
     df <- squid_df() %>%
       filter(url==!!url_val) %>%
-      select(bytes, ip=client_address) %>%
-      group_by(ip) %>%
+      select(bytes, host) %>%
+      group_by(host) %>%
       summarise(volume=round(sum(bytes)/1024/1024, 1)) %>% # Перевели в Мб
       arrange(desc(volume))
     df
@@ -202,10 +200,10 @@ server <- function(input, output, session) {
     })
 
   # таблица-детализация по ОКС в разрезе ----------------------------
-  output$url_ip_volume_table <- DT::renderDataTable({
+  output$url_host_volume_table <- DT::renderDataTable({
     
     # https://rstudio.github.io/DT/functions.html
-    DT::datatable(req(url_ip_df()),
+    DT::datatable(req(url_host_df()),
                   class='cell-border stripe',
                   rownames=FALSE,
                   filter='bottom',
@@ -217,19 +215,19 @@ server <- function(input, output, session) {
   output$top10_left_plot <- renderPlot({
     df <- req(squid_df()) %>%
       filter(timestamp>now()-days(1))
-      plotTopIpDownload(df, subtitle="за последние сутки")
+    plotTopHostDownload(df, subtitle="за последние сутки")
   })
 
   output$top10_center_plot <- renderPlot({
     df <- req(squid_df()) %>%
       filter(timestamp>now()-minutes(30))
-    plotTopIpDownload(df, subtitle="за последние 30 минут")
+    plotTopHostDownload(df, subtitle="за последние 30 минут")
   })
 
   output$top10_right_plot <- renderPlot({
     df <- req(squid_df()) %>%
       filter(timestamp>now()-minutes(20))
-    plotTopIpDownload(df, subtitle="за последние 5 минут")
+    plotTopHostDownload(df, subtitle="за последние 5 минут")
   })
   
   # служебный вывод ---------------------  

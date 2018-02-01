@@ -48,7 +48,8 @@ loadSquidLog <- function(fname){
                                       pattern=c("^([a-z]*)://", "^www\\.", "([^/]+).+", ":\\d+"),
                                       replacement=c("", "", "$1", ""),
                                       vectorize_all=FALSE)) %>%
-    mutate_at(vars(client_address), as.factor)
+    mutate_at(vars(client_address), as.factor) %>%
+    mutate(ip=client_address, host=client_address)
   
   df0
 }
@@ -63,19 +64,19 @@ loadSquidLog <- function(fname){
 #' @export
 #'
 #' @examples
-plotTopIpDownload <- function(df, subtitle) {
-  flog.info(paste0("Top10 IP download plot: nrow = ", nrow(df)))
+plotTopHostDownload <- function(df, subtitle) {
+  flog.info(paste0("Top10 HOST download plot: nrow = ", nrow(df)))
   if(nrow(df)==0) return(NULL)
   
-  # -------------- нарисуем Top10 по IP за последние N минут ----
+  # -------------- нарисуем Top10 по HOST за последние N минут ----
   df0 <- df %>%
     # mutate(timegroup=hgroup.enum(timestamp, mins_bin=60)) %>%
     # mutate(date=lubridate::date(timegroup)) %>%
     # filter(date==date(now()-days(1))) %>%
     # filter(timestamp > now()-days(2)) %>%
     # filter(between(timestamp, anytime("2017-09-01"), anytime("2017-10-01")))
-    select(ip=client_address, bytes, url) %>%
-    group_by(ip) %>%
+    select(host, bytes, url) %>%
+    group_by(host) %>%
     summarise(volume=round(sum(bytes)/1024/1024, 1)) %>% # Перевели в Мб
     top_n(10, volume) %>%
     # может возникнуть ситуация, когда все значения top_n одинаковы. тогда надо брать выборку
@@ -84,14 +85,16 @@ plotTopIpDownload <- function(df, subtitle) {
     # уберем ненужный дребезг, все кто скачали менее 10Мб -- в топку
     filter(!(volume<10 & row_number()>2)) %>%
     mutate(label=format(volume, big.mark=" ")) %>%
-    mutate(ip=fct_reorder(ip, volume))
+    mutate(hostname=glue("{host}\n ФИО")) %>%
+    mutate(hostname=fct_reorder(hostname, volume))
+    
   
-  gp <- ggplot(df0, aes(ip, volume)) + 
+  gp <- ggplot(df0, aes(hostname, volume)) + 
     geom_bar(fill=brewer.pal(n=9, name="Blues")[4], 
              alpha=0.5, stat="identity") +
     geom_label(aes(label=label), fill="white", colour="black", fontface="bold", hjust=+1.1) +
     theme_ipsum_rc(base_size=16, axis_title_size=14, subtitle_size=13) +
-    xlab("IP") +
+    xlab("HOST") +
     ylab("Суммарный Downlink, Мб") +
     ggtitle("ТОП 10 скачивающих", subtitle=subtitle) +
     coord_flip()
