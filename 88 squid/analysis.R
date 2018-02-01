@@ -107,11 +107,11 @@ gp
 
 stop()
 
-txt <- c("http://yandex.ocsp-responder.com/", "www.yandex.ocsp-responder.com/sa") 
+txt <- c("http://yandex.ocsp-responder.com/", "www.yandex.ocsp-responder.com/sa", "www.ya.ru:44") 
 
 txt %>%
-  stri_replace_all_regex(pattern=c("^([a-z]*)://", "^www\\.", "([^/]+).+"),
-                         replacement=c("", "", "$1"),
+  stri_replace_all_regex(pattern=c("^([a-z]*)://", "^www\\.", "([^/]+).+", ":\\d+"),
+                         replacement=c("", "", "$1", ""),
                          vectorize_all=FALSE)
 
 

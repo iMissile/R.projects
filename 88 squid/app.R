@@ -73,26 +73,6 @@ ui <-
     # general panel -----------------------
     condition="input.tsp=='general_panel'",
     fluidRow(
-      tags$style(type='text/css', '#cweather_text {white-space:pre;}')
-      # tags$style(type='text/css', 'div {background-color: #000с00;}'), 
-      
-      #column(6, h2("Типовая форма"), h3(textOutput("cweather_text", inline=TRUE))),
-      #column(6, h2("Заполнитель"))
-      ),
-    fluidRow(
-      column(2, dateRangeInput("in_date_range",
-                               label="Диапазон дат",
-                               # первоначальное значение дат считываем из конфига
-                               # start=Sys.Date()-1, end=Sys.Date(),
-                               # на время отладки
-                               # start="2017-06-28", end="2017-06-30",
-                               # min = Sys.Date() - 10, 
-                               # max = Sys.Date(),
-                               separator=" - ", format="dd/mm/yyyy",
-                               startview="month", language='ru', weekstart=1)
-      )
-    ),
-    fluidRow(
       column(8, {}),
       column(2, actionButton("set_today_btn", "На сегодня", class='rightAlign')),
       column(2, actionButton("process_btn", "Применить", class = 'rightAlign'))
@@ -110,18 +90,18 @@ ui <-
                mainPanel(
                  fluidRow(
                    p(),
-                   column(12, div(withSpinner(DT::dataTableOutput("slice_table"))), 
+                   column(6, div(withSpinner(DT::dataTableOutput("url_volume_table"))), 
+                          style="font-size: 90%"),
+                   column(6, div(withSpinner(DT::dataTableOutput("url_ip_volume_table"))), 
                           style="font-size: 90%")
                  ), width=10), 
       # ----------------
                sidebarPanel(
                  p(),
-                 selectInput("slice_filter", "Представить в разрезе:",
-                             choices=c('Все данные'=' ',
-                                       'Код вида ОССР'='ossr_type', 
-                                       'Код ОССР'='ossr_code', 
-                                       'Глава ССР'='ssr_chap',
-                                       'Вид затрат'='cost_element')
+                 selectInput("depth_filter", "Глубина данных",
+                             choices=c('За последние 5 минут'=5,
+                                       'За последние 30 минут'=30, 
+                                       'За последние 24 часа'=24*60)
                  ),
                  # numericInput("obs", "Observations:", 10),
                  width=2)
@@ -142,9 +122,7 @@ ui <-
     # config panel -----------------------
     condition = "input.tsp=='config_panel'",
     fluidRow(
-      column(2, selectInput("select_ch_table", "Таблица", choices=NULL)),
-      column(2, actionButton("set_test_dates_btn", "На демо дату", class='rightAlign')),
-      column(2, checkboxInput("debug_cbx", label="Диагностический вывод", value = FALSE, width = NULL))
+      column(2, actionButton("set_test_dates_btn", "На демо дату", class='rightAlign'))
     ),
     fluidRow(
       column(12, verbatimTextOutput("info_text")),
@@ -157,9 +135,6 @@ ui <-
 
 # ================================================================
 server <- function(input, output, session) {
-
-  setBookmarkExclude(c("stat_table")) # таблицу восстановить мы не можем и не должны
-  
   # статические переменные ------------------------------------------------
   log_name <- "app.log"
   
@@ -182,24 +157,26 @@ server <- function(input, output, session) {
   msg <- reactiveVal("")
 
   # таблица с выборкой по каналам ----------------------------
-  output$stat_table <- DT::renderDataTable({
-    df <- req(squid_df())
-    
+  output$url_volume_table <- DT::renderDataTable({
+    df <- req(squid_df()) %>%
+      filter(timestamp>now()-minutes(as.numeric(input$depth_filter))) %>%
+      select(ip=client_address, bytes, url) %>%
+      group_by(url) %>%
+      summarise(volume=round(sum(bytes)/1024/1024, 1)) %>% # Перевели в Мб
+      arrange(desc(volume))
+
     # https://rstudio.github.io/DT/functions.html
     DT::datatable(df,
                   class='cell-border stripe',
                   rownames=FALSE,
                   filter='bottom',
-                  # только после жесткой фиксации колонок
-                  container=colheader,
                   options=list(dom='fltip', 
                                pageLength=7, 
                                lengthMenu=c(5, 7, 10, 15, 50),
-                               language=dataTableRuStrings,
-                               order=list(list(3, 'desc')))) # нумерация с 0
+                               order=list(list(1, 'desc')))) # нумерация с 0
     })
   
-  # график Топ10 каналов по суммарному времени просмотра -------------
+  # график Топ10  -------------
   output$top10_left_plot <- renderPlot({
     df <- req(squid_df()) %>%
       filter(timestamp>now()-days(1))
@@ -218,109 +195,11 @@ server <- function(input, output, session) {
     plotTopIpDownload(df, subtitle="за последние 5 минут")
   })
   
-
-  # динамическое управление диапазоном дат ---------
-  observeEvent(input$history_depth, {
-    # $history_depth получаем как строку
-    date <- input$in_date_range[2]-days(as.numeric(input$history_depth))
-    flog.info(glue("Start date changed to {date}"))
-    updateDateRangeInput(session, "in_date_range", start=date)
-    },
-    ignoreInit=TRUE
-  )
-
-  # установка даты на демо диапазон ---------  
-  observeEvent(input$set_test_dates_btn, {
-    updateDateRangeInput(session, "in_date_range", start="2016-05-01", end="2016-05-08")
-  })
-  
-  # установка даты на сегодня ---------  
-  observeEvent(input$set_today_btn, {
-    updateDateRangeInput(session, "in_date_range", start=Sys.Date()-1, end=Sys.Date())
-  })
-
-  observe({
-    # управляем визуализацией кнопок выгрузки -----
-    btn_names <- c("csv_download_btn", "xls_download_btn", "word_download_btn")
-    if(checkmate::testDataFrame(squid_df(), min.rows=1))
-      purrr::walk(btn_names, shinyjs::enable)
-    else
-      purrr::walk(btn_names, shinyjs::disable)
-  })  
-  
   # служебный вывод ---------------------  
   output$info_text <- renderText({
     msg()
   })
 
-  # обработчики кнопок выгрузки файлов --------------------------------------------------
-  # выгрузка таблицы в CSV -----------------------  
-  output$csv_download_btn <- downloadHandler(
-    filename = function() {
-      glue("{fname_prefix}data-{format(Sys.time(), '%F_%H-%M-%S')}.csv")
-    },
-    content = function(file) {
-      req(squid_df()) %>%
-        # сделаем вывод в формате, принимаемым Excel
-        write.table(file, na="NA", append=FALSE, col.names=TRUE, 
-                    row.names=FALSE, sep=";", fileEncoding="windows-1251")
-    }
-  )
-
-  # выгрузка таблицы в XLS -----------------------  
-  output$xls_download_btn <- downloadHandler(
-    filename = function() {
-      glue("{fname_prefix}data-{format(Sys.time(), '%F_%H-%M-%S')}.xlsx")
-    },
-    content = function(file) {
-      req(squid_df()) %>%
-        genExcelReport(dict=dict_df) %>%
-        saveWorkbook(file, overwrite=TRUE)
-    }
-  )
-  
-  # выгрузка таблицы в Word -----------------------
-  output$word_download_btn <- downloadHandler(
-    filename = function() {
-      name <- glue("{fname_prefix}report-{format(Sys.time(), '%F_%H-%M-%S')}.docx")
-      flog.info(glue("Word report: '{name}'"))
-      name
-    },
-    content = function(file) {
-      doc <- req(squid_df()) %>% # select(-total_unique_stb) %>% # пока убираем, чтобы была консистентная подстановка
-        genWordReport(dict=dict_df)
-      print(doc, target=file)  
-    }
-  )  
-  onBookmark(function(state) {
-    #state$values$event_filter <- input$event_filter
-    #state$values$intensity <- input$intensity
-  })
-  
-  onRestored(function(state){
-    # input-ы сохраняются штатным образом, главное их восстановить. 
-    # восстанавливаем не из values, а из input
-    # browser()
-    updateSelectInput(session, "event_filter", selected=state$input$event_filter)
-    updateSelectInput(session, "prefix_filter", selected=state$input$prefix_filter)
-    updateSelectInput(session, "serial_mask", selected=state$input$serial_mask)
-    # shinyjs::delay(800, {})
-    updateSliderInput(session, "duration_range", value=state$input$duration_range)
-    updateDateRangeInput(session, "in_date_range",
-                         start=state$input$in_date_range[1], 
-                         end=state$input$in_date_range[2])
-  }) 
-  
-  # динамичекое обновление url в location bar
-  observe({
-    # Trigger this observer every time an input changes
-    reactiveValuesToList(input)
-    session$doBookmark()
-  })
-  
-  onBookmarked(function(url) {
-    updateQueryString(url)
-  })   
 }
 
 shinyApp(ui=ui, server=server)

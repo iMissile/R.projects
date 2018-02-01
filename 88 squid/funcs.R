@@ -45,27 +45,14 @@ loadSquidLog <- function(fname){
   df0 <- raw_df %>%
     mutate_at(vars(timestamp), anytime, tz="Europe/Moscow") %>%
     mutate(url=stri_replace_all_regex(url, 
-                                      pattern=c("^([a-z]*)://", "^www\\.", "([^/]+).+"),
-                                      replacement=c("", "", "$1"),
+                                      pattern=c("^([a-z]*)://", "^www\\.", "([^/]+).+", ":\\d+"),
+                                      replacement=c("", "", "$1", ""),
                                       vectorize_all=FALSE)) %>%
     mutate_at(vars(client_address), as.factor)
   
   df0
 }
 
-
-#=============================================
-getTimeframe <- function(days_back=7, days_forward=0){
-  # если по каким-либо причинам наверху не определились с прогнозом (NA),
-  # то полагаем что он есть и он равен базовому горизонту
-  days_formard <- ifelse(is.na(days_forward), 0, days_forward)
-  min_lim <- floor_date(now() - days(days_back), unit = "day")
-  # поскольку будущее округляем вниз, то надо добавить еще сутки (+1)
-  max_lim <- ceiling_date(now() + days(days_forward), unit = "day")
-  timeframe <- c(min_lim, max_lim)
-  
-  timeframe
-}
 
 #' Title
 #'
@@ -112,24 +99,6 @@ plotTopIpDownload <- function(df, subtitle) {
   gp
 }
 
-plotTop10Uplink <- function(df) {
-
-  if(nrow(df)==0) return(NULL)
-  
-  plot_df <- df %>%
-    mutate(msisdn=fct_reorder(msisdn, volume)) %>%
-    mutate(volume=round(volume/1024, 1)) # Перевели в Кб
-
-  gp <- ggplot(plot_df, aes(msisdn, volume)) + 
-    geom_bar(fill=brewer.pal(n=9, name="Greens")[4], alpha=0.5, stat="identity") +
-    theme_ipsum_rc(base_size=16, axis_title_size=14) +
-    xlab("MSISN") +
-    ylab("Суммарный Uplink, Кб") +
-    ggtitle("ТОП 10 публикующих") +
-    coord_flip()
-  
-  gp
-}
 
 plotFacetTraffic <- function(df, pal="Set1", wrap=FALSE, point_labes=FALSE) {
 
