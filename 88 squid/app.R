@@ -145,7 +145,7 @@ server <- function(input, output, session) {
     input$process_btn # обновлять будем вручную
     # загрузим лог squid -------
     # loadSquidLog("./data/acc.log")
-    data <- content(httr::GET("http://10.0.0.246/access.log"))    
+    data <- httr::content(httr::GET("http://10.0.0.246/access.log"))    
     loadSquidLog(data)
   })  
 
