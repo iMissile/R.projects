@@ -99,9 +99,9 @@ ui <-
                sidebarPanel(
                  p(),
                  selectInput("depth_filter", "Глубина данных",
-                             choices=c('За последние 5 минут'=5,
-                                       'За последние 30 минут'=30, 
-                                       'За последние 24 часа'=24*60)
+                             choices=c('Last 5 min'=5,
+                                       'Last 30 min'=30, 
+                                       'Last 24 hr'=24*60)
                  ),
                  # numericInput("obs", "Observations:", 10),
                  width=2)
@@ -146,35 +146,72 @@ server <- function(input, output, session) {
   raw_df <- reactive({
     input$process_btn # обновлять будем вручную
     # загрузим лог squid -------
-    loadSquidLog("./data/acc.log")
+    # loadSquidLog("./data/acc.log")
+    data <- content(httr::GET("http://10.0.0.246/access.log"))    
+    loadSquidLog(data)
   })  
 
   squid_df <- reactive({
     req(raw_df()) %>%
       filter(timestamp>now()-days(2))
-  })  
+  })
 
-  msg <- reactiveVal("")
-
-  # таблица с выборкой по каналам ----------------------------
-  output$url_volume_table <- DT::renderDataTable({
+  url_df <- reactive({
     df <- req(squid_df()) %>%
       filter(timestamp>now()-minutes(as.numeric(input$depth_filter))) %>%
       select(ip=client_address, bytes, url) %>%
       group_by(url) %>%
       summarise(volume=round(sum(bytes)/1024/1024, 1)) %>% # Перевели в Мб
       arrange(desc(volume))
+    df
+  })
+
+  url_ip_df <- reactive(({
+    # посчитаем сводку по отдельным IP
+    req(url_df())
+    ids <- req(input$url_volume_table_rows_selected) # проводим анализ при выборе строки в таблице
+    flog.info(glue("Selected row num is {ids}. Data row: {capture.output(str(url_df()[ids, ]))}"))
+    
+    url <- url_df()[[ids, "url"]]
+    url_val <- enquo(url) # превратили в строку
+    df <- squid_df() %>%
+      filter(url==!!url_val) %>%
+      select(bytes, ip=client_address) %>%
+      group_by(ip) %>%
+      summarise(volume=round(sum(bytes)/1024/1024, 1)) %>% # Перевели в Мб
+      arrange(desc(volume))
+    df
+  }))  
+
+  msg <- reactiveVal("")
+
+  # таблица с выборкой по каналам ----------------------------
+  output$url_volume_table <- DT::renderDataTable({
+    df <- req(url_df())
 
     # https://rstudio.github.io/DT/functions.html
     DT::datatable(df,
                   class='cell-border stripe',
                   rownames=FALSE,
                   filter='bottom',
+                  selection=list(mode="single", target="row"),
                   options=list(dom='fltip', 
                                pageLength=7, 
                                lengthMenu=c(5, 7, 10, 15, 50),
                                order=list(list(1, 'desc')))) # нумерация с 0
     })
+
+  # таблица-детализация по ОКС в разрезе ----------------------------
+  output$url_ip_volume_table <- DT::renderDataTable({
+    
+    # https://rstudio.github.io/DT/functions.html
+    DT::datatable(req(url_ip_df()),
+                  class='cell-border stripe',
+                  rownames=FALSE,
+                  filter='bottom',
+                  options=list(dom='fltip', #autoWidth=TRUE, 
+                               pageLength=7, lengthMenu=c(5, 7, 10, 15)))
+  })
   
   # график Топ10  -------------
   output$top10_left_plot <- renderPlot({
