@@ -74,7 +74,7 @@ ui <-
     condition="input.tsp=='general_panel'",
     fluidRow(
       column(10, {}),
-      column(2, actionButton("process_btn", "Обновить", class='rightAlign'))
+      column(2, actionButton("process_btn", "Загрузить лог", class='rightAlign'))
       ),
     # https://stackoverflow.com/questions/28960189/bottom-align-a-button-in-r-shiny
     # tags$style(type='text/css', "#set_today_btn {margin-top: 25px;}"),
@@ -97,9 +97,9 @@ ui <-
       # ----------------
                sidebarPanel(
                  selectInput("depth_filter", "Глубина данных",
-                             choices=c('Last 10 min'=10,
-                                       'Last 30 min'=30, 
-                                       'Last 24 hr'=24*60)
+                             choices=c('10 минут'=10,
+                                       '1 час'=60, 
+                                       '24 часа'=24*60)
                  ),
                  # numericInput("obs", "Observations:", 10),
                  width=2)
@@ -150,8 +150,13 @@ server <- function(input, output, session) {
     input$process_btn # обновлять будем вручную
     # загрузим лог squid -------
     # loadSquidLog("./data/acc.log")
-    data <- httr::content(httr::GET("http://10.0.0.246/access.log"))    
-    loadSquidLog(data)
+    tic()
+    data <- httr::content(httr::GET("http://10.0.0.246/access.log"))
+    flog.info(glue("Downloading log file from server: {capture.output(toc())}"))
+    tic()
+    df <- loadSquidLog(data)
+    flog.info(glue("Parsing log file from server: {capture.output(toc())}"))
+    df
   })  
 
   squid_df <- reactive({
