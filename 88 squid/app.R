@@ -73,13 +73,13 @@ ui <-
     # general panel -----------------------
     condition="input.tsp=='general_panel'",
     fluidRow(
-      column(8, {}),
-      column(2, actionButton("process_btn", "Обновить", class = 'rightAlign'))
+      column(10, {}),
+      column(2, actionButton("process_btn", "Обновить", class='rightAlign'))
       ),
     # https://stackoverflow.com/questions/28960189/bottom-align-a-button-in-r-shiny
-    tags$style(type='text/css', "#set_today_btn {margin-top: 25px;}"),
-    tags$style(type='text/css', "#set_test_dates_btn {margin-top: 25px;}"),
-    tags$style(type='text/css', "#process_btn {margin-top: 25px;}"),
+    # tags$style(type='text/css', "#set_today_btn {margin-top: 25px;}"),
+    # tags$style(type='text/css', "#set_test_dates_btn {margin-top: 25px;}"),
+    # tags$style(type='text/css', "#process_btn {margin-top: 25px;}"),
 
     #tags$style(type='text/css', "#in_date_range { position: absolute; top: 50%; transform: translateY(-80%); }"),
     tabsetPanel(
@@ -97,7 +97,7 @@ ui <-
       # ----------------
                sidebarPanel(
                  selectInput("depth_filter", "Глубина данных",
-                             choices=c('Last 5 min'=5,
+                             choices=c('Last 10 min'=10,
                                        'Last 30 min'=30, 
                                        'Last 24 hr'=24*60)
                  ),
@@ -109,11 +109,16 @@ ui <-
                  p(),
                  jqui_sortabled(
                    div(id='top10_plots',
-                 column(4, div(withSpinner(plotOutput('top10_left_plot', height="500px")))),
-                 column(4, div(withSpinner(plotOutput('top10_center_plot', height="500px")))),
-                 column(4, div(withSpinner(plotOutput('top10_right_plot', height="500px"))))
-                       )))
+                 column(4, div(withSpinner(plotOutput('top10_left_plot', height="400px")))),
+                 column(4, div(withSpinner(plotOutput('top10_center_plot', height="400px")))),
+                 column(4, div(withSpinner(plotOutput('top10_right_plot', height="400px"))))
+                       ))
+                 ),
+               fluidRow(
+                 column(12, div(withSpinner(plotOutput('timeline_plot', height="400px"))))
                )
+               )
+      
       )
   ),
  conditionalPanel(
@@ -172,12 +177,16 @@ server <- function(input, output, session) {
     
     url <- url_df()[[ids, "url"]]
     url_val <- enquo(url) # превратили в строку
-    df <- squid_df() %>%
-      filter(url==!!url_val) %>%
-      select(bytes, host) %>%
-      group_by(host) %>%
-      summarise(volume=round(sum(bytes)/1024/1024, 1)) %>% # Перевели в Мб
-      arrange(desc(volume))
+    isolate({
+      df <- squid_df() %>%
+        filter(timestamp>now()-minutes(as.numeric(input$depth_filter))) %>%
+        filter(url==!!url_val) %>%
+        select(bytes, host) %>%
+        group_by(host) %>%
+        summarise(volume=round(sum(bytes)/1024/1024, 1)) %>% # Перевели в Мб
+        arrange(desc(volume))
+    })
+
     df
   }))  
 
@@ -199,11 +208,11 @@ server <- function(input, output, session) {
                                order=list(list(1, 'desc')))) # нумерация с 0
     })
 
-  # таблица-детализация по ОКС в разрезе ----------------------------
+  # таблица-детализация по URL в разрезе ----------------------------
   output$url_host_volume_table <- DT::renderDataTable({
-    
+    df <- req(url_host_df())
     # https://rstudio.github.io/DT/functions.html
-    DT::datatable(req(url_host_df()),
+    DT::datatable(df,
                   class='cell-border stripe',
                   rownames=FALSE,
                   filter='bottom',
@@ -220,14 +229,37 @@ server <- function(input, output, session) {
 
   output$top10_center_plot <- renderPlot({
     df <- req(squid_df()) %>%
-      filter(timestamp>now()-minutes(30))
-    plotTopHostDownload(df, subtitle="за последние 30 минут")
+      filter(timestamp>now()-minutes(60))
+    plotTopHostDownload(df, subtitle="за последний час")
   })
 
   output$top10_right_plot <- renderPlot({
     df <- req(squid_df()) %>%
-      filter(timestamp>now()-minutes(20))
-    plotTopHostDownload(df, subtitle="за последние 5 минут")
+      filter(timestamp>now()-minutes(10))
+    plotTopHostDownload(df, subtitle="за последние 10 минут")
+  })
+
+  output$timeline_plot <- renderPlot({
+    df <- req(squid_df()) %>%
+      filter(timestamp>now()-days(1)) %>%
+      mutate(timegroup=hgroup.enum(timestamp, mins_bin=10)) %>%
+      select(timegroup, host, bytes) %>%
+      group_by(timegroup, host) %>%
+      summarise(volume=sum(bytes)/1024/1024*8/(10*60)) %>% # Перевели в Мбит/с
+      top_n(10, volume)
+    
+    gp <- ggplot(df, aes(timegroup, volume)) + 
+      geom_area(aes(fill=host), alpha=0.5, position="stack") +
+      scale_color_brewer(palette="Set1") +
+      scale_x_datetime(labels=date_format_tz("%d.%m\n%H:%M", tz="Europe/Moscow"),
+                       breaks=date_breaks("4 hours"), 
+                       minor_breaks=date_breaks("1 hours")) +
+      theme_ipsum_rc(base_size=16, axis_title_size=14) +
+      xlab("Дата, время") +
+      ylab("Скорость, Mbit/s") +
+      ggtitle("Динамика трафика за последние 24 часа")
+    
+    gp
   })
   
   # служебный вывод ---------------------  

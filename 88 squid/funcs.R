@@ -33,6 +33,11 @@ hgroup.enum2 <- function(date, hours_bin=NULL, mins_bin=5){
   dt
 }
 
+date_format_tz <- function(format = "%Y-%m-%d", tz = "UTC") {
+  function(x) format(x, format, tz=tz)
+}
+
+
 loadSquidLog <- function(fname){
   checkmate::qassert(fname, "S=1")
   

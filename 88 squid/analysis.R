@@ -37,31 +37,36 @@ df <- df0 %>%
 plotTopHostDownload(df0, subtitle="за последние 5 минут")
 
 df <- df0 %>%
-  mutate(timegroup=hgroup.enum(timestamp, mins_bin=5)) %>%
+  filter(timestamp>now()-days(1)) %>%
+  mutate(timegroup=hgroup.enum(timestamp, mins_bin=10)) %>%
   mutate(date=lubridate::date(timegroup)) %>%
-  filter(date==date(now()-days(1))) %>%
+  # filter(date==date(now()-days(1))) %>%
   select(timegroup, host, bytes, url) %>%
   group_by(timegroup, host) %>%
-  summarise(volume=round(sum(bytes)/1024/1024, 1)) %>% # Перевели в Мб
-  top_n(10, volume) %>%
-  filter()
-
+  summarise(volume=sum(bytes)/1024/1024*8/(10*60)) %>% # Перевели в Мбит/с
+  top_n(10, volume)
 
 gp <- ggplot(df, aes(timegroup, volume)) + 
-  geom_line(aes(color=host), alpha=0.8, lwd=1) +
-  geom_point(aes(color=host), alpha=0.8, shape=1, size=2) +
+  # geom_line(aes(color=host), alpha=0.8, lwd=1) +
+  # geom_point(aes(color=host), alpha=0.8, shape=1, size=2) +
+  geom_area(aes(fill=host), alpha=0.5, position="stack") +
+  # geom_area(aes(fill=host), alpha=0.5, position="identity") +
   # scale_y_continuous(trans='log10') +
   scale_color_brewer(palette="Set1") +
+  # scale_y_continuous(trans=log2_trans()) +
   # facet_wrap(~host, scales="free_y", ncol=4) +
   # facet_wrap(~host, ncol=4) +
   # guides(colour=g, fill=g, shape=g) +
-  #scale_y_log10(breaks=trans_breaks("log10", function(x) 10^x),
+  # scale_y_log10(breaks=trans_breaks("log10", function(x) 10^x),
   #              labels=trans_format("log10", math_format(10^.x))) +
   #annotation_logticks() +
+  scale_x_datetime(labels=date_format_tz("%d.%m\n%H:%M", tz="Europe/Moscow"),
+                   breaks=date_breaks("4 hours"), 
+                   minor_breaks=date_breaks("1 hours")) +
   theme_ipsum_rc(base_size=16, axis_title_size=14) +
   # theme_ipsum_rc(base_family="robotoC", base_size=16, axis_title_size=14) +
   xlab("Дата, время") +
-  ylab("Суммарный объем данных, Mb") +
+  ylab("Скорость, Mbit/s") +
   ggtitle("Динамика трафика")
 
 gp
