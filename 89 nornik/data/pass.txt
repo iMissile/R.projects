@@ -1,0 +1,7 @@
+Worksheet [2] password: [TFRCPYNPZEQDZYQ] (no brackets)
+Worksheet [3] password: [TFRCPYNPZEQDZYQ] (no brackets)
+Worksheet [4] password: (removed)
+Worksheet [5] password: (removed)
+Worksheet [7] password: (removed)
+Worksheet [8] password: (removed)
+VBA Project password: [Q16R96] (no brackets) 
