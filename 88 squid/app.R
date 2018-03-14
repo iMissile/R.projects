@@ -145,6 +145,11 @@ server <- function(input, output, session) {
   flog.threshold(TRACE)
   flog.info(glue("App started in <{Sys.getenv('R_CONFIG_ACTIVE')}> environment"))
 
+  # загружаем мапинг ip на устройство
+  devices_df <- read_excel("./data/ip2name.xlsx") %>%
+    filter(complete.cases(.)) %>%
+    verify(has_all_names("IP", "hostname"))
+  
   # реактивные переменные -------------------
   raw_df <- reactive({
     input$process_btn # обновлять будем вручную
@@ -215,7 +220,11 @@ server <- function(input, output, session) {
 
   # таблица-детализация по URL в разрезе ----------------------------
   output$url_host_volume_table <- DT::renderDataTable({
-    df <- req(url_host_df())
+    df <- req(url_host_df()) %>%
+      left_join(devices_df, by=c("host"="IP"))
+    
+    browser()
+    
     # https://rstudio.github.io/DT/functions.html
     DT::datatable(df,
                   class='cell-border stripe',

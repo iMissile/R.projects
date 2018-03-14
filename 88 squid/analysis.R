@@ -2,6 +2,7 @@
 library(tidyverse)
 library(magrittr)
 library(lubridate)
+library(readxl)
 library(httr)
 #library(webreadr)
 library(anytime)
@@ -17,6 +18,15 @@ windowsFonts(robotoC="Roboto Condensed")
 # m <- RCurl::scp("10.0.0.246", path="/var/log/squid/access.log", binary=FALSE, password="_pass_", user="root")
 m <- content(httr::GET("http://10.0.0.246/access.log"))
 write(m, "./data/acc.log")
+
+stop()
+df <- loadSquidLog(m)
+skimr::skim(df)
+summarytools::descr(df) # только с числами
+summarytools::dfSummary(df, plain.ascii=TRUE) # долго
+# summarytools::dfSummary(df, plain.ascii=FALSE) # ну очень долго
+tableone::CreateTableOne(data=df)
+
 
 stop()
 
