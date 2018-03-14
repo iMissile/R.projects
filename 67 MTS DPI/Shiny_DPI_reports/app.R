@@ -50,6 +50,9 @@ flog.appender(appender.file('app.log'))
 flog.threshold(TRACE)
 flog.info("Dashboard started")
 
+# необходим для работы функций lubridate с версии 1.7.0 и выше
+Sys.setenv(TZ="Europe/Moscow")
+
 # options(shiny.error=browser)
 # options(shiny.error=recover)
 # options(shiny.fullstacktrace=TRUE)
@@ -186,7 +189,7 @@ server <- function(input, output, session) {
   edr_http <- reactive({
     flog.info(paste0("loading edr http ", input$ehm_btn))
     
-    req(read_csv("edr_http_small.csv"), cancelOutput=TRUE) %>%
+    req(read_csv("edr_http_small.csv", guess_max=10000), cancelOutput=TRUE) %>%
     # req(readRDS("edr_http_small.rds")) %>%
       select(msisdn, end_timestamp, uplink_bytes, downlink_bytes, site, http_host)
     # req(read_csv("edr_http.csv", progress=interactive()) %>% slice(1:20000))
@@ -298,6 +301,7 @@ server <- function(input, output, session) {
   # ВременнАя визуализация --------------------------------------------------------
   output$dynamic_plot <- renderPlot({
     flog.info("Dynamic plot")
+    # browser()
     timeframe <- getTimeframe(input$dynamic_time_depth, 0)
 
     df <- traffic_df() %>%

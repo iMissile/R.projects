@@ -9,6 +9,9 @@ library(hrbrthemes)
 library(lubridate)
 library(profvis)
 
+# необходим для работы функций lubridate с версии 1.7.0 и выше
+Sys.setenv(TZ="Europe/Moscow")
+
 # Reading and combining many tidy data files in R, Jun 13, 2016 in science
 # http://serialmentor.com/blog/2016/6/13/reading-and-combining-many-tidy-data-files-in-R
 
@@ -76,7 +79,7 @@ df1 <- df %>% left_join(radius_subst, by="radius_user_name") %>%
 
 # а теперь равномерно размажем записи по временному промежутку в сутки. 
 # сделаем так, чтобы start_time и end_time отличались на [0-10] сек
-time_sample <- function(N, st = "2012/01/01", et = lubridate::now()) {
+time_sample <- function(N, st="2012/01/01", et=now()) {
   st <- as.POSIXct(as.Date(st))
   et <- as.POSIXct(as.Date(et))
   dt <- as.numeric(difftime(et, st, unit = "sec"))
@@ -84,7 +87,7 @@ time_sample <- function(N, st = "2012/01/01", et = lubridate::now()) {
   rt <- st + ev
 }
 
-df1 %<>% mutate(end_timestamp=time_sample(nrow(.), now()-days(40), now()+days(10)))%>%
+df1 %<>% mutate(end_timestamp=time_sample(nrow(.),now()-days(40), now()+days(10))) %>%
   mutate(start_timestamp=end_timestamp-seconds(runif(nrow(.), -10, 0))) %>% 
   #mutate(start_timestamp=as.POSIXct(sn_start_time, origin="1970-01-01", tz="Europe/Moscow")) %>%
   #mutate(end_timestamp=as.POSIXct(sn_end_time, origin="1970-01-01", tz="Europe/Moscow")) %>%
@@ -97,6 +100,6 @@ system.time(write_csv(df1, "./Shiny_DPI_reports/edr_http_small.csv"))
 
 # проверим корректность загрузки данных ========= 
 # [Inconsistent parsing failure "no trailing characters e3" #645](https://github.com/tidyverse/readr/issues/645)
-t <- read_csv("./Shiny_DPI_reports/edr_http_small.csv")
+t <- read_csv("./Shiny_DPI_reports/edr_http_small.csv", guess_max=10000)
 problems(t)
 

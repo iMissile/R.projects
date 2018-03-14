@@ -14,10 +14,12 @@ hgroup.enum <- function(date, time.bin = 4){
 getTimeframe <- function(days_back=7, days_forward=0){
   # если по каким-либо причинам наверху не определились с прогнозом (NA),
   # то полагаем что он есть и он равен базовому горизонту
+  # browser()
   days_formard <- ifelse(is.na(days_forward), 0, days_forward)
-  min_lim <- floor_date(now() - days(days_back), unit = "day")
+  # now() дает Warning in with_tz(Sys.time(), tzone) : Unrecognized time zone 'MSK'
+  min_lim <- floor_date(lubridate::now() - days(days_back), unit = "day")
   # поскольку будущее округляем вниз, то надо добавить еще сутки (+1)
-  max_lim <- ceiling_date(now() + days(days_forward), unit = "day")
+  max_lim <- ceiling_date(lubridate::now() + days(days_forward), unit = "day")
   timeframe <- c(min_lim, max_lim)
   
   timeframe
