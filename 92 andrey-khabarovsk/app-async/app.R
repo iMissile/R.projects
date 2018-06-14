@@ -8,6 +8,9 @@
 #
 
 library(shiny)
+library(promises)
+library(future)
+plan(multiprocess)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -42,11 +45,20 @@ server <- function(input, output) {
         # generate bins based on input$bins from ui.R
         x    <- faithful[, 2] 
         bins <- seq(min(x), max(x), length.out = input$bins + 1)
-        val(bins)
+        print("generating bins")
+        future({ Sys.sleep(2); bins }) %...>%
+            val()
+        
+        # val(bins)
+    })
+    
+    observeEvent(val(), {
+        print("bins are generated")
     })
     
     output$distPlot <- renderPlot({
         # generate bins based on input$bins from ui.R
+        req(val())
         x    <- faithful[, 2] 
         # bins <- seq(min(x), max(x), length.out = input$bins + 1)
         
