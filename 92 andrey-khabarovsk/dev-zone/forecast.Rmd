@@ -1,0 +1,83 @@
+---
+title: "R Notebook"
+output: html_notebook
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r init, echo=FALSE, message=FALSE, warning=TRUE}
+library(zoo)
+library(forecast)
+library(xts)
+library(magrittr)
+```
+
+# Пример 1 ============================
+Пример взят отсюда: [Time series prediction using R](https://stackoverflow.com/questions/14272937/time-series-prediction-using-r)
+```{r}
+value <- c(1.2, 1.7, 1.6, 1.2, 1.6, 1.3, 1.5, 1.9, 5.4, 4.2, 5.5, 6.0, 5.6, 6.2, 6.8, 
+           7.1, 7.1, 5.8, 0.0, 5.2, 4.6, 3.6, 3.0, 3.8, 3.1, 3.4, 2.0, 3.1, 3.2, 1.6, 
+           0.6, 3.3, 4.9, 6.5, 5.3, 3.5, 5.3, 7.2, 7.4, 7.3, 7.2, 4.0, 6.1, 4.3, 4.0, 
+           2.4, 0.4, 2.4, 1.2, 1.7, 1.6, 1.2, 1.6, 1.3, 1.5, 1.9, 5.4, 4.2, 5.5, 6.0, 
+           5.6, 6.2, 6.8, 7.1, 7.1, 5.8, 0.0, 5.2, 4.6, 3.6, 3.0, 3.8, 3.1, 3.4, 2.0, 
+           3.1, 3.2, 1.6, 0.6, 3.3, 4.9, 6.5, 5.3, 3.5, 5.3, 7.2, 7.4, 7.3, 7.2, 4.0, 
+           6.1, 4.3, 4.0, 2.4, 0.4, 2.4)
+
+# сделали временной ряд из измерений
+sensor <- ts(value, frequency=24) # consider adding a start so you get nicer labelling on your chart. 
+# построили модель фиттинга
+fit <- auto.arima(sensor)
+fcast <- forecast(fit)
+plot(fcast)
+# grid()
+# fcast
+```
+А теперь проведем манипуляции с содержимым прогнозной модели
+```{r}
+# https://stackoverflow.com/questions/23944092/is-it-possible-to-merge-two-time-series-in-one
+ts1 <- fcast$x %T>%
+  glimpse()
+ts2 <- fcast$mean %T>%
+  glimpse()
+
+# пользуемся тем, что параметры временных рядов одинаковы и прогнозный вектор по времени идет вслед за данными
+# reassign the attributes from the first series
+res <- ts(c(ts1, ts2), start=start(ts1), frequency=frequency(ts1)) %T>%
+  glimpse()
+
+```
+А это не совсем рабочий подход
+```{r}
+comb <- ts.union(fcast$x, fcast$mean)
+res <- pmin(comb[,1], comb[,2], na.rm=TRUE)
+glimpse(res)
+
+zoo::merge.zoo(as.zoo(ts1), as.zoo(ts2))
+xts::merge.xts(as.xts(ts1), as.xts(ts2))
+
+```
+
+
+
+
+# Пример 2 ============================
+Пример взят отсюда: [Using the combination forecast(auto.arima())](https://stackoverflow.com/questions/16050684/using-the-combination-forecastauto-arima)
+
+```{r}
+inpdat <- c(353.03, 383.06, 407.9, 420.58, 345.96, 299.73, 286.42, 291.03, 
+            297.71, 300.92, 272.13, 283.58, 331.72, 372.95, 404.78, 403.04, 
+            374.57, 332.94, 284.37, 311.78, 307.27, 302.42, 283.52, 288.64, 
+            337.19, 416.35, 418.65, 431.51, 407.74, 319.28, 297.33, 314.83, 
+            290.49, 309.38, 294.5, 330.63, 371.2, 418.76, 440.05, 467.23, 
+            384.32, 329.81, 300.4, 318.9, 355.06, 329.93, 293.43, 297.76, 
+            340.42, 393.09, 395.2, 443.13, 396.45, 341.96, 307.95, 322, 339.63, 
+            312.12, 304.31, 310.95)
+
+zooinpdat <- zooreg(inpdat, frequency=12, start=as.yearmon("May 1965"))
+zooinpdat <- as.ts(zooinpdat)
+
+autarimod <- auto.arima(log(zooinpdat)) ##Line 3
+
+for_arima <- forecast(autarimod, level=0.98, h=48) ##Line 4
+```
+
