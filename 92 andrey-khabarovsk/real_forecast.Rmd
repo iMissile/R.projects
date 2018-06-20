@@ -61,6 +61,7 @@ ggplot(df, aes(date, value)) +
 ```{r}
 sales_tbl <- df %>%
   select(date, val=amount)
+
 sales_tbl_aug <- sales_tbl %>%
   tk_augment_timeseries_signature()
 
@@ -97,14 +98,13 @@ test_h2o  <- as.h2o(test_tbl)
 y <- "val"
 x <- setdiff(names(train_h2o), y)
 
-# linear regression model used, but can use any model
 automl_models_h2o <- h2o.automl(
     x = x, 
     y = y, 
     training_frame = train_h2o, 
     validation_frame = valid_h2o, 
     leaderboard_frame = test_h2o, 
-    max_runtime_secs = 60, 
+    max_runtime_secs = 3600, 
     stopping_metric = "deviance")
 
 # Extract leader model
@@ -115,17 +115,14 @@ automl_leader <- automl_models_h2o@leader
 pred_h2o <- h2o.predict(automl_leader, newdata = test_h2o)
 h2o.performance(automl_leader, newdata = test_h2o)
 # Investigate test error
-error_tbl <- test_tbl %>% 
+error_tbl <- slice(sales_tbl, lv2+1:n()) %>% 
     # filter(lubridate::year(date) == 2017) %>%
     add_column(pred = pred_h2o %>% as.tibble() %>% pull(predict)) %>%
-    rename(actual = unitprice) %>%
+    rename(actual = val) %>%
     mutate(
         error     = actual - pred,
         error_pct = error / actual
         ) 
-
-error_tbl %>%
-  select(pred, actual, error, error_pct)
 
 error_tbl %>%
     summarise(
@@ -150,7 +147,7 @@ sales_tbl %>%
     geom_point(aes(y = pred), size = 2, color = "gray", alpha = 1, shape = 21, fill = "purple", data = error_tbl) +
     geom_line(aes(y = pred), color = "purple", size = 0.5, data = error_tbl) +
     # Aesthetics
-    theme_spooky(base_size = 20) +
+    # theme_spooky(base_size = 20) +
     labs(
         title = "Beer Sales Forecast: h2o + timetk",
         subtitle = "H2O had highest accuracy, MAPE = 3.9%",
