@@ -7,26 +7,154 @@ editor_options:
   chunk_output_type: inline
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r init, echo=FALSE, message=FALSE, warning=TRUE}
+library(tidyverse)
+library(readxl)
+library(h2o)
+library(timetk)
+library(tidyquant)
+library(rsample)
+
+# library(zoo)
+# library(forecast)
+# library(xts)
+# library(magrittr)
 ```
 
-## R Markdown
+```{r}
+raw_df <- read_excel("./data/sample_data.xlsx") %>%
+  rename(year="Год", date="Дата", month="Месяц", mday="Число", wday="День недели", 
+         sku="Номенклатура сгруппированная", amount="Кол-во проданных артикулов", unitprice="Цена продажа")
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+df <- raw_df %>%
+#  group_by(date) %>%
+#  filter(n()>1)
+  mutate(value=amount*unitprice) %>%
+  mutate_at(vars(date), as.Date)
 ```
 
-## Including Plots
+Посмотрим, как выглядит график
+```{r}
+ggplot(df, aes(date, amount)) +
+  geom_point(color=palette_light()[[1]], alpha=0.5) +
+  theme_tq() +
+  labs(
+    x="Дата",
+    y="Количество товара",
+    title="Full Data Set"
+  )
 
-You can also embed plots, for example:
+ggplot(df, aes(date, value)) +
+  geom_point(color=palette_light()[[1]], alpha=0.5) +
+  theme_tq() +
+  labs(
+    x="Дата",
+    y="Стоимость товара",
+    title="Full Data Set"
+  )
 
-```{r pressure, echo=FALSE}
-plot(pressure)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+# ML exercises
+## H2O
+
+```{r}
+sales_tbl <- df %>%
+  select(date, val=amount)
+sales_tbl_aug <- sales_tbl %>%
+  tk_augment_timeseries_signature()
+
+sales_tbl_clean <- sales_tbl_aug %>%
+    select_if(~ !is.Date(.)) %>%
+    select_if(~ !any(is.na(.))) %>%
+    mutate_if(is.ordered, ~ as.character(.) %>% as.factor)
+
+# roll_rs <- rolling_origin(df, initial=as.integer(588), assess=0, cumulative=FALSE)
+# nrow(roll_rs)
+
+smpl_df <- sales_tbl_clean
+## 85% of the sample size
+smpl_size <- nrow(smpl_df)
+lv1 <- floor(.8 * 0.85 * smpl_size)
+lv2 <- floor(0.85 * smpl_size)
+
+train_tbl <- slice(smpl_df, 1:lv1)
+valid_tbl <- slice(smpl_df, (lv1+1):lv2)
+test_tbl <- slice(smpl_df, lv2+1:n())
+```
+
+
+```{r}
+h2o.init()
+```
+
+```{r}
+# Convert to H2OFrame objects
+train_h2o <- as.h2o(train_tbl)
+valid_h2o <- as.h2o(valid_tbl)
+test_h2o  <- as.h2o(test_tbl)
+# Set names for h2o
+y <- "val"
+x <- setdiff(names(train_h2o), y)
+
+# linear regression model used, but can use any model
+automl_models_h2o <- h2o.automl(
+    x = x, 
+    y = y, 
+    training_frame = train_h2o, 
+    validation_frame = valid_h2o, 
+    leaderboard_frame = test_h2o, 
+    max_runtime_secs = 60, 
+    stopping_metric = "deviance")
+
+# Extract leader model
+automl_leader <- automl_models_h2o@leader
+```
+
+```{r}
+pred_h2o <- h2o.predict(automl_leader, newdata = test_h2o)
+h2o.performance(automl_leader, newdata = test_h2o)
+# Investigate test error
+error_tbl <- test_tbl %>% 
+    # filter(lubridate::year(date) == 2017) %>%
+    add_column(pred = pred_h2o %>% as.tibble() %>% pull(predict)) %>%
+    rename(actual = unitprice) %>%
+    mutate(
+        error     = actual - pred,
+        error_pct = error / actual
+        ) 
+
+error_tbl %>%
+  select(pred, actual, error, error_pct)
+
+error_tbl %>%
+    summarise(
+        me   = mean(error),
+        rmse = mean(error^2)^0.5,
+        mae  = mean(abs(error)),
+        mape = mean(abs(error_pct)),
+        mpe  = mean(error_pct)
+    ) %>%
+    glimpse()
+```
+
+Визуализируем результат
+```{r}
+sales_tbl %>%
+    ggplot(aes(x = date, y = val)) +
+    # Data - Spooky Orange
+    geom_point(size = 2, color = "gray", alpha = 0.5, shape = 21, fill = "orange") +
+    geom_line(color = "orange", size = 0.5) +
+    geom_ma(n = 12, color = "white") +
+    # Predictions - Spooky Purple
+    geom_point(aes(y = pred), size = 2, color = "gray", alpha = 1, shape = 21, fill = "purple", data = error_tbl) +
+    geom_line(aes(y = pred), color = "purple", size = 0.5, data = error_tbl) +
+    # Aesthetics
+    theme_spooky(base_size = 20) +
+    labs(
+        title = "Beer Sales Forecast: h2o + timetk",
+        subtitle = "H2O had highest accuracy, MAPE = 3.9%",
+        caption = "Thanks to @lenkiefer for theme_spooky!"
+    )
+```
+
