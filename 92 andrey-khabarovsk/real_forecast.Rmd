@@ -10,10 +10,13 @@ editor_options:
 ```{r init, echo=FALSE, message=FALSE, warning=TRUE}
 library(tidyverse)
 library(readxl)
+library(magrittr)
 library(h2o)
 library(timetk)
 library(tidyquant)
+library(tibbletime)
 library(rsample)
+library(imputeTS)
 
 # library(zoo)
 # library(forecast)
@@ -54,6 +57,71 @@ ggplot(df, aes(date, value)) +
   )
 
 ```
+
+# TibbleTime упражнения
+```{r}
+# создадим time-series индекс
+s_df <- sample_frac(df, .90)
+idx <- tk_index(s_df)
+# посмотрим по нему summary
+tk_get_timeseries_summary(idx)
+# General summary
+tk_get_timeseries_summary(idx)[1:6]
+# Frequency summary
+tk_get_timeseries_summary(idx)[6:12]
+
+idx_future <- tk_make_future_timeseries(
+    sort(idx), 
+    n_future         = 10, 
+    inspect_weekdays = FALSE) 
+
+
+```
+Создадим теперь "правильные" данные из "мусора"
+```{r}
+# Создадим регулярную временную сетку из time-series индекса
+# наполним ее существующими данными и добавим проверочные исходные поля
+m2 <- create_series(min(idx) ~ max(idx), '1 d', class="Date") %>%
+  left_join(s_df, by="date") %>%
+  left_join(df %>% select(date, amount_src=amount, unitprice_src=unitprice), by="date") %>%
+  arrange(date)
+
+# am <- ts(m2$amount)
+# plotNA.distribution(am)
+
+# Impute the missing values with na.kalman
+# imp <- na.kalman(am)
+# Code for visualization
+# plotNA.imputations(am, imp)
+
+# соберем данные обратно в tibble
+# imputeTS
+m2 %<>% mutate(amount_imp=na.kalman(amount), unitprice_imp=na.kalman(unitprice))
+# m2 %<>% mutate(amount_imp=na.ma(amount)) # хуже
+
+m2 %$%
+  plotNA.imputations(amount, amount_imp, amount_src)
+
+m2 %$%
+  plotNA.imputations(unitprice, unitprice_imp, unitprice_src)
+
+# Наложим скользящее среднее на данные
+m3 <- m2 %>%
+  mutate(amount_mean = RcppRoll::roll_median(x=amount_src, n=3, fill=NA)) %>%
+  as_tbl_time(index=date) %>%
+  filter_time(~'2017')
+# поглядим, как удалось сгладить
+ggplot(m3, aes(date, amount_src)) +
+  geom_point(color=palette_light()[[1]], alpha=0.5) +
+  geom_line(aes(y=amount_mean), color=palette_light()[[1]], alpha=0.5) +
+  theme_tq() +
+  labs(
+    x="Дата",
+    y="Количество товара"
+  )
+
+```
+
 
 # ML exercises
 ## H2O
@@ -138,14 +206,14 @@ error_tbl %>%
 Визуализируем результат
 ```{r}
 sales_tbl %>%
-  ggplot(aes(x = date, y = val)) +
+  ggplot(aes(x=date, y=val)) +
   # Data - Spooky Orange
-  geom_point(size = 2, color = "gray", alpha = 0.5, shape = 21, fill = "orange") +
-  geom_line(color = "orange", size = 0.5) +
-  geom_ma(n = 12, color = "white") +
+  geom_point(size=2, color="gray", alpha=0.5, shape=21, fill="orange") +
+  geom_line(color="orange", size=0.5) +
+  geom_ma(n=12, color="white") +
   # Predictions - Spooky Purple
-  geom_point(aes(y = pred), size = 2, color = "gray", alpha = 1, shape = 21, fill = "purple", data = error_tbl) +
-  geom_line(aes(y = pred), color = "purple", size = 0.5, data = error_tbl) +
+  geom_point(aes(y=pred), size=2, color="gray", alpha=1, shape=21, fill="purple", data=error_tbl) +
+  geom_line(aes(y=pred), color="purple", size=0.5, data=error_tbl) +
   # Aesthetics
   # theme_spooky(base_size = 20) +
   theme_tq() +
