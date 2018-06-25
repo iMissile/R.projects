@@ -60,7 +60,7 @@ ggplot(df, aes(date, value)) +
 
 ```{r}
 sales_tbl <- df %>%
-  select(date, val=amount)
+  select(date, val=amount, unitprice)
 
 sales_tbl_aug <- sales_tbl %>%
   tk_augment_timeseries_signature()
@@ -104,7 +104,7 @@ automl_models_h2o <- h2o.automl(
     training_frame = train_h2o, 
     validation_frame = valid_h2o, 
     leaderboard_frame = test_h2o, 
-    max_runtime_secs = 3600, 
+    max_runtime_secs = 360, 
     stopping_metric = "deviance")
 
 # Extract leader model
@@ -138,20 +138,20 @@ error_tbl %>%
 Визуализируем результат
 ```{r}
 sales_tbl %>%
-    ggplot(aes(x = date, y = val)) +
-    # Data - Spooky Orange
-    geom_point(size = 2, color = "gray", alpha = 0.5, shape = 21, fill = "orange") +
-    geom_line(color = "orange", size = 0.5) +
-    geom_ma(n = 12, color = "white") +
-    # Predictions - Spooky Purple
-    geom_point(aes(y = pred), size = 2, color = "gray", alpha = 1, shape = 21, fill = "purple", data = error_tbl) +
-    geom_line(aes(y = pred), color = "purple", size = 0.5, data = error_tbl) +
-    # Aesthetics
-    # theme_spooky(base_size = 20) +
-    labs(
-        title = "Beer Sales Forecast: h2o + timetk",
-        subtitle = "H2O had highest accuracy, MAPE = 3.9%",
-        caption = "Thanks to @lenkiefer for theme_spooky!"
-    )
+  ggplot(aes(x = date, y = val)) +
+  # Data - Spooky Orange
+  geom_point(size = 2, color = "gray", alpha = 0.5, shape = 21, fill = "orange") +
+  geom_line(color = "orange", size = 0.5) +
+  geom_ma(n = 12, color = "white") +
+  # Predictions - Spooky Purple
+  geom_point(aes(y = pred), size = 2, color = "gray", alpha = 1, shape = 21, fill = "purple", data = error_tbl) +
+  geom_line(aes(y = pred), color = "purple", size = 0.5, data = error_tbl) +
+  # Aesthetics
+  # theme_spooky(base_size = 20) +
+  theme_tq() +
+  labs(
+    title = "Sales Forecast: h2o + timetk",
+    subtitle = "H2O had highest accuracy"
+  )
 ```
 
