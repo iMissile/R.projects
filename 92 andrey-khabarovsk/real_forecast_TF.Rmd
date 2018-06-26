@@ -1,0 +1,225 @@
+---
+title: "real_forecast"
+author: "ilya shutov"
+date: "20 06 2018"
+output: html_document
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r init, echo=FALSE, message=FALSE, warning=TRUE}
+library(tidyverse)
+library(readxl)
+library(magrittr)
+library(h2o)
+library(timetk)
+library(tidyquant)
+library(tibbletime)
+library(rsample)
+library(imputeTS)
+
+# library(zoo)
+# library(forecast)
+# library(xts)
+# library(magrittr)
+```
+
+```{r}
+raw_df <- read_excel("./data/sample_data.xlsx") %>%
+  rename(year="Год", date="Дата", month="Месяц", mday="Число", wday="День недели", 
+         sku="Номенклатура сгруппированная", amount="Кол-во проданных артикулов", unitprice="Цена продажа")
+
+df <- raw_df %>%
+#  group_by(date) %>%
+#  filter(n()>1)
+  mutate(value=amount*unitprice) %>%
+  mutate_at(vars(date), as.Date)
+```
+
+Посмотрим, как выглядит график
+```{r}
+ggplot(df, aes(date, amount)) +
+  geom_point(color=palette_light()[[1]], alpha=0.5) +
+  theme_tq() +
+  labs(
+    x="Дата",
+    y="Количество товара",
+    title="Full Data Set"
+  )
+
+ggplot(df, aes(date, value)) +
+  geom_point(color=palette_light()[[1]], alpha=0.5) +
+  theme_tq() +
+  labs(
+    x="Дата",
+    y="Стоимость товара",
+    title="Full Data Set"
+  )
+
+```
+
+# TibbleTime упражнения
+```{r}
+# создадим time-series индекс
+s_df <- sample_frac(df, .90)
+idx <- tk_index(s_df)
+# посмотрим по нему summary
+tk_get_timeseries_summary(idx)
+# General summary
+tk_get_timeseries_summary(idx)[1:6]
+# Frequency summary
+tk_get_timeseries_summary(idx)[6:12]
+
+idx_future <- tk_make_future_timeseries(
+    sort(idx), 
+    n_future         = 10, 
+    inspect_weekdays = FALSE) 
+
+
+```
+Создадим теперь "правильные" данные из "мусора"
+```{r}
+# Создадим регулярную временную сетку из time-series индекса
+# наполним ее существующими данными и добавим проверочные исходные поля
+m2 <- create_series(min(idx) ~ max(idx), '1 d', class="Date") %>%
+  left_join(s_df, by="date") %>%
+  left_join(df %>% select(date, amount_src=amount, unitprice_src=unitprice), by="date") %>%
+  arrange(date)
+
+# am <- ts(m2$amount)
+# plotNA.distribution(am)
+
+# Impute the missing values with na.kalman
+# imp <- na.kalman(am)
+# Code for visualization
+# plotNA.imputations(am, imp)
+
+# соберем данные обратно в tibble
+# imputeTS
+m2 %<>% mutate(amount_imp=na.kalman(amount), unitprice_imp=na.kalman(unitprice))
+# m2 %<>% mutate(amount_imp=na.ma(amount)) # хуже
+
+m2 %$%
+  plotNA.imputations(amount, amount_imp, amount_src)
+
+m2 %$%
+  plotNA.imputations(unitprice, unitprice_imp, unitprice_src)
+
+# Наложим скользящее среднее на данные
+m3 <- m2 %>%
+  mutate(amount_mean = RcppRoll::roll_median(x=amount_src, n=3, fill=NA)) %>%
+  as_tbl_time(index=date) %>%
+  filter_time(~'2017')
+# поглядим, как удалось сгладить
+ggplot(m3, aes(date, amount_src)) +
+  geom_point(color=palette_light()[[1]], alpha=0.5) +
+  geom_line(aes(y=amount_mean), color=palette_light()[[1]], alpha=0.5) +
+  theme_tq() +
+  labs(
+    x="Дата",
+    y="Количество товара"
+  )
+
+```
+
+
+# ML exercises
+## H2O
+
+```{r}
+sales_tbl <- df %>%
+  select(date, val=amount, unitprice)
+
+sales_tbl_aug <- sales_tbl %>%
+  tk_augment_timeseries_signature()
+
+sales_tbl_clean <- sales_tbl_aug %>%
+    select_if(~ !is.Date(.)) %>%
+    select_if(~ !any(is.na(.))) %>%
+    mutate_if(is.ordered, ~ as.character(.) %>% as.factor)
+
+# roll_rs <- rolling_origin(df, initial=as.integer(588), assess=0, cumulative=FALSE)
+# nrow(roll_rs)
+
+smpl_df <- sales_tbl_clean
+## 85% of the sample size
+smpl_size <- nrow(smpl_df)
+lv1 <- floor(.8 * 0.85 * smpl_size)
+lv2 <- floor(0.85 * smpl_size)
+
+train_tbl <- slice(smpl_df, 1:lv1)
+valid_tbl <- slice(smpl_df, (lv1+1):lv2)
+test_tbl <- slice(smpl_df, lv2+1:n())
+```
+
+
+```{r}
+h2o.init()
+```
+
+```{r}
+# Convert to H2OFrame objects
+train_h2o <- as.h2o(train_tbl)
+valid_h2o <- as.h2o(valid_tbl)
+test_h2o  <- as.h2o(test_tbl)
+# Set names for h2o
+y <- "val"
+x <- setdiff(names(train_h2o), y)
+
+automl_models_h2o <- h2o.automl(
+    x = x, 
+    y = y, 
+    training_frame = train_h2o, 
+    validation_frame = valid_h2o, 
+    leaderboard_frame = test_h2o, 
+    max_runtime_secs = 360, 
+    stopping_metric = "deviance")
+
+# Extract leader model
+automl_leader <- automl_models_h2o@leader
+```
+
+```{r}
+pred_h2o <- h2o.predict(automl_leader, newdata = test_h2o)
+h2o.performance(automl_leader, newdata = test_h2o)
+# Investigate test error
+error_tbl <- slice(sales_tbl, lv2+1:n()) %>% 
+    # filter(lubridate::year(date) == 2017) %>%
+    add_column(pred = pred_h2o %>% as.tibble() %>% pull(predict)) %>%
+    rename(actual = val) %>%
+    mutate(
+        error     = actual - pred,
+        error_pct = error / actual
+        ) 
+
+error_tbl %>%
+    summarise(
+        me   = mean(error),
+        rmse = mean(error^2)^0.5,
+        mae  = mean(abs(error)),
+        mape = mean(abs(error_pct)),
+        mpe  = mean(error_pct)
+    ) %>%
+    glimpse()
+```
+
+Визуализируем результат
+```{r}
+sales_tbl %>%
+  ggplot(aes(x=date, y=val)) +
+  # Data - Spooky Orange
+  geom_point(size=2, color="gray", alpha=0.5, shape=21, fill="orange") +
+  geom_line(color="orange", size=0.5) +
+  geom_ma(n=12, color="white") +
+  # Predictions - Spooky Purple
+  geom_point(aes(y=pred), size=2, color="gray", alpha=1, shape=21, fill="purple", data=error_tbl) +
+  geom_line(aes(y=pred), color="purple", size=0.5, data=error_tbl) +
+  # Aesthetics
+  # theme_spooky(base_size = 20) +
+  theme_tq() +
+  labs(
+    title = "Sales Forecast: h2o + timetk",
+    subtitle = "H2O had highest accuracy"
+  )
+```
+
