@@ -154,7 +154,8 @@ test_tbl <- slice(smpl_df, lv2+1:n())
 
 
 ```{r}
-h2o.init()
+# h2o.init()
+h2o.init(ip="10.0.0.219")
 ```
 
 ```{r}
@@ -172,7 +173,7 @@ automl_models_h2o <- h2o.automl(
     training_frame = train_h2o, 
     validation_frame = valid_h2o, 
     leaderboard_frame = test_h2o, 
-    max_runtime_secs = 360, 
+    max_runtime_secs = 60*20, 
     stopping_metric = "deviance")
 
 # Extract leader model

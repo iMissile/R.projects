@@ -17,6 +17,7 @@ library(tidyquant)
 library(tibbletime)
 library(rsample)
 library(imputeTS)
+library(GGally)
 
 # library(zoo)
 # library(forecast)
@@ -55,6 +56,9 @@ ggplot(df, aes(date, value)) +
     y="Стоимость товара",
     title="Full Data Set"
   )
+
+# ggpairs(df, aes(colour=wday, alpha=0.4))
+# ggpairs(df)
 
 ```
 
