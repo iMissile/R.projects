@@ -1,0 +1,43 @@
+---
+title: "Andrey's questions"
+author: "Ilya Shutov"
+date: "30 08 2018"
+editor_options: null
+output:
+  html_notebook: default
+chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Как нарисовать несколько рядом стоящих гистограмм?
+Исходная код дает ошибку _Error: Aesthetics must be either length 1 or the same as the data (2): x, y, fill_
+```{r issue_1, eval=FALSE, include=FALSE}
+total_share_Qty <- data.frame (
+  
+  "Share_of_Qty_Segment" = c(45, 55),
+  "share_of_TurnOver_with_VAT_Segment" = c(55, 45),
+  "share_of_Gross_margin_Segment" = c(30, 70),
+  "Segment" = c ("185", "190")
+  
+)
+ggplot(data=total_share_Qty, aes(x=Segment, y=c(Share_of_Qty_Segment, share_of_TurnOver_with_VAT_Segment, share_of_Gross_margin_Segment), fill=Segment))
+```
+
+  total_share_Qty <- data.frame (
+      
+      "Share_of_Qty_Segment" = c(45, 55),
+      "share_of_TurnOver_with_VAT_Segment" = c(55, 45),
+      "share_of_Gross_margin_Segment" = c(30, 70),
+      "Segment" = c ("185", "190")
+      
+    )
+ ggplot(data=total_share_Qty, aes(x=Segment, y=c(Share_of_Qty_Segment, share_of_TurnOver_with_VAT_Segment, share_of_Gross_margin_Segment), fill=Segment))
+ 
+```{r}
+
+```
+
+
