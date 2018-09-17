@@ -1,0 +1,121 @@
+---
+title: "Параллельная загрузка"
+output: html_notebook
+editor_options: 
+  chunk_output_type: inline
+---
+
+
+```{r}
+library(tidyverse)
+library(foreach) 
+library(iterators)
+
+getwd()
+```
+
+Илья, привет. 
+Стояла задача перебрать консолидировать в CSV несколько Excel файлов с 10-15 листами в каждом , форматы и заголовки на каждом листе одинаковые, где то по 900 тыс.записей на лист. 
+
+(в качестве примера  сгодится любой файл с таблицей, которую можно раскопировать на 5 листов на 5 книг) 
+
+# Эксперимент №1
+Первое что пришло в голову - такой вот код: 
+```{r eval=FALSE}
+z.pth <- "./data/" 
+z.fls <- data_frame(fls=paste0(z.pth,"\\",dir(pattern="*.xlsx",path=z.pth))) 
+z.fls <- z.fls %>% mutate(sht=map(.x = fls,.f = ~readxl::excel_sheets(path = .x))) %>% unnest 
+
+z.crs <- parallel::detectCores()-1 
+
+z.fls <- z.fls %>% mutate(crs=row_number()%%z.crs) %>% group_by(crs) %>% nest 
+
+z.cls <- parallel::makeCluster(z.crs) 
+doParallel::registerDoParallel(cl = z.cls) 
+getDoParWorkers() 
+
+system.time( 
+  z.res <-  foreach(i=iter(z.fls$data),.combine = "list",.inorder = F,.packages = c("readxl","purrr"),.verbose = T) %dopar% { 
+    d <- purrr::map2_df(.x = i$fls,.y = i$sht,~read_excel(.x,.y)) 
+  # d <- read_excel(i$fls,i$sht) 
+  return(d) 
+}) 
+z.res <- data.table::rbindlist(z.res) 
+
+foreach::registerDoSEQ() 
+doParallel::stopImplicitCluster() 
+parallel::stopCluster(z.cls) 
+```
+
+
+## Немного измененный (Илья)
+```{r}
+z.pth <- "./data/"
+
+z.fls <- fs::dir_ls(z.pth, glob = "*.xlsx") %>%
+  mutate(sht=map(.x = fls,.f = ~readxl::excel_sheets(path = .x))) %>% unnest 
+
+z.crs <- parallel::detectCores()-1 
+
+z.fls <- z.fls %>% mutate(crs=row_number()%%z.crs) %>% group_by(crs) %>% nest 
+
+z.cls <- parallel::makeCluster(z.crs) 
+doParallel::registerDoParallel(cl = z.cls) 
+getDoParWorkers() 
+
+system.time( 
+  z.res <-  foreach(i=iter(z.fls$data),.combine = "list",.inorder = F,.packages = c("readxl","purrr"),.verbose = T) %dopar% { 
+    d <- purrr::map2_df(.x = i$fls,.y = i$sht,~read_excel(.x,.y)) 
+  # d <- read_excel(i$fls,i$sht) 
+  return(d) 
+}) 
+z.res <- data.table::rbindlist(z.res) 
+
+foreach::registerDoSEQ() 
+doParallel::stopImplicitCluster() 
+parallel::stopCluster(z.cls) 
+```
+
+
+
+
+В итоге все зависло на 1,5 часа (!) пришлось выдергивать из розетки 
+
+переписал без nested data frame в надежде что каждый worker хотя бы с одним листом в паралелли нормально заработают, но то же все зависло и опять дергать из розетки 
+
+вот код: 
+```{r}
+system.time( 
+  z.res <-  foreach(i=iter(z.fls,by='row'),.combine = "list",.inorder = F,.packages = c("readxl","purrr"),.verbose = T) %dopar% { 
+  d <- read_excel(i$fls,i$sht) 
+  return(d) 
+}) 
+```
+
+
+
+В итоге под занавес спас тупой перебор циклом в одно ядро за 300 сек (5 минут!) 
+
+вот код: 
+```{r}
+pth <- "./data/" 
+func.append <- function(mypath){ 
+  file.data<-list() 
+  z <- 0 
+  for(i in dir(pattern = "*.xls",path=mypath)){ 
+     file.adr <- paste(mypath,sep="\\",i) 
+    file.name <- gsub(pattern = ".xlsx","",i) 
+    print(file.name) 
+    for (sht in readxl::excel_sheets(file.adr)){ 
+         print(sht) 
+        z <- z+1 
+        file.data[[paste0(sht,"_",z)]] <- readxl::read_excel(path = file.adr,sheet=sht,col_names=T) 
+    } 
+    print(paste("обработан:",i)) 
+  } 
+  file.data <- data.table::rbindlist(file.data) 
+ return(file.data) 
+} 
+# применяем функцию 
+system.time(z<-func.append(pth)) # 382.19 sec
+```
