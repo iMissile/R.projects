@@ -8,8 +8,11 @@ editor_options:
 
 ```{r}
 library(tidyverse)
+library(magrittr)
 library(foreach) 
 library(iterators)
+library(tictoc)
+library(DBI)
 
 getwd()
 ```
@@ -46,42 +49,93 @@ foreach::registerDoSEQ()
 doParallel::stopImplicitCluster() 
 parallel::stopCluster(z.cls) 
 ```
+В итоге все зависло на 1,5 часа (!) пришлось выдергивать из розетки 
 
+переписал без nested data frame в надежде что каждый worker хотя бы с одним листом в паралелли нормально заработают, но то же все зависло и опять дергать из розетки 
 
 ## Немного измененный (Илья)
 ```{r}
-z.pth <- "./data/"
+tic()
+z.pth <- "./data/" %>%
+  fs::path_abs()
 
+# сделали колонки файл - закладка
 z.fls <- fs::dir_ls(z.pth, glob = "*.xlsx") %>%
-  mutate(sht=map(.x = fls,.f = ~readxl::excel_sheets(path = .x))) %>% unnest 
+  tibble(fls = ., sht = map(., .f = ~readxl::excel_sheets(path = .x))) %>%
+  unnest()
 
 z.crs <- parallel::detectCores()-1 
 
-z.fls <- z.fls %>% mutate(crs=row_number()%%z.crs) %>% group_by(crs) %>% nest 
+z.fls <- z.fls %>% 
+  mutate(crs = row_number() %% z.crs) %>% 
+  group_by(crs) %>% 
+  nest()
 
 z.cls <- parallel::makeCluster(z.crs) 
 doParallel::registerDoParallel(cl = z.cls) 
 getDoParWorkers() 
 
+# либо делать rbind, либо просто получать списком "as-is" и потом сливать data.table
 system.time( 
-  z.res <-  foreach(i=iter(z.fls$data),.combine = "list",.inorder = F,.packages = c("readxl","purrr"),.verbose = T) %dopar% { 
-    d <- purrr::map2_df(.x = i$fls,.y = i$sht,~read_excel(.x,.y)) 
+#   z.res <- foreach(i = iter(z.fls$data), .combine = "rbind", .inorder = F, .packages = c("readxl","purrr"), .verbose = T) %dopar% {
+    z.res <- foreach(i = iter(z.fls$data), .inorder = F, .packages = c("readxl","purrr"), .verbose = T) %dopar% { 
+    d <- purrr::map2_df(.x = i$fls, .y = i$sht, ~read_excel(.x, .y))
   # d <- read_excel(i$fls,i$sht) 
   return(d) 
 }) 
+
 z.res <- data.table::rbindlist(z.res) 
 
 foreach::registerDoSEQ() 
 doParallel::stopImplicitCluster() 
 parallel::stopCluster(z.cls) 
+
+toc()
 ```
 
 
+## Вариант через общую DB
+```{r eval=FALSE}
+# !!! Lite движки не поддерживают конкурентную запись !!!
+tic()
+z.pth <- "./data/" %>%
+  fs::path_abs()
+
+dbdir <- "./db/" %>%
+  fs::path_abs() # "C:/path/to/database_directory"
+con <- dbConnect(MonetDBLite::MonetDBLite(), dbdir)
+
+# сделали колонки файл - закладка
+z.fls <- fs::dir_ls(z.pth, glob = "*.xlsx") %>%
+  tibble(fls = .) %>%
+  mutate(sht = map(fls, .f = ~readxl::excel_sheets(path = .x))) %>%
+  unnest()
+
+z.crs <- parallel::detectCores()-1 
+z.cls <- parallel::makeCluster(z.crs) 
+doParallel::registerDoParallel(cl = z.cls) 
+getDoParWorkers() 
+
+system.time( 
+    z.res <- foreach(i = iter(z.fls$data), .inorder = F, .packages = c("readxl","purrr"), .verbose = T) %dopar% { 
+    d <- purrr::map2_df(.x = i$fls, .y = i$sht, ~read_excel(.x, .y))
+  # d <- read_excel(i$fls,i$sht) 
+  return(d) 
+}) 
+
+z.res <- data.table::rbindlist(z.res) 
+
+foreach::registerDoSEQ() 
+doParallel::stopImplicitCluster() 
+parallel::stopCluster(z.cls) 
+
+dbDisconnect(con, shutdown=TRUE)
+MonetDBLite::monetdblite_shutdown()
+
+toc()
+```
 
 
-В итоге все зависло на 1,5 часа (!) пришлось выдергивать из розетки 
-
-переписал без nested data frame в надежде что каждый worker хотя бы с одним листом в паралелли нормально заработают, но то же все зависло и опять дергать из розетки 
 
 вот код: 
 ```{r}
@@ -119,3 +173,23 @@ func.append <- function(mypath){
 # применяем функцию 
 system.time(z<-func.append(pth)) # 382.19 sec
 ```
+
+## Немного измененный однопоточный (Илья)
+```{r}
+tic()
+z.pth <- "./data/" %>%
+  fs::path_abs()
+
+# сделали колонки файл - закладка
+z.fls <- fs::dir_ls(z.pth, glob = "*.xlsx") %>%
+  tibble(fls = ., sht = map(., .f = ~readxl::excel_sheets(path = .x))) %>%
+  unnest()
+
+system.time({
+z.res <- z.fls %$%
+  map2_dfr(fls, sht, ~readxl::read_excel(path = .x, sheet = .y, col_names = T)) 
+}) 
+
+toc()
+```
+
