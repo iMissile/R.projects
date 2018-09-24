@@ -49,3 +49,59 @@ ggplot(df, aes(x = Segment, y = val, fill = param)) +
 ```
 
 
+# Почему то group_by не работает
+
+В переписке было указано, что не делает группироку по Store. В чистом примере все работает без вопросов.
+```{r}
+library(tidyverse)
+library(magrittr)
+library(readxl)
+
+
+df <- read_excel("./data/group_by.xlsx")
+
+df <- structure(list(Store = c("Store 1", "Store 2", "Store 3", "Store 3", 
+                               "Store 3", "Store 3", "Store 2", "Store 2", "Store 2", "Store 2", 
+                               "Store 2", "Store 2", "Store 1", "Store 1", "Store 1", "Store 1"), 
+                     Date = structure(c(1514764800, 1514764800, 1514764800, 1514764800, 
+                                        1514764800, 1514764800, 1514764800, 1514851200, 1514851200, 1514851200, 
+                                        1514851200, 1514851200, 1514851200, 1514851200, 1514851200, 1514851200), 
+                                      class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+                     Qty_1 = c(445, 445, 445, 8831, 7124, 29345, 2498, 25487, 3725, 9294, 2394, 29813, 
+                               22076, 23848, 13011, 2671)), row.names = c(NA, -16L), 
+                class = c("tbl_df", "tbl", "data.frame"))
+
+t <- df %>% 
+  group_by(Store) %>% 
+  summarise(Qty = sum(Qty_1))
+```
+
+# Гистограмма с отрицательными показателями
+Как сделать так, чтобы столбики для отрицательных значений уходили вниз, а для положительных -- вверх?
+
+```{r}
+library(tidyverse)
+
+total_share_Qty <- data.frame(
+  "Share_of_Qty_Segment" = c(45, 55, -4, -7),
+  "share_of_TurnOver_with_VAT_Segment" = c(55, 45, -20, -12),
+  "share_of_Gross_margin_Segment" = c(30, 70, -6, -15),
+  "Segment" = c("185", "190", "185", "190")
+)
+
+df <- total_share_Qty %>%
+  tidyr::gather(key = "param", value = "val", 
+                Share_of_Qty_Segment, share_of_TurnOver_with_VAT_Segment, share_of_Gross_margin_Segment) %>%
+  mutate_at(vars(param), as.factor) %>%
+  mutate(type = val < 0)
+
+ggplot(df, aes(x = param, y = val, fill = type, color = type)) +
+  geom_bar(stat = "identity", alpha = 0.5) +
+  scale_fill_brewer(name="Операция", palette = "Set1") +
+  scale_color_brewer(name="Операция", palette = "Set1") +
+  facet_wrap(~Segment, nrow = 1, scales = "free_x") +
+  ylab("Значение") + 
+  xlab("Сегмент") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
