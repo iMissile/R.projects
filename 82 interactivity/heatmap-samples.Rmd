@@ -1,0 +1,182 @@
+---
+title: "R Notebook"
+output: html_notebook
+editor_options: 
+  chunk_output_type: inline
+---
+
+# Для начала воспроизведем пример 10-го года
+В качестве затравки используем текст публикации [ggplot2: Quick Heatmap Plotting, JANUARY 26, 2010](https://learnr.wordpress.com/2010/01/26/ggplot2-quick-heatmap-plotting/)
+
+
+```{r init}
+library(plyr)
+library(tidyverse)
+library(forcats)
+library(magrittr)
+library(bench)
+library(ggiraph)
+library(glue)
+
+```
+
+
+```{r}
+# nba <- read.csv("http://datasets.flowingdata.com/ppg2008.csv")
+nba <- read_csv("./data/ppg2008.csv")
+# The players are ordered by points scored, and the Name variable converted to a factor that ensures proper sorting of the plot.
+# nba$Name <- with(nba, reorder(Name, PTS))
+# то же самое с помощью tidyverse
+# m <- nba %$% fct_reorder(Name, PTS)
+nba %<>% mutate(Name = fct_reorder(Name, PTS))
+
+bench::mark(
+  base_R = {nba$Name <- with(nba, reorder(Name, PTS))},
+  tidyverse = {nba %<>% mutate(Name = fct_reorder(Name, PTS))},
+  check = FALSE
+)
+
+nba.m <- reshape2::melt(nba)
+nba.m <- plyr::ddply(nba.m, .(variable), transform, rescale = scales::rescale(value))
+# rescale, почему-то, не применяется в группе, т.е. не использует индекс. см.  https://stackoverflow.com/questions/35775696/trying-to-use-dplyr-to-group-by-and-apply-scale
+# возможно это связано с вызовом plyr после dplyr
+ff <- function(m){
+  browser()
+}
+nba.m2 <- reshape2::melt(nba) %>% group_by(variable) %>% mutate(rescale = scales::rescale(value)) %>% ungroup()
+# nba.m2 <- reshape2::melt(nba) %>% group_by(variable) %>% mutate(rescale = ff(value)) %>% ungroup()
+all.equal(nba.m, nba.m2)
+```
+
+Отрисуем тепловую карту классическим движком `ggplot2`
+```{r}
+p <- ggplot(nba.m2, aes(variable, Name)) + 
+  geom_tile(aes(fill = rescale), colour = "white") + 
+  scale_fill_gradient(low = "white", high = "steelblue")
+
+# A few finishing touches to the formatting, and the heatmap plot is ready for presentation.
+
+base_size <- 9
+p <- p + 
+  theme_grey(base_size = base_size) + 
+  labs(x = "", y = "") + 
+  scale_x_discrete(expand = c(0, 0)) +
+  scale_y_discrete(expand = c(0, 0)) + 
+  theme(legend.position = "none", 
+       axis.ticks = element_blank(), 
+       axis.text.x = element_text(size = base_size * 0.8, angle = 330, hjust = 0, colour = "grey50"))
+
+p
+```
+
+
+Попробуем нарисовать все с помощью `ggiraph`
+```{r}
+nba.m3 <- nba.m2 %>%
+  # надо руками добавить tooltip, берем пример из https://davidgohel.github.io/ggiraph/articles/offcran/examples.html
+  # напрямик русские буквы добавить не получается
+  # mutate(tooltip = glue("<table><tr><td>variable (переменная) = {variable}</td></tr><tr><td>value (значение) = {round(rescale, digits = 3)}</td></tr></table>")) %>%
+  mutate(tooltip = glue("<table><tr><td>variable = {variable}</td></tr><tr><td>value = {round(rescale, digits = 3)}</td></tr></table>")) %>%
+  
+  # mutate(tooltip = "Подсказка") %>% # так не работает, одни знаки вопроса
+  # [Foreign characters in tooltip #96 {Closed}](https://github.com/davidgohel/ggiraph/issues/96)
+  mutate(tooltip = stringi::stri_escape_unicode(stringi::stri_enc_toutf8("Подсказка"))) %>% # так не работает, одни знаки вопроса
+  mutate(tooltip = stringi::stri_escape_unicode(glue("<table><tr><td>variable (переменная) = {variable}</td></tr>
+                                                     <tr><td>value (значение) = {round(rescale, digits = 3)}</td></tr></table>"))) %>%
+
+  # добавим фасетное разделение и немного русского языка
+  mutate(subtype = sample(c("Левый", "Правый"), n(), replace = TRUE)) %>%
+  mutate_at(vars(variable), ~fct_recode(.x, "ЙЯФ" = "FTP", "А-Я" = "PTS"))
+           
+  
+
+p <- ggplot(nba.m3, aes(variable, Name)) + 
+  geom_tile_interactive(aes(fill = rescale, tooltip = tooltip), colour = "white") + 
+  scale_fill_gradient(low = "white", high = "steelblue") +
+  facet_wrap(~subtype)
+
+# A few finishing touches to the formatting, and the heatmap plot is ready for presentation.
+
+base_size <- 9
+p <- p + 
+  theme_grey(base_size = base_size) + 
+  labs(x = "", y = "") + 
+  scale_x_discrete(expand = c(0, 0)) +
+  scale_y_discrete(expand = c(0, 0)) + 
+  theme(legend.position = "none", 
+       axis.ticks = element_blank(), 
+       axis.text.x = element_text(size = base_size * 0.8, angle = 330, hjust = 0, colour = "grey50"))
+
+tooltip_css <- "background-color:gray;color:white;font-style:italic;padding:10px;border-radius:10px 20px 10px 20px;"
+
+ggiraph(ggobj = p, width_svg = 8, height_svg = 6, zoom_max = 1, 
+        tooltip_extra_css = tooltip_css, tooltip_opacity = .85)
+```
+
+
+# Два примера, взятый целиком из документации `ggiraph`
+```{r}
+# add interactive polygons to a ggplot -------
+dataset = data.frame( x1 = c(1, 3, 1, 5, 4),
+        x2 = c(2, 4, 3, 6, 6),
+        y1 = c( 1, 1, 4, 1, 3),
+        y2 = c( 2, 2, 5, 3, 5),
+        t = c( 'a', 'a', 'a', 'b', 'b'),
+        r = c( 1, 2, 3, 4, 5),
+        tooltip = c("ID 1", "ID 2", "ID 3", "ID 4", "ID 5"),
+        uid = c("ID 1", "ID 2", "ID 3", "ID 4", "ID 5"),
+        oc = rep("alert(this.getAttribute(\"data-id\"))", 5)
+)
+
+gg_rect = ggplot() +
+        scale_x_continuous(name="x") +
+        scale_y_continuous(name="y") +
+        geom_rect_interactive(data=dataset,
+                mapping = aes(xmin = x1, xmax = x2,
+                        ymin = y1, ymax = y2, fill = t,
+                        tooltip = tooltip, onclick = oc, data_id = uid ),
+                color="black", alpha=0.5) +
+        geom_text(data=dataset,
+                        aes(x = x1 + ( x2 - x1 ) / 2, y = y1 + ( y2 - y1 ) / 2,
+                                        label = r ),
+                size = 4 )
+
+
+ggiraph(code = {print(gg_rect)})
+
+df <- data.frame(
+  id = rep(c("a", "b", "c", "d", "e"), 2),
+  x = rep(c(2, 5, 7, 9, 12), 2),
+  y = rep(c(1, 2), each = 5),
+  z = factor(rep(1:5, each = 2)),
+  w = rep(diff(c(0, 4, 6, 8, 10, 14)), 2)
+)
+ggiraph( code = {
+  print(
+    ggplot(df, aes(x, y, tooltip = id)) + geom_tile_interactive(aes(fill = z))
+  )
+})
+```
+
+
+```{r}
+# correlation dataset ----
+cor_mat <- cor(mtcars)
+diag( cor_mat ) <- NA
+var1 <- rep( row.names(cor_mat), ncol(cor_mat) )
+var2 <- rep( colnames(cor_mat), each = nrow(cor_mat) )
+cor <- as.numeric(cor_mat)
+cor_mat <- data.frame( var1 = var1, var2 = var2,
+  cor = cor, stringsAsFactors = FALSE )
+cor_mat[["tooltip"]] <-
+  sprintf("<i>`%s`</i> vs <i>`%s`</i>:</br><code>%.03f</code>",
+  var1, var2, cor)
+
+# ggplot creation and ggiraph printing ----
+p <- ggplot(data = cor_mat, aes(x = var1, y = var2) ) +
+  geom_tile_interactive(aes(fill = cor, tooltip = tooltip), colour = "white") +
+  scale_fill_gradient2(low = "#BC120A", mid = "white", high = "#BC120A", limits = c(-1, 1)) +
+  coord_equal()
+ggiraph( code = print(p))
+```
+
