@@ -105,3 +105,20 @@ ggplot(df, aes(x = param, y = val, fill = type, color = type)) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
 
+# Как сделать расчет агрегатов по дням?
+```{r}
+library(tidyverse)
+library(readxl)
+
+
+df <- read_excel("./data/Dataframe.xlsx", 
+    col_types = c("date", "text", "numeric", "numeric"))
+
+View(df)
+
+df$new_date <- format(df$Date, "%d-%b")
+
+df %<>% group_by(Category, new_date) %>% 
+  summarise(Turn_over_present = sum(Turn_over_present, na.rm = TRUE), 
+            Turn_over_previous = sum(Turn_over_previous, na.rm = TRUE))
+```
