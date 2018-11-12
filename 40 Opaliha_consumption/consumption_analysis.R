@@ -1,10 +1,9 @@
+library(tidyverse)
 library(lubridate)
-library(ggplot2)
 library(magrittr)
-library(dplyr)
 library(scales)
 library(forecast)
-library(ggthemr)
+# library(ggthemr)
 library(broom)
 library(readr) #Hadley Wickham, http://blog.rstudio.org/2015/04/09/readr-0-1-0/
 
