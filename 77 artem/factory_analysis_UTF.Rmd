@@ -1,19 +1,14 @@
 ---
 title: "R Notebook"
-output:
-  html_notebook: default
-  pdf_document: default
-editor_options:
+output: html_notebook
+editor_options: 
   chunk_output_type: inline
 ---
 
 
 # Инициализация пакетов
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo=FALSE, message=FALSE, fig.width=7)
-```
 
-```{r echo=FALSE}
+```{r}
 library(tidyverse)
 library(lubridate)
 library(magrittr)
@@ -32,7 +27,7 @@ datafile <- "./data/2016.xlsx"
 ```
 
 # Определение функции загрузки
-```{r}
+```{r echo=FALSE}
 get_month_data <- function(filename, sheetname="") {
   # хак по считыванию типов колонок
   raw <- read_excel(filename)
@@ -50,7 +45,7 @@ get_month_data <- function(filename, sheetname="") {
   # трансформируем колонки
   df0 <- raw %>%
     repair_names(prefix="repaired_", sep="")
-  # browser()
+  
   # названия колонок размазаны по строкам 2-3. 2-ая -- группирующая, 3-я -- детализирующая
   # Надо их слить и переименовать колонки, причем приоритет имеет строка 3, как уточняющая
   #name_c2 <- tidyr::gather(df0[1, ], key = name, value = name_c2) # 1-ая колонка ушла в имена
@@ -78,14 +73,7 @@ get_month_data <- function(filename, sheetname="") {
     "Формующая часть: Разница скорости струи/сетки", "speed_diff_in",
     "Формующая часть: Открытие щели напорного ящика", "slot_in",
     "Формующая часть: Давление на напорном ящике", "pressure_in",
-    "Формующая часть: Скорость смесительного насоса", "mix_pump_in",
-    "Прессовая часть: Натяжение сукна", "cloth_tension",
-    "Прессовая часть: Вакуум 1-я сукномойка", "vacuum_1",
     "Поток: Концентрация при размоле", "concentration_in",
-    "1-ой рафинер: Удельное потребление энергии", "energy_per_rafiner1",
-    "Янки-циллиндр: Давление пара Янки цилиндра", "yanki_steam",
-    "Адгезив: Расход по факту", "adhesive_fact",
-    "Релиз: Расход по факту", "release_fact",
     "Производительность", "performance_out",
     "Вес м2", "weight_out",
     "Артикул", "mark_out",
@@ -105,8 +93,7 @@ get_month_data <- function(filename, sheetname="") {
   # выбираем только интересующие колонки
   df2 <- df1 %>% 
     select(foreman_tech, angle_in, speed_diff_in, slot_in, pressure_in, concentration_in,
-           performance_out, weight_out, mark_out, notes, mix_pump_in, yanki_steam, cloth_tension,
-           vacuum_1, energy_per_rafiner1, adhesive_fact, release_fact) %>%
+           performance_out, weight_out, mark_out, notes) %>%
     filter(row_number() > 6) # удаляем весь верхний шлак
   # browser()
   
@@ -124,7 +111,7 @@ get_month_data <- function(filename, sheetname="") {
 
 
 
-# Консолидация Excel файла
+# Cоберем все закладки Excel файла вместе
 ```{r}
 mnames <- c("Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", 
             "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь")
@@ -144,7 +131,7 @@ df %<>% filter(!is.na(mark_out))
 df
 ```
 
-```{r eval=FALSE}
+```{r}
 tic("Analysis")
 # посчитаем количество уникальных значений в колонках
 dist_cols <- map_df(select(df, everything()), n_distinct)
@@ -157,15 +144,46 @@ unq
 
 
 ```
-
-# Визуализация данных по результатам предварительной коммуникации с экспертами
-```{r eval=FALSE}
+# Визуализация данных по результатам общения с фабрикой
+```{r}
 extrafont::loadfonts()
 extrafont::fonttable()
 extrafont::fonts()
 ```
 
+## Зависимость speed_diff_in от slot_in
 
+```{r}
+gp <- ggplot(df, aes(x=slot_in, y=speed_diff_in, colour=mark_out)) + 
+  geom_point() +
+  # theme_ipsum_rc(base_family="Roboto Condensed", base_size = 11.5)
+  theme_ipsum_rc(base_size = 11.5) +
+  facet_wrap(~mark_out, scales = "free")
+
+gp
+
+```
+## Средняя speed_diff_in для каждого вида бумаги
+
+```{r}
+gp <- ggplot(df, aes(x=mark_out, y=speed_diff_in)) + 
+  geom_point() +
+  # theme_ipsum_rc(base_family="Roboto Condensed", base_size = 11.5)
+  theme_ipsum_rc(base_size = 11.5)
+
+gp
+
+```
+## Производительность машины по месяцам
+```{r}
+gp <- ggplot(df, aes(x=month, y=performance_out, fill=foreman_tech)) + 
+  geom_col() +
+  theme_ipsum_rc(base_size = 11.5)
+
+gp
+
+```
+## Лучший мастер по производительности на каждый вид бумаги
 ```{r}
 df0 <- df %>% 
   group_by(mark_out, month, foreman_tech) %>% 
@@ -176,125 +194,14 @@ df0 <- df %>%
 
 # df0
 
-# Лучший мастер по производительности на каждый вид бумаги
 gp <- ggplot(df0, aes(x=month, y=performance, fill=foreman_tech)) + 
   geom_col() +
   theme_ipsum_rc(base_size = 11.5) +
-  facet_wrap(~mark_out) +
-  ggtitle("Лучший мастер по производительности")
+  facet_wrap(~mark_out)
 
 gp
 
 ```
-
-```{r}
-# Средняя speed_diff_in для каждого вида бумаги
-
-gp <- ggplot(df, aes(x=mark_out, y=speed_diff_in)) + 
-  geom_point() +
-  # theme_ipsum_rc(base_family="Roboto Condensed", base_size = 11.5)
-  theme_ipsum_rc(base_size = 11.5) +
-  ggtitle("Разница скорости струи/сетки от вида бумаги",
-          subtitle="Для различных видов бумаги")
-
-gp
-
-```
-
-```{r}
-# Производительность машины по месяцам
-gp <- ggplot(df, aes(x=month, y=performance_out, fill=foreman_tech)) + 
-  geom_col() +
-  theme_ipsum_rc(base_size = 11.5) +
-  ggtitle("Производительность машины")
-
-gp
-
-```
-
-
-```{r fig.height=7}
-# Зависимость speed_diff_in от slot_in
-gp <- ggplot(df, aes(x=slot_in, y=speed_diff_in, colour=mark_out)) + 
-  geom_point() +
-  # theme_ipsum_rc(base_family="Roboto Condensed", base_size = 11.5)
-  theme_ipsum_rc(base_size = 11.5) +
-  facet_wrap(~mark_out, scales = "free") +
-  ggtitle("Разница скорости струи/сетки от щели открытия",
-          subtitle="Для различных видов бумаги")
-
-gp
-
-```
-```{r}
-# Расход химикатов по факту адгезив и релиз от коэффициента напуска
-
-gp <- ggplot(df, aes(x=speed_diff_in, y=adhesive_fact)) + 
-  geom_point() +
-  theme_ipsum_rc(base_size=11.5) +
-  ggtitle("Расход по факту химиката 'Адгезив'", 
-          subtitle="В зависимости от от коэффициента напуска")
-
-gp
-
-```
-```{r}
-# Расход химикатов по факту адгезив и релиз от коэффициента напуска
-
-gp <- ggplot(df, aes(x=speed_diff_in, y=release_fact)) + 
-  geom_point() +
-  theme_ipsum_rc(base_size=11.5) +
-  ggtitle("Расход по факту химиката 'Релиз'", 
-          subtitle="В зависимости от от коэффициента напуска")
-
-gp
-
-```
-
-```{r}
-# Давление пара на янки-цилиндре от удельного потребления энергии на рафинёре №1 + концентрация при размоле как фактор
-
-gp <- ggplot(df, aes(x=energy_per_rafiner1, y=yanki_steam, colour=concentration_in)) + 
-  geom_point() +
-  theme_ipsum_rc(base_size=11.5) +
-  # facet_wrap(~concentration_in, scales = "free") +
-  ggtitle("Давление пара на янки-цилиндре", 
-          subtitle="В зависимости от удельного потребления энергии на рафинёре №1")
-
-gp
-
-```
-
-
-```{r}
-# Вакуум от натяжения сукон
-
-gp <- ggplot(df, aes(x=cloth_tension, y=vacuum_1)) + 
-  geom_point() +
-  # geom_smooth(method="lm", span=0.8) +
-  # geom_smooth(span=0.8) +
-  # theme_ipsum_rc(base_family="Roboto Condensed", base_size = 11.5)
-  theme_ipsum_rc(base_size=11.5) +
-  ggtitle("Вакуум в 1-ой сукномойке", 
-          subtitle="В зависимости от натяжения сукна")
-
-gp
-
-```
-```{r}
-gp <- ggplot(df, aes(x=pressure_in, y=mix_pump_in)) + 
-  geom_point() +
-  # geom_smooth(method="lm", span=0.8) +
-  geom_smooth(span=0.8) +
-  # theme_ipsum_rc(base_family="Roboto Condensed", base_size = 11.5)
-  theme_ipsum_rc(base_size=11.5) +
-  ggtitle("Давление в напорном ящике", 
-          subtitle="В зависимости от скорости смесительного насоса")
-
-gp
-
-```
-
 
 # Первичная визуализация данных
 Пытаемся понять, что скрывается за имеющимся набором данных.

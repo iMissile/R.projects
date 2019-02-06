@@ -52,7 +52,7 @@ ggplot(df, aes(x = Segment, y = val, fill = param)) +
 # Почему то group_by не работает
 
 В переписке было указано, что не делает группироку по Store. В чистом примере все работает без вопросов.
-```{r}
+```{r, message=FALSE, warning=FALSE, include=FALSE}
 library(tidyverse)
 library(magrittr)
 library(readxl)
@@ -121,4 +121,15 @@ df$new_date <- format(df$Date, "%d-%b")
 df %<>% group_by(Category, new_date) %>% 
   summarise(Turn_over_present = sum(Turn_over_present, na.rm = TRUE), 
             Turn_over_previous = sum(Turn_over_previous, na.rm = TRUE))
+```
+
+# Возникли проблемы с русским языком в путях
+При попытке прочитать данные по пути, содержащему русские буквы (Win, русская), возникает ошибка. Код и ошибка ниже:
+```{r}
+ setwd( normalizePath("C:/Users/kirson.a/Desktop/Данные/Данные для dashboard"))
+x <- readr::read_delim("01.01.csv", delim = ";", locale = locale("ru", encoding = "windows-1251",decimal_mark = ",", grouping_mark = " "))
+
+
+# Error in guess_header_(datasource, tokenizer, locale) : 
+#   Cannot read file C:/Users/kirson.a/Desktop/Р”Р°РЅРЅС‹Рµ/Р”Р°РЅРЅС‹Рµ РґР»СЏ dashboard/01.01.csv: Системе не удается найти указанный путь.
 ```
