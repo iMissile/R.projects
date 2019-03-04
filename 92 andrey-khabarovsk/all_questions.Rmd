@@ -133,3 +133,173 @@ x <- readr::read_delim("01.01.csv", delim = ";", locale = locale("ru", encoding 
 # Error in guess_header_(datasource, tokenizer, locale) : 
 #   Cannot read file C:/Users/kirson.a/Desktop/Р”Р°РЅРЅС‹Рµ/Р”Р°РЅРЅС‹Рµ РґР»СЏ dashboard/01.01.csv: Системе не удается найти указанный путь.
 ```
+
+# Evaluation error: factor week_number has new levels
+
+На 135 строке возникает ошибка
+
+
+Error in mutate_impl(.data, dots): Evaluation error: factor week_number has new levels 8, 9.
+
+```{r}
+
+library(tidyverse)
+library(lubridate)
+library(reshape2)
+library(data.table)
+library(randomForest)
+
+
+## Предварительно необходимо импортировать данные из Excel файла
+
+test_forecast <-as.data.frame(Data_for_Forecast_Error_new_level, stringsAsFactors=FALSE) 
+
+test_forecast <- test_forecast %>% gather(Date, value, - c(`Категория`,`Номенклатура`,`Параметр`))
+
+test_forecast$Date <- as.Date(as.numeric(test_forecast$Date), origin = "1899-12-30")
+
+test_forecast <- dcast(test_forecast, ...~`Параметр`)
+
+setnames(test_forecast, old=c("Категория", "Номенклатура", "Date", "кол-во", "промо", "цена продажа"), 
+         new=c("Category", "Item", "Date", "Qty", "Promo", "Price"))
+
+
+test_forecast <- test_forecast %>% mutate(w_day=as.factor(wday(Date)), 
+                          week_number=as.factor(week(Date)))
+
+test_forecast$Promo<- as.factor(test_forecast$Promo)
+
+
+prepare_fn <- function(data_prepare)
+
+{
+  
+  ## Функция для преобразования по товарным категориям для позиций,
+  ## которые необходимо прогнозировать совместно с другими позициями аналогами в данной категории
+  
+  
+  total_data <- data.frame()
+  
+  unique_Category <- unique(data_prepare$Category)
+  t <- 1
+  i <- 1
+  u <- 1
+  
+  for (t in 1:length(unique_Category)) {
+  
+    ## цикл для итерраций над каждой категорией
+    
+   data_prepare_buff <- data_prepare %>% filter(Category==unique_Category[[t]]) 
+  
+   unique_Item <- unique(data_prepare_buff$Item)
+
+
+        for (i in 1:length(unique_Item)) {
+          
+          ## цикл для итерраций над каждой позицией в категории
+          
+          data_prepare_buff_1 <- data_prepare_buff %>% filter(Item==unique_Item[[i]])
+          
+          test_Qty <- data_prepare_buff_1 %>% filter(Date>=Sys.Date())
+          b <- unique(is.na(test_Qty$Qty))
+          if (b==TRUE) {
+            
+          ## Условие для проверки наличия распределения заданного кол-ва по данной позиции несмотря на то
+          ## что она находится в диапазоне для прогноза, если уже заданно кол-во для распределения по позиции
+          ## не делается прогноз, но ее данные учитываются в расчете прогноза других позиций  
+            
+        for (u in 2:length(unique_Item)) {   
+          data_prepare_buff_2 <- data_prepare_buff %>% filter(Item==unique_Item[[u]]);
+          
+          test_Qty <- data_prepare_buff_2 %>% filter(Date>=Sys.Date());
+          a<- unique(is.na(test_Qty$Qty));
+          
+         if (a==TRUE){
+            data_prepare_buff_1 <- left_join(data_prepare_buff_1, select(data_prepare_buff_2, Price, Promo, Date), by=c("Date"))
+          } else {data_prepare_buff_1 <- left_join(data_prepare_buff_1, select(data_prepare_buff_2, Price, Promo, Date, Qty), by=c("Date"));
+          colnames(data_prepare_buff_1)[colnames(data_prepare_buff_1)== grep("Qty.x", names(data_prepare_buff_1), value = T)] <- "Qty";
+
+          }
+          
+          }
+        
+        total_data <- bind_rows(total_data, data_prepare_buff_1) } else { next }
+  
+      }  
+      
+  }
+  return(total_data)
+}  
+
+
+ 
+total_data <- prepare_fn(test_forecast)
+
+
+total_data_train <- total_data %>% filter(Date<(Sys.Date()-(max(total_data$Date)-Sys.Date())))
+
+total_data_train[is.na(total_data_train)] <- 0
+
+total_data_train %<>% group_by(Category, Item) %>% 
+  nest()
+
+total_data_test <- total_data %>% filter(Date>(Sys.Date()-(max(total_data$Date)-Sys.Date()))& Date< Sys.Date())
+
+total_data_test[is.na(total_data_test)] <- 0
+
+total_data_test %<>% group_by(Category, Item) %>% 
+  nest()
+
+total_data_forecast <- total_data %>% filter(Date>(Sys.Date())) %>% group_by(Category, Item) %>% 
+  nest()
+
+total_data_forecast[is.na(total_data_forecast)] <- 0
+
+
+
+lm_model_fn <- function(df) {
+  lm(Qty ~ .-Date, data = df)
+}
+
+rf_model_fn <- function(df) {
+  randomForest(Qty ~ .-Date,  data = df)
+}
+
+
+
+total_data_train <- total_data_train %>% mutate(lm_model=map(data, lm_model_fn),
+                                                rf_model=map(data, rf_model_fn))
+
+total_data_train <- total_data_train %>% mutate(lm_fit_values=map(lm_model, fitted),
+                                                rf_fit_values=map(rf_model,  predict))
+
+total_data_test <- left_join(total_data_test, total_data_train, by=c("Item", "Category"))
+
+total_data_test$data.y <- NULL
+
+total_data_test <- total_data_test %>% mutate(lm_pred_test=map2(lm_model, data.x, predict),
+                                              rf_pred_test=map2(rf_model, data.x, predict))
+
+
+total_data_forecast <- left_join(total_data_forecast, total_data_train, by=c("Item", "Category"))
+
+total_data_forecast <- total_data_forecast %>% mutate(lm_forecast=map2(lm_model, data.x, predict),
+                                                      rf_forecast=map2(rf_model, data.x, predict))
+
+
+unnest_df<- unnest(total_data_train, data, lm_fit_values, rf_fit_values)
+unnest_test <- unnest(total_data_test, data.x, lm_pred_test, rf_pred_test)
+unnest_forecast <- unnest(total_data_forecast, data.x, lm_forecast, rf_forecast)
+
+ggplot(data=unnest_df, aes(x=Date, y=Qty, group=Item, color=Item)) +
+  geom_line(data = unnest_df, aes(x = Date, y = lm_fit_values), color = "red", size=1.2) +
+  geom_line(data = unnest_df, aes(x = Date, y = rf_fit_values), color = "green", size=1.2) +
+  geom_line(data = unnest_test, aes(x = Date, y = lm_pred_test), color = "blue", size=1.2) +
+  geom_line(data = unnest_test, aes(x = Date, y = rf_pred_test), color = "pink", size=1.2) +
+  geom_line(data = unnest_test, aes(x = Date, y = Qty), color = "purple", size=1.2) +
+  geom_line(data = unnest_forecast, aes(x = Date, y = lm_forecast), color = "yellow", size=1.2) +
+  geom_line(data = unnest_forecast, aes(x = Date, y = rf_forecast), color = "black", size=1.2) +
+  geom_line(linetype = "dashed")+
+  facet_grid(Item ~ .)
+```
+
