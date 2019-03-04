@@ -126,7 +126,7 @@ df %<>% group_by(Category, new_date) %>%
 # Возникли проблемы с русским языком в путях
 При попытке прочитать данные по пути, содержащему русские буквы (Win, русская), возникает ошибка. Код и ошибка ниже:
 ```{r}
- setwd( normalizePath("C:/Users/kirson.a/Desktop/Данные/Данные для dashboard"))
+setwd(normalizePath("C:/Users/kirson.a/Desktop/Данные/Данные для dashboard"))
 x <- readr::read_delim("01.01.csv", delim = ";", locale = locale("ru", encoding = "windows-1251",decimal_mark = ",", grouping_mark = " "))
 
 
@@ -142,15 +142,14 @@ x <- readr::read_delim("01.01.csv", delim = ";", locale = locale("ru", encoding 
 Error in mutate_impl(.data, dots): Evaluation error: factor week_number has new levels 8, 9.
 
 ```{r}
-
 library(tidyverse)
 library(lubridate)
 library(reshape2)
 library(data.table)
 library(randomForest)
 
-
 ## Предварительно необходимо импортировать данные из Excel файла
+Data_for_Forecast_Error_new_level <- readxl::read_excel(here::here("data", "Data_for_Forecast-Error_new_level.xlsx"))
 
 test_forecast <-as.data.frame(Data_for_Forecast_Error_new_level, stringsAsFactors=FALSE) 
 
@@ -164,15 +163,17 @@ setnames(test_forecast, old=c("Категория", "Номенклатура", 
          new=c("Category", "Item", "Date", "Qty", "Promo", "Price"))
 
 
-test_forecast <- test_forecast %>% mutate(w_day=as.factor(wday(Date)), 
-                          week_number=as.factor(week(Date)))
+test_forecast <- test_forecast %>% 
+  mutate(
+    w_day=as.factor(wday(Date)), 
+    # week_number=as.factor(week(Date))
+    week_number=as.integer(week(Date))
+  )
 
 test_forecast$Promo<- as.factor(test_forecast$Promo)
 
 
-prepare_fn <- function(data_prepare)
-
-{
+prepare_fn <- function(data_prepare){
   
   ## Функция для преобразования по товарным категориям для позиций,
   ## которые необходимо прогнозировать совместно с другими позициями аналогами в данной категории
@@ -277,6 +278,8 @@ total_data_test <- left_join(total_data_test, total_data_train, by=c("Item", "Ca
 
 total_data_test$data.y <- NULL
 
+# browser()
+# Здесь возникает ошибка: factor week_number has new levels 9
 total_data_test <- total_data_test %>% mutate(lm_pred_test=map2(lm_model, data.x, predict),
                                               rf_pred_test=map2(rf_model, data.x, predict))
 
