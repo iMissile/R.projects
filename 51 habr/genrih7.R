@@ -17,7 +17,7 @@ m <- stringi::stri_extract_all_regex(data.sku$sku.name2, pattern = '"([^"]+)"', 
 
 # tic()
 # data.sku2 <- data.sku %>% 
-#   mutate(sku.brend = str_extract_all(data.sku$sku.name2, pattern = '"([^"]+){0,}"', simplify = F))
+  #   mutate(sku.brend = str_extract_all(data.sku$sku.name2, pattern = '"([^"]+){0,}"', simplify = F))
 # toc() # за половину дня так и не получил результата (так же разделял на группы по 200 строк с отправкой в foreach - безрезультатно)
 # use qdap
 tic()
