@@ -48,7 +48,7 @@ clean_df <- raw_df %>%
   # mutate_at("i_fname", stri_encode, to = "windows-1251") %>%
   # mutate_at("i_fname", `Encoding<-`, "UTF-8") %>%
   mutate_at("i_fname", fs::path_real) %>%
-  mutate(fname = format(timestamp, format = '%Y-%M-%d %H_%M_%S')) %>%
+  mutate(fname = format(timestamp, format = '%Y-%m-%d %H_%M_%S')) %>%
   # для файлов, которые не имеют тегов ("левые"), скопируем имя файла из входного
   mutate(fname = dplyr::coalesce(fname, fs::path_ext_remove(fs::path_file(i_fname)))) %>%
   # еще нюанс, после переименования могут появиться дубликаты из разных источников
