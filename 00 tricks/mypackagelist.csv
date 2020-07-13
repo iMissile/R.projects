@@ -1,0 +1,1586 @@
+"","Package","LibPath","Version","Priority","Depends","Imports","NeedsCompilation","Built","whereat"
+"abind","abind","C:/Users/Ilya/Documents/R/win-library/4.0","1.4-5",NA,"R (>= 1.5.0)","methods, utils","no","4.0.0","CRAN"
+"acepack","acepack","C:/Users/Ilya/Documents/R/win-library/4.0","1.4.1",NA,NA,NA,"yes","4.0.0","CRAN"
+"ada","ada","C:/Users/Ilya/Documents/R/win-library/4.0","2.0-5",NA,"R(>= 2.10),rpart",NA,"no","4.0.0","CRAN"
+"additivityTests","additivityTests","C:/Users/Ilya/Documents/R/win-library/4.0","1.1-4",NA,NA,NA,"no","4.0.0","CRAN"
+"AER","AER","C:/Users/Ilya/Documents/R/win-library/4.0","1.2-9",NA,"R (>= 3.0.0), car (>= 2.0-19), lmtest, sandwich (>= 2.4-0),
+survival (>= 2.37-5), zoo","stats, Formula (>= 0.2-0)","no","4.0.0","CRAN"
+"AGD","AGD","C:/Users/Ilya/Documents/R/win-library/4.0","0.39",NA,"R (>= 2.10.0)","gamlss, gamlss.dist","no","4.0.0","CRAN"
+"agricolae","agricolae","C:/Users/Ilya/Documents/R/win-library/4.0","1.3-3",NA,"R (>= 2.10)","klaR, MASS, nlme, cluster, AlgDesign, graphics","no","4.0.0","CRAN"
+"ahp","ahp","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.12",NA,"R (>= 3.2.0)","utils, data.tree, yaml, formattable, DiagrammeR","no","4.0.0","CRAN"
+"akima","akima","C:/Users/Ilya/Documents/R/win-library/4.0","0.6-2.1",NA,"R (>= 2.0.0)","sp","yes","4.0.0","CRAN"
+"AlgDesign","AlgDesign","C:/Users/Ilya/Documents/R/win-library/4.0","1.2.0",NA,NA,NA,"yes","4.0.0","CRAN"
+"alphavantager","alphavantager","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.2",NA,"R (>= 3.3.0)","dplyr (>= 0.7.0), glue (>= 1.1.1), httr (>= 1.2.1), jsonlite
+(>= 1.5), purrr (>= 0.2.2.2), readr (>= 1.1.1), stringr (>=
+1.2.0), tibble (>= 1.3.3), tidyr (>= 0.6.3), timetk (>=
+0.1.1.1)","no","4.0.0","CRAN"
+"alr3","alr3","C:/Users/Ilya/Documents/R/win-library/4.0","2.0.8",NA,"R (>= 3.2.0), car",NA,"no","4.0.0","CRAN"
+"amap","amap","C:/Users/Ilya/Documents/R/win-library/4.0","0.8-18",NA,"R (>= 3.6.0)",NA,"yes","4.0.0","CRAN"
+"Amelia","Amelia","C:/Users/Ilya/Documents/R/win-library/4.0","1.7.6",NA,"R (>= 3.0.2), Rcpp (>= 0.11)","foreign, utils, grDevices, graphics, methods, stats","yes","4.0.0","CRAN"
+"animation","animation","C:/Users/Ilya/Documents/R/win-library/4.0","2.6",NA,"R (>= 2.14.0)","magick","no","4.0.0","CRAN"
+"anomalize","anomalize","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.1",NA,"R (>= 3.0.0)","dplyr, glue, timetk, sweep, tibbletime (>= 0.1.5), purrr,
+rlang, tibble, tidyr (>= 1.0.0), ggplot2, cli, crayon,
+rstudioapi","no","4.0.2","CRAN"
+"antiword","antiword","C:/Users/Ilya/Documents/R/win-library/4.0","1.3",NA,NA,"sys (>= 2.0)","yes","4.0.0","CRAN"
+"anytime","anytime","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.7",NA,"R (>= 3.2.0)","Rcpp (>= 0.12.9)","yes","4.0.0","CRAN"
+"ape","ape","C:/Users/Ilya/Documents/R/win-library/4.0","5.4",NA,"R (>= 3.2.0)","nlme, lattice, graphics, methods, stats, tools, utils,
+parallel, Rcpp (>= 0.12.0)","yes","4.0.0","CRAN"
+"archivist","archivist","C:/Users/Ilya/Documents/R/win-library/4.0","2.3.4",NA,"R (>= 3.2.0)","RCurl, digest, httr, DBI, lubridate, RSQLite, magrittr, flock","no","4.0.0","CRAN"
+"archivist.github","archivist.github","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.6",NA,"R (>= 3.2.0), archivist","httr, git2r, jsonlite, digest","no","4.0.0","CRAN"
+"arm","arm","C:/Users/Ilya/Documents/R/win-library/4.0","1.11-1",NA,"R (>= 3.1.0), MASS, Matrix (>= 1.0), stats, lme4 (>= 1.0)","abind, coda, graphics, grDevices, methods, nlme, utils","no","4.0.0","CRAN"
+"arrangements","arrangements","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.8",NA,"R (>= 3.4.0)","gmp, methods, R6","yes","4.0.0","CRAN"
+"arules","arules","C:/Users/Ilya/Documents/R/win-library/4.0","1.6-6",NA,"R (>= 3.4.0), Matrix (>= 1.2-0)","stats, methods, graphics, utils","yes","4.0.0","CRAN"
+"ash","ash","C:/Users/Ilya/Documents/R/win-library/4.0","1.0-15",NA,NA,NA,"yes","4.0.0","CRAN"
+"AsioHeaders","AsioHeaders","C:/Users/Ilya/Documents/R/win-library/4.0","1.16.1-1",NA,NA,NA,"no","4.0.2","CRAN"
+"askpass","askpass","C:/Users/Ilya/Documents/R/win-library/4.0","1.1",NA,NA,"sys (>= 2.1)","yes","4.0.0","CRAN"
+"assertive","assertive","C:/Users/Ilya/Documents/R/win-library/4.0","0.3-5",NA,"R (>= 3.0.0)","assertive.base (>= 0.0-4), assertive.properties (>= 0.0-2),
+assertive.types (>= 0.0-2), assertive.numbers,
+assertive.strings, assertive.datetimes, assertive.files,
+assertive.sets (>= 0.0-2), assertive.matrices,
+assertive.models, assertive.data, assertive.data.uk,
+assertive.data.us, assertive.reflection (>= 0.0-2),
+assertive.code, knitr","no","4.0.0","CRAN"
+"assertive.base","assertive.base","C:/Users/Ilya/Documents/R/win-library/4.0","0.0-7",NA,"R (>= 3.0.0)","methods, utils","no","4.0.0","CRAN"
+"assertive.code","assertive.code","C:/Users/Ilya/Documents/R/win-library/4.0","0.0-3",NA,"R (>= 3.0.0)","assertive.base (>= 0.0-2), assertive.properties,
+assertive.types, methods","no","4.0.0","CRAN"
+"assertive.data","assertive.data","C:/Users/Ilya/Documents/R/win-library/4.0","0.0-3",NA,"R (>= 3.0.0)","assertive.base (>= 0.0-2), assertive.strings","no","4.0.0","CRAN"
+"assertive.data.uk","assertive.data.uk","C:/Users/Ilya/Documents/R/win-library/4.0","0.0-2",NA,"R (>= 3.0.0)","assertive.base (>= 0.0-2), assertive.strings","no","4.0.0","CRAN"
+"assertive.data.us","assertive.data.us","C:/Users/Ilya/Documents/R/win-library/4.0","0.0-2",NA,"R (>= 3.0.0)","assertive.base (>= 0.0-2), assertive.strings","no","4.0.0","CRAN"
+"assertive.datetimes","assertive.datetimes","C:/Users/Ilya/Documents/R/win-library/4.0","0.0-2",NA,"R (>= 3.0.0)","assertive.base (>= 0.0-2), assertive.types","no","4.0.0","CRAN"
+"assertive.files","assertive.files","C:/Users/Ilya/Documents/R/win-library/4.0","0.0-2",NA,"R (>= 3.0.0)","assertive.base (>= 0.0-2), assertive.numbers","no","4.0.0","CRAN"
+"assertive.matrices","assertive.matrices","C:/Users/Ilya/Documents/R/win-library/4.0","0.0-2",NA,"R (>= 3.0.0)","assertive.base (>= 0.0-2)","no","4.0.0","CRAN"
+"assertive.models","assertive.models","C:/Users/Ilya/Documents/R/win-library/4.0","0.0-2",NA,"R (>= 3.0.0)","assertive.base (>= 0.0-2), stats","no","4.0.0","CRAN"
+"assertive.numbers","assertive.numbers","C:/Users/Ilya/Documents/R/win-library/4.0","0.0-2",NA,"R (>= 3.0.0)","assertive.base (>= 0.0-2)","no","4.0.0","CRAN"
+"assertive.properties","assertive.properties","C:/Users/Ilya/Documents/R/win-library/4.0","0.0-4",NA,"R (>= 3.0.0)","assertive.base (>= 0.0-7), methods","no","4.0.0","CRAN"
+"assertive.reflection","assertive.reflection","C:/Users/Ilya/Documents/R/win-library/4.0","0.0-4",NA,"R (>= 3.0.0)","assertive.base (>= 0.0-7), utils","no","4.0.0","CRAN"
+"assertive.sets","assertive.sets","C:/Users/Ilya/Documents/R/win-library/4.0","0.0-3",NA,"R (>= 3.0.0)","assertive.base (>= 0.0-7)","no","4.0.0","CRAN"
+"assertive.strings","assertive.strings","C:/Users/Ilya/Documents/R/win-library/4.0","0.0-3",NA,"R (>= 3.0.0)","assertive.base (>= 0.0-2), assertive.types, stringi","no","4.0.0","CRAN"
+"assertive.types","assertive.types","C:/Users/Ilya/Documents/R/win-library/4.0","0.0-3",NA,"R (>= 3.0.0)","assertive.base (>= 0.0-7), assertive.properties, codetools,
+methods, stats","no","4.0.0","CRAN"
+"assertr","assertr","C:/Users/Ilya/Documents/R/win-library/4.0","2.7",NA,"R (>= 3.1.0)","dplyr (>= 0.7.0), MASS, stats, utils, rlang (>= 0.3.0)","no","4.0.0","CRAN"
+"assertthat","assertthat","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.1",NA,NA,"tools","no","4.0.0","CRAN"
+"autocogs","autocogs","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.3",NA,"R (>= 3.4.0)","dplyr, checkmate, MASS, broom, moments, diptest, mclust,
+ggplot2, tibble, utils, hexbin, progress","no","4.0.0","CRAN"
+"babynames","babynames","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.0",NA,"R (>= 2.10)","tibble","no","4.0.0","CRAN"
+"backports","backports","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.8",NA,"R (>= 3.0.0)","utils","yes","4.0.2","CRAN"
+"base64enc","base64enc","C:/Users/Ilya/Documents/R/win-library/4.0","0.1-3",NA,"R (>= 2.9.0)",NA,"yes","4.0.0","CRAN"
+"bayesAB","bayesAB","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.2",NA,NA,"Rcpp (>= 0.12.4), ggplot2 (>= 3.2.0), methods, rlang (>=
+0.4.0)","yes","4.0.0","CRAN"
+"BayesFactor","BayesFactor","C:/Users/Ilya/Documents/R/win-library/4.0","0.9.12-4.2",NA,"R (>= 3.2.0), coda, Matrix (>= 1.1-1)","pbapply, mvtnorm, stringr, utils, graphics, gtools,
+MatrixModels, Rcpp (>= 0.11.2), methods, hypergeo","yes","4.0.0","CRAN"
+"bayesplot","bayesplot","C:/Users/Ilya/Documents/R/win-library/4.0","1.7.2",NA,"R (>= 3.1.0)","dplyr (>= 0.8.0), ggplot2 (>= 3.0.0), ggridges, glue,
+reshape2, rlang (>= 0.3.0), stats, tibble, tidyselect, utils","no","4.0.0","CRAN"
+"bayestestR","bayestestR","C:/Users/Ilya/Documents/R/win-library/4.0","0.7.0",NA,"R (>= 3.0)","insight (>= 0.8.4), methods, stats, utils","no","4.0.2","CRAN"
+"BayesX","BayesX","C:/Users/Ilya/Documents/R/win-library/4.0","0.3-1",NA,"shapefiles","sp, maptools, colorspace, coda, splines, methods","no","4.0.0","CRAN"
+"BayesXsrc","BayesXsrc","C:/Users/Ilya/Documents/R/win-library/4.0","3.0-1",NA,"R (>= 2.8.0)",NA,"yes","4.0.0","CRAN"
+"bbmle","bbmle","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.23.1",NA,"R (>= 3.0.0), stats4","stats, numDeriv, lattice, MASS, methods, bdsmatrix, Matrix,
+mvtnorm","no","4.0.0","CRAN"
+"bdsmatrix","bdsmatrix","C:/Users/Ilya/Documents/R/win-library/4.0","1.3-4",NA,"methods, R (>= 2.0.0)",NA,"yes","4.0.0","CRAN"
+"beeswarm","beeswarm","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.3",NA,NA,"stats, graphics, grDevices, utils","no","4.0.0","CRAN"
+"bench","bench","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.1",NA,"R (>= 3.1)","glue, methods, pillar, profmem, rlang (>= 0.2.0), stats,
+tibble, utils","yes","4.0.0","CRAN"
+"benchmarkme","benchmarkme","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.4",NA,"R (>= 3.5.0)","benchmarkmeData (>= 1.0.4), compiler, doParallel, dplyr,
+foreach, graphics, httr, Matrix, methods, parallel, tibble,
+utils","no","4.0.0","CRAN"
+"benchmarkmeData","benchmarkmeData","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.4",NA,"R (>= 3.5.0)","dplyr, graphics, tibble, utils","no","4.0.0","CRAN"
+"benchr","benchr","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.5",NA,NA,"Rcpp (>= 0.12.11), RcppProgress, stats, graphics","yes","4.0.0","CRAN"
+"betareg","betareg","C:/Users/Ilya/Documents/R/win-library/4.0","3.1-3",NA,"R (>= 3.0.0)","graphics, grDevices, methods, stats, flexmix, Formula, lmtest,
+modeltools, sandwich","no","4.0.0","CRAN"
+"BH","BH","C:/Users/Ilya/Documents/R/win-library/4.0","1.72.0-3",NA,NA,NA,"no","4.0.0","CRAN"
+"BiasedUrn","BiasedUrn","C:/Users/Ilya/Documents/R/win-library/4.0","1.07",NA,NA,NA,"yes","4.0.0","CRAN"
+"bibtex","bibtex","C:/Users/Ilya/Documents/R/win-library/4.0","0.4.2.2",NA,"R (>= 3.0.2)","stringr, utils","yes","4.0.0","CRAN"
+"biclust","biclust","C:/Users/Ilya/Documents/R/win-library/4.0","2.0.2",NA,"R (>= 2.10), MASS, grid, colorspace, lattice","methods, flexclust, additivityTests, tidyr, ggplot2","yes","4.0.0","CRAN"
+"bigassertr","bigassertr","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.3",NA,NA,NA,"no","4.0.0","CRAN"
+"biglm","biglm","C:/Users/Ilya/Documents/R/win-library/4.0","0.9-2",NA,"DBI, methods",NA,"yes","4.0.0","CRAN"
+"bigmemory","bigmemory","C:/Users/Ilya/Documents/R/win-library/4.0","4.5.36",NA,"R (>= 3.2.0),","methods, Rcpp, utils, bigmemory.sri","yes","4.0.0","CRAN"
+"bigmemory.sri","bigmemory.sri","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.3",NA,NA,"methods","no","4.0.0","CRAN"
+"bigreadr","bigreadr","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.0",NA,NA,"bigassertr (>= 0.1.1), data.table, Rcpp, parallel, utils","yes","4.0.0","CRAN"
+"binaryLogic","binaryLogic","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.9",NA,"R (>= 3.0.2)",NA,"no","4.0.2","CRAN"
+"bindr","bindr","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.1",NA,NA,NA,"no","4.0.0","CRAN"
+"bindrcpp","bindrcpp","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.2",NA,NA,"bindr (>= 0.1.1), Rcpp (>= 0.12.16)","yes","4.0.0","CRAN"
+"binman","binman","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.1",NA,"R (>= 3.3)","rappdirs, yaml, httr, jsonlite, xml2, utils, stats,
+assertthat, semver","no","4.0.0","CRAN"
+"binom","binom","C:/Users/Ilya/Documents/R/win-library/4.0","1.1-1",NA,NA,NA,"yes","4.0.0","CRAN"
+"BiocManager","BiocManager","C:/Users/Ilya/Documents/R/win-library/4.0","1.30.10",NA,NA,"utils","no","4.0.0","CRAN"
+"bit","bit","C:/Users/Ilya/Documents/R/win-library/4.0","1.1-15.2",NA,"R (>= 2.9.2)",NA,"yes","4.0.0","CRAN"
+"bit64","bit64","C:/Users/Ilya/Documents/R/win-library/4.0","0.9-7",NA,"R (>= 3.0.1), bit (>= 1.1-12), utils, methods, stats",NA,"yes","4.0.0","CRAN"
+"bitops","bitops","C:/Users/Ilya/Documents/R/win-library/4.0","1.0-6",NA,NA,NA,"yes","4.0.0","CRAN"
+"blme","blme","C:/Users/Ilya/Documents/R/win-library/4.0","1.0-4",NA,"R (>= 3.0-0), lme4 (>= 1.0-6)","methods, stats, utils","no","4.0.0","CRAN"
+"blob","blob","C:/Users/Ilya/Documents/R/win-library/4.0","1.2.1",NA,NA,"methods, rlang, vctrs (>= 0.2.1)","no","4.0.0","CRAN"
+"blogdown","blogdown","C:/Users/Ilya/Documents/R/win-library/4.0","0.20",NA,NA,"rmarkdown (>= 1.16), bookdown (>= 0.14), knitr (>= 1.25),
+htmltools, yaml (>= 2.1.19), httpuv (>= 1.4.0), xfun (>= 0.10),
+servr (>= 0.15)","no","4.0.2","CRAN"
+"BMA","BMA","C:/Users/Ilya/Documents/R/win-library/4.0","3.18.12",NA,"survival, leaps, robustbase, inline, rrcov","methods","yes","4.0.0","CRAN"
+"bmp","bmp","C:/Users/Ilya/Documents/R/win-library/4.0","0.3",NA,NA,NA,"no","4.0.0","CRAN"
+"bookdown","bookdown","C:/Users/Ilya/Documents/R/win-library/4.0","0.20",NA,NA,"htmltools (>= 0.3.6), knitr (>= 1.22), rmarkdown (>= 2.3),
+xfun (>= 0.6), tinytex (>= 0.12)","no","4.0.2","CRAN"
+"Boruta","Boruta","C:/Users/Ilya/Documents/R/win-library/4.0","7.0.0",NA,NA,"ranger","no","4.0.0","CRAN"
+"BradleyTerry2","BradleyTerry2","C:/Users/Ilya/Documents/R/win-library/4.0","1.1-2",NA,"R (>= 2.10)","brglm, gtools, lme4 (>= 1.0), qvcalc, stats","no","4.0.0","CRAN"
+"brew","brew","C:/Users/Ilya/Documents/R/win-library/4.0","1.0-6",NA,NA,NA,NA,"4.0.0","CRAN"
+"brglm","brglm","C:/Users/Ilya/Documents/R/win-library/4.0","0.6.2",NA,"R (>= 2.6.0), profileModel",NA,"yes","4.0.0","CRAN"
+"bridgesampling","bridgesampling","C:/Users/Ilya/Documents/R/win-library/4.0","1.0-0",NA,"R (>= 3.0.0)","mvtnorm, Matrix, Brobdingnag, stringr, coda, parallel, scales,
+utils, methods","no","4.0.0","CRAN"
+"brms","brms","C:/Users/Ilya/Documents/R/win-library/4.0","2.13.0",NA,"R (>= 3.5.0), Rcpp (>= 0.12.0), methods","rstan (>= 2.19.2), ggplot2 (>= 2.0.0), loo (>= 2.2.0), Matrix
+(>= 1.1.1), mgcv (>= 1.8-13), rstantools (>= 2.0.0), bayesplot
+(>= 1.5.0), shinystan (>= 2.4.0), bridgesampling (>= 0.3-0),
+glue (>= 1.3.0), matrixStats, nleqslv, nlme, coda, abind,
+future, stats, utils, parallel, grDevices, backports","no","4.0.0","CRAN"
+"Brobdingnag","Brobdingnag","C:/Users/Ilya/Documents/R/win-library/4.0","1.2-6",NA,"R (>= 2.13.0), methods",NA,"no","4.0.0","CRAN"
+"broom","broom","C:/Users/Ilya/Documents/R/win-library/4.0","0.7.0",NA,"R (>= 3.1)","backports, dplyr, ellipsis, generics (>= 0.0.2), glue,
+methods, purrr, rlang, stringr, tibble (>= 3.0.0), tidyr","no","4.0.2","CRAN"
+"broom.mixed","broom.mixed","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.6",NA,NA,"broom, dplyr, tidyr, plyr, purrr, tibble, reshape2, nlme,
+methods, stringr, coda, TMB, cubelyr","no","4.0.2","CRAN"
+"BSDA","BSDA","C:/Users/Ilya/Documents/R/win-library/4.0","1.2.0",NA,"lattice, R (>= 2.10)","e1071","no","4.0.0","CRAN"
+"bsplus","bsplus","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.2",NA,"R (>= 3.3.0)","htmltools, magrittr, purrr, lubridate, stringr, rmarkdown,
+methods, glue, jsonlite","no","4.0.2","CRAN"
+"btergm","btergm","C:/Users/Ilya/Documents/R/win-library/4.0","1.9.9",NA,"R (>= 3.5), xergm.common (>= 1.7.7), ggplot2 (>= 2.0.0)","stats4, utils, methods, graphics, network (>= 1.13.0), sna (>=
+2.3.2), ergm (>= 3.10.0), parallel, Matrix (>= 1.2.2), boot (>=
+1.3.17), coda (>= 0.18.1), stats, ROCR (>= 1.0.7), speedglm (>=
+0.3.1), igraph (>= 0.7.1), RSiena (>= 1.0.12.232),
+statnet.common (>= 4.2.0)","no","4.0.0","CRAN"
+"bupaR","bupaR","C:/Users/Ilya/Documents/R/win-library/4.0","0.4.4",NA,NA,"magrittr, dplyr, data.table, shiny, miniUI, purrr, tidyr,
+glue, forcats, rlang, eventdataR (>= 0.2.0), stringr, lubridate","no","4.0.0","CRAN"
+"ca","ca","C:/Users/Ilya/Documents/R/win-library/4.0","0.71.1",NA,"R (>= 3.0.0)",NA,"no","4.0.0","CRAN"
+"Cairo","Cairo","C:/Users/Ilya/Documents/R/win-library/4.0","1.5-12.2",NA,"R (>= 2.4.0)","grDevices, graphics","yes","4.0.2","CRAN"
+"cairoDevice","cairoDevice","C:/Users/Ilya/Documents/R/win-library/4.0","2.28.2",NA,"R (>= 2.12.0)","grDevices","yes","4.0.2","CRAN"
+"callr","callr","C:/Users/Ilya/Documents/R/win-library/4.0","3.4.3",NA,NA,"processx (>= 3.4.0), R6, utils","no","4.0.0","CRAN"
+"car","car","C:/Users/Ilya/Documents/R/win-library/4.0","3.0-8",NA,"R (>= 3.5.0), carData (>= 3.0-0)","abind, MASS, mgcv, nnet, pbkrtest (>= 0.4-4), quantreg,
+grDevices, utils, stats, graphics, maptools, rio, lme4, nlme","no","4.0.0","CRAN"
+"carData","carData","C:/Users/Ilya/Documents/R/win-library/4.0","3.0-4",NA,"R (>= 3.5.0)",NA,"no","4.0.0","CRAN"
+"caret","caret","C:/Users/Ilya/Documents/R/win-library/4.0","6.0-86",NA,"R (>= 3.2.0), lattice (>= 0.20), ggplot2","foreach, methods, plyr, ModelMetrics (>= 1.2.2.2), nlme,
+reshape2, stats, stats4, utils, grDevices, recipes (>= 0.1.10),
+withr (>= 2.0.0), pROC,","yes","4.0.0","CRAN"
+"caTools","caTools","C:/Users/Ilya/Documents/R/win-library/4.0","1.18.0",NA,"R (>= 3.6.0)","bitops","yes","4.0.0","CRAN"
+"cba","cba","C:/Users/Ilya/Documents/R/win-library/4.0","0.2-21",NA,"R (>= 2.10), grid, proxy","stats, graphics, grDevices, methods","yes","4.0.0","CRAN"
+"cdata","cdata","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.6",NA,"R (>= 3.4.0), wrapr (>= 1.9.6)","rquery (>= 1.4.2), rqdatatable (>= 1.2.6), methods, stats","no","4.0.0","CRAN"
+"cellranger","cellranger","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.0",NA,"R (>= 3.0.0)","rematch, tibble","no","4.0.0","CRAN"
+"checkmate","checkmate","C:/Users/Ilya/Documents/R/win-library/4.0","2.0.0",NA,"R (>= 3.0.0)","backports (>= 1.1.0), utils","yes","4.0.0","CRAN"
+"chron","chron","C:/Users/Ilya/Documents/R/win-library/4.0","2.3-55",NA,"R (>= 2.12.0)","graphics, stats","yes","4.0.0","CRAN"
+"circlize","circlize","C:/Users/Ilya/Documents/R/win-library/4.0","0.4.10",NA,"R (>= 3.0.0), graphics","GlobalOptions (>= 0.1.2), shape, grDevices, utils, stats,
+colorspace, methods, grid","no","4.0.0","CRAN"
+"CircStats","CircStats","C:/Users/Ilya/Documents/R/win-library/4.0","0.2-6",NA,"MASS, boot",NA,"no","4.0.0","CRAN"
+"classInt","classInt","C:/Users/Ilya/Documents/R/win-library/4.0","0.4-3",NA,"R (>= 2.2)","grDevices, stats, graphics, e1071, class, KernSmooth","yes","4.0.0","CRAN"
+"cli","cli","C:/Users/Ilya/Documents/R/win-library/4.0","2.0.2",NA,"R (>= 2.10)","assertthat, crayon (>= 1.3.4), glue, methods, utils, fansi","no","4.0.0","CRAN"
+"cliapp","cliapp","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.0",NA,NA,"cli, crayon, fansi, glue (>= 1.3.0), prettycode, progress (>=
+1.2.0), R6, selectr, utils, withr, xml2","no","4.0.0","CRAN"
+"clipr","clipr","C:/Users/Ilya/Documents/R/win-library/4.0","0.7.0",NA,NA,"utils","no","4.0.0","CRAN"
+"clisymbols","clisymbols","C:/Users/Ilya/Documents/R/win-library/4.0","1.2.0",NA,NA,NA,"no","4.0.0","CRAN"
+"clubSandwich","clubSandwich","C:/Users/Ilya/Documents/R/win-library/4.0","0.4.2",NA,"R (>= 3.0.0)","stats, sandwich","no","4.0.0","CRAN"
+"clue","clue","C:/Users/Ilya/Documents/R/win-library/4.0","0.3-57",NA,"R (>= 3.2.0)","stats, cluster, graphics, methods","yes","4.0.0","CRAN"
+"clusterSEs","clusterSEs","C:/Users/Ilya/Documents/R/win-library/4.0","2.6.2",NA,"R (>= 3.3.0), AER, Formula, plm, stats","sandwich, lmtest, mlogit, utils","no","4.0.0","CRAN"
+"clv","clv","C:/Users/Ilya/Documents/R/win-library/4.0","0.3-2.2",NA,"cluster, class",NA,"yes","4.0.0","CRAN"
+"cmna","cmna","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.3",NA,"R (>= 2.10)",NA,"no","4.0.2","CRAN"
+"cmprsk","cmprsk","C:/Users/Ilya/Documents/R/win-library/4.0","2.2-10",NA,"R (>= 3.0.0), survival",NA,"yes","4.0.0","CRAN"
+"coda","coda","C:/Users/Ilya/Documents/R/win-library/4.0","0.19-3",NA,"R (>= 2.14.0)","lattice","no","4.0.0","CRAN"
+"coin","coin","C:/Users/Ilya/Documents/R/win-library/4.0","1.3-1",NA,"R (>= 3.4.0), survival","methods, parallel, stats, stats4, utils, libcoin (>= 1.0-0),
+matrixStats (>= 0.54.0), modeltools (>= 0.2-9), mvtnorm (>=
+1.0-5), multcomp","yes","4.0.0","CRAN"
+"colorRamps","colorRamps","C:/Users/Ilya/Documents/R/win-library/4.0","2.3",NA,NA,NA,NA,"4.0.0","CRAN"
+"colorspace","colorspace","C:/Users/Ilya/Documents/R/win-library/4.0","1.4-1",NA,"R (>= 3.0.0), methods","graphics, grDevices, stats","yes","4.0.0","CRAN"
+"colourpicker","colourpicker","C:/Users/Ilya/Documents/R/win-library/4.0","1.0",NA,"R (>= 3.1.0)","ggplot2, htmltools, htmlwidgets (>= 0.7), jsonlite, miniUI (>=
+0.1.1), shiny (>= 0.11.1), shinyjs, utils","no","4.0.0","CRAN"
+"colourvalues","colourvalues","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.5",NA,"R (>= 3.3.0)","graphics, Rcpp","yes","4.0.0","CRAN"
+"combinat","combinat","C:/Users/Ilya/Documents/R/win-library/4.0","0.0-8",NA,NA,NA,NA,"4.0.0","CRAN"
+"commonmark","commonmark","C:/Users/Ilya/Documents/R/win-library/4.0","1.7",NA,NA,NA,"yes","4.0.0","CRAN"
+"compareDF","compareDF","C:/Users/Ilya/Documents/R/win-library/4.0","2.2.0",NA,"R (>= 3.5.0)","dplyr (>= 0.4.3), magrittr (>= 1.5), htmlTable (>= 1.5),
+openxlsx (>= 4.1), tidyr (>= 0.4.1), stringr (>= 1.0.0), tibble
+(>= 2.1.3)","no","4.0.0","CRAN"
+"CompQuadForm","CompQuadForm","C:/Users/Ilya/Documents/R/win-library/4.0","1.4.3",NA,NA,NA,"yes","4.0.0","CRAN"
+"concaveman","concaveman","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.0",NA,"R (>= 2.10)","V8, sf, magrittr, jsonlite, dplyr","no","4.0.0","CRAN"
+"config","config","C:/Users/Ilya/Documents/R/win-library/4.0","0.3",NA,NA,"yaml (>= 2.1.13)","no","4.0.0","CRAN"
+"configr","configr","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.4",NA,"R (>= 3.3.0)","jsonlite (>= 1.2), ini (>= 0.2), yaml (>= 2.1.3), RcppTOML (>=
+0.1.3), stringr (>= 1.2.0), utils, glue","no","4.0.0","CRAN"
+"conflicted","conflicted","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.4",NA,"R (>= 3.2)","rlang (>= 0.3.4), memoise","no","4.0.0","CRAN"
+"conquer","conquer","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.1",NA,"R (>= 3.6.0)","Rcpp (>= 1.0.3), Matrix, matrixStats, stats","yes","4.0.2","CRAN"
+"contfrac","contfrac","C:/Users/Ilya/Documents/R/win-library/4.0","1.1-12",NA,NA,NA,"yes","4.0.0","CRAN"
+"corrgram","corrgram","C:/Users/Ilya/Documents/R/win-library/4.0","1.13",NA,NA,"graphics, grDevices, seriation, stats","no","4.0.0","CRAN"
+"corrplot","corrplot","C:/Users/Ilya/Documents/R/win-library/4.0","0.84",NA,NA,NA,"no","4.0.0","CRAN"
+"corrr","corrr","C:/Users/Ilya/Documents/R/win-library/4.0","0.4.2",NA,"R (>= 3.3.0)","dplyr (>= 0.8), ggplot2 (>= 2.2.0), seriation (>= 1.2-0),
+purrr (>= 0.2.2), tibble (>= 2.0), ggrepel (>= 0.6.5), methods
+(>= 3.4.3), rlang (>= 0.4.0)","no","4.0.0","CRAN"
+"countrycode","countrycode","C:/Users/Ilya/Documents/R/win-library/4.0","1.2.0",NA,"R (>= 2.10)",NA,"no","4.0.0","CRAN"
+"covr","covr","C:/Users/Ilya/Documents/R/win-library/4.0","3.5.0",NA,"R (>= 3.1.0), methods","digest, stats, utils, jsonlite, rex, httr, crayon, withr (>=
+1.0.2), yaml","yes","4.0.0","CRAN"
+"cowplot","cowplot","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.0",NA,"R (>= 3.5.0)","ggplot2 (> 2.2.1), grid, gtable, grDevices, methods, rlang,
+scales, utils","no","4.0.0","CRAN"
+"CoxBoost","CoxBoost","C:/Users/Ilya/Documents/R/win-library/4.0","1.4",NA,"R (>= 2.14.0), survival, Matrix, prodlim",NA,"yes","4.0.0","CRAN"
+"crayon","crayon","C:/Users/Ilya/Documents/R/win-library/4.0","1.3.4",NA,NA,"grDevices, methods, utils","no","4.0.0","CRAN"
+"crosstalk","crosstalk","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.0.1",NA,NA,"htmltools (>= 0.3.6), jsonlite, lazyeval, R6","no","4.0.0","CRAN"
+"crrstep","crrstep","C:/Users/Ilya/Documents/R/win-library/4.0","2015-2.1",NA,"cmprsk",NA,"no","4.0.0","CRAN"
+"crul","crul","C:/Users/Ilya/Documents/R/win-library/4.0","0.9.0",NA,NA,"curl (>= 3.3), R6 (>= 2.2.0), urltools (>= 1.6.0), httpcode
+(>= 0.2.0), jsonlite, mime","no","4.0.0","CRAN"
+"cubature","cubature","C:/Users/Ilya/Documents/R/win-library/4.0","2.0.4.1",NA,NA,"Rcpp","yes","4.0.2","CRAN"
+"cubelyr","cubelyr","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.0",NA,"R (>= 3.2)","dplyr, glue, pillar, purrr, rlang, tibble, tidyselect","no","4.0.2","CRAN"
+"curl","curl","C:/Users/Ilya/Documents/R/win-library/4.0","4.3",NA,"R (>= 3.0.0)",NA,"yes","4.0.0","CRAN"
+"CVST","CVST","C:/Users/Ilya/Documents/R/win-library/4.0","0.2-2",NA,"kernlab,Matrix",NA,"no","4.0.0","CRAN"
+"cyclocomp","cyclocomp","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.0",NA,NA,"callr, crayon, desc, remotes, withr","no","4.0.0","CRAN"
+"D3partitionR","D3partitionR","C:/Users/Ilya/Documents/R/win-library/4.0","0.5.0",NA,"R (>= 3.3.1)","data.table, magrittr, htmlwidgets, functional, RColorBrewer,
+titanic","no","4.0.0","CRAN"
+"d3r","d3r","C:/Users/Ilya/Documents/R/win-library/4.0","0.9.0",NA,NA,"dplyr, htmltools, rlang, tidyr (>= 0.8.3)","no","4.0.0","CRAN"
+"DAAG","DAAG","C:/Users/Ilya/Documents/R/win-library/4.0","1.24",NA,"R (>= 2.10.0), lattice","latticeExtra, methods","no","4.0.0","CRAN"
+"dabestr","dabestr","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.5",NA,"R (>= 3.5.0), boot, magrittr","cowplot, dplyr, ellipsis, ggplot2 (>= 3.2), forcats, ggforce,
+ggbeeswarm, plyr, RColorBrewer, rlang, simpleboot, stringr,
+tibble, tidyr","no","4.0.0","CRAN"
+"daff","daff","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.5",NA,NA,"V8 (>= 0.6), jsonlite, utils","no","4.0.0","CRAN"
+"data.table","data.table","C:/Users/Ilya/Documents/R/win-library/4.0","1.12.8",NA,"R (>= 3.1.0)","methods","yes","4.0.0","CRAN"
+"data.tree","data.tree","C:/Users/Ilya/Documents/R/win-library/4.0","0.7.11",NA,"R (>= 3.0)","R6, stringr, methods","no","4.0.0","CRAN"
+"DataExplorer","DataExplorer","C:/Users/Ilya/Documents/R/win-library/4.0","0.8.1",NA,"R (>= 3.5)","data.table (>= 1.12.8), reshape2 (>= 1.4.3), scales (>=
+1.1.0), ggplot2, gridExtra, rmarkdown (>= 2.0), networkD3 (>=
+0.4), stats, utils, tools, parallel","no","4.0.0","CRAN"
+"datapasta","datapasta","C:/Users/Ilya/Documents/R/win-library/4.0","3.1.0",NA,"R (>= 3.3.0)","readr (>= 1.2.0), clipr (>= 0.3.0), rstudioapi (>= 0.6),
+methods","no","4.0.0","CRAN"
+"datasauRus","datasauRus","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.4",NA,"R (>= 3.0.0)",NA,"no","4.0.0","CRAN"
+"date","date","C:/Users/Ilya/Documents/R/win-library/4.0","1.2-39",NA,NA,"graphics","yes","4.0.0","CRAN"
+"DBI","DBI","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.0",NA,"methods, R (>= 3.0.0)",NA,"no","4.0.0","CRAN"
+"dbplyr","dbplyr","C:/Users/Ilya/Documents/R/win-library/4.0","1.4.4",NA,"R (>= 3.1)","assertthat (>= 0.2.0), DBI (>= 1.0.0), dplyr (>= 0.8.0), glue
+(>= 1.2.0), lifecycle, magrittr, methods, purrr (>= 0.2.5), R6
+(>= 2.2.2), rlang (>= 0.2.0), tibble (>= 1.4.2), tidyselect (>=
+0.2.4), blob (>= 1.2.0), utils","no","4.0.0","CRAN"
+"ddalpha","ddalpha","C:/Users/Ilya/Documents/R/win-library/4.0","1.3.11",NA,"R (>= 2.10), stats, utils, graphics, grDevices, MASS, class,
+robustbase, sfsmisc, geometry","Rcpp (>= 0.11.0)","yes","4.0.0","CRAN"
+"debugme","debugme","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.0",NA,NA,"crayon, grDevices","no","4.0.0","CRAN"
+"debugr","debugr","C:/Users/Ilya/Documents/R/win-library/4.0","0.0.1",NA,"R (>= 3.5.0)","utils, rprojroot, rstudioapi","no","4.0.0","CRAN"
+"deldir","deldir","C:/Users/Ilya/Documents/R/win-library/4.0","0.1-25",NA,"R (>= 0.99)","graphics, grDevices","yes","4.0.0","CRAN"
+"dendextend","dendextend","C:/Users/Ilya/Documents/R/win-library/4.0","1.13.4",NA,"R (>= 3.0.0)","utils, stats, datasets, magrittr (>= 1.0.1), ggplot2, viridis","no","4.0.0","CRAN"
+"DEoptimR","DEoptimR","C:/Users/Ilya/Documents/R/win-library/4.0","1.0-8",NA,NA,"stats","no","4.0.0","CRAN"
+"Deriv","Deriv","C:/Users/Ilya/Documents/R/win-library/4.0","4.0",NA,NA,"methods","no","4.0.0","CRAN"
+"desc","desc","C:/Users/Ilya/Documents/R/win-library/4.0","1.2.0",NA,"R (>= 3.1.0)","assertthat, utils, R6, crayon, rprojroot","no","4.0.0","CRAN"
+"descr","descr","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.4",NA,NA,"xtable, utils, grDevices, graphics, stats","yes","4.0.0","CRAN"
+"DescTools","DescTools","C:/Users/Ilya/Documents/R/win-library/4.0","0.99.37",NA,"base, stats, R (>= 3.6.0)","graphics, grDevices, methods, MASS, utils, boot, mvtnorm,
+expm, Rcpp (>= 0.12.10), rstudioapi, Exact","yes","4.0.2","CRAN"
+"deSolve","deSolve","C:/Users/Ilya/Documents/R/win-library/4.0","1.28",NA,"R (>= 3.3.0)","methods, graphics, grDevices, stats","yes","4.0.0","CRAN"
+"Devore7","Devore7","C:/Users/Ilya/Documents/R/win-library/4.0","0.7.6",NA,"R(>= 2.4.0), MASS, lattice",NA,"no","4.0.0","CRAN"
+"devtools","devtools","C:/Users/Ilya/Documents/R/win-library/4.0","2.3.0",NA,"R (>= 3.0.2), usethis (>= 1.6.0)","callr (>= 3.4.3), cli (>= 2.0.2), covr (>= 3.5.0), crayon (>=
+1.3.4), desc (>= 1.2.0), digest (>= 0.6.25), DT (>= 0.13),
+ellipsis (>= 0.3.0), glue (>= 1.4.0), git2r (>= 0.26.1), httr
+(>= 1.4.1), jsonlite (>= 1.6.1), memoise (>= 1.1.0), pkgbuild
+(>= 1.0.6), pkgload (>= 1.0.2), rcmdcheck (>= 1.3.3), remotes
+(>= 2.1.1), rlang (>= 0.4.5), roxygen2 (>= 7.1.0), rstudioapi
+(>= 0.11), rversions (>= 2.0.1), sessioninfo (>= 1.1.1), stats,
+testthat (>= 2.3.2), tools, utils, withr (>= 2.1.2)","no","4.0.0","CRAN"
+"dfidx","dfidx","C:/Users/Ilya/Documents/R/win-library/4.0","0.0-3",NA,"R (>= 2.10)","dplyr, Formula","no","4.0.0","CRAN"
+"dfoptim","dfoptim","C:/Users/Ilya/Documents/R/win-library/4.0","2018.2-1",NA,"R (>= 2.10.1)",NA,"no","4.0.0","CRAN"
+"DiagrammeR","DiagrammeR","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.6.1",NA,"R (>= 3.2.0)","dplyr (>= 0.7.6), downloader (>= 0.4), glue (>= 1.3.0),
+htmltools (>= 0.3.6), htmlwidgets (>= 1.2), igraph (>= 1.2.2),
+influenceR (>= 0.1.0), magrittr (>= 1.5), purrr (>= 0.2.5),
+RColorBrewer (>= 1.1-2), readr (>= 1.1.1), rlang (>= 0.2.2),
+rstudioapi (>= 0.7), scales (>= 1.0.0), stringr (>= 1.3.1),
+tibble (>= 1.4.2), tidyr (>= 0.8.1), viridis (>= 0.5.1),
+visNetwork (>= 2.0.4)","no","4.0.0","CRAN"
+"DiagrammeRsvg","DiagrammeRsvg","C:/Users/Ilya/Documents/R/win-library/4.0","0.1",NA,NA,"V8 (>= 0.10)","no","4.0.0","CRAN"
+"DiceKriging","DiceKriging","C:/Users/Ilya/Documents/R/win-library/4.0","1.5.6",NA,"methods",NA,"yes","4.0.0","CRAN"
+"dichromat","dichromat","C:/Users/Ilya/Documents/R/win-library/4.0","2.0-0",NA,"R (>= 2.10), stats",NA,NA,"4.0.0","CRAN"
+"diffobj","diffobj","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.0",NA,"R (>= 3.1.0)","crayon (>= 1.3.2), tools, methods, utils, stats","yes","4.0.0","CRAN"
+"digest","digest","C:/Users/Ilya/Documents/R/win-library/4.0","0.6.25",NA,"R (>= 3.1.0)","utils","yes","4.0.0","CRAN"
+"dimRed","dimRed","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.3",NA,"R (>= 3.0.0), DRR","magrittr, methods","yes","4.0.0","CRAN"
+"diptest","diptest","C:/Users/Ilya/Documents/R/win-library/4.0","0.75-7",NA,NA,NA,"yes","4.0.0","CRAN"
+"directlabels","directlabels","C:/Users/Ilya/Documents/R/win-library/4.0","2020.6.17",NA,NA,"grid, quadprog","no","4.0.2","CRAN"
+"distributional","distributional","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.0",NA,NA,"vctrs (>= 0.3.0), rlang (>= 0.4.5), generics, ellipsis, stats,
+numDeriv, ggplot2, scales, farver, digest, utils, lifecycle","no","4.0.0","CRAN"
+"DistributionUtils","DistributionUtils","C:/Users/Ilya/Documents/R/win-library/4.0","0.6-0",NA,"R (>= 3.0.1)",NA,"yes","4.0.0","CRAN"
+"dlm","dlm","C:/Users/Ilya/Documents/R/win-library/4.0","1.1-5",NA,NA,"stats, utils, methods, grDevices, graphics","yes","4.0.0","CRAN"
+"doBy","doBy","C:/Users/Ilya/Documents/R/win-library/4.0","4.6.7",NA,"R (>= 3.6.0), methods","pbkrtest (>= 0.4-8.1), MASS, Matrix, magrittr, Deriv, tibble,
+broom, ggplot2, dplyr","no","4.0.2","CRAN"
+"docopt","docopt","C:/Users/Ilya/Documents/R/win-library/4.0","0.7.1",NA,NA,"methods","no","4.0.2","CRAN"
+"docxtractr","docxtractr","C:/Users/Ilya/Documents/R/win-library/4.0","0.6.5",NA,"R (>= 3.6.0)","tools, xml2, purrr, dplyr, utils, httr, magrittr","no","4.0.2","CRAN"
+"doFuture","doFuture","C:/Users/Ilya/Documents/R/win-library/4.0","0.9.0",NA,"globals (>= 0.12.5), future (>= 1.15.1), foreach (>= 1.4.7),
+iterators (>= 1.0.12), parallel, utils",NA,"no","4.0.0","CRAN"
+"doParallel","doParallel","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.15",NA,"R (>= 2.14.0), foreach(>= 1.2.0), iterators(>= 1.0.0),
+parallel, utils",NA,"no","4.0.0","CRAN"
+"doRNG","doRNG","C:/Users/Ilya/Documents/R/win-library/4.0","1.8.2",NA,"R (>= 3.0.0), foreach, rngtools (>= 1.5)","stats, utils, iterators","no","4.0.0","CRAN"
+"dotCall64","dotCall64","C:/Users/Ilya/Documents/R/win-library/4.0","1.0-0",NA,"R (>= 3.1)",NA,"yes","4.0.0","CRAN"
+"downloader","downloader","C:/Users/Ilya/Documents/R/win-library/4.0","0.4",NA,NA,"utils, digest","no","4.0.0","CRAN"
+"dplyr","dplyr","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.0",NA,"R (>= 3.2.0)","ellipsis, generics, glue (>= 1.3.2), lifecycle (>= 0.2.0),
+magrittr (>= 1.5), methods, R6, rlang (>= 0.4.6), tibble (>=
+2.1.3), tidyselect (>= 1.1.0), utils, vctrs (>= 0.3.0)","yes","4.0.0","CRAN"
+"DRR","DRR","C:/Users/Ilya/Documents/R/win-library/4.0","0.0.4",NA,"kernlab, CVST, Matrix","stats, methods","no","4.0.0","CRAN"
+"DT","DT","C:/Users/Ilya/Documents/R/win-library/4.0","0.14",NA,NA,"htmltools (>= 0.3.6), htmlwidgets (>= 1.3), jsonlite (>=
+0.9.16), magrittr, crosstalk, promises","no","4.0.2","CRAN"
+"dtplyr","dtplyr","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.1",NA,"R (>= 3.2)","crayon, data.table (>= 1.12.4), dplyr (>= 0.8.1), rlang,
+tibble, tidyselect","no","4.0.0","CRAN"
+"dtt","dtt","C:/Users/Ilya/Documents/R/win-library/4.0","0.1-2",NA,NA,NA,"no","4.0.0","CRAN"
+"dtw","dtw","C:/Users/Ilya/Documents/R/win-library/4.0","1.21-3",NA,"R (>= 2.10.0), proxy","graphics, grDevices, stats, utils","yes","4.0.0","CRAN"
+"dtwclust","dtwclust","C:/Users/Ilya/Documents/R/win-library/4.0","5.5.6",NA,"R (>= 3.2.0), methods, proxy (>= 0.4-16), dtw","parallel, stats, utils, bigmemory, clue, cluster, dplyr,
+flexclust, foreach, ggplot2, ggrepel, Matrix, nloptr, RSpectra,
+Rcpp, RcppParallel (>= 4.4.0), reshape2, shiny, shinyjs","yes","4.0.0","CRAN"
+"dummies","dummies","C:/Users/Ilya/Documents/R/win-library/4.0","1.5.6",NA,"utils",NA,NA,"4.0.0","CRAN"
+"dygraphs","dygraphs","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.1.6",NA,"R (>= 3.0)","magrittr, htmlwidgets (>= 0.6), htmltools (>= 0.3.5), zoo (>=
+1.7-10), xts (>= 0.9-7)","no","4.0.0","CRAN"
+"dynlm","dynlm","C:/Users/Ilya/Documents/R/win-library/4.0","0.3-6",NA,"R (>= 2.10.0), zoo","stats, car (>= 2.0-0), lmtest","no","4.0.0","CRAN"
+"e1071","e1071","C:/Users/Ilya/Documents/R/win-library/4.0","1.7-3",NA,NA,"graphics, grDevices, class, stats, methods, utils","yes","4.0.0","CRAN"
+"Ecdat","Ecdat","C:/Users/Ilya/Documents/R/win-library/4.0","0.3-7",NA,"R (>= 3.5.0), Ecfun",NA,"no","4.0.0","CRAN"
+"Ecfun","Ecfun","C:/Users/Ilya/Documents/R/win-library/4.0","0.2-2",NA,"R (>= 3.5.0)","fda, gdata, RCurl, XML, tis, jpeg, MASS, TeachingDemos,
+stringi, methods, xml2, BMA, mvtnorm","no","4.0.0","CRAN"
+"echarts4r","echarts4r","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.2",NA,NA,"htmlwidgets, magrittr, dplyr (>= 0.7.0), purrr, countrycode,
+d3r, broom, shiny, scales, corrplot, data.tree, htmltools,
+jsonlite, rstudioapi","no","4.0.2","CRAN"
+"edeaR","edeaR","C:/Users/Ilya/Documents/R/win-library/4.0","0.8.5",NA,"R(>= 3.0.0)","bupaR (>= 0.4.1), dplyr, data.table, ggplot2, ggthemes, glue,
+tibble, shiny, miniUI, tidyr, shinyTime, lubridate, purrr,
+stringr, rlang, zoo, hms, forcats","no","4.0.0","CRAN"
+"eeptools","eeptools","C:/Users/Ilya/Documents/R/win-library/4.0","1.2.4",NA,"R (>= 2.15.1), ggplot2","arm, data.table, vcd, maptools","no","4.0.0","CRAN"
+"effects","effects","C:/Users/Ilya/Documents/R/win-library/4.0","4.1-4",NA,"R (>= 3.5.0), carData","lme4, nnet, lattice, grid, colorspace, graphics, grDevices,
+stats, survey, utils, estimability","no","4.0.0","CRAN"
+"effectsize","effectsize","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.1",NA,"R (>= 3.2)","insight (>= 0.8.4), bayestestR (>= 0.6.0), parameters (>=
+0.7.0), stats, utils","no","4.0.0","CRAN"
+"eha","eha","C:/Users/Ilya/Documents/R/win-library/4.0","2.8.1",NA,"R (>= 3.0.0), survival (>= 2.42-5)","stats, graphics","yes","4.0.0","CRAN"
+"ei","ei","C:/Users/Ilya/Documents/R/win-library/4.0","1.3-3",NA,"R (>= 2.5.0), eiPack","mvtnorm, msm, tmvtnorm, ellipse, plotrix, MASS, ucminf,
+cubature, mnormt, foreach, sp","no","4.0.0","CRAN"
+"eiPack","eiPack","C:/Users/Ilya/Documents/R/win-library/4.0","0.2-1",NA,"R (>= 2.0.0)","MASS, coda, msm","yes","4.0.0","CRAN"
+"elastic","elastic","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.0",NA,NA,"utils, curl (>= 2.2), crul (>= 0.9.0), jsonlite (>= 1.1), R6","no","4.0.0","CRAN"
+"elasticsearchr","elasticsearchr","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.1",NA,NA,"httr, jsonlite, dplyr","no","4.0.0","CRAN"
+"ellipse","ellipse","C:/Users/Ilya/Documents/R/win-library/4.0","0.4.2",NA,"R (>= 2.0.0),graphics,stats",NA,"no","4.0.0","CRAN"
+"ellipsis","ellipsis","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.1",NA,"R (>= 3.2)","rlang (>= 0.3.0)","yes","4.0.0","CRAN"
+"elliptic","elliptic","C:/Users/Ilya/Documents/R/win-library/4.0","1.4-0",NA,"R (>= 2.5.0)","MASS","no","4.0.0","CRAN"
+"emmeans","emmeans","C:/Users/Ilya/Documents/R/win-library/4.0","1.4.8",NA,"R (>= 3.2)","estimability (>= 1.3), graphics, methods, numDeriv, stats,
+utils, plyr, mvtnorm, xtable (>= 1.8-2)","no","4.0.2","CRAN"
+"emoa","emoa","C:/Users/Ilya/Documents/R/win-library/4.0","0.5-0.1",NA,NA,NA,"yes","4.0.0","CRAN"
+"enc","enc","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.2",NA,"R (>= 3.1)","methods","yes","4.0.0","CRAN"
+"english","english","C:/Users/Ilya/Documents/R/win-library/4.0","1.2-5",NA,NA,NA,"no","4.0.0","CRAN"
+"ensurer","ensurer","C:/Users/Ilya/Documents/R/win-library/4.0","1.1",NA,NA,NA,"no","4.0.0","CRAN"
+"envnames","envnames","C:/Users/Ilya/Documents/R/win-library/4.0","0.4.0",NA,NA,NA,"yes","4.0.0","CRAN"
+"Epi","Epi","C:/Users/Ilya/Documents/R/win-library/4.0","2.40",NA,"R (>= 3.5.0), utils","cmprsk, etm, splines, MASS, survival, plyr, Matrix, numDeriv,
+data.table, zoo, mgcv","yes","4.0.0","CRAN"
+"ergm","ergm","C:/Users/Ilya/Documents/R/win-library/4.0","3.10.4",NA,"network (>= 1.15)","robustbase (>= 0.93.5), coda (>= 0.19.2), trust (>= 0.1.7),
+Matrix (>= 1.2.17), lpSolve (>= 5.6.13), parallel, methods,
+MASS (>= 7.3.51.4), statnet.common (>= 4.3.0), purrr (>=
+0.3.2), rlang (>= 0.3.4), tibble (>= 2.1.1), dplyr (>= 0.8.0.1)","yes","4.0.0","CRAN"
+"ergm.count","ergm.count","C:/Users/Ilya/Documents/R/win-library/4.0","3.4.0",NA,"ergm (>= 3.10.1), network (>= 1.15)","statnet.common (>= 4.2.0)","yes","4.0.0","CRAN"
+"esquisse","esquisse","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.0",NA,NA,"miniUI, rstudioapi, shiny (>= 1.0.0), htmltools, jsonlite,
+shinyWidgets (>= 0.4.1), ggplot2 (>= 3.0.0), scales, stringi,
+rlang (>= 0.3.1), grDevices","no","4.0.0","CRAN"
+"estimability","estimability","C:/Users/Ilya/Documents/R/win-library/4.0","1.3",NA,"stats",NA,"no","4.0.0","CRAN"
+"etm","etm","C:/Users/Ilya/Documents/R/win-library/4.0","1.1",NA,"R (>= 3.0.0)","survival, lattice, data.table, Rcpp (>= 0.11.4)","yes","4.0.0","CRAN"
+"evaluate","evaluate","C:/Users/Ilya/Documents/R/win-library/4.0","0.14",NA,"R (>= 3.0.2)","methods","no","4.0.0","CRAN"
+"eventdataR","eventdataR","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.0",NA,"R (>= 3.0)",NA,"no","4.0.0","CRAN"
+"Exact","Exact","C:/Users/Ilya/Documents/R/win-library/4.0","2.0",NA,"R (>= 3.1.0)","graphics, stats","no","4.0.0","CRAN"
+"exactRankTests","exactRankTests","C:/Users/Ilya/Documents/R/win-library/4.0","0.8-31",NA,"R (>= 2.4.0), stats, utils",NA,"yes","4.0.0","CRAN"
+"excelR","excelR","C:/Users/Ilya/Documents/R/win-library/4.0","0.4.0",NA,NA,"htmlwidgets (>= 1.3), jsonlite (>= 1.6)","no","4.0.0","CRAN"
+"exifr","exifr","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.1",NA,NA,"curl, plyr, tibble, jsonlite, utils, rappdirs","no","4.0.0","CRAN"
+"expm","expm","C:/Users/Ilya/Documents/R/win-library/4.0","0.999-4",NA,"Matrix","methods","yes","4.0.0","CRAN"
+"extraDistr","extraDistr","C:/Users/Ilya/Documents/R/win-library/4.0","1.8.11",NA,"R (>= 3.1.0)","Rcpp","yes","4.0.0","CRAN"
+"extrafont","extrafont","C:/Users/Ilya/Documents/R/win-library/4.0","0.17",NA,"R (>= 2.15)","extrafontdb, grDevices, utils, Rttf2pt1","no","4.0.0","CRAN"
+"extrafontdb","extrafontdb","C:/Users/Ilya/Documents/R/win-library/4.0","1.0",NA,"R (>= 2.14)",NA,NA,"4.0.0","CRAN"
+"ez","ez","C:/Users/Ilya/Documents/R/win-library/4.0","4.4-0",NA,"R (>= 3.1)","car (>= 2.1-3), ggplot2 (>= 2.1.0), lme4 (>= 1.1-12), MASS (>=
+7.3-45), Matrix (>= 1.2-7.1), mgcv (>= 1.8-12), plyr (>=
+1.8.4), reshape2 (>= 1.4.2), scales (>= 0.4.0), stringr (>=
+1.1.0)","no","4.0.0","CRAN"
+"ezknitr","ezknitr","C:/Users/Ilya/Documents/R/win-library/4.0","0.6",NA,"R (>= 3.0.2)","knitr (>= 1.7), markdown (>= 0.7), R.utils (>= 1.34.0)","no","4.0.0","CRAN"
+"fable","fable","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.1",NA,"R (>= 3.4.0), fabletools (>= 0.2.0)","Rcpp (>= 0.11.0), rlang (>= 0.4.6), stats, dplyr (>= 1.0.0),
+tsibble (>= 0.9.0), tibble, tidyr, utils, distributional","yes","4.0.0","CRAN"
+"fabletools","fabletools","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.0",NA,"R (>= 3.1.3)","tsibble (>= 0.9.0), tibble (>= 1.4.1), ggplot2 (>= 3.0.0),
+tidyselect, rlang (>= 0.4.5), stats, dplyr (>= 1.0.0), tidyr
+(>= 1.1.0), generics, R6, utils, vctrs (>= 0.2.2),
+distributional, progressr, lifecycle","no","4.0.0","CRAN"
+"fabricatr","fabricatr","C:/Users/Ilya/Documents/R/win-library/4.0","0.10.0",NA,"R (>= 3.5.0)","rlang (>= 0.2.0)","no","4.0.0","CRAN"
+"factoextra","factoextra","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.7",NA,"R (>= 3.1.2), ggplot2 (>= 2.2.0)","abind, cluster, dendextend, FactoMineR, ggpubr(>= 0.1.5),
+grid, stats, reshape2, ggrepel, tidyr","no","4.0.0","CRAN"
+"FactoMineR","FactoMineR","C:/Users/Ilya/Documents/R/win-library/4.0","2.3",NA,"R (>= 3.5.0)","car,cluster,ellipse,flashClust,graphics,grDevices,lattice,leaps,MASS,scatterplot3d,stats,utils,ggplot2,ggrepel","no","4.0.0","CRAN"
+"Fahrmeir","Fahrmeir","C:/Users/Ilya/Documents/R/win-library/4.0","2016.5.31",NA,"stats, R (>= 2.1.0)",NA,"no","4.0.0","CRAN"
+"fansi","fansi","C:/Users/Ilya/Documents/R/win-library/4.0","0.4.1",NA,"R (>= 3.1.0)",NA,"yes","4.0.0","CRAN"
+"faraway","faraway","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.7",NA,"R (>= 2.10)","lme4,nlme,methods","no","4.0.0","CRAN"
+"farver","farver","C:/Users/Ilya/Documents/R/win-library/4.0","2.0.3",NA,NA,NA,"yes","4.0.0","CRAN"
+"fastcluster","fastcluster","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.25",NA,"R (>= 3.0.0)",NA,"yes","4.0.0","CRAN"
+"fastICA","fastICA","C:/Users/Ilya/Documents/R/win-library/4.0","1.2-2",NA,"R (>= 3.0.0)",NA,"yes","4.0.0","CRAN"
+"fastmap","fastmap","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.1",NA,NA,NA,"yes","4.0.0","CRAN"
+"fastmatch","fastmatch","C:/Users/Ilya/Documents/R/win-library/4.0","1.1-0",NA,NA,NA,"yes","4.0.0","CRAN"
+"fasttime","fasttime","C:/Users/Ilya/Documents/R/win-library/4.0","1.0-2",NA,NA,NA,"yes","4.0.0","CRAN"
+"fBasics","fBasics","C:/Users/Ilya/Documents/R/win-library/4.0","3042.89.1",NA,"R (>= 2.15.1), timeDate, timeSeries","stats, grDevices, graphics, methods, utils, MASS, spatial,
+gss, stabledist","yes","4.0.0","CRAN"
+"fda","fda","C:/Users/Ilya/Documents/R/win-library/4.0","5.1.4",NA,"R (>= 3.5), Matrix",NA,"no","4.0.0","CRAN"
+"feasts","feasts","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.4",NA,"R (>= 3.5.0), fabletools (>= 0.2.0)","rlang (>= 0.2.0), tibble (>= 1.4.1), tsibble (>= 0.9.0),
+ggplot2 (>= 3.0.0), dplyr (>= 1.0.0), tidyr (>= 0.8.3), scales
+(>= 1.1.0), vctrs, lubridate, grid, slider, utils","no","4.0.0","CRAN"
+"FFTrees","FFTrees","C:/Users/Ilya/Documents/R/win-library/4.0","1.5.5",NA,"R(>= 3.5.0)","rpart, circlize, parallel, graphics, randomForest, igraph,
+e1071, crayon, scales, tibble, stringr, progress, pROC, caret,
+dplyr, testthat, magrittr, tidyselect","no","4.0.0","CRAN"
+"fGarch","fGarch","C:/Users/Ilya/Documents/R/win-library/4.0","3042.83.2",NA,"R (>= 2.15.1), timeDate, timeSeries, fBasics","fastICA, Matrix, graphics, methods, stats, utils","yes","4.0.0","CRAN"
+"fields","fields","C:/Users/Ilya/Documents/R/win-library/4.0","10.3",NA,"R (>= 3.0), methods, spam, maps",NA,"yes","4.0.0","CRAN"
+"filelock","filelock","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.2",NA,NA,NA,"yes","4.0.0","CRAN"
+"fitdistrplus","fitdistrplus","C:/Users/Ilya/Documents/R/win-library/4.0","1.1-1",NA,"R (>= 3.2.0), MASS, grDevices, survival, methods","stats","no","4.0.0","CRAN"
+"flashClust","flashClust","C:/Users/Ilya/Documents/R/win-library/4.0","1.01-2",NA,"R (>= 2.3.0)",NA,NA,"4.0.0","CRAN"
+"flexclust","flexclust","C:/Users/Ilya/Documents/R/win-library/4.0","1.4-0",NA,"R (>= 2.14.0), graphics, grid, lattice, modeltools","methods, parallel, stats, stats4, class","yes","4.0.0","CRAN"
+"flexdashboard","flexdashboard","C:/Users/Ilya/Documents/R/win-library/4.0","0.5.2",NA,"R (>= 3.0.2)","tools, jsonlite, htmltools, knitr (>= 1.13), htmlwidgets (>=
+0.6), rmarkdown (>= 1.10.3), shiny (>= 0.13)","no","4.0.2","CRAN"
+"flexmix","flexmix","C:/Users/Ilya/Documents/R/win-library/4.0","2.3-15",NA,"R (>= 2.15.0), lattice","graphics, grid, grDevices, methods, modeltools (>= 0.2-16),
+nnet, stats, stats4, utils","no","4.0.0","CRAN"
+"flexsurv","flexsurv","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.1",NA,"survival, R (>= 2.15.0)","mstate (>= 0.2.10), muhaz, mvtnorm, deSolve, quadprog, Rcpp
+(>= 0.11.5), tidyr, tibble","yes","4.0.0","CRAN"
+"flextable","flextable","C:/Users/Ilya/Documents/R/win-library/4.0","0.5.10",NA,NA,"stats, utils, grDevices, graphics, officer (>= 0.3.10),
+rmarkdown, knitr, htmltools, xml2, data.table, uuid, gdtools
+(>= 0.1.6), rlang, base64enc","no","4.0.0","CRAN"
+"float","float","C:/Users/Ilya/Documents/R/win-library/4.0","0.2-4",NA,"R (>= 3.6.0), methods","utils, tools","yes","4.0.0","CRAN"
+"flock","flock","C:/Users/Ilya/Documents/R/win-library/4.0","0.7",NA,NA,"Rcpp (>= 0.11.3), methods","yes","4.0.0","CRAN"
+"FMStable","FMStable","C:/Users/Ilya/Documents/R/win-library/4.0","0.1-2",NA,NA,NA,NA,"4.0.0","CRAN"
+"FNN","FNN","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.3",NA,"R (>= 3.0.0)",NA,"yes","4.0.0","CRAN"
+"forcats","forcats","C:/Users/Ilya/Documents/R/win-library/4.0","0.5.0",NA,"R (>= 3.2)","ellipsis, magrittr, rlang, tibble","no","4.0.0","CRAN"
+"foreach","foreach","C:/Users/Ilya/Documents/R/win-library/4.0","1.5.0",NA,"R (>= 2.5.0)","codetools, utils, iterators","no","4.0.0","CRAN"
+"forecast","forecast","C:/Users/Ilya/Documents/R/win-library/4.0","8.12",NA,"R (>= 3.0.2),","colorspace, fracdiff, ggplot2 (>= 2.2.1), graphics, lmtest,
+magrittr, nnet, parallel, Rcpp (>= 0.11.0), stats, timeDate,
+tseries, urca, zoo","yes","4.0.0","CRAN"
+"forecTheta","forecTheta","C:/Users/Ilya/Documents/R/win-library/4.0","2.2",NA,"R (>= 2.0), parallel, forecast, tseries",NA,"no","4.0.0","CRAN"
+"forge","forge","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.0",NA,"R (>= 3.1.2)","rlang (>= 0.3.1), magrittr","no","4.0.0","CRAN"
+"formatR","formatR","C:/Users/Ilya/Documents/R/win-library/4.0","1.7",NA,"R (>= 3.0.2)",NA,"no","4.0.0","CRAN"
+"formattable","formattable","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.0.1",NA,"R (> 3.0.2)","methods, htmltools, htmlwidgets, knitr, rmarkdown","no","4.0.0","CRAN"
+"Formula","Formula","C:/Users/Ilya/Documents/R/win-library/4.0","1.2-3",NA,"R (>= 2.0.0), stats",NA,"no","4.0.0","CRAN"
+"fortunes","fortunes","C:/Users/Ilya/Documents/R/win-library/4.0","1.5-4",NA,NA,"utils","no","4.0.0","CRAN"
+"forward","forward","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.5",NA,"R (>= 3.5), MASS",NA,"no","4.0.0","CRAN"
+"fpc","fpc","C:/Users/Ilya/Documents/R/win-library/4.0","2.2-7",NA,"R (>= 2.0)","MASS, cluster, mclust, flexmix, prabclus, class, diptest,
+robustbase, kernlab, grDevices, graphics, methods, stats,
+utils, parallel","no","4.0.2","CRAN"
+"fpeek","fpeek","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.1",NA,NA,"Rcpp (>= 0.12.12)","yes","4.0.0","CRAN"
+"fracdiff","fracdiff","C:/Users/Ilya/Documents/R/win-library/4.0","1.5-1",NA,NA,"stats","yes","4.0.0","CRAN"
+"freqparcoord","freqparcoord","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.1",NA,"parallel, ggplot2, GGally, FNN, mvtnorm","","no","4.0.0","CRAN"
+"fs","fs","C:/Users/Ilya/Documents/R/win-library/4.0","1.4.2",NA,"R (>= 3.1)","methods","yes","4.0.2","CRAN"
+"fst","fst","C:/Users/Ilya/Documents/R/win-library/4.0","0.9.2",NA,"R (>= 3.0.0)","Rcpp","yes","4.0.0","CRAN"
+"functional","functional","C:/Users/Ilya/Documents/R/win-library/4.0","0.6",NA,NA,NA,"no","4.0.0","CRAN"
+"furrr","furrr","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.0",NA,"R (>= 3.2.0), future (>= 1.6.2)","globals (>= 0.10.3), rlang (>= 0.2.0), purrr (>= 0.2.4)","no","4.0.0","CRAN"
+"futile.logger","futile.logger","C:/Users/Ilya/Documents/R/win-library/4.0","1.4.3",NA,"R (>= 3.0.0)","utils, lambda.r (>= 1.1.0), futile.options","no","4.0.0","CRAN"
+"futile.options","futile.options","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.1",NA,"R (>= 2.8.0)",NA,"no","4.0.0","CRAN"
+"future","future","C:/Users/Ilya/Documents/R/win-library/4.0","1.18.0",NA,NA,"digest, globals (>= 0.12.5), listenv (>= 0.8.0), parallel,
+utils","no","4.0.2","CRAN"
+"future.apply","future.apply","C:/Users/Ilya/Documents/R/win-library/4.0","1.6.0",NA,"R (>= 3.2.0), future (>= 1.17.0)","globals (>= 0.12.5), parallel, utils","no","4.0.2","CRAN"
+"future.callr","future.callr","C:/Users/Ilya/Documents/R/win-library/4.0","0.5.0",NA,"R (>= 3.2.0), future (>= 1.14.0)","callr","no","4.0.0","CRAN"
+"fuzzyjoin","fuzzyjoin","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.6",NA,"R (>= 2.10)","stringdist, stringr, dplyr (>= 0.8.1), tidyr (>= 0.4.0),
+purrr, geosphere, tibble","no","4.0.0","CRAN"
+"gamboostLSS","gamboostLSS","C:/Users/Ilya/Documents/R/win-library/4.0","2.0-1.1",NA,"R (>= 2.10.0), mboost (>= 2.8-0), stabs (>= 0.5-0), parallel","graphics, grDevices, stats, utils","no","4.0.0","CRAN"
+"gamlss","gamlss","C:/Users/Ilya/Documents/R/win-library/4.0","5.1-6",NA,"R (>= 3.3.0), graphics, stats, splines, utils, grDevices,
+gamlss.data (>= 5.0-0), gamlss.dist (>= 4.3.1), nlme, parallel","MASS, survival, methods","yes","4.0.0","CRAN"
+"gamlss.data","gamlss.data","C:/Users/Ilya/Documents/R/win-library/4.0","5.1-4",NA,"R (>= 2.10)",NA,"no","4.0.0","CRAN"
+"gamlss.dist","gamlss.dist","C:/Users/Ilya/Documents/R/win-library/4.0","5.1-6",NA,"R (>= 2.15.0), MASS, graphics, stats, methods, grDevices",NA,"yes","4.0.0","CRAN"
+"gapminder","gapminder","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.0",NA,"R (>= 3.1.0)","tibble","no","4.0.0","CRAN"
+"gargle","gargle","C:/Users/Ilya/Documents/R/win-library/4.0","0.5.0",NA,"R (>= 3.2)","fs (>= 1.3.1), glue (>= 1.3.0), httr (>= 1.4.0), jsonlite,
+rlang (>= 0.4.2), stats, withr","no","4.0.0","CRAN"
+"gbm","gbm","C:/Users/Ilya/Documents/R/win-library/4.0","2.1.5",NA,"R (>= 2.9.0)","gridExtra, lattice, parallel, survival","yes","4.0.0","CRAN"
+"gbRd","gbRd","C:/Users/Ilya/Documents/R/win-library/4.0","0.4-11",NA,"tools",NA,NA,"4.0.0","CRAN"
+"gclus","gclus","C:/Users/Ilya/Documents/R/win-library/4.0","1.3.2",NA,"R (>= 2.10), cluster",NA,"no","4.0.0","CRAN"
+"gcookbook","gcookbook","C:/Users/Ilya/Documents/R/win-library/4.0","2.0",NA,"R (>= 2.10)",NA,"no","4.0.0","CRAN"
+"gdalUtils","gdalUtils","C:/Users/Ilya/Documents/R/win-library/4.0","2.0.3.2",NA,"R (>= 2.14.0)","sp, foreach, R.utils, raster, rgdal","no","4.0.0","CRAN"
+"gdata","gdata","C:/Users/Ilya/Documents/R/win-library/4.0","2.18.0",NA,"R (>= 2.3.0)","gtools, stats, methods, utils","no","4.0.0","CRAN"
+"gdtools","gdtools","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.2",NA,NA,"Rcpp (>= 0.12.12), systemfonts (>= 0.1.1)","yes","4.0.0","CRAN"
+"gee","gee","C:/Users/Ilya/Documents/R/win-library/4.0","4.13-20",NA,"stats",NA,"yes","4.0.0","CRAN"
+"geepack","geepack","C:/Users/Ilya/Documents/R/win-library/4.0","1.3-1",NA,"R (>= 3.5.0), methods","MASS, broom, magrittr","yes","4.0.0","CRAN"
+"gender","gender","C:/Users/Ilya/Documents/R/win-library/4.0","0.5.4",NA,"R (>= 3.0.0), utils, stats","dplyr (>= 0.8.5), httr (>= 1.4.1), jsonlite (>= 1.6.1)","no","4.0.0","CRAN"
+"GeneralizedHyperbolic","GeneralizedHyperbolic","C:/Users/Ilya/Documents/R/win-library/4.0","0.8-4",NA,"R (>= 3.0.1)","DistributionUtils, MASS","no","4.0.0","CRAN"
+"generics","generics","C:/Users/Ilya/Documents/R/win-library/4.0","0.0.2",NA,"R (>= 3.1)","methods","no","4.0.0","CRAN"
+"genetics","genetics","C:/Users/Ilya/Documents/R/win-library/4.0","1.3.8.1.2",NA,"combinat, gdata, gtools, MASS, mvtnorm",NA,"no","4.0.0","CRAN"
+"geojson","geojson","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.4",NA,NA,"methods, sp, jsonlite (>= 1.6), protolite (>= 1.8), jqr (>=
+1.1.0), magrittr, lazyeval","no","4.0.2","CRAN"
+"geojsonio","geojsonio","C:/Users/Ilya/Documents/R/win-library/4.0","0.9.2",NA,"R (>= 2.10)","methods, sp, sf (>= 0.6), rgeos, crul, maptools, jsonlite (>=
+0.9.21), magrittr, readr (>= 0.2.2), V8, geojson (>= 0.2.0),
+jqr","no","4.0.0","CRAN"
+"geojsonlint","geojsonlint","C:/Users/Ilya/Documents/R/win-library/4.0","0.4.0",NA,"R (>= 2.10)","crul (>= 0.7.0), jsonlite (>= 0.9.19), jsonvalidate (>=
+1.0.0), V8","no","4.0.0","CRAN"
+"geojsonsf","geojsonsf","C:/Users/Ilya/Documents/R/win-library/4.0","2.0.0",NA,"R (>= 3.5.0)","jsonify (>= 1.1.1), Rcpp","yes","4.0.2","CRAN"
+"geometry","geometry","C:/Users/Ilya/Documents/R/win-library/4.0","0.4.5",NA,"R (>= 3.0.0)","magic, Rcpp, lpSolve, linprog","yes","4.0.0","CRAN"
+"geosphere","geosphere","C:/Users/Ilya/Documents/R/win-library/4.0","1.5-10",NA,"R (>= 3.0.0)","sp","yes","4.0.0","CRAN"
+"getopt","getopt","C:/Users/Ilya/Documents/R/win-library/4.0","1.20.3",NA,NA,"stats","no","4.0.0","CRAN"
+"getPass","getPass","C:/Users/Ilya/Documents/R/win-library/4.0","0.2-2",NA,"R (>= 3.0.0)","utils, rstudioapi (>= 0.5)","yes","4.0.0","CRAN"
+"GGally","GGally","C:/Users/Ilya/Documents/R/win-library/4.0","2.0.0",NA,"R (>= 3.1), ggplot2 (>= 3.3.0)","grDevices, grid, gtable (>= 0.2.0), plyr (>= 1.8.3), progress,
+RColorBrewer, reshape (>= 0.8.5), scales (>= 1.1.0), utils,
+rlang, lifecycle","no","4.0.0","CRAN"
+"ggalt","ggalt","C:/Users/Ilya/Documents/R/win-library/4.0","0.4.0",NA,"R (>= 3.2.0), ggplot2 (>= 2.2.1)","utils, graphics, grDevices, dplyr, RColorBrewer, KernSmooth,
+proj4, scales, grid, gtable, ash, maps, MASS, extrafont,
+tibble, plotly (>= 3.4.1)","no","4.0.0","CRAN"
+"gganimate","gganimate","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.6",NA,"ggplot2 (>= 3.0.0)","stringi, tweenr (>= 1.0.1), grid, rlang, glue, progress, plyr,
+scales, grDevices, utils","no","4.0.2","CRAN"
+"ggbeeswarm","ggbeeswarm","C:/Users/Ilya/Documents/R/win-library/4.0","0.6.0",NA,"R (>= 3.0.0), ggplot2 (>= 2.0)","beeswarm, vipor","no","4.0.0","CRAN"
+"ggdendro","ggdendro","C:/Users/Ilya/Documents/R/win-library/4.0","0.1-20",NA,NA,"MASS, ggplot2(>= 0.9.2)","no","4.0.0","CRAN"
+"ggedit","ggedit","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.1",NA,"R (>= 3.2.0), ggplot2 (>= 3.0.0)","dplyr (>= 1.0.0), plyr, tidyr, purrr, rlang, scales,
+rstudioapi, shiny, miniUI, shinyBS, colourpicker (>= 0.2),
+shinyAce, magrittr, utils, graphics, grid, tools, stats","no","4.0.0","CRAN"
+"ggeffects","ggeffects","C:/Users/Ilya/Documents/R/win-library/4.0","0.15.0",NA,"R (>= 3.2)","graphics, insight (>= 0.8.1), MASS, sjlabelled (>= 1.1.2),
+stats","no","4.0.0","CRAN"
+"ggExtra","ggExtra","C:/Users/Ilya/Documents/R/win-library/4.0","0.9",NA,"R (>= 3.1.0)","colourpicker (>= 1.0), ggplot2 (>= 2.2.0), grDevices, grid (>=
+3.1.3), gtable (>= 0.2.0), miniUI (>= 0.1.1), scales (>=
+0.2.0), shiny (>= 0.13.0), shinyjs (>= 0.5.2), utils, R6","no","4.0.0","CRAN"
+"ggfittext","ggfittext","C:/Users/Ilya/Documents/R/win-library/4.0","0.9.0",NA,"R (>= 3.6)","grid (>= 3.1), stringi (>= 1.1.2), ggplot2 (>= 2.2.1), shades
+(>= 1.3.1)","no","4.0.0","CRAN"
+"ggforce","ggforce","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.2",NA,"ggplot2 (>= 3.0.0), R (>= 3.3.0)","Rcpp (>= 0.12.2), grid, scales, MASS, tweenr (>= 0.1.5),
+gtable, rlang, polyclip, stats, grDevices, tidyselect, withr,
+utils","yes","4.0.2","CRAN"
+"ggformula","ggformula","C:/Users/Ilya/Documents/R/win-library/4.0","0.9.4",NA,"R (>= 3.1), ggplot2 (>= 3.0), ggstance (>= 0.3.1)","mosaicCore, rlang, magrittr, tibble, stringr, ggforce, grid","no","4.0.0","CRAN"
+"ggfortify","ggfortify","C:/Users/Ilya/Documents/R/win-library/4.0","0.4.10",NA,"methods, ggplot2 (>= 2.0.0)","dplyr (>= 0.3), tidyr, gridExtra, grid, scales, stringr,
+tibble","no","4.0.0","CRAN"
+"ggiraph","ggiraph","C:/Users/Ilya/Documents/R/win-library/4.0","0.7.8",NA,NA,"grid, ggplot2 (>= 3.3.0), htmlwidgets (>= 0.6), stats,
+htmltools, Rcpp (>= 0.12.12), gdtools (>= 0.2.1), purrr, rlang,
+uuid","yes","4.0.2","CRAN"
+"ggmap","ggmap","C:/Users/Ilya/Documents/R/win-library/4.0","3.0.0",NA,"R (>= 3.1.0), ggplot2 (>= 2.2.0)","RgoogleMaps, png, plyr, rjson, jpeg, digest, scales, dplyr,
+bitops, grid, glue, httr, stringr, purrr, magrittr, tibble,
+tidyr","no","4.0.0","CRAN"
+"ggnetwork","ggnetwork","C:/Users/Ilya/Documents/R/win-library/4.0","0.5.8",NA,"R (>= 3.5), ggplot2 (>= 2.0.0)","ggrepel (>= 0.5), network, igraph, sna, utils","no","4.0.0","CRAN"
+"ggplot2","ggplot2","C:/Users/Ilya/Documents/R/win-library/4.0","3.3.2",NA,"R (>= 3.2)","digest, glue, grDevices, grid, gtable (>= 0.1.1), isoband,
+MASS, mgcv, rlang (>= 0.3.0), scales (>= 0.5.0), stats, tibble,
+withr (>= 2.0.0)","no","4.0.2","CRAN"
+"ggplot2movies","ggplot2movies","C:/Users/Ilya/Documents/R/win-library/4.0","0.0.1",NA,"R (>= 2.10.0)",NA,"no","4.0.0","CRAN"
+"ggpmisc","ggpmisc","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.5",NA,"R (>= 3.6.0), ggplot2 (>= 3.3.0)","grid, rlang (>= 0.4.5), magrittr (>= 1.5), gridExtra (>= 2.3),
+scales (>= 1.1.0), MASS (>= 7.3-51.5), polynom (>= 1.4-0),
+splus2R (>= 1.2-2), tibble (>= 3.0.1), plyr (>= 1.8.6), dplyr
+(>= 0.8.3), xts (>= 0.12-0), zoo (>= 1.8-7), broom (>= 0.5.5),
+lubridate (>= 1.7.8), stringr (>= 1.4.0)","no","4.0.0","CRAN"
+"ggpubr","ggpubr","C:/Users/Ilya/Documents/R/win-library/4.0","0.4.0",NA,"R (>= 3.1.0), ggplot2","ggrepel, grid, ggsci, stats, utils, tidyr, purrr, dplyr (>=
+0.7.1), cowplot, ggsignif, scales, gridExtra, glue, polynom,
+rlang, rstatix (>= 0.6.0), tibble, magrittr","no","4.0.2","CRAN"
+"ggquickeda","ggquickeda","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.6",NA,"R (>= 3.5.0)","colourpicker, dplyr, DT, Formula, GGally, ggplot2, ggpmisc,
+ggrepel (>= 0.7.0), ggstance, ggpubr, grDevices, grid,
+gridExtra, Hmisc, lazyeval, markdown, methods, plotly,
+quantreg, rlang, scales, shiny (>= 1.0.4), shinyjs (>= 1.1),
+shinyjqui, stats, stringr, survival, survminer, tidyr, table1
+(>= 1.1), utils","no","4.0.0","CRAN"
+"ggraptR","ggraptR","C:/Users/Ilya/Documents/R/win-library/4.0","1.3",NA,"dplyr (>= 0.7.5), ggplot2 (>= 2.2.0), pacman (>= 0.4.6),
+purrr(>= 0.2.4), shiny (>= 0.12.2)",NA,"no","4.0.2","CRAN"
+"ggrepel","ggrepel","C:/Users/Ilya/Documents/R/win-library/4.0","0.8.2",NA,"R (>= 3.0.0), ggplot2 (>= 2.2.0)","grid, Rcpp, scales (>= 0.3.0)","yes","4.0.0","CRAN"
+"ggridges","ggridges","C:/Users/Ilya/Documents/R/win-library/4.0","0.5.2",NA,"R (>= 3.2)","ggplot2 (>= 3.0.0), grid (>= 3.0.0), plyr (>= 1.8.0), scales
+(>= 0.4.1), withr (>= 2.1.1)","no","4.0.0","CRAN"
+"ggsci","ggsci","C:/Users/Ilya/Documents/R/win-library/4.0","2.9",NA,"R (>= 3.0.2)","grDevices, scales, ggplot2 (>= 2.0.0)","no","4.0.0","CRAN"
+"ggseas","ggseas","C:/Users/Ilya/Documents/R/win-library/4.0","0.5.4",NA,"R (>= 3.1.2), ggplot2 (>= 2.0.0)","seasonal, rlang, stats, zoo","no","4.0.0","CRAN"
+"ggsignif","ggsignif","C:/Users/Ilya/Documents/R/win-library/4.0","0.6.0",NA,NA,"ggplot2 (>= 2.0.0)","no","4.0.0","CRAN"
+"ggstance","ggstance","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.4",NA,"R (>= 3.1.0)","ggplot2 (>= 3.2.0), plyr, rlang, withr (>= 2.0.0)","no","4.0.0","CRAN"
+"ggthemes","ggthemes","C:/Users/Ilya/Documents/R/win-library/4.0","4.2.0",NA,"R (>= 3.3.0)","ggplot2 (>= 3.0.0), graphics, grid, methods, purrr, scales,
+stringr, tibble","no","4.0.0","CRAN"
+"gh","gh","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.0",NA,NA,"cli, ini, jsonlite, httr (>= 1.2)","no","4.0.0","CRAN"
+"gifski","gifski","C:/Users/Ilya/Documents/R/win-library/4.0","0.8.6",NA,NA,NA,"yes","4.0.0","CRAN"
+"gistr","gistr","C:/Users/Ilya/Documents/R/win-library/4.0","0.5.0",NA,NA,"jsonlite (>= 1.4), httr (>= 1.2.0), magrittr, assertthat,
+knitr, rmarkdown, dplyr","no","4.0.0","CRAN"
+"git2r","git2r","C:/Users/Ilya/Documents/R/win-library/4.0","0.27.1",NA,"R (>= 3.1)","graphics, utils","yes","4.0.0","CRAN"
+"githubinstall","githubinstall","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.2",NA,NA,"curl, data.table, devtools, httr, jsonlite, mockery, utils","no","4.0.0","CRAN"
+"glmmTMB","glmmTMB","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.2.1",NA,"R (>= 3.2.0)","methods, TMB (>= 1.7.14), lme4 (>= 1.1-18.9000), Matrix, nlme","yes","4.0.2","CRAN"
+"glmnet","glmnet","C:/Users/Ilya/Documents/R/win-library/4.0","4.0-2",NA,"R (>= 3.6.0), Matrix (>= 1.0-6)","methods, utils, foreach, shape, survival","yes","4.0.0","CRAN"
+"GlobalOptions","GlobalOptions","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.2",NA,"R (>= 3.3.0), methods","utils","no","4.0.0","CRAN"
+"globals","globals","C:/Users/Ilya/Documents/R/win-library/4.0","0.12.5",NA,"R (>= 3.1.2)","codetools","no","4.0.0","CRAN"
+"glue","glue","C:/Users/Ilya/Documents/R/win-library/4.0","1.4.1",NA,"R (>= 3.1)","methods","yes","4.0.0","CRAN"
+"gmm","gmm","C:/Users/Ilya/Documents/R/win-library/4.0","1.6-5",NA,"R (>= 2.10.0), sandwich","stats, methods, grDevices, graphics","yes","4.0.0","CRAN"
+"gmodels","gmodels","C:/Users/Ilya/Documents/R/win-library/4.0","2.18.1",NA,"R (>= 1.9.0)","MASS, gdata","no","4.0.0","CRAN"
+"gmp","gmp","C:/Users/Ilya/Documents/R/win-library/4.0","0.6-0",NA,"R (>= 3.4.0)","methods","yes","4.0.0","CRAN"
+"gnm","gnm","C:/Users/Ilya/Documents/R/win-library/4.0","1.1-1",NA,"R (>= 3.0.0)","graphics, grDevices, MASS, Matrix, methods, nnet, qvcalc (>=
+0.8-3), relimp, stats, utils","yes","4.0.0","CRAN"
+"googledrive","googledrive","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.1",NA,"R (>= 3.2)","curl (>= 2.8.1), gargle (>= 0.3.1), glue (>= 1.2.0), httr,
+jsonlite, magrittr, purrr (>= 0.2.3), rlang (>= 0.3.1), tibble
+(>= 2.0.0), utils, uuid","no","4.0.0","CRAN"
+"googlePolylines","googlePolylines","C:/Users/Ilya/Documents/R/win-library/4.0","0.7.2",NA,"R (>= 3.3.0)","Rcpp (>= 0.12.13)","yes","4.0.0","CRAN"
+"googlesheets","googlesheets","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.0",NA,"R (>= 3.2.0)","cellranger (>= 1.0.0), dplyr (>= 0.4.2), httr (>= 1.1.0),
+jsonlite, purrr, readr (>= 0.2.2), stats, stringr, tibble,
+tidyr, utils, xml2 (>= 1.0.0)","no","4.0.0","CRAN"
+"gower","gower","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.2",NA,NA,NA,"yes","4.0.2","CRAN"
+"gpclib","gpclib","C:/Users/Ilya/Documents/R/win-library/4.0","1.5-6",NA,"R (>= 3.0.0), methods","graphics","yes","4.0.0","CRAN"
+"gplots","gplots","C:/Users/Ilya/Documents/R/win-library/4.0","3.0.4",NA,"R (>= 3.0)","gtools, gdata, stats, caTools, KernSmooth","no","4.0.2","CRAN"
+"greybox","greybox","C:/Users/Ilya/Documents/R/win-library/4.0","0.6.0",NA,"R (>= 3.0.2)","forecast, stats, graphics, utils, lamW, pracma, nloptr,
+statmod, zoo, Matrix","yes","4.0.0","CRAN"
+"gridBase","gridBase","C:/Users/Ilya/Documents/R/win-library/4.0","0.4-7",NA,"R (>= 2.3.0)","graphics, grid","no","4.0.0","CRAN"
+"gridExtra","gridExtra","C:/Users/Ilya/Documents/R/win-library/4.0","2.3",NA,NA,"gtable, grid, grDevices, graphics, utils","no","4.0.0","CRAN"
+"gsl","gsl","C:/Users/Ilya/Documents/R/win-library/4.0","2.1-6",NA,"R (>= 3.1.0)",NA,"yes","4.0.0","CRAN"
+"gss","gss","C:/Users/Ilya/Documents/R/win-library/4.0","2.2-2",NA,"R (>= 3.0.0), stats",NA,"yes","4.0.0","CRAN"
+"gsubfn","gsubfn","C:/Users/Ilya/Documents/R/win-library/4.0","0.7",NA,"proto",NA,"no","4.0.0","CRAN"
+"gt","gt","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.1",NA,"R (>= 3.2.0)","checkmate (>= 2.0.0), commonmark (>= 1.7), dplyr (>= 0.8.5),
+fs (>= 1.3.2), ggplot2 (>= 3.3.0), glue (>= 1.3.2), htmltools
+(>= 0.4.0), magrittr (>= 1.5), rlang (>= 0.4.5), sass (>=
+0.1.1), scales (>= 1.1.0), stringr (>= 1.3.1), tibble (>=
+3.0.0), tidyselect (>= 1.0.0)","no","4.0.0","CRAN"
+"gtable","gtable","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.0",NA,"R (>= 3.0)","grid","no","4.0.0","CRAN"
+"gtools","gtools","C:/Users/Ilya/Documents/R/win-library/4.0","3.8.2",NA,"methods, stats, utils",NA,"yes","4.0.0","CRAN"
+"haven","haven","C:/Users/Ilya/Documents/R/win-library/4.0","2.3.1",NA,"R (>= 3.2)","forcats (>= 0.2.0), hms, methods, Rcpp (>= 0.11.4), readr (>=
+0.1.0), rlang (>= 0.4.0), tibble, tidyselect, vctrs (>= 0.3.0)","yes","4.0.0","CRAN"
+"hdi","hdi","C:/Users/Ilya/Documents/R/win-library/4.0","0.1-7",NA,"scalreg","grDevices, graphics, stats, parallel, MASS, glmnet, linprog","no","4.0.0","CRAN"
+"hdrcde","hdrcde","C:/Users/Ilya/Documents/R/win-library/4.0","3.3",NA,"R (>= 2.15)","locfit, ash, ks, KernSmooth, ggplot2, RColorBrewer","yes","4.0.0","CRAN"
+"here","here","C:/Users/Ilya/Documents/R/win-library/4.0","0.1",NA,NA,"rprojroot (>= 1.2)","no","4.0.0","CRAN"
+"heuristicsmineR","heuristicsmineR","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.4",NA,"R (>= 2.10)","bupaR, processmapR (>= 0.3.1), rlang, magrittr, dplyr, tidyr,
+DiagrammeR (>= 1.0.0), petrinetR, purrr, scales, Rcpp, ggplot2,
+ggthemes, data.table, stringr","yes","4.0.0","CRAN"
+"hexbin","hexbin","C:/Users/Ilya/Documents/R/win-library/4.0","1.28.1",NA,"R (>= 2.0.1), methods","lattice, grid, graphics, grDevices, stats, utils","yes","4.0.0","CRAN"
+"highcharter","highcharter","C:/Users/Ilya/Documents/R/win-library/4.0","0.7.0",NA,"R (>= 2.10)","htmlwidgets, magrittr, purrr, rlist, assertthat, zoo, dplyr
+(>= 0.7.0), tibble (>= 1.1), stringr, broom, xts, quantmod,
+tidyr, htmltools, jsonlite, igraph, lubridate, crosstalk, yaml,
+rlang(>= 0.1.1), whisker","no","4.0.0","CRAN"
+"highr","highr","C:/Users/Ilya/Documents/R/win-library/4.0","0.8",NA,"R (>= 3.2.3)",NA,"no","4.0.0","CRAN"
+"hmeasure","hmeasure","C:/Users/Ilya/Documents/R/win-library/4.0","1.0-2",NA,"R (>= 2.10)",NA,"no","4.0.0","CRAN"
+"Hmisc","Hmisc","C:/Users/Ilya/Documents/R/win-library/4.0","4.4-0",NA,"lattice, survival (>= 3.1-6), Formula, ggplot2 (>= 2.2)","methods, latticeExtra, cluster, rpart, nnet, acepack, foreign,
+gtable, grid, gridExtra, data.table, htmlTable (>= 1.11.0),
+viridis, htmltools, base64enc","yes","4.0.0","CRAN"
+"hms","hms","C:/Users/Ilya/Documents/R/win-library/4.0","0.5.3",NA,NA,"methods, pkgconfig, rlang, vctrs (>= 0.2.1)","no","4.0.0","CRAN"
+"hrbrthemes","hrbrthemes","C:/Users/Ilya/Documents/R/win-library/4.0","0.8.0",NA,"R (>= 3.4.0)","ggplot2 (>= 3.3.0), grDevices, grid, scales, extrafont, knitr,
+rmarkdown, htmltools, tools, magrittr, gdtools","no","4.0.0","CRAN"
+"htmltidy","htmltidy","C:/Users/Ilya/Documents/R/win-library/4.0","0.5.0",NA,"R (>= 3.2.0)","Rcpp, xml2, XML, htmlwidgets, htmltools","yes","4.0.0","CRAN"
+"htmltools","htmltools","C:/Users/Ilya/Documents/R/win-library/4.0","0.5.0",NA,"R (>= 2.14.1)","utils, digest, grDevices, base64enc, rlang","yes","4.0.0","CRAN"
+"htmlwidgets","htmlwidgets","C:/Users/Ilya/Documents/R/win-library/4.0","1.5.1",NA,NA,"grDevices, htmltools (>= 0.3), jsonlite (>= 0.9.16), yaml","no","4.0.0","CRAN"
+"hts","hts","C:/Users/Ilya/Documents/R/win-library/4.0","6.0.0",NA,"R (>= 3.2.0), forecast (>= 8.12)","SparseM, Matrix, matrixcalc, parallel, utils, methods,
+graphics, grDevices, stats","yes","4.0.0","CRAN"
+"httpcode","httpcode","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.0",NA,NA,NA,"no","4.0.0","CRAN"
+"httpuv","httpuv","C:/Users/Ilya/Documents/R/win-library/4.0","1.5.4",NA,"R (>= 2.15.1)","Rcpp (>= 0.11.0), utils, R6, promises, later (>= 0.8.0)","yes","4.0.0","CRAN"
+"httr","httr","C:/Users/Ilya/Documents/R/win-library/4.0","1.4.1",NA,"R (>= 3.2)","curl (>= 3.0.0), jsonlite, mime, openssl (>= 0.8), R6","no","4.0.0","CRAN"
+"huge","huge","C:/Users/Ilya/Documents/R/win-library/4.0","1.3.4.1",NA,"R (>= 3.0.0)","Matrix, igraph, MASS, grDevices, graphics, methods, stats,
+utils, Rcpp","yes","4.0.0","CRAN"
+"hunspell","hunspell","C:/Users/Ilya/Documents/R/win-library/4.0","3.0",NA,"R (>= 3.0.2)","Rcpp, digest","yes","4.0.0","CRAN"
+"hypergeo","hypergeo","C:/Users/Ilya/Documents/R/win-library/4.0","1.2-13",NA,"R (>= 3.1.0),","elliptic (>= 1.3-5), contfrac (>= 1.1-9), deSolve","no","4.0.0","CRAN"
+"ibdreg","ibdreg","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.5",NA,"R (>= 2.15.0)",NA,"yes","4.0.0","CRAN"
+"igraph","igraph","C:/Users/Ilya/Documents/R/win-library/4.0","1.2.5",NA,"methods","graphics, grDevices, magrittr, Matrix, pkgconfig (>= 2.0.0),
+stats, utils","yes","4.0.0","CRAN"
+"igraphdata","igraphdata","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.1",NA,"R (>= 2.10)",NA,"no","4.0.0","CRAN"
+"imager","imager","C:/Users/Ilya/Documents/R/win-library/4.0","0.42.3",NA,"R (>= 2.10.0),magrittr","Rcpp (>=
+0.11.5),methods,stringr,png,jpeg,readbitmap,grDevices,purrr,downloader,igraph","yes","4.0.0","CRAN"
+"imputeTS","imputeTS","C:/Users/Ilya/Documents/R/win-library/4.0","3.0",NA,"R (>= 3.0.1)","stats, graphics, grDevices, stinepack, forecast, magrittr,
+Rcpp","yes","4.0.0","CRAN"
+"ineq","ineq","C:/Users/Ilya/Documents/R/win-library/4.0","0.2-13",NA,"R (>= 2.10.0)","stats, graphics, grDevices","no","4.0.0","CRAN"
+"infer","infer","C:/Users/Ilya/Documents/R/win-library/4.0","0.5.2",NA,"R (>= 3.1.2)","dplyr (>= 0.7.0), methods, tibble, rlang (>= 0.2.0), ggplot2,
+magrittr, glue (>= 1.3.0), grDevices, purrr","no","4.0.0","CRAN"
+"influenceR","influenceR","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.0",NA,"R (>= 3.2.0)","igraph (>= 1.0.1), Matrix (>= 1.1-4), methods, utils","yes","4.0.0","CRAN"
+"influxdbr","influxdbr","C:/Users/Ilya/Documents/R/win-library/4.0","0.14.2",NA,NA,"dplyr (>= 0.7.0), jsonlite, httr, magrittr, purrr (>= 0.2.3),
+rlang, tibble, tidyr, xts, zoo","no","4.0.0","CRAN"
+"ini","ini","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.1",NA,NA,NA,"no","4.0.0","CRAN"
+"inline","inline","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.15",NA,"R (>= 2.4.0)","methods","no","4.0.0","CRAN"
+"insight","insight","C:/Users/Ilya/Documents/R/win-library/4.0","0.8.5",NA,"R (>= 3.2)","methods, stats, utils","no","4.0.0","CRAN"
+"inspectdf","inspectdf","C:/Users/Ilya/Documents/R/win-library/4.0","0.0.8",NA,"R (>= 3.1.0)","dplyr, ggplot2, magrittr, progress, Rcpp, tibble, tidyr,
+ggfittext (>= 0.8.0)","yes","4.0.2","CRAN"
+"installr","installr","C:/Users/Ilya/Documents/R/win-library/4.0","0.22.0",NA,"R (>= 2.14.0), stringr, utils",NA,"no","4.0.0","CRAN"
+"intergraph","intergraph","C:/Users/Ilya/Documents/R/win-library/4.0","2.0-2",NA,NA,"network (>= 1.4-1-1), igraph (>= 0.6-0), utils","no","4.0.0","CRAN"
+"intrval","intrval","C:/Users/Ilya/Documents/R/win-library/4.0","0.1-1",NA,NA,NA,"no","4.0.0","CRAN"
+"inum","inum","C:/Users/Ilya/Documents/R/win-library/4.0","1.0-1",NA,"R (>= 3.3.0)","stats, libcoin (>= 1.0-0)","no","4.0.0","CRAN"
+"iplots","iplots","C:/Users/Ilya/Documents/R/win-library/4.0","1.1-7.1",NA,"R (>= 1.5.0), methods, rJava (>= 0.5-0)","grDevices, png","no","4.0.0","CRAN"
+"ipred","ipred","C:/Users/Ilya/Documents/R/win-library/4.0","0.9-9",NA,"R (>= 2.10)","rpart (>= 3.1-8), MASS, survival, nnet, class, prodlim","yes","4.0.0","CRAN"
+"iptools","iptools","C:/Users/Ilya/Documents/R/win-library/4.0","0.6.1",NA,"R (>= 3.0.0)","Rcpp (>= 0.11.2), utils, stats, AsioHeaders, stringi, readr,
+triebeard","yes","4.0.0","CRAN"
+"irlba","irlba","C:/Users/Ilya/Documents/R/win-library/4.0","2.3.3",NA,"Matrix","stats, methods","yes","4.0.0","CRAN"
+"isa2","isa2","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.5",NA,"methods","grDevices, lattice, stats, utils","yes","4.0.0","CRAN"
+"isoband","isoband","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.2",NA,NA,"grid, utils","yes","4.0.2","CRAN"
+"ISOcodes","ISOcodes","C:/Users/Ilya/Documents/R/win-library/4.0","2020.03.16",NA,"R (>= 3.5.0)",NA,"no","4.0.0","CRAN"
+"ISwR","ISwR","C:/Users/Ilya/Documents/R/win-library/4.0","2.0-8",NA,"R (>= 2.6.0)",NA,"no","4.0.0","CRAN"
+"iterators","iterators","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.12",NA,"R (>= 2.5.0), utils",NA,"no","4.0.0","CRAN"
+"itertools","itertools","C:/Users/Ilya/Documents/R/win-library/4.0","0.1-3",NA,"R (>= 2.14.0), iterators(>= 1.0.0)","parallel","no","4.0.0","CRAN"
+"janeaustenr","janeaustenr","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.5",NA,"R (>= 3.1.2)",NA,"no","4.0.0","CRAN"
+"janitor","janitor","C:/Users/Ilya/Documents/R/win-library/4.0","2.0.1",NA,"R (>= 3.1.2)","dplyr (>= 0.7.0), lifecycle, lubridate, magrittr, purrr,
+rlang, stringi, stringr, snakecase (>= 0.9.2), tidyselect (>=
+1.0.0), tidyr (>= 0.7.0)","no","4.0.0","CRAN"
+"jomo","jomo","C:/Users/Ilya/Documents/R/win-library/4.0","2.7-1",NA,NA,"stats, lme4, survival, MASS, ordinal","yes","4.0.0","CRAN"
+"jose","jose","C:/Users/Ilya/Documents/R/win-library/4.0","1.0",NA,"openssl (>= 1.2.1)","jsonlite","no","4.0.0","CRAN"
+"jpeg","jpeg","C:/Users/Ilya/Documents/R/win-library/4.0","0.1-8.1",NA,"R (>= 2.9.0)",NA,"yes","4.0.0","CRAN"
+"jqr","jqr","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.0",NA,"R (>= 3.1.2)","magrittr, lazyeval","yes","4.0.0","CRAN"
+"jsonify","jsonify","C:/Users/Ilya/Documents/R/win-library/4.0","1.2.1",NA,"R (>= 3.3.0)","Rcpp (>= 0.12.18)","yes","4.0.0","CRAN"
+"jsonlite","jsonlite","C:/Users/Ilya/Documents/R/win-library/4.0","1.7.0",NA,"methods",NA,"yes","4.0.2","CRAN"
+"jsonvalidate","jsonvalidate","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.0",NA,NA,"V8","no","4.0.0","CRAN"
+"kableExtra","kableExtra","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.0",NA,"R (>= 3.1.0)","knitr (>= 1.16), magrittr, stringr (>= 1.0), xml2 (>= 1.1.1),
+rvest, rmarkdown (>= 1.6.0), readr, scales, viridisLite, stats,
+grDevices, htmltools, rstudioapi, glue, tools, webshot, digest","no","4.0.0","CRAN"
+"kdensity","kdensity","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.1",NA,NA,"assertthat","no","4.0.0","CRAN"
+"keras","keras","C:/Users/Ilya/Documents/R/win-library/4.0","2.3.0.0",NA,"R (>= 3.2)","generics (>= 0.0.1), reticulate (>= 1.10), tensorflow (>=
+2.0.0), tfruns (>= 1.0), magrittr, zeallot, methods, R6","no","4.0.0","CRAN"
+"kernlab","kernlab","C:/Users/Ilya/Documents/R/win-library/4.0","0.9-29",NA,"R (>= 2.10)","methods, stats, grDevices, graphics","yes","4.0.0","CRAN"
+"klaR","klaR","C:/Users/Ilya/Documents/R/win-library/4.0","0.6-15",NA,"R (>= 2.10.0), MASS","combinat, questionr, grDevices, stats, utils, graphics","no","4.0.0","CRAN"
+"km.ci","km.ci","C:/Users/Ilya/Documents/R/win-library/4.0","0.5-2",NA,"R (>= 1.8.0), survival, stats",NA,NA,"4.0.0","CRAN"
+"KMsurv","KMsurv","C:/Users/Ilya/Documents/R/win-library/4.0","0.1-5",NA,NA,NA,NA,"4.0.0","CRAN"
+"knitr","knitr","C:/Users/Ilya/Documents/R/win-library/4.0","1.29",NA,"R (>= 3.2.3)","evaluate (>= 0.10), highr, markdown, stringr (>= 0.6), yaml
+(>= 2.1.19), methods, xfun (>= 0.15), tools","no","4.0.2","CRAN"
+"ks","ks","C:/Users/Ilya/Documents/R/win-library/4.0","1.11.7",NA,"R (>= 2.10.0)","FNN (>= 1.1), kernlab, KernSmooth (>= 2.22), Matrix, mclust,
+mgcv, multicool, mvtnorm (>= 1.0-0)","yes","4.0.0","CRAN"
+"labeling","labeling","C:/Users/Ilya/Documents/R/win-library/4.0","0.3",NA,NA,NA,"no","4.0.0","CRAN"
+"labelled","labelled","C:/Users/Ilya/Documents/R/win-library/4.0","2.5.0",NA,NA,"haven (>= 2.3.1), dplyr","no","4.0.0","CRAN"
+"laeken","laeken","C:/Users/Ilya/Documents/R/win-library/4.0","0.5.1",NA,"R (>= 3.2.0)","boot, MASS","no","4.0.0","CRAN"
+"lambda.r","lambda.r","C:/Users/Ilya/Documents/R/win-library/4.0","1.2.4",NA,"R (>= 3.0.0)","formatR","no","4.0.0","CRAN"
+"lamW","lamW","C:/Users/Ilya/Documents/R/win-library/4.0","1.3.3",NA,"R (>= 3.0.2)","Rcpp, RcppParallel (>= 4.3.20)","yes","4.0.2","CRAN"
+"lars","lars","C:/Users/Ilya/Documents/R/win-library/4.0","1.2",NA,"R (>= 2.10)",NA,"yes","4.0.0","CRAN"
+"later","later","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.0.1",NA,NA,"Rcpp (>= 0.12.9), rlang","yes","4.0.0","CRAN"
+"latex2exp","latex2exp","C:/Users/Ilya/Documents/R/win-library/4.0","0.4.0",NA,NA,"stringr, magrittr","no","4.0.0","CRAN"
+"latticeExtra","latticeExtra","C:/Users/Ilya/Documents/R/win-library/4.0","0.6-29",NA,"R (>= 3.6.0), lattice","grid, stats, utils, grDevices, png, jpeg, RColorBrewer","no","4.0.0","CRAN"
+"lava","lava","C:/Users/Ilya/Documents/R/win-library/4.0","1.6.7",NA,"R (>= 3.0)","grDevices, graphics, methods, numDeriv, stats, survival,
+SQUAREM, utils","no","4.0.0","CRAN"
+"lava.tobit","lava.tobit","C:/Users/Ilya/Documents/R/win-library/4.0","0.5",NA,"lava (>= 1.5), mets (>= 1.2.2), mvtnorm, survival",NA,"no","4.0.0","CRAN"
+"lavaan","lavaan","C:/Users/Ilya/Documents/R/win-library/4.0","0.6-6",NA,"R(>= 3.4)","methods, stats4, stats, utils, graphics, MASS, mnormt,
+pbivnorm, numDeriv","no","4.0.0","CRAN"
+"lazyeval","lazyeval","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.2",NA,"R (>= 3.1.0)",NA,"yes","4.0.0","CRAN"
+"LDAvis","LDAvis","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.2",NA,"R (>= 2.10)","proxy, RJSONIO, parallel","no","4.0.0","CRAN"
+"leafem","leafem","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.1",NA,"R (>= 3.1.0)","htmltools (>= 0.3), htmlwidgets, leaflet (>= 2.0.1), mapdeck,
+raster, sf, sp, methods, base64enc, scales (>= 1.0.0), png","no","4.0.0","CRAN"
+"leaflet","leaflet","C:/Users/Ilya/Documents/R/win-library/4.0","2.0.3",NA,"R (>= 3.1.0)","base64enc, crosstalk, htmlwidgets, htmltools, magrittr,
+markdown, methods, png, RColorBrewer, raster, scales (>=
+1.0.0), sp, stats, viridis (>= 0.5.1), leaflet.providers (>=
+1.8.0)","no","4.0.0","CRAN"
+"leaflet.minicharts","leaflet.minicharts","C:/Users/Ilya/Documents/R/win-library/4.0","0.6.0",NA,"R (>= 2.10)","leaflet (>= 1.1.0), htmltools","no","4.0.0","CRAN"
+"leaflet.providers","leaflet.providers","C:/Users/Ilya/Documents/R/win-library/4.0","1.9.0",NA,"R (>= 2.10)",NA,"no","4.0.0","CRAN"
+"leafpop","leafpop","C:/Users/Ilya/Documents/R/win-library/4.0","0.0.5",NA,NA,"base64enc, brew, htmltools, htmlwidgets, sf, svglite, uuid","no","4.0.0","CRAN"
+"leafsync","leafsync","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.0",NA,"R (>= 3.1.0), methods","htmltools (>= 0.3), htmlwidgets, leaflet (>= 2.0.1)","no","4.0.0","CRAN"
+"leaps","leaps","C:/Users/Ilya/Documents/R/win-library/4.0","3.1",NA,"",NA,"yes","4.0.0","CRAN"
+"LearnBayes","LearnBayes","C:/Users/Ilya/Documents/R/win-library/4.0","2.15.1",NA,NA,NA,"no","4.0.0","CRAN"
+"lexicon","lexicon","C:/Users/Ilya/Documents/R/win-library/4.0","1.2.1",NA,"R (>= 3.2.2)","data.table, syuzhet (>= 1.0.1)","no","4.0.0","CRAN"
+"lgr","lgr","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.4",NA,"R (>= 2.10)","R6 (>= 2.4.0)","no","4.0.0","CRAN"
+"libcoin","libcoin","C:/Users/Ilya/Documents/R/win-library/4.0","1.0-5",NA,"R (>= 3.4.0)","stats, mvtnorm","yes","4.0.0","CRAN"
+"lifecycle","lifecycle","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.0",NA,"R (>= 3.2)","glue, rlang (>= 0.4.0)","no","4.0.0","CRAN"
+"lightsout","lightsout","C:/Users/Ilya/Documents/R/win-library/4.0","0.3",NA,"R (>= 3.0.0)","magrittr (>= 1.5), shiny (>= 0.10.0), shinyjs (>= 0.3.0),
+stats, utils","no","4.0.0","CRAN"
+"lime","lime","C:/Users/Ilya/Documents/R/win-library/4.0","0.5.1",NA,NA,"glmnet, stats, ggplot2, tools, stringi, Matrix, Rcpp,
+assertthat, htmlwidgets, shiny, shinythemes, methods,
+grDevices, gower","yes","4.0.0","CRAN"
+"linprog","linprog","C:/Users/Ilya/Documents/R/win-library/4.0","0.9-2",NA,"R (>= 2.4.0), lpSolve",NA,NA,"4.0.0","CRAN"
+"lintr","lintr","C:/Users/Ilya/Documents/R/win-library/4.0","2.0.1",NA,"R (>= 3.2)","rex, crayon, codetools, cyclocomp, testthat (>= 2.2.1),
+digest, rstudioapi (>= 0.2), httr (>= 1.2.1), jsonlite, knitr,
+stats, utils, xml2 (>= 1.0.0), xmlparsedata (>= 1.0.3)","no","4.0.0","CRAN"
+"liquidSVM","liquidSVM","C:/Users/Ilya/Documents/R/win-library/4.0","1.2.4",NA,"R (>= 2.12.0), methods",NA,"yes","4.0.0","CRAN"
+"listenv","listenv","C:/Users/Ilya/Documents/R/win-library/4.0","0.8.0",NA,"R (>= 3.1.2)",NA,"no","4.0.0","CRAN"
+"listviewer","listviewer","C:/Users/Ilya/Documents/R/win-library/4.0","3.0.0",NA,NA,"htmltools, htmlwidgets, shiny","no","4.0.0","CRAN"
+"lme4","lme4","C:/Users/Ilya/Documents/R/win-library/4.0","1.1-23",NA,"R (>= 3.2.0), Matrix (>= 1.2-1), methods, stats","graphics, grid, splines, utils, parallel, MASS, lattice, boot,
+nlme (>= 3.1-123), minqa (>= 1.1.15), nloptr (>= 1.0.4),
+statmod","yes","4.0.0","CRAN"
+"lmerTest","lmerTest","C:/Users/Ilya/Documents/R/win-library/4.0","3.1-2",NA,"R (>= 3.2.5), lme4 (>= 1.1-10), stats, methods","numDeriv, MASS, ggplot2","no","4.0.0","CRAN"
+"lmtest","lmtest","C:/Users/Ilya/Documents/R/win-library/4.0","0.9-37",NA,"R (>= 3.0.0), stats, zoo","graphics","yes","4.0.0","CRAN"
+"lobstr","lobstr","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.1",NA,"R (>= 3.2)","crayon, Rcpp, rlang (>= 0.3.0)","yes","4.0.0","CRAN"
+"locfit","locfit","C:/Users/Ilya/Documents/R/win-library/4.0","1.5-9.4",NA,"R (>= 3.5.0)","lattice","yes","4.0.0","CRAN"
+"longmemo","longmemo","C:/Users/Ilya/Documents/R/win-library/4.0","1.1-2",NA,NA,"graphics, utils, stats","no","4.0.0","CRAN"
+"loo","loo","C:/Users/Ilya/Documents/R/win-library/4.0","2.3.0",NA,"R (>= 3.1.2)","checkmate, matrixStats (>= 0.52), parallel, stats","no","4.0.2","CRAN"
+"lpSolve","lpSolve","C:/Users/Ilya/Documents/R/win-library/4.0","5.6.15",NA,NA,NA,"yes","4.0.0","CRAN"
+"lubridate","lubridate","C:/Users/Ilya/Documents/R/win-library/4.0","1.7.9",NA,"methods, R (>= 3.2)","generics, Rcpp (>= 0.12.13)","yes","4.0.0","CRAN"
+"lwgeom","lwgeom","C:/Users/Ilya/Documents/R/win-library/4.0","0.2-5",NA,"R (>= 3.3.0)","Rcpp, units, sf (>= 0.9-3)","yes","4.0.0","CRAN"
+"magic","magic","C:/Users/Ilya/Documents/R/win-library/4.0","1.5-9",NA,"R (>= 2.10), abind",NA,"no","4.0.0","CRAN"
+"magick","magick","C:/Users/Ilya/Documents/R/win-library/4.0","2.4.0",NA,NA,"Rcpp (>= 0.12.12), magrittr, curl","yes","4.0.2","CRAN"
+"magrittr","magrittr","C:/Users/Ilya/Documents/R/win-library/4.0","1.5",NA,NA,NA,"no","4.0.0","CRAN"
+"manipulate","manipulate","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.1",NA,"R (>= 2.11.1)",NA,"no","4.0.0","CRAN"
+"manipulateWidget","manipulateWidget","C:/Users/Ilya/Documents/R/win-library/4.0","0.10.1",NA,NA,"shiny (>= 1.0.3), miniUI, htmltools, htmlwidgets, knitr,
+methods, tools, base64enc, grDevices, codetools, webshot","no","4.0.0","CRAN"
+"mapdata","mapdata","C:/Users/Ilya/Documents/R/win-library/4.0","2.3.0",NA,"R (>= 2.14.0), maps (>= 2.0-7)",NA,"yes","4.0.0","CRAN"
+"mapdeck","mapdeck","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.3",NA,"R (>= 3.5.0)","colourvalues (>= 0.3.4), googlePolylines (>= 0.7.2), geojsonsf
+(>= 1.3.3), htmlwidgets, jsonify (>= 1.1.1), magrittr, Rcpp,
+shiny, sfheaders (>= 0.2.2)","yes","4.0.0","CRAN"
+"mapproj","mapproj","C:/Users/Ilya/Documents/R/win-library/4.0","1.2.7",NA,"R (>= 3.0.0), maps (>= 2.3-0)","stats, graphics","yes","4.0.0","CRAN"
+"maps","maps","C:/Users/Ilya/Documents/R/win-library/4.0","3.3.0",NA,"R (>= 3.0.0)","graphics, utils","yes","4.0.0","CRAN"
+"maptools","maptools","C:/Users/Ilya/Documents/R/win-library/4.0","1.0-1",NA,"R (>= 2.10), sp (>= 1.0-11)","foreign (>= 0.8), methods, grid, lattice, stats, utils,
+grDevices","yes","4.0.0","CRAN"
+"mapview","mapview","C:/Users/Ilya/Documents/R/win-library/4.0","2.7.8",NA,"methods, R (>= 2.10)","base64enc, htmltools, htmlwidgets, lattice, leafem, leaflet
+(>= 2.0.0), leafpop, png, raster, satellite, scales (>= 0.2.5),
+sf, sp, viridisLite, webshot","no","4.0.0","CRAN"
+"markdown","markdown","C:/Users/Ilya/Documents/R/win-library/4.0","1.1",NA,"R (>= 2.11.1)","utils, xfun, mime (>= 0.3)","yes","4.0.0","CRAN"
+"Matching","Matching","C:/Users/Ilya/Documents/R/win-library/4.0","4.9-7",NA,"R (>= 2.6.0), MASS (>= 7.2-1), graphics, grDevices, stats",NA,"yes","4.0.0","CRAN"
+"MatchIt","MatchIt","C:/Users/Ilya/Documents/R/win-library/4.0","3.0.2",NA,"R (>= 2.6)","MASS, Matching","no","4.0.0","CRAN"
+"matrixcalc","matrixcalc","C:/Users/Ilya/Documents/R/win-library/4.0","1.0-3",NA,"R (>= 2.0.1)",NA,NA,"4.0.0","CRAN"
+"MatrixModels","MatrixModels","C:/Users/Ilya/Documents/R/win-library/4.0","0.4-1",NA,"R (>= 3.0.1)","stats, methods, Matrix (>= 1.1-5)","no","4.0.0","CRAN"
+"matrixStats","matrixStats","C:/Users/Ilya/Documents/R/win-library/4.0","0.56.0",NA,"R (>= 2.12.0)",NA,"yes","4.0.0","CRAN"
+"maxLik","maxLik","C:/Users/Ilya/Documents/R/win-library/4.0","1.3-8",NA,"R (>= 2.4.0), miscTools (>= 0.6-8), methods","sandwich","no","4.0.0","CRAN"
+"maxstat","maxstat","C:/Users/Ilya/Documents/R/win-library/4.0","0.7-25",NA,"R (>= 1.7.0)","exactRankTests(>= 0.8-23), mvtnorm(>= 0.5-10), stats, graphics","yes","4.0.0","CRAN"
+"MBA","MBA","C:/Users/Ilya/Documents/R/win-library/4.0","0.0-9",NA,"R (> 2.10.0)",NA,"yes","4.0.0","CRAN"
+"MBESS","MBESS","C:/Users/Ilya/Documents/R/win-library/4.0","4.7.0",NA,"R (>= 3.5.0), stats","boot, gsl, lavaan, MASS, methods, mnormt, nlme, OpenMx,
+parallel, sem, semTools","no","4.0.0","CRAN"
+"mboost","mboost","C:/Users/Ilya/Documents/R/win-library/4.0","2.9-2",NA,"R (>= 3.2.0), methods, stats, parallel, stabs (>= 0.5-0)","Matrix, survival, splines, lattice, nnls, quadprog, utils,
+graphics, grDevices, partykit (>= 1.2-1)","yes","4.0.0","CRAN"
+"mclust","mclust","C:/Users/Ilya/Documents/R/win-library/4.0","5.4.6",NA,"R (>= 3.0)","stats, utils, graphics, grDevices","yes","4.0.0","CRAN"
+"mcmc","mcmc","C:/Users/Ilya/Documents/R/win-library/4.0","0.9-7",NA,"R (>= 3.0.2)","stats","yes","4.0.0","CRAN"
+"MCMCpack","MCMCpack","C:/Users/Ilya/Documents/R/win-library/4.0","1.4-8",NA,"R (>= 3.6), coda (>= 0.11-3), MASS, stats","graphics, grDevices, lattice, methods, utils, mcmc, quantreg","yes","4.0.0","CRAN"
+"memisc","memisc","C:/Users/Ilya/Documents/R/win-library/4.0","0.99.25.6",NA,"R (>= 3.3.0), lattice, stats, methods, utils, MASS","grid, repr, data.table","yes","4.0.2","CRAN"
+"memoise","memoise","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.0",NA,NA,"digest (>= 0.6.3)","no","4.0.0","CRAN"
+"merTools","merTools","C:/Users/Ilya/Documents/R/win-library/4.0","0.5.2",NA,"R (>= 3.0.2), arm, lme4 (>= 1.1-11), methods","dplyr, mvtnorm, foreach, shiny, abind, ggplot2, blme,
+broom.mixed,","no","4.0.2","CRAN"
+"metafor","metafor","C:/Users/Ilya/Documents/R/win-library/4.0","2.4-0",NA,"R (>= 3.5.0), methods, Matrix","stats, utils, graphics, grDevices, nlme","no","4.0.0","CRAN"
+"metricsgraphics","metricsgraphics","C:/Users/Ilya/Documents/R/win-library/4.0","0.9.0",NA,"R (>= 3.0.0)","magrittr, htmlwidgets, htmltools","no","4.0.0","CRAN"
+"mets","mets","C:/Users/Ilya/Documents/R/win-library/4.0","1.2.7.1",NA,"R (>= 3.5), timereg (>= 1.9.4), lava (>= 1.6.6)","mvtnorm, numDeriv, compiler, Rcpp, splines, survival (>=
+2.43-1),","yes","4.0.0","CRAN"
+"mgsub","mgsub","C:/Users/Ilya/Documents/R/win-library/4.0","1.7.1",NA,NA,NA,"no","4.0.0","CRAN"
+"mi","mi","C:/Users/Ilya/Documents/R/win-library/4.0","1.0",NA,"R (>= 3.0.0), methods, Matrix, stats4","arm (>= 1.4-11)","no","4.0.0","CRAN"
+"mice","mice","C:/Users/Ilya/Documents/R/win-library/4.0","3.9.0",NA,"R (>= 2.10.0)","broom, dplyr, graphics, lattice, methods, stats, tidyr, utils","yes","4.0.0","CRAN"
+"microbenchmark","microbenchmark","C:/Users/Ilya/Documents/R/win-library/4.0","1.4-7",NA,NA,"graphics, stats","yes","4.0.0","CRAN"
+"mime","mime","C:/Users/Ilya/Documents/R/win-library/4.0","0.9",NA,NA,"tools","yes","4.0.0","CRAN"
+"miniCRAN","miniCRAN","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.12",NA,NA,"graphics, httr, methods, stats, tools, utils, XML, igraph,
+assertthat","no","4.0.0","CRAN"
+"miniUI","miniUI","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.1.1",NA,NA,"shiny (>= 0.13), htmltools (>= 0.3), utils","no","4.0.0","CRAN"
+"minqa","minqa","C:/Users/Ilya/Documents/R/win-library/4.0","1.2.4",NA,NA,"Rcpp (>= 0.9.10)","yes","4.0.0","CRAN"
+"misc3d","misc3d","C:/Users/Ilya/Documents/R/win-library/4.0","0.8-4",NA,NA,NA,NA,"4.0.0","CRAN"
+"miscTools","miscTools","C:/Users/Ilya/Documents/R/win-library/4.0","0.6-26",NA,"R (>= 2.14.0)","digest","no","4.0.0","CRAN"
+"missForest","missForest","C:/Users/Ilya/Documents/R/win-library/4.0","1.4",NA,"randomForest,foreach,itertools",NA,"no","4.0.0","CRAN"
+"mistral","mistral","C:/Users/Ilya/Documents/R/win-library/4.0","2.1.0",NA,"R (>= 3.0.0)","e1071, Matrix, mvtnorm, ggplot2, doParallel, foreach,
+iterators, DiceKriging, emoa, quadprog","no","4.0.0","CRAN"
+"mitml","mitml","C:/Users/Ilya/Documents/R/win-library/4.0","0.3-7",NA,NA,"pan, jomo, haven, grDevices, graphics, stats, utils","no","4.0.0","CRAN"
+"mitools","mitools","C:/Users/Ilya/Documents/R/win-library/4.0","2.4",NA,NA,"DBI, methods, stats","no","4.0.0","CRAN"
+"mlapi","mlapi","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.0",NA,"methods","R6 (>= 2.2.1), Matrix (>= 1.1)","no","4.0.0","CRAN"
+"mlbench","mlbench","C:/Users/Ilya/Documents/R/win-library/4.0","2.1-1",NA,"R (>= 2.10)",NA,NA,"4.0.0","CRAN"
+"MLmetrics","MLmetrics","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.1",NA,"R (>= 2.10)","stats, utils, ROCR","no","4.0.0","CRAN"
+"mlmRev","mlmRev","C:/Users/Ilya/Documents/R/win-library/4.0","1.0-8",NA,"lme4, R (>= 2.10)",NA,"no","4.0.0","CRAN"
+"mlogit","mlogit","C:/Users/Ilya/Documents/R/win-library/4.0","1.1-0",NA,"R (>= 2.10), dfidx","Formula, zoo, lmtest, statmod, MASS, Rdpack","no","4.0.0","CRAN"
+"mnormt","mnormt","C:/Users/Ilya/Documents/R/win-library/4.0","2.0.1",NA,"R (>= 4.0.0)","tmvnsim (>= 1.0-2)","yes","4.0.2","CRAN"
+"mockery","mockery","C:/Users/Ilya/Documents/R/win-library/4.0","0.4.2",NA,NA,"testthat","no","4.0.0","CRAN"
+"ModelMetrics","ModelMetrics","C:/Users/Ilya/Documents/R/win-library/4.0","1.2.2.2",NA,"R (>= 3.2.2)","Rcpp, data.table","yes","4.0.0","CRAN"
+"modelr","modelr","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.8",NA,"R (>= 3.2)","broom, magrittr, purrr (>= 0.2.2), rlang (>= 0.2.0), tibble,
+tidyr (>= 0.8.0), tidyselect, vctrs","no","4.0.0","CRAN"
+"modeltools","modeltools","C:/Users/Ilya/Documents/R/win-library/4.0","0.2-23",NA,"stats, stats4","methods","no","4.0.0","CRAN"
+"moments","moments","C:/Users/Ilya/Documents/R/win-library/4.0","0.14",NA,NA,NA,"no","4.0.0","CRAN"
+"mongolite","mongolite","C:/Users/Ilya/Documents/R/win-library/4.0","2.2.0",NA,NA,"jsonlite (>= 1.4), openssl (>= 1.0), mime","yes","4.0.0","CRAN"
+"mosaic","mosaic","C:/Users/Ilya/Documents/R/win-library/4.0","1.7.0",NA,"R (>= 3.0.0), dplyr, lattice (>= 0.20-21), ggformula,
+mosaicData, Matrix","mosaicCore (>= 0.5.0), ggplot2, ggrepel, rlang, MASS, grid,
+tidyr, readr, methods, utils, splines, latticeExtra, ggdendro,
+gridExtra, glue, broom, leaflet","no","4.0.0","CRAN"
+"mosaicCalc","mosaicCalc","C:/Users/Ilya/Documents/R/win-library/4.0","0.5.1",NA,"R (>= 3.0.0), mosaicCore","methods, stats, MASS, mosaic, ggformula, magrittr, rlang","no","4.0.0","CRAN"
+"mosaicCore","mosaicCore","C:/Users/Ilya/Documents/R/win-library/4.0","0.6.0",NA,"R (>= 3.0.0),","stats, dplyr, lazyeval, rlang, tidyr, MASS","no","4.0.0","CRAN"
+"mosaicData","mosaicData","C:/Users/Ilya/Documents/R/win-library/4.0","0.18.0",NA,"R (>= 3.0.0)",NA,"no","4.0.0","CRAN"
+"mosaicModel","mosaicModel","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.0",NA,"R (>= 3.1), mosaicCore, splines, dplyr","caret, ggplot2, ggformula, lazyeval, knitr, MASS, testthat,
+tibble, tidyr, tidyverse","no","4.0.0","CRAN"
+"msm","msm","C:/Users/Ilya/Documents/R/win-library/4.0","1.6.8",NA,NA,"survival,mvtnorm,expm","yes","4.0.0","CRAN"
+"mstate","mstate","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.12",NA,"survival (>= 3.1)","RColorBrewer","yes","4.0.0","CRAN"
+"muhaz","muhaz","C:/Users/Ilya/Documents/R/win-library/4.0","1.2.6.1",NA,"R(>= 2.3)","survival","yes","4.0.0","CRAN"
+"multcomp","multcomp","C:/Users/Ilya/Documents/R/win-library/4.0","1.4-13",NA,"stats, graphics, mvtnorm (>= 1.0-10), survival (>= 2.39-4),
+TH.data (>= 1.0-2)","sandwich (>= 2.3-0), codetools","no","4.0.0","CRAN"
+"multicool","multicool","C:/Users/Ilya/Documents/R/win-library/4.0","0.1-11",NA,"methods, Rcpp (>= 0.11.2)",NA,"yes","4.0.0","CRAN"
+"munsell","munsell","C:/Users/Ilya/Documents/R/win-library/4.0","0.5.0",NA,NA,"colorspace, methods","no","4.0.0","CRAN"
+"mvbutils","mvbutils","C:/Users/Ilya/Documents/R/win-library/4.0","2.8.232",NA,"R (>= 3.3)","utils, tools, stats, graphics","no","4.0.0","CRAN"
+"mvnfast","mvnfast","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.5",NA,NA,"Rcpp (>= 0.12.0)","yes","4.0.0","CRAN"
+"mvtnorm","mvtnorm","C:/Users/Ilya/Documents/R/win-library/4.0","1.1-1",NA,"R(>= 3.5.0)","stats, methods","yes","4.0.0","CRAN"
+"naniar","naniar","C:/Users/Ilya/Documents/R/win-library/4.0","0.5.2",NA,"R (>= 3.1.2)","dplyr, ggplot2, purrr, tidyr, tibble (>= 2.0.0), magrittr,
+stats, visdat, rlang, forcats, viridis, glue, UpSetR","no","4.0.2","CRAN"
+"ncdf4","ncdf4","C:/Users/Ilya/Documents/R/win-library/4.0","1.17",NA,NA,NA,"yes","4.0.0","CRAN"
+"ncmeta","ncmeta","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.5",NA,"R (>= 3.3.0)","dplyr, rlang, RNetCDF, tibble, stats, tidyr","no","4.0.0","CRAN"
+"ndjson","ndjson","C:/Users/Ilya/Documents/R/win-library/4.0","0.8.0",NA,"R (>= 3.2.0)","Rcpp, data.table, tibble","yes","4.0.0","CRAN"
+"neighbr","neighbr","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.3",NA,"R (>= 3.3.0)",NA,"no","4.0.0","CRAN"
+"network","network","C:/Users/Ilya/Documents/R/win-library/4.0","1.16.0",NA,"R (>= 2.10), utils","tibble, magrittr","yes","4.0.0","CRAN"
+"networkD3","networkD3","C:/Users/Ilya/Documents/R/win-library/4.0","0.4",NA,"R (>= 3.0.0)","htmlwidgets (>= 0.3.2), igraph, magrittr","no","4.0.0","CRAN"
+"networkDynamic","networkDynamic","C:/Users/Ilya/Documents/R/win-library/4.0","0.10.1",NA,"R (>= 3.0.0), network (>= 1.16.0)","statnet.common, methods","yes","4.0.0","CRAN"
+"NHANES","NHANES","C:/Users/Ilya/Documents/R/win-library/4.0","2.1.0",NA,"R (>= 3.0)",NA,"no","4.0.0","CRAN"
+"nleqslv","nleqslv","C:/Users/Ilya/Documents/R/win-library/4.0","3.3.2",NA,NA,NA,"yes","4.0.0","CRAN"
+"nloptr","nloptr","C:/Users/Ilya/Documents/R/win-library/4.0","1.2.2.2",NA,NA,NA,"yes","4.0.2","CRAN"
+"NLP","NLP","C:/Users/Ilya/Documents/R/win-library/4.0","0.2-0",NA,"R (>= 3.2.0)","utils","no","4.0.0","CRAN"
+"nnls","nnls","C:/Users/Ilya/Documents/R/win-library/4.0","1.4",NA,NA,NA,NA,"4.0.0","CRAN"
+"nortest","nortest","C:/Users/Ilya/Documents/R/win-library/4.0","1.0-4",NA,NA,"stats","no","4.0.0","CRAN"
+"np","np","C:/Users/Ilya/Documents/R/win-library/4.0","0.60-10",NA,NA,"boot, cubature, methods, quadprog, quantreg, stats","yes","4.0.0","CRAN"
+"numbers","numbers","C:/Users/Ilya/Documents/R/win-library/4.0","0.7-5",NA,"R (>= 3.1.0)",NA,"no","4.0.0","CRAN"
+"numDeriv","numDeriv","C:/Users/Ilya/Documents/R/win-library/4.0","2016.8-1.1",NA,"R (>= 2.11.1)",NA,"no","4.0.0","CRAN"
+"nycflights13","nycflights13","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.1",NA,"R (>= 3.2)","tibble","no","4.0.0","CRAN"
+"OceanView","OceanView","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.5",NA,"plot3D, plot3Drgl, R (>= 3.2)","methods, graphics, grDevices, stats, rgl, shape","yes","4.0.0","CRAN"
+"odbc","odbc","C:/Users/Ilya/Documents/R/win-library/4.0","1.2.3",NA,"R (>= 3.2.0)","bit64, blob (>= 1.2.0), DBI (>= 1.0.0), hms, methods, rlang,
+Rcpp (>= 0.12.11)","yes","4.0.0","CRAN"
+"officer","officer","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.12",NA,NA,"R6, grDevices, zip (>= 2.0.3), uuid,stats, magrittr,utils,
+xml2 (>= 1.1.0), graphics","no","4.0.2","CRAN"
+"opencpu","opencpu","C:/Users/Ilya/Documents/R/win-library/4.0","2.2.0",NA,"R (>= 3.0.0)","evaluate (>= 0.12), httpuv (>= 1.3), knitr (>= 1.6), jsonlite
+(>= 1.4), remotes (>= 2.0.2), sys (>= 2.1), webutils (>= 0.6),
+curl (>= 4.0), rappdirs, zip, mime, protolite, brew, openssl","no","4.0.2","CRAN"
+"OpenMx","OpenMx","C:/Users/Ilya/Documents/R/win-library/4.0","2.17.4",NA,"R (>= 3.5.0)","digest, MASS, Matrix, methods, Rcpp, parallel","yes","4.0.0","CRAN"
+"openNLP","openNLP","C:/Users/Ilya/Documents/R/win-library/4.0","0.2-7",NA,NA,"NLP (>= 0.1-6.3), openNLPdata (>= 1.5.3-1), rJava (>= 0.6-3)","no","4.0.0","CRAN"
+"openNLPdata","openNLPdata","C:/Users/Ilya/Documents/R/win-library/4.0","1.5.3-4",NA,NA,"rJava (>= 0.6-3)","no","4.0.0","CRAN"
+"openssl","openssl","C:/Users/Ilya/Documents/R/win-library/4.0","1.4.2",NA,NA,"askpass","yes","4.0.2","CRAN"
+"openxlsx","openxlsx","C:/Users/Ilya/Documents/R/win-library/4.0","4.1.5",NA,"R (>= 3.3.0)","grDevices, methods, Rcpp, stats, utils, zip, stringi","yes","4.0.0","CRAN"
+"optmatch","optmatch","C:/Users/Ilya/Documents/R/win-library/4.0","0.9-13",NA,"R (>= 2.15.1), survival","Rcpp, RItools, digest, stats, methods, graphics","yes","4.0.0","CRAN"
+"ordinal","ordinal","C:/Users/Ilya/Documents/R/win-library/4.0","2019.12-10",NA,"R (>= 2.13.0), stats, methods","ucminf, MASS, Matrix, numDeriv","yes","4.0.0","CRAN"
+"ore","ore","C:/Users/Ilya/Documents/R/win-library/4.0","1.6.3",NA,NA,NA,"yes","4.0.0","CRAN"
+"osmar","osmar","C:/Users/Ilya/Documents/R/win-library/4.0","1.1-7",NA,"R (>= 2.10), methods, XML, RCurl, geosphere",NA,"no","4.0.0","CRAN"
+"oz","oz","C:/Users/Ilya/Documents/R/win-library/4.0","1.0-21",NA,NA,"graphics","no","4.0.0","CRAN"
+"pack","pack","C:/Users/Ilya/Documents/R/win-library/4.0","0.1-1",NA,NA,NA,NA,"4.0.0","Other"
+"packagefinder","packagefinder","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.1",NA,"tools (>= 3.4.0)","httr, utils, jsonlite, pander, formattable, stringr, crayon,
+lubridate, tidyr, textutils, htmlTable","no","4.0.0","CRAN"
+"packrat","packrat","C:/Users/Ilya/Documents/R/win-library/4.0","0.5.0",NA,"R (>= 3.0.0)","tools, utils","no","4.0.0","CRAN"
+"pacman","pacman","C:/Users/Ilya/Documents/R/win-library/4.0","0.5.1",NA,"R (>= 3.5.0)","remotes, methods, stats, utils","no","4.0.0","CRAN"
+"padr","padr","C:/Users/Ilya/Documents/R/win-library/4.0","0.5.2",NA,"R (>= 3.0.0)","Rcpp, dplyr (>= 0.6.0), lubridate, rlang","yes","4.0.0","CRAN"
+"pagedown","pagedown","C:/Users/Ilya/Documents/R/win-library/4.0","0.10",NA,NA,"rmarkdown (>= 1.16), bookdown (>= 0.8), htmltools, jsonlite,
+later (>= 1.0.0), processx, servr (>= 0.13), httpuv, xfun,
+websocket","no","4.0.0","CRAN"
+"pak","pak","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.2",NA,"R (>= 3.2)","assertthat, base64enc, callr (>= 3.0.0.9002), cli (>= 1.0.0),
+cliapp (>= 0.0.0.9002), crayon (>= 1.3.4), curl (>= 3.2), desc
+(>= 1.2.0), filelock (>= 1.0.2), glue (>= 1.3.0), jsonlite,
+lpSolve, pkgbuild (>= 1.0.2), pkgcache (>= 1.0.3), prettyunits,
+processx (>= 3.2.1), ps (>= 1.3.0), R6, rematch2, rprojroot (>=
+1.3.2), tibble, utils","no","4.0.0","CRAN"
+"palmerpenguins","palmerpenguins","C:/Users/Ilya/Documents/R/win-library/4.0","0.0.0.9000",NA,"R (>= 2.10)",NA,"no","4.0.2","GitHub repo = allisonhorst/palmerpenguins"
+"pan","pan","C:/Users/Ilya/Documents/R/win-library/4.0","1.6",NA,NA,NA,"yes","4.0.0","CRAN"
+"pander","pander","C:/Users/Ilya/Documents/R/win-library/4.0","0.6.3",NA,"R (>= 2.15.0)","grDevices, graphics, methods, utils, stats, digest, tools,
+Rcpp","yes","4.0.0","CRAN"
+"parameters","parameters","C:/Users/Ilya/Documents/R/win-library/4.0","0.8.0",NA,"R (>= 3.2)","bayestestR (>= 0.5.0), insight (>= 0.8.1), methods, stats,
+tools, utils","no","4.0.0","CRAN"
+"parsedate","parsedate","C:/Users/Ilya/Documents/R/win-library/4.0","1.2.0",NA,NA,"rematch2","yes","4.0.0","CRAN"
+"partitions","partitions","C:/Users/Ilya/Documents/R/win-library/4.0","1.9-22",NA,"R (>= 3.6.0)","gmp, polynom, sets","yes","4.0.0","CRAN"
+"partools","partools","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.6",NA,"regtools,parallel,stats,utils,data.table,pdist,methods",NA,"no","4.0.0","CRAN"
+"party","party","C:/Users/Ilya/Documents/R/win-library/4.0","1.3-5",NA,"R (>= 3.0.0), methods, grid, stats, mvtnorm (>= 1.0-2),
+modeltools (>= 0.2-21), strucchange","survival (>= 2.37-7), coin (>= 1.1-0), zoo, sandwich (>=
+1.1-1)","yes","4.0.0","CRAN"
+"partykit","partykit","C:/Users/Ilya/Documents/R/win-library/4.0","1.2-9",NA,"R (>= 3.5.0), graphics, grid, libcoin (>= 1.0-0), mvtnorm","grDevices, stats, utils, survival, Formula (>= 1.2-1), inum
+(>= 1.0-0), rpart (>= 4.1-11)","yes","4.0.2","CRAN"
+"pastecs","pastecs","C:/Users/Ilya/Documents/R/win-library/4.0","1.3.21",NA,NA,"boot, stats, graphics, utils, grDevices","no","4.0.0","CRAN"
+"pbapply","pbapply","C:/Users/Ilya/Documents/R/win-library/4.0","1.4-2",NA,"R (>= 3.2.0)","parallel","no","4.0.0","CRAN"
+"pbivnorm","pbivnorm","C:/Users/Ilya/Documents/R/win-library/4.0","0.6.0",NA,NA,NA,"yes","4.0.0","CRAN"
+"pbkrtest","pbkrtest","C:/Users/Ilya/Documents/R/win-library/4.0","0.4-8.6",NA,"R (>= 3.6.0), lme4 (>= 1.1.10)","Matrix (>= 1.2.3), parallel, magrittr, MASS, methods","no","4.0.0","CRAN"
+"pbmcapply","pbmcapply","C:/Users/Ilya/Documents/R/win-library/4.0","1.5.0",NA,"utils, parallel",NA,"yes","4.0.0","CRAN"
+"pcaPP","pcaPP","C:/Users/Ilya/Documents/R/win-library/4.0","1.9-73",NA,NA,"mvtnorm","yes","4.0.0","CRAN"
+"pcse","pcse","C:/Users/Ilya/Documents/R/win-library/4.0","1.9.1.1",NA,NA,NA,"no","4.0.0","CRAN"
+"pder","pder","C:/Users/Ilya/Documents/R/win-library/4.0","1.0-1",NA,"R (>= 3.5.0)",NA,"no","4.0.0","CRAN"
+"pdftools","pdftools","C:/Users/Ilya/Documents/R/win-library/4.0","2.3.1",NA,NA,"Rcpp (>= 0.12.12), qpdf","yes","4.0.0","CRAN"
+"pdist","pdist","C:/Users/Ilya/Documents/R/win-library/4.0","1.2",NA,"methods",NA,NA,"4.0.0","CRAN"
+"pec","pec","C:/Users/Ilya/Documents/R/win-library/4.0","2019.11.03",NA,"R (>= 2.9.0), prodlim (>= 1.4.9)","foreach (>= 1.4.2), rms (>= 4.2-0), survival (>= 2.37-7),
+timereg (>= 1.8.9)","yes","4.0.0","CRAN"
+"penalized","penalized","C:/Users/Ilya/Documents/R/win-library/4.0","0.9-51",NA,"R (>= 2.10.0), survival, methods","Rcpp","yes","4.0.0","CRAN"
+"performance","performance","C:/Users/Ilya/Documents/R/win-library/4.0","0.4.7",NA,"R (>= 3.2)","insight (>= 0.8.1), bayestestR (>= 0.5.0), stats, utils","no","4.0.0","CRAN"
+"PerformanceAnalytics","PerformanceAnalytics","C:/Users/Ilya/Documents/R/win-library/4.0","2.0.4",NA,"R (>= 3.5.0), xts (>= 0.10.0)","methods, quadprog, zoo","yes","4.0.0","CRAN"
+"permutations","permutations","C:/Users/Ilya/Documents/R/win-library/4.0","1.0-6",NA,NA,"magic,numbers,partitions (>= 1.9-17)","no","4.0.0","CRAN"
+"permute","permute","C:/Users/Ilya/Documents/R/win-library/4.0","0.9-5",NA,"R (>= 2.14.0)","stats","no","4.0.0","CRAN"
+"petrinetR","petrinetR","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.1",NA,"R(>= 3.0.0)","dplyr, visNetwork, DiagrammeR, xml2, purrr","no","4.0.0","CRAN"
+"pglm","pglm","C:/Users/Ilya/Documents/R/win-library/4.0","0.2-2",NA,"R (>= 2.10), maxLik, plm","statmod, Formula","no","4.0.0","CRAN"
+"pillar","pillar","C:/Users/Ilya/Documents/R/win-library/4.0","1.4.6",NA,NA,"cli, crayon (>= 1.3.4), ellipsis, fansi, lifecycle, rlang (>=
+0.3.0), utf8 (>= 1.1.0), vctrs (>= 0.2.0)","no","4.0.2","CRAN"
+"pins","pins","C:/Users/Ilya/Documents/R/win-library/4.0","0.4.3",NA,"R (>= 3.2.0)","backports, base64enc, crayon, digest, filelock, httr,
+jsonlite, magrittr, mime, openssl, rappdirs, withr, yaml, zip","no","4.0.2","CRAN"
+"pitchRx","pitchRx","C:/Users/Ilya/Documents/R/win-library/4.0","1.8.2",NA,"R (>= 2.15.1), ggplot2 (>= 0.9.3)","XML2R (>= 0.0.6), plyr, MASS, hexbin, mgcv","no","4.0.0","CRAN"
+"piton","piton","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.1",NA,NA,"Rcpp","yes","4.0.0","CRAN"
+"pivottabler","pivottabler","C:/Users/Ilya/Documents/R/win-library/4.0","1.5.0",NA,"R (>= 3.3.0)","R6 (>= 2.2.0), dplyr (>= 0.5.0), data.table (>= 1.10.0),
+htmltools(>= 0.3.5), htmlwidgets (>= 0.8)","no","4.0.0","CRAN"
+"pkgbuild","pkgbuild","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.8",NA,"R (>= 3.1)","callr (>= 3.2.0), cli, crayon, desc, prettyunits, R6,
+rprojroot, withr (>= 2.1.2)","no","4.0.0","CRAN"
+"pkgcache","pkgcache","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.0",NA,"R (>= 3.1)","assertthat, callr (>= 2.0.4.9000), cli (>= 2.0.0), curl (>=
+3.2), digest, filelock, glue, prettyunits, R6, processx (>=
+3.3.0.9001), rappdirs, rlang, tibble, tools, utils, uuid","no","4.0.2","CRAN"
+"pkgconfig","pkgconfig","C:/Users/Ilya/Documents/R/win-library/4.0","2.0.3",NA,NA,"utils","no","4.0.0","CRAN"
+"pkgload","pkgload","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.0",NA,NA,"cli, crayon, desc, methods, pkgbuild, rlang, rprojroot,
+rstudioapi, utils, withr","yes","4.0.0","CRAN"
+"pkgmaker","pkgmaker","C:/Users/Ilya/Documents/R/win-library/4.0","0.31.1",NA,"R (>= 3.0.0), methods, stats, registry","tools, grDevices, utils, graphics, codetools, digest, stringi,
+magrittr, stringr, xtable, withr, bibtex (>= 0.4), assertthat","no","4.0.0","CRAN"
+"PKI","PKI","C:/Users/Ilya/Documents/R/win-library/4.0","0.1-7",NA,"R (>= 2.9.0), base64enc",NA,"yes","4.0.0","CRAN"
+"plm","plm","C:/Users/Ilya/Documents/R/win-library/4.0","2.2-3",NA,"R (>= 3.1.0)","MASS, bdsmatrix, zoo, nlme, sandwich, lattice, lmtest, maxLik,
+Rdpack, Formula, stats","no","4.0.0","CRAN"
+"plogr","plogr","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.0",NA,NA,NA,"no","4.0.0","CRAN"
+"plot3D","plot3D","C:/Users/Ilya/Documents/R/win-library/4.0","1.3",NA,"R (>= 2.15)","misc3d, stats, graphics, grDevices, methods","no","4.0.0","CRAN"
+"plot3Drgl","plot3Drgl","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.1",NA,"rgl, plot3D, R (>= 3.2.3)","grDevices","no","4.0.0","CRAN"
+"plotluck","plotluck","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.1",NA,"R (>= 3.1)","grid, Hmisc (>= 3.17.4), quantreg (>= 5.26), scales (>=
+0.4.1), plyr (>= 1.8.4), hexbin (>= 1.27.1), RColorBrewer (>=
+1.1.2), ggplot2 (>= 2.2.0)","no","4.0.0","CRAN"
+"plotly","plotly","C:/Users/Ilya/Documents/R/win-library/4.0","4.9.2.1",NA,"R (>= 3.2.0), ggplot2 (>= 3.0.0)","tools, scales, httr, jsonlite (>= 1.6), magrittr, digest,
+viridisLite, base64enc, htmltools (>= 0.3.6), htmlwidgets (>=
+1.3), tidyr, hexbin, RColorBrewer, dplyr, tibble, lazyeval (>=
+0.2.0), rlang, crosstalk, purrr, data.table, promises","no","4.0.0","CRAN"
+"plotrix","plotrix","C:/Users/Ilya/Documents/R/win-library/4.0","3.7-8",NA,"R (>= 3.5.0)","grDevices, graphics, stats, utils","no","4.0.0","CRAN"
+"pls","pls","C:/Users/Ilya/Documents/R/win-library/4.0","2.7-2",NA,"R (>= 2.10)","grDevices, graphics, methods, stats","no","4.0.0","CRAN"
+"plumber","plumber","C:/Users/Ilya/Documents/R/win-library/4.0","0.4.6",NA,"R (>= 3.0.0)","R6 (>= 2.0.0), stringi (>= 0.3.0), jsonlite (>= 0.9.16),
+httpuv (>= 1.2.3), crayon","no","4.0.0","CRAN"
+"plyr","plyr","C:/Users/Ilya/Documents/R/win-library/4.0","1.8.6",NA,"R (>= 3.1.0)","Rcpp (>= 0.11.0)","yes","4.0.0","CRAN"
+"pm4py","pm4py","C:/Users/Ilya/Documents/R/win-library/4.0","1.2.7",NA,NA,"reticulate (>= 1.11), bupaR, petrinetR, purrr, stringr","no","4.0.0","CRAN"
+"pmml","pmml","C:/Users/Ilya/Documents/R/win-library/4.0","2.3.1",NA,"XML","methods, stats, utils, stringr","no","4.0.0","CRAN"
+"pmmlTransformations","pmmlTransformations","C:/Users/Ilya/Documents/R/win-library/4.0","1.3.3",NA,NA,NA,"no","4.0.0","CRAN"
+"png","png","C:/Users/Ilya/Documents/R/win-library/4.0","0.1-7",NA,"R (>= 2.9.0)",NA,"yes","4.0.0","CRAN"
+"polspline","polspline","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.19",NA,NA,"stats, graphics","yes","4.0.0","CRAN"
+"Polychrome","Polychrome","C:/Users/Ilya/Documents/R/win-library/4.0","1.2.5",NA,"R (>= 3.5.0)","colorspace, scatterplot3d, methods, graphics, grDevices,
+stats, utils","no","4.0.0","CRAN"
+"polyclip","polyclip","C:/Users/Ilya/Documents/R/win-library/4.0","1.10-0",NA,"R (>= 3.0.0)",NA,"yes","4.0.0","CRAN"
+"polycor","polycor","C:/Users/Ilya/Documents/R/win-library/4.0","0.7-10",NA,"R (>= 3.3.0)","stats, mvtnorm, Matrix","no","4.0.0","CRAN"
+"polynom","polynom","C:/Users/Ilya/Documents/R/win-library/4.0","1.4-0",NA,NA,"stats, graphics","no","4.0.0","CRAN"
+"pool","pool","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.4.3",NA,"R (>= 3.0.0), methods","DBI, R6, dplyr, dbplyr, later","no","4.0.0","CRAN"
+"popEpi","popEpi","C:/Users/Ilya/Documents/R/win-library/4.0","0.4.8",NA,"R (>= 3.2.0)","Epi (>= 2.0), survival, data.table (>= 1.10.4)","no","4.0.0","CRAN"
+"prabclus","prabclus","C:/Users/Ilya/Documents/R/win-library/4.0","2.3-2",NA,"R (>= 2.10), MASS, mclust",NA,"no","4.0.0","CRAN"
+"pracma","pracma","C:/Users/Ilya/Documents/R/win-library/4.0","2.2.9",NA,"R (>= 3.1.0)","graphics, grDevices, stats, utils","no","4.0.0","CRAN"
+"praise","praise","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.0",NA,NA,NA,"no","4.0.0","CRAN"
+"prediction","prediction","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.14",NA,"R (>= 3.5.0)","utils, stats, data.table","no","4.0.0","CRAN"
+"prefmod","prefmod","C:/Users/Ilya/Documents/R/win-library/4.0","0.8-34",NA,"R (>= 3.0.0), stats, graphics, gnm (>= 1.0-0), colorspace","grDevices, utils","yes","4.0.0","CRAN"
+"prettycode","prettycode","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.0",NA,NA,"crayon, utils","no","4.0.0","CRAN"
+"prettyunits","prettyunits","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.1",NA,NA,NA,"no","4.0.0","CRAN"
+"printr","printr","C:/Users/Ilya/Documents/R/win-library/4.0","0.1",NA,NA,"knitr (>= 1.16)","no","4.0.0","CRAN"
+"pROC","pROC","C:/Users/Ilya/Documents/R/win-library/4.0","1.16.2",NA,"R (>= 2.14)","methods, plyr, Rcpp (>= 0.11.1)","yes","4.0.0","CRAN"
+"processanimateR","processanimateR","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.3",NA,"R (>= 2.10)","bupaR, processmapR (>= 0.3.1), rlang, magrittr, dplyr, tidyr,
+htmlwidgets, DiagrammeR (>= 1.0.0), grDevices, stringr,
+htmltools","no","4.0.0","CRAN"
+"processmapR","processmapR","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.4",NA,NA,"dplyr, bupaR (>= 0.4.0), edeaR (>= 0.8.0), DiagrammeR (>=
+1.0.0), ggplot2, ggthemes, stringr, purrr, data.table, shiny,
+miniUI, glue, forcats, hms, RColorBrewer, plotly, rlang,
+scales, tidyr, htmltools, Rcpp","yes","4.0.0","CRAN"
+"processmonitR","processmonitR","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.0",NA,"R (>= 3.0)","magrittr, ggplot2, dplyr, bupaR, edeaR, shiny, miniUI","no","4.0.0","CRAN"
+"processx","processx","C:/Users/Ilya/Documents/R/win-library/4.0","3.4.3",NA,NA,"ps (>= 1.2.0), R6, utils","yes","4.0.2","CRAN"
+"prodlim","prodlim","C:/Users/Ilya/Documents/R/win-library/4.0","2019.11.13",NA,"R (>= 2.9.0)","Rcpp (>= 0.11.5), stats, grDevices, graphics, survival,
+KernSmooth, lava","yes","4.0.0","CRAN"
+"proffer","proffer","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.0",NA,"R (>= 3.3.0)","cli, processx, profile, RProtoBuf, utils, withr","no","4.0.0","CRAN"
+"profile","profile","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.2",NA,NA,"methods, rlang, tibble, withr","no","4.0.0","CRAN"
+"profileModel","profileModel","C:/Users/Ilya/Documents/R/win-library/4.0","0.6.0",NA,"R (>= 2.6.0)",NA,"no","4.0.0","CRAN"
+"profmem","profmem","C:/Users/Ilya/Documents/R/win-library/4.0","0.5.0",NA,NA,"utils","no","4.0.0","CRAN"
+"profvis","profvis","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.6",NA,"R (>= 3.0)","htmlwidgets (>= 0.3.2), stringr","yes","4.0.0","CRAN"
+"progress","progress","C:/Users/Ilya/Documents/R/win-library/4.0","1.2.2",NA,NA,"hms, prettyunits, R6, crayon","no","4.0.0","CRAN"
+"progressr","progressr","C:/Users/Ilya/Documents/R/win-library/4.0","0.6.0",NA,NA,"digest, utils","no","4.0.0","CRAN"
+"proj4","proj4","C:/Users/Ilya/Documents/R/win-library/4.0","1.0-10",NA,"R (>= 2.0.0)",NA,"yes","4.0.0","CRAN"
+"promises","promises","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.1",NA,NA,"R6, Rcpp, later, rlang, stats, magrittr","yes","4.0.0","CRAN"
+"prophet","prophet","C:/Users/Ilya/Documents/R/win-library/4.0","0.6.1",NA,"R (>= 3.4.0), Rcpp (>= 0.12.0), rlang (>= 0.3.0.1)","dplyr (>= 0.7.7), dygraphs (>= 1.1.1.4), extraDistr, ggplot2,
+grid, methods, rstan (>= 2.18.1), rstantools (>= 2.0.0),
+scales, stats, tidyr (>= 0.6.1), xts","yes","4.0.0","CRAN"
+"proto","proto","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.0",NA,NA,NA,"no","4.0.0","CRAN"
+"protolite","protolite","C:/Users/Ilya/Documents/R/win-library/4.0","2.1",NA,NA,"Rcpp (>= 0.12.12), jsonlite","yes","4.0.0","CRAN"
+"proxy","proxy","C:/Users/Ilya/Documents/R/win-library/4.0","0.4-24",NA,"R (>= 3.4.0)","stats, utils","yes","4.0.0","CRAN"
+"pryr","pryr","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.4",NA,"R (>= 3.1.0)","stringr, codetools, methods, Rcpp (>= 0.11.0)","yes","4.0.0","CRAN"
+"ps","ps","C:/Users/Ilya/Documents/R/win-library/4.0","1.3.3",NA,"R (>= 3.1)","utils","yes","4.0.0","CRAN"
+"PSAgraphics","PSAgraphics","C:/Users/Ilya/Documents/R/win-library/4.0","2.1.1",NA,"R (>= 2.14.0), rpart",NA,NA,"4.0.0","CRAN"
+"pscl","pscl","C:/Users/Ilya/Documents/R/win-library/4.0","1.5.5",NA,NA,"MASS, datasets, grDevices, graphics, stats, utils","yes","4.0.0","CRAN"
+"psych","psych","C:/Users/Ilya/Documents/R/win-library/4.0","1.9.12.31",NA,NA,"mnormt,parallel,stats,graphics,grDevices,methods,lattice,nlme","no","4.0.0","CRAN"
+"Publish","Publish","C:/Users/Ilya/Documents/R/win-library/4.0","2019.12.04",NA,"prodlim (>= 1.5.4)","survival (>= 2.38), data.table (>= 1.10.4), lava (>= 1.5.1),
+multcomp (>= 1.4)","no","4.0.0","CRAN"
+"purrr","purrr","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.4",NA,"R (>= 3.2)","magrittr (>= 1.5), rlang (>= 0.3.1)","yes","4.0.0","CRAN"
+"purrrlyr","purrrlyr","C:/Users/Ilya/Documents/R/win-library/4.0","0.0.6",NA,NA,"dplyr (>= 0.8.0), magrittr (>= 1.5), purrr (>= 0.2.2), Rcpp","yes","4.0.0","CRAN"
+"pwr","pwr","C:/Users/Ilya/Documents/R/win-library/4.0","1.3-0",NA,NA,"stats, graphics","no","4.0.0","CRAN"
+"PythonInR","PythonInR","C:/Users/Ilya/Documents/R/win-library/4.0","0.1-12",NA,"R (>= 2.15)","pack, methods, R6, stats","yes","4.0.2","CRAN"
+"qap","qap","C:/Users/Ilya/Documents/R/win-library/4.0","0.1-1",NA,NA,NA,"yes","4.0.0","CRAN"
+"qdap","qdap","C:/Users/Ilya/Documents/R/win-library/4.0","2.4.1",NA,"R (>= 3.1.0), qdapDictionaries (>= 1.0.2), qdapRegex (>=
+0.1.2), qdapTools (>= 1.3.1), RColorBrewer","chron, dplyr (>= 0.3), gdata, gender (>= 0.5.1), ggplot2 (>=
+2.1.0), grid, gridExtra, igraph, methods, NLP, openNLP (>=
+0.2-1), parallel, plotrix, RCurl, reshape2, scales, stringdist,
+tidyr, tm (>= 0.7.6), tools, utils, venneuler, wordcloud, xlsx,
+XML","no","4.0.0","CRAN"
+"qdapDictionaries","qdapDictionaries","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.7",NA,"R (>= 3.0.0)","methods, utils","no","4.0.0","CRAN"
+"qdapRegex","qdapRegex","C:/Users/Ilya/Documents/R/win-library/4.0","0.7.2",NA,"R (>= 3.1.0)","stringi (>= 0.5-5)","no","4.0.0","CRAN"
+"qdapTools","qdapTools","C:/Users/Ilya/Documents/R/win-library/4.0","1.3.5",NA,"R (>= 3.0.0)","chron, data.table (>= 1.9.6), methods, RCurl, XML","no","4.0.0","CRAN"
+"qpdf","qpdf","C:/Users/Ilya/Documents/R/win-library/4.0","1.1",NA,NA,"Rcpp, askpass, curl","yes","4.0.0","CRAN"
+"qs","qs","C:/Users/Ilya/Documents/R/win-library/4.0","0.22.1",NA,"R (>= 3.5.0)","Rcpp, RApiSerialize, stringfish","yes","4.0.0","CRAN"
+"quadprog","quadprog","C:/Users/Ilya/Documents/R/win-library/4.0","1.5-8",NA,"R (>= 3.1.0)",NA,"yes","4.0.0","CRAN"
+"Quandl","Quandl","C:/Users/Ilya/Documents/R/win-library/4.0","2.10.0",NA,"R (>= 2.15.0), xts","httr (>= 0.6.1), zoo, jsonlite (>= 0.9.14)","no","4.0.0","CRAN"
+"quantmod","quantmod","C:/Users/Ilya/Documents/R/win-library/4.0","0.4.17",NA,"R (>= 3.2.0), xts(>= 0.9-0), zoo, TTR(>= 0.2), methods","curl","no","4.0.0","CRAN"
+"quantreg","quantreg","C:/Users/Ilya/Documents/R/win-library/4.0","5.61",NA,"R (>= 2.6), stats, SparseM","methods, graphics, Matrix, MatrixModels, conquer","yes","4.0.2","CRAN"
+"questionr","questionr","C:/Users/Ilya/Documents/R/win-library/4.0","0.7.1",NA,"R (>= 3.5.0)","shiny (>= 1.0.5), miniUI, rstudioapi, highr, styler, classInt,
+htmltools, graphics, stats, utils, labelled (>= 2.4.0), haven
+(>= 2.3.0)","no","4.0.0","CRAN"
+"QUIC","QUIC","C:/Users/Ilya/Documents/R/win-library/4.0","1.1",NA,"R (>= 2.10)",NA,NA,"4.0.0","CRAN"
+"qvcalc","qvcalc","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.2",NA,NA,NA,"no","4.0.0","CRAN"
+"R.cache","R.cache","C:/Users/Ilya/Documents/R/win-library/4.0","0.14.0",NA,"R (>= 2.14.0)","utils, R.methodsS3 (>= 1.7.1), R.oo (>= 1.23.0), R.utils (>=
+2.8.0), digest (>= 0.6.13)","no","4.0.0","CRAN"
+"R.devices","R.devices","C:/Users/Ilya/Documents/R/win-library/4.0","2.16.1",NA,"R (>= 2.14.0)","grDevices, R.methodsS3 (>= 1.7.1), R.oo (>= 1.21.0), R.utils
+(>= 2.6.0), base64enc (>= 0.1-2)","no","4.0.0","CRAN"
+"R.methodsS3","R.methodsS3","C:/Users/Ilya/Documents/R/win-library/4.0","1.8.0",NA,"R (>= 2.13.0)","utils","no","4.0.0","CRAN"
+"R.oo","R.oo","C:/Users/Ilya/Documents/R/win-library/4.0","1.23.0",NA,"R (>= 2.13.0), R.methodsS3 (>= 1.7.1)","methods, utils","no","4.0.0","CRAN"
+"R.rsp","R.rsp","C:/Users/Ilya/Documents/R/win-library/4.0","0.44.0",NA,"R (>= 2.14.0)","methods, stats, tools, utils, R.methodsS3 (>= 1.7.1), R.oo (>=
+1.23.0), R.utils, R.cache, digest (>= 0.6.13)","no","4.0.2","CRAN"
+"R.utils","R.utils","C:/Users/Ilya/Documents/R/win-library/4.0","2.9.2",NA,"R (>= 2.14.0), R.oo (>= 1.23.0)","methods, utils, tools, R.methodsS3 (>= 1.7.1)","no","4.0.0","CRAN"
+"R2BayesX","R2BayesX","C:/Users/Ilya/Documents/R/win-library/4.0","1.1-1",NA,"R (>= 2.13.0), BayesXsrc, colorspace, mgcv","methods","yes","4.0.0","CRAN"
+"r2d3","r2d3","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.3",NA,"R (>= 3.1.2)","htmlwidgets (>= 1.2), htmltools, jsonlite, rstudioapi","no","4.0.0","CRAN"
+"R2HTML","R2HTML","C:/Users/Ilya/Documents/R/win-library/4.0","2.3.2",NA,"R (>= 2.0)","stats, graphics, utils, grDevices, methods","no","4.0.0","CRAN"
+"R6","R6","C:/Users/Ilya/Documents/R/win-library/4.0","2.4.1",NA,"R (>= 3.0)",NA,"no","4.0.0","CRAN"
+"ragg","ragg","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.1",NA,NA,"systemfonts (>= 0.2.1)","yes","4.0.2","CRAN"
+"randomForest","randomForest","C:/Users/Ilya/Documents/R/win-library/4.0","4.6-14",NA,"R (>= 3.2.2), stats",NA,"yes","4.0.0","CRAN"
+"randomForestSRC","randomForestSRC","C:/Users/Ilya/Documents/R/win-library/4.0","2.9.3",NA,"R (>= 3.5.0),","parallel","yes","4.0.0","CRAN"
+"ranger","ranger","C:/Users/Ilya/Documents/R/win-library/4.0","0.12.1",NA,"R (>= 3.1)","Rcpp (>= 0.11.2), Matrix","yes","4.0.0","CRAN"
+"RApiDatetime","RApiDatetime","C:/Users/Ilya/Documents/R/win-library/4.0","0.0.4",NA,NA,NA,"yes","4.0.0","CRAN"
+"rapidjsonr","rapidjsonr","C:/Users/Ilya/Documents/R/win-library/4.0","1.2.0",NA,NA,NA,"yes","4.0.0","CRAN"
+"RApiSerialize","RApiSerialize","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.0",NA,NA,NA,"yes","4.0.0","CRAN"
+"rappdirs","rappdirs","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.1",NA,"R (>= 2.14), methods",NA,"yes","4.0.0","CRAN"
+"rapportools","rapportools","C:/Users/Ilya/Documents/R/win-library/4.0","1.0",NA,"reshape","plyr, pander","no","4.0.0","CRAN"
+"raster","raster","C:/Users/Ilya/Documents/R/win-library/4.0","3.3-7",NA,"sp (>= 1.4.1), R (>= 3.5.0)","Rcpp, methods","yes","4.0.2","CRAN"
+"rattle","rattle","C:/Users/Ilya/Documents/R/win-library/4.0","5.4.0",NA,"R (>= 3.5.0), tibble, bitops","stats, utils, ggplot2, grDevices, graphics, magrittr, methods,
+stringi, stringr, tidyr, dplyr, XML, rpart.plot","no","4.0.0","CRAN"
+"rattle.data","rattle.data","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.2",NA,"R (>= 2.10)",NA,"no","4.0.0","CRAN"
+"rbenchmark","rbenchmark","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.0",NA,NA,NA,NA,"4.0.0","CRAN"
+"rbokeh","rbokeh","C:/Users/Ilya/Documents/R/win-library/4.0","0.5.1",NA,NA,"htmlwidgets (>= 0.5), maps, methods, jsonlite, digest, hexbin,
+lazyeval, pryr, magrittr, ggplot2, scales, gistr","no","4.0.0","CRAN"
+"RClickhouse","RClickhouse","C:/Users/Ilya/Documents/R/win-library/4.0","0.5.2",NA,"R (>= 3.3)","dplyr (>= 0.7.0), dbplyr (>= 1.0.0), methods (>= 3.3.2), DBI
+(>= 0.6.0), Rcpp (>= 0.11.0), bit64","yes","4.0.0","CRAN"
+"rcmdcheck","rcmdcheck","C:/Users/Ilya/Documents/R/win-library/4.0","1.3.3",NA,NA,"callr (>= 3.1.1.9000), cli (>= 1.1.0), crayon, desc (>=
+1.2.0), digest, pkgbuild, prettyunits, R6, rprojroot,
+sessioninfo (>= 1.1.1), utils, withr, xopen","no","4.0.0","CRAN"
+"RColorBrewer","RColorBrewer","C:/Users/Ilya/Documents/R/win-library/4.0","1.1-2",NA,"R (>= 2.0.0)",NA,"no","4.0.0","CRAN"
+"Rcpp","Rcpp","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.5",NA,NA,"methods, utils","yes","4.0.2","CRAN"
+"RcppArmadillo","RcppArmadillo","C:/Users/Ilya/Documents/R/win-library/4.0","0.9.900.1.0",NA,"R (>= 3.3.0)","Rcpp (>= 0.11.0), stats, utils, methods","yes","4.0.0","CRAN"
+"RcppEigen","RcppEigen","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.3.7.0",NA,"R (>= 2.15.1)","Matrix (>= 1.1-0), Rcpp (>= 0.11.0), stats, utils","yes","4.0.0","CRAN"
+"RcppParallel","RcppParallel","C:/Users/Ilya/Documents/R/win-library/4.0","5.0.2",NA,"R (>= 3.0.2)",NA,"yes","4.0.2","CRAN"
+"RcppProgress","RcppProgress","C:/Users/Ilya/Documents/R/win-library/4.0","0.4.2",NA,NA,NA,"no","4.0.0","CRAN"
+"RcppRoll","RcppRoll","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.0",NA,"R (>= 2.15.1)","Rcpp","yes","4.0.0","CRAN"
+"RcppThread","RcppThread","C:/Users/Ilya/Documents/R/win-library/4.0","0.5.4",NA,"R (>= 3.3.0)",NA,"no","4.0.0","CRAN"
+"RcppTOML","RcppTOML","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.6",NA,"R (>= 3.3.0)","Rcpp (>= 0.11.5)","yes","4.0.0","CRAN"
+"RCurl","RCurl","C:/Users/Ilya/Documents/R/win-library/4.0","1.98-1.2",NA,"R (>= 3.4.0), methods","bitops","yes","4.0.0","CRAN"
+"Rdpack","Rdpack","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.0",NA,"R (>= 2.15.0), methods","tools, utils, bibtex (>= 0.4.0), gbRd","no","4.0.2","CRAN"
+"rdrop2","rdrop2","C:/Users/Ilya/Documents/R/win-library/4.0","0.8.1",NA,"R (>= 3.1.1)","assertive, digest, dplyr, httr, jsonlite, magrittr, purrr","no","4.0.0","CRAN"
+"readbitmap","readbitmap","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.5",NA,NA,"bmp, jpeg, png, tiff","no","4.0.0","CRAN"
+"readODS","readODS","C:/Users/Ilya/Documents/R/win-library/4.0","1.7.0",NA,NA,"xml2 (>= 1.3.2), cellranger, readr (>= 1.2.1), stringi, utils","no","4.0.2","CRAN"
+"readr","readr","C:/Users/Ilya/Documents/R/win-library/4.0","1.3.1",NA,"R (>= 3.1)","Rcpp (>= 0.12.0.5), tibble, hms (>= 0.4.1), R6, clipr, crayon,
+methods","yes","4.0.0","CRAN"
+"readtext","readtext","C:/Users/Ilya/Documents/R/win-library/4.0","0.76",NA,"R (>= 3.1)","antiword, data.table, digest, httr, jsonlite (>= 0.9.10),
+pdftools, readODS, readxl, streamR, stringi, striprtf, tibble,
+xml2, utils","no","4.0.0","CRAN"
+"readxl","readxl","C:/Users/Ilya/Documents/R/win-library/4.0","1.3.1",NA,NA,"cellranger, Rcpp (>= 0.12.18), tibble (>= 1.3.1), utils","yes","4.0.0","CRAN"
+"recipes","recipes","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.13",NA,"R (>= 3.1), dplyr","generics, glue, gower, ipred, lifecycle, lubridate, magrittr,
+Matrix, purrr (>= 0.2.3), rlang (>= 0.4.0), stats, tibble,
+tidyr (>= 1.0.0), tidyselect (>= 0.2.5), timeDate, utils, withr","no","4.0.2","CRAN"
+"recommenderlab","recommenderlab","C:/Users/Ilya/Documents/R/win-library/4.0","0.2-6",NA,"R (>= 2.10.0), Matrix, arules, proxy, registry","methods, utils, stats, irlba, recosystem","no","4.0.0","CRAN"
+"recosystem","recosystem","C:/Users/Ilya/Documents/R/win-library/4.0","0.4.3",NA,"R (>= 3.3.0), methods","Rcpp (>= 0.11.0)","yes","4.0.0","CRAN"
+"regexSelect","regexSelect","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.0",NA,"R (>= 2.3.0)","shiny, shinyjs","no","4.0.0","CRAN"
+"registry","registry","C:/Users/Ilya/Documents/R/win-library/4.0","0.5-1",NA,"R (>= 2.6.0)","utils","no","4.0.0","CRAN"
+"regtools","regtools","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.0",NA,"R (>= 3.5.0),FNN,mvtnorm,dummies,sandwich",NA,"no","4.0.0","CRAN"
+"relimp","relimp","C:/Users/Ilya/Documents/R/win-library/4.0","1.0-5",NA,"R (>= 2.0.0)","stats, utils","no","4.0.0","CRAN"
+"rematch","rematch","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.1",NA,NA,NA,"no","4.0.0","CRAN"
+"rematch2","rematch2","C:/Users/Ilya/Documents/R/win-library/4.0","2.1.2",NA,NA,"tibble","no","4.0.0","CRAN"
+"remotes","remotes","C:/Users/Ilya/Documents/R/win-library/4.0","2.1.1",NA,"R (>= 3.0.0)","methods, stats, tools, utils","no","4.0.0","CRAN"
+"repr","repr","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.0",NA,"R (>= 3.0.1)","utils, grDevices, htmltools, jsonlite, pillar (>= 1.4.0),
+base64enc","no","4.0.0","CRAN"
+"reprex","reprex","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.0",NA,"R (>= 3.1)","callr (>= 2.0.0), clipr (>= 0.4.0), fs, rlang, rmarkdown,
+utils, whisker, withr","no","4.0.0","CRAN"
+"repurrrsive","repurrrsive","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.0",NA,"R (>= 2.10)","tibble, utils","no","4.0.0","CRAN"
+"reshape","reshape","C:/Users/Ilya/Documents/R/win-library/4.0","0.8.8",NA,"R (>= 2.6.1)","plyr","yes","4.0.0","CRAN"
+"reshape2","reshape2","C:/Users/Ilya/Documents/R/win-library/4.0","1.4.4",NA,"R (>= 3.1)","plyr (>= 1.8.1), Rcpp, stringr","yes","4.0.0","CRAN"
+"reticulate","reticulate","C:/Users/Ilya/Documents/R/win-library/4.0","1.16",NA,"R (>= 3.0)","graphics, jsonlite, Matrix, methods, rappdirs, Rcpp (>=
+0.12.7), utils","yes","4.0.0","CRAN"
+"revealjs","revealjs","C:/Users/Ilya/Documents/R/win-library/4.0","0.9",NA,"R (>= 3.0)","rmarkdown (>= 1.0)","no","4.0.0","CRAN"
+"rex","rex","C:/Users/Ilya/Documents/R/win-library/4.0","1.2.0",NA,NA,"lazyeval","no","4.0.0","CRAN"
+"rgdal","rgdal","C:/Users/Ilya/Documents/R/win-library/4.0","1.5-12",NA,"R (>= 3.5.0), methods, sp (>= 1.1-0)","grDevices, graphics, stats, utils","yes","4.0.2","CRAN"
+"rgeos","rgeos","C:/Users/Ilya/Documents/R/win-library/4.0","0.5-3",NA,"R (>= 3.3.0), methods, sp (>= 1.1-0)","utils, stats, graphics","yes","4.0.0","CRAN"
+"rgexf","rgexf","C:/Users/Ilya/Documents/R/win-library/4.0","0.16.0",NA,NA,"XML, igraph, grDevices, utils, servr","no","4.0.0","CRAN"
+"rggobi","rggobi","C:/Users/Ilya/Documents/R/win-library/4.0","2.1.22",NA,"R (>= 2.5.1)","RGtk2, utils","yes","4.0.0","CRAN"
+"rgl","rgl","C:/Users/Ilya/Documents/R/win-library/4.0","0.100.54",NA,"R (>= 3.2.0)","graphics, grDevices, stats, utils, htmlwidgets, htmltools,
+knitr, jsonlite (>= 0.9.20), shiny, magrittr, crosstalk,
+manipulateWidget (>= 0.9.0)","yes","4.0.0","CRAN"
+"RgoogleMaps","RgoogleMaps","C:/Users/Ilya/Documents/R/win-library/4.0","1.4.5.3",NA,"R (>= 2.10)","graphics, stats, utils, grDevices, methods, png,sp","no","4.0.0","CRAN"
+"RGtk2","RGtk2","C:/Users/Ilya/Documents/R/win-library/4.0","2.20.36",NA,"R (>= 3.4.0)","methods","yes","4.0.0","CRAN"
+"rhandsontable","rhandsontable","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.7",NA,NA,"jsonlite, htmlwidgets (>= 0.3.3), magrittr, methods","no","4.0.0","CRAN"
+"RhpcBLASctl","RhpcBLASctl","C:/Users/Ilya/Documents/R/win-library/4.0","0.20-137",NA,NA,NA,"yes","4.0.0","CRAN"
+"riingo","riingo","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.0",NA,"R (>= 2.10)","crayon (>= 1.3.4), dplyr (>= 0.7.4), glue (>= 1.3.1), httr (>=
+1.3.1), jsonlite (>= 1.5), tibble (>= 1.4.2), rlang (>= 0.2.0),
+purrr (>= 0.2.4)","no","4.0.0","CRAN"
+"rio","rio","C:/Users/Ilya/Documents/R/win-library/4.0","0.5.16",NA,"R (>= 2.15.0)","tools, stats, utils, foreign, haven (>= 1.1.0), curl (>= 0.6),
+data.table (>= 1.9.8), readxl (>= 0.1.1), openxlsx, tibble","no","4.0.0","CRAN"
+"riskRegression","riskRegression","C:/Users/Ilya/Documents/R/win-library/4.0","2020.02.05",NA,"R (>= 3.5.0),","data.table (>= 1.12.2), ggplot2 (>= 3.1.0), prodlim (>=
+2018.4.18), doParallel, stats, graphics, survival (>= 2.44.1),
+lava (>= 1.6.5), cmprsk, plotrix, timereg (>= 1.9.3), foreach,
+ranger, parallel, Rcpp, lattice, Publish, rms (>= 5.1.3)","yes","4.0.0","CRAN"
+"RItools","RItools","C:/Users/Ilya/Documents/R/win-library/4.0","0.1-17",NA,"R (>= 2.2.0), SparseM","grDevices, abind, xtable, svd, stats, graphics, methods,
+survival","no","4.0.0","CRAN"
+"rJava","rJava","C:/Users/Ilya/Documents/R/win-library/4.0","0.9-13",NA,"R (>= 2.5.0), methods",NA,"yes","4.0.2","CRAN"
+"rjson","rjson","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.20",NA,"R (>= 3.1.0)",NA,"yes","4.0.0","CRAN"
+"RJSONIO","RJSONIO","C:/Users/Ilya/Documents/R/win-library/4.0","1.3-1.4",NA,NA,"methods","yes","4.0.0","CRAN"
+"rlang","rlang","C:/Users/Ilya/Documents/R/win-library/4.0","0.4.7",NA,"R (>= 3.2.0)",NA,"yes","4.0.2","CRAN"
+"rlist","rlist","C:/Users/Ilya/Documents/R/win-library/4.0","0.4.6.1",NA,"R (>= 2.15)","yaml, jsonlite, XML, data.table","no","4.0.0","CRAN"
+"rmapshaper","rmapshaper","C:/Users/Ilya/Documents/R/win-library/4.0","0.4.4",NA,NA,"geojsonio (>= 0.6.0), geojsonlint (>= 0.2.0), jsonlite (>=
+1.5), methods, readr (>= 1.1.1), sf (>= 0.6), sp (>= 1.2-7), V8
+(>= 3.0)","no","4.0.0","CRAN"
+"rmarkdown","rmarkdown","C:/Users/Ilya/Documents/R/win-library/4.0","2.3",NA,"R (>= 3.0)","tools, utils, knitr (>= 1.22), yaml (>= 2.1.19), htmltools (>=
+0.3.5), evaluate (>= 0.13), base64enc, jsonlite, mime, tinytex
+(>= 0.11), xfun, methods, stringr (>= 1.2.0)","no","4.0.0","CRAN"
+"Rmpfr","Rmpfr","C:/Users/Ilya/Documents/R/win-library/4.0","0.8-1",NA,"gmp (>= 0.5-8), R (>= 3.3.0)","stats, utils, methods","yes","4.0.0","CRAN"
+"rms","rms","C:/Users/Ilya/Documents/R/win-library/4.0","6.0-0",NA,"R (>= 3.5.0), Hmisc (>= 4.3-0), survival (>= 3.1-12), lattice,
+ggplot2 (>= 2.2), SparseM","methods, quantreg, rpart, nlme (>= 3.1-123), polspline,
+multcomp, htmlTable (>= 1.11.0), htmltools, MASS, cluster,
+digest","yes","4.0.0","CRAN"
+"RMySQL","RMySQL","C:/Users/Ilya/Documents/R/win-library/4.0","0.10.20",NA,"R (>= 2.8.0), DBI (>= 0.4)","methods","yes","4.0.0","CRAN"
+"RNetCDF","RNetCDF","C:/Users/Ilya/Documents/R/win-library/4.0","2.3-1",NA,"R (>= 3.0.0)",NA,"yes","4.0.0","CRAN"
+"rngtools","rngtools","C:/Users/Ilya/Documents/R/win-library/4.0","1.5",NA,"R (>= 3.2.0), methods","digest, utils, stats, parallel","no","4.0.0","CRAN"
+"robumeta","robumeta","C:/Users/Ilya/Documents/R/win-library/4.0","2.0",NA,NA,NA,"no","4.0.0","CRAN"
+"robustbase","robustbase","C:/Users/Ilya/Documents/R/win-library/4.0","0.93-6",NA,"R (>= 3.1.0)","stats, graphics, utils, methods, DEoptimR","yes","4.0.0","CRAN"
+"ROCR","ROCR","C:/Users/Ilya/Documents/R/win-library/4.0","1.0-11",NA,"R (>= 3.6)","methods, graphics, grDevices, gplots, stats","no","4.0.0","CRAN"
+"RODBC","RODBC","C:/Users/Ilya/Documents/R/win-library/4.0","1.3-17",NA,"R (>= 4.0.0)","stats","yes","4.0.0","CRAN"
+"RODBCDBI","RODBCDBI","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.1",NA,NA,"methods, DBI, RODBC","no","4.0.0","CRAN"
+"Rook","Rook","C:/Users/Ilya/Documents/R/win-library/4.0","1.1-1",NA,"R (>= 2.13.0)","utils, tools, methods, brew","yes","4.0.0","CRAN"
+"rootSolve","rootSolve","C:/Users/Ilya/Documents/R/win-library/4.0","1.8.2.1",NA,"R (>= 2.01)","stats, graphics, grDevices","yes","4.0.0","CRAN"
+"roxygen2","roxygen2","C:/Users/Ilya/Documents/R/win-library/4.0","7.1.1",NA,"R (>= 3.2)","brew, commonmark, desc (>= 1.2.0), digest, knitr, methods,
+pkgload (>= 1.0.2), purrr (>= 0.3.3), R6 (>= 2.1.2), Rcpp (>=
+0.11.0), rlang, stringi, stringr (>= 1.0.0), utils, xml2","yes","4.0.2","CRAN"
+"rpart.plot","rpart.plot","C:/Users/Ilya/Documents/R/win-library/4.0","3.0.8",NA,"R (>= 3.4.0), rpart (>= 4.1-10)",NA,"no","4.0.0","CRAN"
+"rpca","rpca","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.3",NA,NA,"compiler","no","4.0.0","CRAN"
+"rpf","rpf","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.4",NA,"methods, parallel, R (>= 2.14.0)","Rcpp (>= 1.0.2), mvtnorm, lifecycle","yes","4.0.0","CRAN"
+"RPostgres","RPostgres","C:/Users/Ilya/Documents/R/win-library/4.0","1.2.0",NA,"R (>= 3.1.0)","bit64, blob (>= 1.2.0), DBI (>= 1.1.0), hms (>= 0.5.0),
+methods, Rcpp (>= 0.11.4.2), withr","yes","4.0.0","CRAN"
+"RPostgreSQL","RPostgreSQL","C:/Users/Ilya/Documents/R/win-library/4.0","0.6-2",NA,"R (>= 2.9.0), methods, DBI (>= 0.3)",NA,"yes","4.0.0","CRAN"
+"rprojroot","rprojroot","C:/Users/Ilya/Documents/R/win-library/4.0","1.3-2",NA,"R (>= 3.0.0)","backports","no","4.0.0","CRAN"
+"RProtoBuf","RProtoBuf","C:/Users/Ilya/Documents/R/win-library/4.0","0.4.17",NA,"R (>= 3.0.0), methods","utils, stats, tools, Rcpp, RCurl","yes","4.0.0","CRAN"
+"rqdatatable","rqdatatable","C:/Users/Ilya/Documents/R/win-library/4.0","1.2.7",NA,"R (>= 3.4.0), wrapr (>= 1.9.6), rquery (>= 1.4.3)","data.table (>= 1.12.2)","no","4.0.0","CRAN"
+"rquery","rquery","C:/Users/Ilya/Documents/R/win-library/4.0","1.4.4",NA,"R (>= 3.4.0), wrapr (>= 1.9.6)","utils, stats, methods","no","4.0.0","CRAN"
+"rrcov","rrcov","C:/Users/Ilya/Documents/R/win-library/4.0","1.5-2",NA,"R (>= 2.10), robustbase (>= 0.92.1), methods","stats, stats4, mvtnorm, lattice, pcaPP","yes","4.0.0","CRAN"
+"rredis","rredis","C:/Users/Ilya/Documents/R/win-library/4.0","1.7.0",NA,NA,NA,"yes","4.0.0","CRAN"
+"rsample","rsample","C:/Users/Ilya/Documents/R/win-library/4.0","0.0.7",NA,"R (>= 3.2)","dplyr (>= 0.8.5), purrr, tibble, rlang (>= 0.4.0), methods,
+generics, utils, tidyselect, furrr, tidyr, vctrs (>= 0.3.0)","no","4.0.0","CRAN"
+"rsconnect","rsconnect","C:/Users/Ilya/Documents/R/win-library/4.0","0.8.16",NA,"R (>= 3.0.0)","curl, digest, jsonlite, openssl, packrat (>= 0.4.8-1),
+rstudioapi (>= 0.5), yaml (>= 2.1.5)","no","4.0.0","CRAN"
+"RSelenium","RSelenium","C:/Users/Ilya/Documents/R/win-library/4.0","1.7.7",NA,"R (>= 3.0.0)","XML, methods, caTools, tools, utils, openssl, httr, wdman(>=
+0.2.2), binman","no","4.0.0","CRAN"
+"RSiena","RSiena","C:/Users/Ilya/Documents/R/win-library/4.0","1.2-23",NA,"R (>= 2.15.0)","Matrix, tcltk, lattice, parallel, MASS, methods","yes","4.0.0","CRAN"
+"Rsolnp","Rsolnp","C:/Users/Ilya/Documents/R/win-library/4.0","1.16",NA,"R (>= 2.10.0)","truncnorm, parallel, stats","no","4.0.0","CRAN"
+"rsparse","rsparse","C:/Users/Ilya/Documents/R/win-library/4.0","0.4.0",NA,"R (>= 3.6.0), methods","Matrix (>= 1.2), Rcpp (>= 0.11), data.table (>= 1.10.0), float
+(>= 0.2-2), RhpcBLASctl, lgr (>= 0.2)","yes","4.0.0","CRAN"
+"RSpectra","RSpectra","C:/Users/Ilya/Documents/R/win-library/4.0","0.16-0",NA,"R (>= 3.0.2)","Matrix (>= 1.1-0), Rcpp (>= 0.11.5)","yes","4.0.0","CRAN"
+"RSQLite","RSQLite","C:/Users/Ilya/Documents/R/win-library/4.0","2.2.0",NA,"R (>= 3.1.0)","bit64, blob (>= 1.2.0), DBI (>= 1.1.0), memoise, methods,
+pkgconfig, Rcpp (>= 0.12.7)","yes","4.0.0","CRAN"
+"rstan","rstan","C:/Users/Ilya/Documents/R/win-library/4.0","2.21.1",NA,"R (>= 3.4.0), StanHeaders (>= 2.21.0), ggplot2 (>= 3.0.0)","methods, stats4, inline, gridExtra (>= 2.0.0), Rcpp (>=
+0.12.0), RcppParallel (>= 5.0.1), loo (>= 2.3.0), pkgbuild, V8","yes","4.0.2","CRAN"
+"rstantools","rstantools","C:/Users/Ilya/Documents/R/win-library/4.0","2.1.1",NA,NA,"desc, stats, utils, Rcpp (>= 0.12.16), RcppParallel (>= 5.0.1)","no","4.0.2","CRAN"
+"rstatix","rstatix","C:/Users/Ilya/Documents/R/win-library/4.0","0.6.0",NA,"R (>= 3.3.0)","stats, utils, tidyr (>= 1.0.0), purrr, broom (>= 0.5.6), rlang
+(>= 0.3.1), tibble (>= 2.1.3), dplyr (>= 0.7.1), magrittr,
+corrplot, tidyselect (>= 1.0.0), car, generics (>= 0.0.2)","no","4.0.2","CRAN"
+"rstudioapi","rstudioapi","C:/Users/Ilya/Documents/R/win-library/4.0","0.11",NA,NA,NA,"no","4.0.0","CRAN"
+"rsvg","rsvg","C:/Users/Ilya/Documents/R/win-library/4.0","2.1",NA,NA,NA,"yes","4.0.0","CRAN"
+"rTRNG","rTRNG","C:/Users/Ilya/Documents/R/win-library/4.0","4.20-1",NA,NA,"methods, Rcpp (>= 0.11.6), RcppParallel","yes","4.0.0","CRAN"
+"Rttf2pt1","Rttf2pt1","C:/Users/Ilya/Documents/R/win-library/4.0","1.3.8",NA,"R (>= 2.15)",NA,"yes","4.0.0","CRAN"
+"rugarch","rugarch","C:/Users/Ilya/Documents/R/win-library/4.0","1.4-2",NA,"R (>= 3.5.0), methods, parallel","Rsolnp, nloptr, ks, numDeriv, spd, xts, zoo, chron,
+SkewHyperbolic, expm, Rcpp,graphics, stats, grDevices, utils","yes","4.0.0","CRAN"
+"RUnit","RUnit","C:/Users/Ilya/Documents/R/win-library/4.0","0.4.32",NA,"R (>= 2.5.0), utils (>= 2.5.0), methods (>= 2.5.0), graphics
+(>= 2.5.0)",NA,"no","4.0.0","CRAN"
+"rversions","rversions","C:/Users/Ilya/Documents/R/win-library/4.0","2.0.2",NA,NA,"curl, utils, xml2 (>= 1.0.0)","no","4.0.0","CRAN"
+"rvest","rvest","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.5",NA,"R (>= 3.2), xml2","httr (>= 0.5), magrittr, selectr","no","4.0.0","CRAN"
+"rvg","rvg","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.5",NA,"R (>= 3.0)","grDevices, Rcpp (>= 0.12.12), officer (>= 0.3.6), gdtools (>=
+0.2.1), xml2 (>= 1.0.0), rlang","yes","4.0.2","CRAN"
+"rworldmap","rworldmap","C:/Users/Ilya/Documents/R/win-library/4.0","1.3-6",NA,"R (>= 2.10.0), sp","maptools, fields, methods","no","4.0.0","CRAN"
+"rworldxtra","rworldxtra","C:/Users/Ilya/Documents/R/win-library/4.0","1.01",NA,"R (>= 2.10.0), sp",NA,NA,"4.0.0","CRAN"
+"Ryacas","Ryacas","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.3",NA,"R (>= 3.3.0)","Rcpp (>= 0.12.0), stats, methods, magrittr","yes","4.0.0","CRAN"
+"RZabbix","RZabbix","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.0",NA,"R (>= 3.2.0)","httr (>= 1.1.0), jsonlite (>= 0.9.19)","no","4.0.0","CRAN"
+"sampleSelection","sampleSelection","C:/Users/Ilya/Documents/R/win-library/4.0","1.2-6",NA,"R (>= 2.10), maxLik (>= 0.7-3), stats","miscTools (>= 0.6-3), systemfit (>= 1.0-0), Formula (>=
+1.1-1), VGAM (>= 1.1-1), mvtnorm (>= 0.9-9994)","no","4.0.0","CRAN"
+"sandwich","sandwich","C:/Users/Ilya/Documents/R/win-library/4.0","2.5-1",NA,"R (>= 2.10.0)","stats, utils, zoo","no","4.0.0","CRAN"
+"sass","sass","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.0",NA,NA,"digest, fs, rlang, htmltools","yes","4.0.0","CRAN"
+"satellite","satellite","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.2",NA,"R (>= 2.10), raster, methods, utils, stats, grDevices,
+graphics","plyr, Rcpp (>= 0.10.3), tools, stats4","yes","4.0.0","CRAN"
+"scales","scales","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.1",NA,"R (>= 3.2)","farver (>= 2.0.3), labeling, lifecycle, munsell (>= 0.5), R6,
+RColorBrewer, viridisLite","no","4.0.0","CRAN"
+"scalreg","scalreg","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.1",NA,"R (>= 2.10), lars",NA,"no","4.0.0","CRAN"
+"scatterD3","scatterD3","C:/Users/Ilya/Documents/R/win-library/4.0","0.9.1",NA,NA,"htmlwidgets, digest, ellipse","no","4.0.0","CRAN"
+"scatterplot3d","scatterplot3d","C:/Users/Ilya/Documents/R/win-library/4.0","0.3-41",NA,"R (>= 2.7.0)","grDevices, graphics, stats","no","4.0.0","CRAN"
+"seasonal","seasonal","C:/Users/Ilya/Documents/R/win-library/4.0","1.7.1",NA,"R (>= 2.15)","x13binary","no","4.0.0","CRAN"
+"secure","secure","C:/Users/Ilya/Documents/R/win-library/4.0","0.5",NA,"R (>= 3.3.1),stats, utils","Rcpp (>= 0.12.9), MASS","yes","4.0.0","CRAN"
+"selectr","selectr","C:/Users/Ilya/Documents/R/win-library/4.0","0.4-2",NA,"R (>= 3.0)","methods, stringr, R6","no","4.0.0","CRAN"
+"sem","sem","C:/Users/Ilya/Documents/R/win-library/4.0","3.1-11",NA,"R (>= 3.5.0), stats","matrixcalc, MASS, boot, mi (>= 0.9-99), utils","yes","4.0.0","CRAN"
+"semantic.dashboard","semantic.dashboard","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.5",NA,NA,"utils, shiny (>= 0.12.1), shiny.semantic (>= 0.1.2),
+htmltools, glue","no","4.0.0","CRAN"
+"semTools","semTools","C:/Users/Ilya/Documents/R/win-library/4.0","0.5-3",NA,"R(>= 3.4), utils, stats, graphics, lavaan(>= 0.6-6)","methods","no","4.0.0","CRAN"
+"semver","semver","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.0",NA,NA,"Rcpp (>= 0.12.8), assertthat, utils","yes","4.0.0","CRAN"
+"sendmailR","sendmailR","C:/Users/Ilya/Documents/R/win-library/4.0","1.2-1",NA,"R (>= 3.0.0)","base64enc","no","4.0.0","CRAN"
+"seplyr","seplyr","C:/Users/Ilya/Documents/R/win-library/4.0","0.8.8",NA,"R (>= 3.4.0), wrapr (>= 2.0.0)","dplyr (>= 0.8.5), rlang, tidyr","no","4.0.0","CRAN"
+"sergeant","sergeant","C:/Users/Ilya/Documents/R/win-library/4.0","0.9.0",NA,"R (>= 3.6.0)","bit64 (>= 0.9-7), DBI (>= 0.7), dplyr (>= 0.8.0), dbplyr (>=
+1.3.0), httr (>= 1.2.1), jsonlite (>= 1.5.0), htmltools (>=
+0.3.6), readr (>= 1.1.1), purrr (>= 0.2.2), scales (>= 0.4.1),
+tibble, utils, methods, magrittr (>= 1.5)","no","4.0.0","CRAN"
+"seriation","seriation","C:/Users/Ilya/Documents/R/win-library/4.0","1.2-8",NA,"R (>= 2.14.0)","TSP, qap, grid, cluster, gclus, dendextend, colorspace, MASS,
+gplots, registry, methods, stats, grDevices","yes","4.0.0","CRAN"
+"servr","servr","C:/Users/Ilya/Documents/R/win-library/4.0","0.17",NA,"R (>= 3.0.0)","mime (>= 0.2), httpuv (>= 1.4.0), xfun, jsonlite","no","4.0.0","CRAN"
+"sessioninfo","sessioninfo","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.1",NA,NA,"cli, tools, utils, withr","no","4.0.0","CRAN"
+"sets","sets","C:/Users/Ilya/Documents/R/win-library/4.0","1.0-18",NA,"R (>= 2.7.0)","graphics,grDevices,stats,utils","yes","4.0.0","CRAN"
+"settings","settings","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.4",NA,NA,"grDevices, graphics","no","4.0.0","CRAN"
+"sf","sf","C:/Users/Ilya/Documents/R/win-library/4.0","0.9-4",NA,"methods, R (>= 3.3.0)","classInt (>= 0.4-1), DBI (>= 0.8), graphics, grDevices, grid,
+magrittr, Rcpp (>= 0.12.18), stats, tools, units (>= 0.6-0),
+utils","yes","4.0.0","CRAN"
+"sfheaders","sfheaders","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.2",NA,NA,"Rcpp","yes","4.0.0","CRAN"
+"sfsmisc","sfsmisc","C:/Users/Ilya/Documents/R/win-library/4.0","1.1-7",NA,"R (>= 3.2.0)","grDevices, methods, utils, stats","no","4.0.0","CRAN"
+"shades","shades","C:/Users/Ilya/Documents/R/win-library/4.0","1.4.0",NA,NA,NA,"no","4.0.0","CRAN"
+"shape","shape","C:/Users/Ilya/Documents/R/win-library/4.0","1.4.4",NA,"R (>= 2.01)","stats, graphics, grDevices","no","4.0.0","CRAN"
+"shapefiles","shapefiles","C:/Users/Ilya/Documents/R/win-library/4.0","0.7",NA,"R (>= 1.6.0), foreign",NA,NA,"4.0.0","CRAN"
+"shiny","shiny","C:/Users/Ilya/Documents/R/win-library/4.0","1.5.0",NA,"R (>= 3.0.2), methods","utils, grDevices, httpuv (>= 1.5.2), mime (>= 0.3), jsonlite
+(>= 0.9.16), xtable, digest, htmltools (>= 0.4.0.9003), R6 (>=
+2.0), sourcetools, later (>= 1.0.0), promises (>= 1.1.0),
+tools, crayon, rlang (>= 0.4.0), fastmap (>= 1.0.0), withr,
+commonmark (>= 1.7), glue (>= 1.3.2)","no","4.0.2","CRAN"
+"shiny.semantic","shiny.semantic","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.0",NA,NA,"shiny (>= 0.12.1), htmltools (>= 0.2.6), htmlwidgets (>= 0.8),
+purrr (>= 0.2.2), magrittr, jsonlite","no","4.0.0","CRAN"
+"shinyAce","shinyAce","C:/Users/Ilya/Documents/R/win-library/4.0","0.4.1",NA,"R (>= 3.3.0)","shiny (>= 1.0.5), jsonlite, utils, tools","no","4.0.0","CRAN"
+"shinyalert","shinyalert","C:/Users/Ilya/Documents/R/win-library/4.0","1.1",NA,"R (>= 3.0.2)","digest, shiny (>= 1.0.4), stats","no","4.0.0","CRAN"
+"shinyBS","shinyBS","C:/Users/Ilya/Documents/R/win-library/4.0","0.61",NA,NA,"shiny (>= 0.11), htmltools","no","4.0.0","CRAN"
+"shinycssloaders","shinycssloaders","C:/Users/Ilya/Documents/R/win-library/4.0","0.3",NA,"R (>= 3.1)","digest, glue, grDevices, shiny","no","4.0.0","CRAN"
+"shinydashboard","shinydashboard","C:/Users/Ilya/Documents/R/win-library/4.0","0.7.1",NA,"R (>= 3.0)","utils, shiny (>= 1.0.0), htmltools (>= 0.2.6), promises","no","4.0.0","CRAN"
+"shinyhelper","shinyhelper","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.2",NA,NA,"shiny, markdown","no","4.0.0","CRAN"
+"shinyjqui","shinyjqui","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.3",NA,"R (>= 3.2.0)","shiny (>= 0.14.0), htmltools, htmlwidgets, jsonlite","no","4.0.0","CRAN"
+"shinyjs","shinyjs","C:/Users/Ilya/Documents/R/win-library/4.0","1.1",NA,"R (>= 3.1.0)","digest (>= 0.6.8), htmltools (>= 0.2.9), jsonlite, shiny (>=
+1.0.0)","no","4.0.0","CRAN"
+"shinyloadtest","shinyloadtest","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.1",NA,"R (>= 2.10)","R6, curl, dplyr (>= 0.8.0.1), getPass, ggplot2, glue, gtable,
+htmltools, httpuv (>= 1.5.2), jsonlite, lubridate, magrittr,
+progress, readr, rlang (>= 0.1.2), rmarkdown, scales, stringr,
+tibble, svglite, websocket (>= 1.0.0), xml2","no","4.0.0","CRAN"
+"shinystan","shinystan","C:/Users/Ilya/Documents/R/win-library/4.0","2.5.0",NA,"R (>= 3.1.0), shiny (>= 1.0.3)","bayesplot (>= 1.5.0), colourpicker, DT (>= 0.2), dygraphs (>=
+1.1.1.2), ggplot2 (>= 2.1.1), gridExtra, gtools, markdown (>=
+0.7.4), methods, reshape2, rsconnect (>= 0.4.2), rstan (>=
+2.17.1), stats, shinyjs (>= 0.6.0), shinythemes (>= 1.0.1),
+threejs (>= 0.2.1), utils, xtable, xts (>= 0.9-7)","no","4.0.0","CRAN"
+"ShinyTester","ShinyTester","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.0",NA,NA,"dplyr, purrr, readr, stringr, tidyr, visNetwork","no","4.0.0","CRAN"
+"shinythemes","shinythemes","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.2",NA,"R (>= 3.0.0)","shiny (>= 0.11)","no","4.0.0","CRAN"
+"shinyTime","shinyTime","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.1",NA,NA,"htmltools, shiny","no","4.0.0","CRAN"
+"shinyWidgets","shinyWidgets","C:/Users/Ilya/Documents/R/win-library/4.0","0.5.3",NA,"R (>= 3.1.0)","shiny (>= 0.14), htmltools, jsonlite, grDevices","no","4.0.0","CRAN"
+"simmer","simmer","C:/Users/Ilya/Documents/R/win-library/4.0","4.4.2",NA,"R (>= 3.1.2)","Rcpp, magrittr, codetools, utils","yes","4.0.0","CRAN"
+"simmer.plot","simmer.plot","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.16",NA,"R (>= 3.1.2), simmer (>= 3.6.0), ggplot2 (>= 2.2.0)","DiagrammeR (>= 1.0.0), dplyr (>= 0.7.0), tidyr (>= 0.7.0),
+scales, utils","no","4.0.0","CRAN"
+"simpleboot","simpleboot","C:/Users/Ilya/Documents/R/win-library/4.0","1.1-7",NA,"R (>= 2.14.0)","boot, stats, graphics","no","4.0.0","CRAN"
+"sjlabelled","sjlabelled","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.6",NA,"R (>= 3.2)","insight (>= 0.7.0), stats, tools, utils","no","4.0.2","CRAN"
+"sjmisc","sjmisc","C:/Users/Ilya/Documents/R/win-library/4.0","2.8.5",NA,"R (>= 3.2)","dplyr (>= 0.8.0), insight (>= 0.6.0), magrittr, methods,
+purrr, rlang, sjlabelled (>= 1.1.1), stats, tidyselect (>=
+0.2.5), utils","no","4.0.0","CRAN"
+"sjPlot","sjPlot","C:/Users/Ilya/Documents/R/win-library/4.0","2.8.4",NA,"R (>= 3.2)","graphics, grDevices, stats, utils, bayestestR (>= 0.6.0),
+dplyr (>= 0.8.1), effectsize, ggeffects (>= 0.14.3), ggplot2
+(>= 3.2.0), knitr, insight (>= 0.8.0), MASS, parameters (>=
+0.7.0), performance (>= 0.4.3), purrr, rlang, scales,
+sjlabelled (>= 1.1.2), sjmisc (>= 2.8.2), sjstats (>= 0.17.8),
+tidyr (>= 1.0.0)","no","4.0.0","CRAN"
+"sjstats","sjstats","C:/Users/Ilya/Documents/R/win-library/4.0","0.18.0",NA,"R (>= 3.2), utils","bayestestR (>= 0.4.0), broom, dplyr (>= 0.8.1), effectsize,
+emmeans, insight (>= 0.8.0), lme4, magrittr, MASS, modelr,
+parameters (>= 0.4.0), performance (>= 0.4.0), purrr, rlang,
+sjlabelled (>= 1.1.1), sjmisc (>= 2.8.2), stats, tidyr","no","4.0.0","CRAN"
+"SkewHyperbolic","SkewHyperbolic","C:/Users/Ilya/Documents/R/win-library/4.0","0.4-0",NA,"R (>= 3.0.1)","grDevices, graphics, stats, DistributionUtils,
+GeneralizedHyperbolic","no","4.0.0","CRAN"
+"skimr","skimr","C:/Users/Ilya/Documents/R/win-library/4.0","2.1.2",NA,"R (>= 3.1.2)","cli, crayon, dplyr (>= 0.8.0), knitr (>= 1.2), magrittr (>=
+1.5), purrr, repr, rlang (>= 0.3.1), stats, stringr (>= 1.1),
+tibble (>= 2.0.0), tidyr (>= 1.0), tidyselect (>= 0.2.5), withr","no","4.0.2","CRAN"
+"slam","slam","C:/Users/Ilya/Documents/R/win-library/4.0","0.1-47",NA,"R (>= 3.4.0)","stats","yes","4.0.0","CRAN"
+"Sleuth2","Sleuth2","C:/Users/Ilya/Documents/R/win-library/4.0","2.0-5",NA,"R (>= 3.5.0)",NA,"no","4.0.0","CRAN"
+"slider","slider","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.4",NA,"R (>= 3.2)","glue, rlang (>= 0.4.5), vctrs (>= 0.3.0), warp","yes","4.0.0","CRAN"
+"smooth","smooth","C:/Users/Ilya/Documents/R/win-library/4.0","2.6.0",NA,"R (>= 3.0.2), greybox (>= 0.5.9)","Rcpp (>= 0.12.3), stats, graphics, forecast (>= 7.0), nloptr,
+utils, zoo","yes","4.0.0","CRAN"
+"sna","sna","C:/Users/Ilya/Documents/R/win-library/4.0","2.5",NA,"R (>= 2.0.0), utils, statnet.common, network",NA,"yes","4.0.0","CRAN"
+"snakecase","snakecase","C:/Users/Ilya/Documents/R/win-library/4.0","0.11.0",NA,"R (>= 3.2)","stringr, stringi","no","4.0.0","CRAN"
+"snow","snow","C:/Users/Ilya/Documents/R/win-library/4.0","0.4-3",NA,"R (>= 2.13.1), utils",NA,"no","4.0.0","CRAN"
+"SnowballC","SnowballC","C:/Users/Ilya/Documents/R/win-library/4.0","0.7.0",NA,NA,NA,"yes","4.0.0","CRAN"
+"snowfall","snowfall","C:/Users/Ilya/Documents/R/win-library/4.0","1.84-6.1",NA,"R (>= 2.10), snow",NA,"no","4.0.0","CRAN"
+"sos","sos","C:/Users/Ilya/Documents/R/win-library/4.0","2.0-0",NA,"brew",NA,"no","4.0.0","CRAN"
+"sourcetools","sourcetools","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.7",NA,"R (>= 3.0.2)",NA,"yes","4.0.0","CRAN"
+"sp","sp","C:/Users/Ilya/Documents/R/win-library/4.0","1.4-2",NA,"R (>= 3.0.0), methods","utils, stats, graphics, grDevices, lattice, grid","yes","4.0.0","CRAN"
+"spam","spam","C:/Users/Ilya/Documents/R/win-library/4.0","2.5-1",NA,"R (>= 3.1), dotCall64, grid, methods",NA,"yes","4.0.0","CRAN"
+"sparklyr","sparklyr","C:/Users/Ilya/Documents/R/win-library/4.0","1.3.1",NA,"R (>= 3.2)","assertthat, base64enc, config (>= 0.2), DBI (>= 0.6-1), dplyr
+(>= 0.7.2), dbplyr (>= 1.1.0), digest, forge, generics,
+globals, httr (>= 1.2.1), jsonlite (>= 1.4), methods, openssl
+(>= 0.8), purrr, r2d3, rappdirs, rjson (>= 0.2.20), rlang (>=
+0.1.4), rprojroot, rstudioapi (>= 0.10), tibble, tidyr, uuid,
+withr, xml2, ellipsis (>= 0.1.0)","no","4.0.2","CRAN"
+"SparseM","SparseM","C:/Users/Ilya/Documents/R/win-library/4.0","1.78",NA,"R (>= 2.15), methods","graphics, stats, utils","yes","4.0.0","CRAN"
+"sparsepp","sparsepp","C:/Users/Ilya/Documents/R/win-library/4.0","1.22",NA,NA,NA,"no","4.0.0","CRAN"
+"spatialwidget","spatialwidget","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.2",NA,"R (>= 3.3.0)","Rcpp","yes","4.0.0","CRAN"
+"spatstat.utils","spatstat.utils","C:/Users/Ilya/Documents/R/win-library/4.0","1.17-0",NA,"R (>= 3.3.0), stats, graphics, grDevices, utils, methods",NA,"yes","4.0.0","CRAN"
+"spd","spd","C:/Users/Ilya/Documents/R/win-library/4.0","2.0-1",NA,"methods","KernSmooth, stats, graphics, utils","no","4.0.0","CRAN"
+"spData","spData","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.8",NA,"R (>= 3.3.0)","sp, raster","no","4.0.2","CRAN"
+"spdep","spdep","C:/Users/Ilya/Documents/R/win-library/4.0","1.1-5",NA,"R (>= 3.3.0), methods, sp (>= 1.0), spData (>= 0.2.6.0), sf","deldir, boot (>= 1.3-1), graphics, grDevices, utils, stats,
+Matrix, LearnBayes, MASS, coda, expm, gmodels, nlme","yes","4.0.2","CRAN"
+"speedglm","speedglm","C:/Users/Ilya/Documents/R/win-library/4.0","0.3-2",NA,"Matrix, MASS","methods, stats","no","4.0.0","CRAN"
+"splitstackshape","splitstackshape","C:/Users/Ilya/Documents/R/win-library/4.0","1.4.8",NA,"R (>= 2.10)","data.table (>= 1.9.4)","no","4.0.0","CRAN"
+"splm","splm","C:/Users/Ilya/Documents/R/win-library/4.0","1.4-11",NA,"R (>= 2.12.0), spdep","plm, maxLik, MASS, bdsmatrix, ibdreg, nlme, Matrix, spam,
+methods","no","4.0.0","CRAN"
+"splus2R","splus2R","C:/Users/Ilya/Documents/R/win-library/4.0","1.2-2",NA,"R (>= 2.7.2)","methods","yes","4.0.0","CRAN"
+"sqldf","sqldf","C:/Users/Ilya/Documents/R/win-library/4.0","0.4-11",NA,"R (>= 3.1.0), gsubfn (>= 0.6), proto, RSQLite","DBI, chron","no","4.0.0","CRAN"
+"SQUAREM","SQUAREM","C:/Users/Ilya/Documents/R/win-library/4.0","2020.3",NA,"R (>= 3.0)",NA,"no","4.0.0","CRAN"
+"stabledist","stabledist","C:/Users/Ilya/Documents/R/win-library/4.0","0.7-1",NA,"R (>= 3.1.0)","stats","no","4.0.0","CRAN"
+"stabs","stabs","C:/Users/Ilya/Documents/R/win-library/4.0","0.6-3",NA,"R (>= 2.14.0), methods, stats, parallel","graphics, grDevices, utils","no","4.0.0","CRAN"
+"standardize","standardize","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.1",NA,"R (>= 3.3.3)","stats, methods, MASS (>= 7.3-45), lme4 (>= 1.1-12), stringr
+(>= 1.2.0)","no","4.0.0","CRAN"
+"StanHeaders","StanHeaders","C:/Users/Ilya/Documents/R/win-library/4.0","2.21.0-5",NA,"R (>= 3.4.0)","RcppParallel (>= 5.0.1)","yes","4.0.0","CRAN"
+"stargazer","stargazer","C:/Users/Ilya/Documents/R/win-library/4.0","5.2.2",NA,NA,"stats, utils","no","4.0.0","CRAN"
+"stars","stars","C:/Users/Ilya/Documents/R/win-library/4.0","0.4-3",NA,"R (>= 3.3.0), abind, sf (>= 0.9-0)","methods, parallel, classInt (>= 0.4-1), lwgeom, rlang, units","no","4.0.2","CRAN"
+"statmod","statmod","C:/Users/Ilya/Documents/R/win-library/4.0","1.4.34",NA,"R (>= 3.0.0)","stats, graphics","yes","4.0.0","CRAN"
+"statnet","statnet","C:/Users/Ilya/Documents/R/win-library/4.0","2019.6",NA,"R (>= 3.5), tergm (>= 3.6.1), ergm.count (>= 3.3), sna (>=
+2.4), tsna (>= 0.3)","ergm (>= 3.10.4), network (>= 1.15), networkDynamic (>=
+0.10.0), statnet.common (>= 4.2)","no","4.0.0","CRAN"
+"statnet.common","statnet.common","C:/Users/Ilya/Documents/R/win-library/4.0","4.3.0",NA,"R (>= 3.5)","utils, methods, coda, parallel, tools","yes","4.0.0","CRAN"
+"stinepack","stinepack","C:/Users/Ilya/Documents/R/win-library/4.0","1.4",NA,NA,"stats","no","4.0.0","CRAN"
+"stopwords","stopwords","C:/Users/Ilya/Documents/R/win-library/4.0","2.0",NA,"R (>= 2.10)","ISOcodes, usethis, desc","no","4.0.0","CRAN"
+"streamR","streamR","C:/Users/Ilya/Documents/R/win-library/4.0","0.4.5",NA,"R (>= 2.12.0), RCurl, rjson, ndjson",NA,"no","4.0.0","CRAN"
+"stringdist","stringdist","C:/Users/Ilya/Documents/R/win-library/4.0","0.9.5.5",NA,"R (>= 2.15.3)","parallel","yes","4.0.0","CRAN"
+"stringfish","stringfish","C:/Users/Ilya/Documents/R/win-library/4.0","0.13.3",NA,"R (>= 3.5.0)","Rcpp","yes","4.0.2","CRAN"
+"stringi","stringi","C:/Users/Ilya/Documents/R/win-library/4.0","1.4.6",NA,"R (>= 2.14)","tools, utils, stats","yes","4.0.0","CRAN"
+"stringr","stringr","C:/Users/Ilya/Documents/R/win-library/4.0","1.4.0",NA,"R (>= 3.1)","glue (>= 1.2.0), magrittr, stringi (>= 1.1.7)","no","4.0.0","CRAN"
+"striprtf","striprtf","C:/Users/Ilya/Documents/R/win-library/4.0","0.5.2",NA,"R (>= 3.0)","magrittr, Rcpp, stringr, utils","yes","4.0.0","CRAN"
+"strucchange","strucchange","C:/Users/Ilya/Documents/R/win-library/4.0","1.5-2",NA,"R (>= 2.10.0), zoo, sandwich","graphics, stats, utils","yes","4.0.0","CRAN"
+"styler","styler","C:/Users/Ilya/Documents/R/win-library/4.0","1.3.2",NA,NA,"backports (>= 1.1.0), cli (>= 1.1.0), magrittr (>= 1.0.1),
+purrr (>= 0.2.3), R.cache (>= 0.14.0), rematch2 (>= 2.0.1),
+rlang (>= 0.1.1), rprojroot (>= 1.1), tibble (>= 1.4.2), tools,
+withr (>= 1.0.0), xfun (>= 0.1)","no","4.0.0","CRAN"
+"summarytools","summarytools","C:/Users/Ilya/Documents/R/win-library/4.0","0.9.6",NA,"R (>= 2.10)","base64enc, checkmate, dplyr, grDevices, htmltools, lubridate,
+magick, matrixStats, methods, pander, pryr, rapportools, stats,
+tcltk, tibble, tidyr, utils","no","4.0.0","CRAN"
+"sunburstR","sunburstR","C:/Users/Ilya/Documents/R/win-library/4.0","2.1.4",NA,NA,"d3r (>= 0.6.9), dplyr, htmlwidgets, htmltools","no","4.0.2","CRAN"
+"survey","survey","C:/Users/Ilya/Documents/R/win-library/4.0","4.0",NA,"R (>= 3.1.0), grid, methods, Matrix, survival","stats, graphics, splines, lattice, minqa, numDeriv, mitools
+(>= 2.4)","no","4.0.0","CRAN"
+"survminer","survminer","C:/Users/Ilya/Documents/R/win-library/4.0","0.4.7",NA,"ggplot2, ggpubr(>= 0.1.6)","grid, gridExtra (>= 2.0), magrittr, maxstat, methods, scales,
+survival, stats, broom, dplyr, tidyr, survMisc, purrr, tibble,
+rlang","no","4.0.0","CRAN"
+"survMisc","survMisc","C:/Users/Ilya/Documents/R/win-library/4.0","0.5.5",NA,"survival","graphics, grDevices, stats, utils, knitr, KMsurv, ggplot2,
+data.table, zoo, grid, gridExtra, km.ci, xtable","no","4.0.0","CRAN"
+"svd","svd","C:/Users/Ilya/Documents/R/win-library/4.0","0.5",NA,NA,"methods","yes","4.0.0","CRAN"
+"svglite","svglite","C:/Users/Ilya/Documents/R/win-library/4.0","1.2.3.2",NA,"R (>= 3.0.0)","Rcpp, gdtools (>= 0.1.6)","yes","4.0.2","CRAN"
+"sweep","sweep","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.3",NA,"R (>= 3.3.0)","broom (>= 0.5.6), dplyr (>= 1.0.0), forecast (>= 8.0),
+lubridate (>= 1.6.0), tibble (>= 1.2), tidyr (>= 1.0.0), timetk
+(>= 2.1.0), rlang","no","4.0.2","CRAN"
+"sys","sys","C:/Users/Ilya/Documents/R/win-library/4.0","3.3",NA,NA,NA,"yes","4.0.0","CRAN"
+"systemfit","systemfit","C:/Users/Ilya/Documents/R/win-library/4.0","1.1-24",NA,"R (>= 3.2.0), Matrix, car (>= 2.0-0), lmtest","stats (>= 2.14.0), sandwich (>= 2.2-9), MASS, methods","no","4.0.0","CRAN"
+"systemfonts","systemfonts","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.3",NA,NA,NA,"yes","4.0.0","CRAN"
+"syuzhet","syuzhet","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.4",NA,"R (>= 2.10)","textshape (>= 1.3.0), NLP, zoo, dtt, stats, graphics, dplyr,
+tidyr,","no","4.0.0","CRAN"
+"table1","table1","C:/Users/Ilya/Documents/R/win-library/4.0","1.2",NA,NA,"stats,Formula,knitr,htmltools,yaml","no","4.0.0","CRAN"
+"tableone","tableone","C:/Users/Ilya/Documents/R/win-library/4.0","0.11.1",NA,NA,"survey, MASS, e1071, zoo, gmodels, nlme, lmerTest, labelled","no","4.0.0","CRAN"
+"taskscheduleR","taskscheduleR","C:/Users/Ilya/Documents/R/win-library/4.0","1.4",NA,NA,"data.table, tools, utils","no","4.0.0","CRAN"
+"TeachingDemos","TeachingDemos","C:/Users/Ilya/Documents/R/win-library/4.0","2.12",NA,"R (>= 2.10)",NA,"no","4.0.0","CRAN"
+"tensorflow","tensorflow","C:/Users/Ilya/Documents/R/win-library/4.0","2.2.0",NA,"R (>= 3.1)","config, jsonlite (>= 1.2), processx, reticulate (>= 1.10),
+tfruns (>= 1.0), utils, yaml, rstudioapi (>= 0.7)","no","4.0.0","CRAN"
+"tergm","tergm","C:/Users/Ilya/Documents/R/win-library/4.0","3.6.1",NA,"ergm (>= 3.10.1), network (>= 1.15), networkDynamic (>=
+0.10.0)","robustbase (>= 0.93.5), coda (>= 0.19.2), nlme (>= 3.1.139),
+MASS (>= 7.3.51.4), statnet.common (>= 4.2.0)","yes","4.0.0","CRAN"
+"tesseract","tesseract","C:/Users/Ilya/Documents/R/win-library/4.0","4.1",NA,NA,"Rcpp (>= 0.12.12), pdftools (>= 1.5), curl, rappdirs, digest","yes","4.0.0","CRAN"
+"testit","testit","C:/Users/Ilya/Documents/R/win-library/4.0","0.11",NA,NA,NA,"no","4.0.0","CRAN"
+"testthat","testthat","C:/Users/Ilya/Documents/R/win-library/4.0","2.3.2",NA,"R (>= 3.1)","cli, crayon (>= 1.3.4), digest, ellipsis, evaluate, magrittr,
+methods, pkgload, praise, R6 (>= 2.2.0), rlang (>= 0.4.1),
+withr (>= 2.0.0)","yes","4.0.0","CRAN"
+"texreg","texreg","C:/Users/Ilya/Documents/R/win-library/4.0","1.37.5",NA,"R (>= 3.5)","methods, stats, httr","no","4.0.0","CRAN"
+"text2vec","text2vec","C:/Users/Ilya/Documents/R/win-library/4.0","0.6",NA,"R (>= 3.6.0), methods","Matrix (>= 1.1), Rcpp (>= 1.0.3), R6 (>= 2.3.0), data.table(>=
+1.9.6), rsparse (>= 0.3.3.4), stringi (>= 1.1.5), mlapi (>=
+0.1.0), lgr (>= 0.2), digest (>= 0.6.8)","yes","4.0.0","CRAN"
+"textrank","textrank","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.0",NA,NA,"utils, data.table (>= 1.9.6), igraph, digest","no","4.0.0","CRAN"
+"textreadr","textreadr","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.2",NA,"R (>= 3.2.2)","antiword, curl, data.table, pdftools, readxl, rvest, striprtf,
+textshape, tools, utils, xml2","no","4.0.0","CRAN"
+"textshape","textshape","C:/Users/Ilya/Documents/R/win-library/4.0","1.7.1",NA,"R (>= 3.4.0)","data.table, slam, stats, stringi, utils","no","4.0.0","CRAN"
+"textutils","textutils","C:/Users/Ilya/Documents/R/win-library/4.0","0.2-0",NA,NA,"utils","no","4.0.0","CRAN"
+"tfruns","tfruns","C:/Users/Ilya/Documents/R/win-library/4.0","1.4",NA,"R (>= 3.1)","utils, jsonlite (>= 1.2), base64enc, yaml, config, magrittr,
+whisker, tidyselect, rlang, rstudioapi (>= 0.7), reticulate","no","4.0.0","CRAN"
+"TH.data","TH.data","C:/Users/Ilya/Documents/R/win-library/4.0","1.0-10",NA,"R (>= 2.10.0), survival, MASS",NA,"no","4.0.0","CRAN"
+"thief","thief","C:/Users/Ilya/Documents/R/win-library/4.0","0.3",NA,"R (>= 3.0.2), forecast (>= 7.2)","hts, ggplot2","no","4.0.0","CRAN"
+"threejs","threejs","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.3",NA,"R (>= 3.0.0), igraph (>= 1.0.0)","htmlwidgets (>= 0.3.2), base64enc, crosstalk, methods, stats","no","4.0.0","CRAN"
+"tibble","tibble","C:/Users/Ilya/Documents/R/win-library/4.0","3.0.3",NA,"R (>= 3.1.0)","cli, crayon (>= 1.3.4), ellipsis (>= 0.2.0), fansi (>= 0.4.0),
+lifecycle (>= 0.2.0), magrittr, methods, pillar (>= 1.4.3),
+pkgconfig, rlang (>= 0.4.3), utils, vctrs (>= 0.2.4)","yes","4.0.2","CRAN"
+"tibbletime","tibbletime","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.5",NA,"R (>= 3.2.0)","assertthat (>= 0.2.0), dplyr (>= 0.7.4), glue (>= 1.1.1), hms
+(>= 0.4), lubridate (>= 1.6.0), purrr (>= 0.2.3), Rcpp (>=
+0.12.7), rlang (>= 0.1.6), tibble (>= 3.0.0), tidyselect (>=
+0.2.5), vctrs (>= 0.2.0), zoo (>= 1.8-0), lifecycle","yes","4.0.2","CRAN"
+"tictoc","tictoc","C:/Users/Ilya/Documents/R/win-library/4.0","1.0",NA,"R (>= 3.0.3), methods",NA,"no","4.0.0","CRAN"
+"tidylog","tidylog","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.2",NA,NA,"dplyr, tidyr, glue, clisymbols","no","4.0.2","CRAN"
+"tidyquant","tidyquant","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.1",NA,"R (>= 3.0.0), lubridate, PerformanceAnalytics, quantmod (>=
+0.4-13)","dplyr (>= 0.8.3), ggplot2, httr, lazyeval, magrittr, purrr,
+Quandl, riingo, alphavantager (>= 0.1.2), stringr, tibble,
+tidyr (>= 1.0.0), timetk (>= 2.0.0), timeDate, TTR, xts, rlang,
+tidyselect, rstudioapi, crayon, cli","no","4.0.2","CRAN"
+"tidyr","tidyr","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.0",NA,"R (>= 3.1)","dplyr (>= 0.8.2), ellipsis (>= 0.1.0), glue, magrittr, purrr,
+Rcpp, rlang, stringi, tibble (>= 2.1.1), tidyselect (>= 1.1.0),
+utils, vctrs (>= 0.3.0), lifecycle","yes","4.0.0","CRAN"
+"tidyselect","tidyselect","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.0",NA,"R (>= 3.2)","ellipsis, glue (>= 1.3.0), purrr (>= 0.3.2), rlang (>= 0.4.6),
+vctrs (>= 0.2.2)","yes","4.0.0","CRAN"
+"tidytext","tidytext","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.5",NA,"R (>= 2.10)","rlang, tibble, dplyr, stringr, hunspell, generics, Matrix,
+tokenizers, janeaustenr, purrr (>= 0.1.1), methods","no","4.0.2","CRAN"
+"tidyverse","tidyverse","C:/Users/Ilya/Documents/R/win-library/4.0","1.3.0",NA,"R (>= 3.2)","broom (>= 0.5.2), cli (>= 1.1.0), crayon (>= 1.3.4), dbplyr
+(>= 1.4.2), dplyr (>= 0.8.3), forcats (>= 0.4.0), ggplot2 (>=
+3.2.1), haven (>= 2.2.0), hms (>= 0.5.2), httr (>= 1.4.1),
+jsonlite (>= 1.6), lubridate (>= 1.7.4), magrittr (>= 1.5),
+modelr (>= 0.1.5), pillar (>= 1.4.2), purrr (>= 0.3.3), readr
+(>= 1.3.1), readxl (>= 1.3.1), reprex (>= 0.3.0), rlang (>=
+0.4.1), rstudioapi (>= 0.10), rvest (>= 0.3.5), stringr (>=
+1.4.0), tibble (>= 2.1.3), tidyr (>= 1.0.0), xml2 (>= 1.2.2)","no","4.0.0","CRAN"
+"tidyxl","tidyxl","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.6",NA,"R (>= 3.2.0)","Rcpp","yes","4.0.0","CRAN"
+"tiff","tiff","C:/Users/Ilya/Documents/R/win-library/4.0","0.1-5",NA,"R (>= 2.9.0)",NA,"yes","4.0.0","CRAN"
+"timeDate","timeDate","C:/Users/Ilya/Documents/R/win-library/4.0","3043.102",NA,"R (>= 2.15.1), graphics, utils, stats, methods",NA,"no","4.0.0","CRAN"
+"timeline","timeline","C:/Users/Ilya/Documents/R/win-library/4.0","0.9",NA,"ggplot2, R (>= 3.0)",NA,"no","4.0.0","CRAN"
+"timereg","timereg","C:/Users/Ilya/Documents/R/win-library/4.0","1.9.5",NA,"R (>= 2.15), survival","lava, numDeriv, stats, graphics, grDevices, utils, methods","yes","4.0.0","CRAN"
+"timeSeries","timeSeries","C:/Users/Ilya/Documents/R/win-library/4.0","3062.100",NA,"R (>= 2.10), graphics, grDevices, stats, methods, utils,
+timeDate (>= 2150.95)",NA,"no","4.0.0","CRAN"
+"timetk","timetk","C:/Users/Ilya/Documents/R/win-library/4.0","2.1.0",NA,"R (>= 3.3.0)","recipes (>= 0.1.4), rsample, dplyr (>= 0.7.0), ggplot2,
+forcats, stringr, plotly, lazyeval (>= 0.2.0), lubridate (>=
+1.6.0), padr (>= 0.3.0), purrr (>= 0.2.2), readr (>= 1.0.0),
+stringi (>= 1.1.5), tibble (>= 1.2), tidyr (>= 0.6.1), xts (>=
+0.9-7), zoo (>= 1.7-14), rlang (>= 0.1.2), tidyselect, slider,
+anytime, timeDate, forecast, hms, assertthat","no","4.0.2","CRAN"
+"timevis","timevis","C:/Users/Ilya/Documents/R/win-library/4.0","0.5",NA,"R (>= 3.1.0)","htmltools (>= 0.2.6), htmlwidgets (>= 0.6), jsonlite,
+lubridate, magrittr, methods, rmarkdown, shiny","no","4.0.0","CRAN"
+"tinytest","tinytest","C:/Users/Ilya/Documents/R/win-library/4.0","1.2.2",NA,NA,"parallel, utils","no","4.0.2","CRAN"
+"tinytex","tinytex","C:/Users/Ilya/Documents/R/win-library/4.0","0.24",NA,NA,"xfun (>= 0.5)","no","4.0.2","CRAN"
+"tis","tis","C:/Users/Ilya/Documents/R/win-library/4.0","1.38",NA,"R (>= 2.3)",NA,"yes","4.0.0","CRAN"
+"titanic","titanic","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.0",NA,"R (>= 3.1.2)",NA,"no","4.0.0","CRAN"
+"tm","tm","C:/Users/Ilya/Documents/R/win-library/4.0","0.7-7",NA,"R (>= 3.2.0), NLP (>= 0.2-0)","Rcpp, parallel, slam (>= 0.1-37), stats, tools, utils,
+graphics, xml2","yes","4.0.0","CRAN"
+"tmap","tmap","C:/Users/Ilya/Documents/R/win-library/4.0","3.1",NA,"R (>= 3.5.0), methods","tmaptools (>= 3.1), sf (>= 0.9-3), stars (>= 0.4-2), units (>=
+0.6-1), grid, RColorBrewer, viridisLite, classInt (>= 0.4-3),
+htmltools, htmlwidgets, widgetframe, leaflet (>= 2.0.2),
+leafsync, leafem (>= 0.1), stats, rlang","no","4.0.2","CRAN"
+"tmaptools","tmaptools","C:/Users/Ilya/Documents/R/win-library/4.0","3.1",NA,"R (>= 3.5), methods","sf (>= 0.9.2), lwgeom (>= 0.1-4), stars (>= 0.4-1), units (>=
+0.6-1), grid, classInt, magrittr, RColorBrewer, viridisLite,
+stats, dichromat, XML","no","4.0.2","CRAN"
+"TMB","TMB","C:/Users/Ilya/Documents/R/win-library/4.0","1.7.16",NA,"R (>= 3.0.0)","graphics, methods, stats, utils, Matrix (>= 1.0-12)","yes","4.0.0","CRAN"
+"tmvnsim","tmvnsim","C:/Users/Ilya/Documents/R/win-library/4.0","1.0-2",NA,NA,NA,"yes","4.0.0","CRAN"
+"tmvtnorm","tmvtnorm","C:/Users/Ilya/Documents/R/win-library/4.0","1.4-10",NA,"R (>= 1.9.0), mvtnorm, utils, Matrix, stats4, gmm","stats, methods","yes","4.0.0","CRAN"
+"tokenizers","tokenizers","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.1",NA,"R (>= 3.1.3)","stringi (>= 1.0.1), Rcpp (>= 0.12.3), SnowballC (>= 0.5.1)","yes","4.0.0","CRAN"
+"topicmodels","topicmodels","C:/Users/Ilya/Documents/R/win-library/4.0","0.2-11",NA,"R (>= 2.15.0)","stats4, methods, modeltools, slam, tm (>= 0.6)","yes","4.0.0","CRAN"
+"treemap","treemap","C:/Users/Ilya/Documents/R/win-library/4.0","2.4-2",NA,"R (>= 2.10)","colorspace, data.table (>= 1.8.8), ggplot2, grid, gridBase,
+igraph, methods, RColorBrewer, shiny (>= 0.12.0)","no","4.0.0","CRAN"
+"trelliscopejs","trelliscopejs","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.5",NA,"R (>= 3.4.0)","dplyr, purrr, grid, htmltools, DistributionUtils, grDevices,
+gtable, digest, jsonlite, ggplot2 (>= 3.2.1), base64enc,
+htmlwidgets, graphics, progress, utils, knitr, webshot,
+autocogs, tidyr, rlang","no","4.0.0","CRAN"
+"triebeard","triebeard","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.0",NA,NA,"Rcpp","yes","4.0.0","CRAN"
+"TriMatch","TriMatch","C:/Users/Ilya/Documents/R/win-library/4.0","0.9.9",NA,"ggplot2, scales, reshape2, ez, R (>= 3.0)","psych, stats, PSAgraphics, compiler, grid, gridExtra,
+randomForest","no","4.0.0","CRAN"
+"trimcluster","trimcluster","C:/Users/Ilya/Documents/R/win-library/4.0","0.1-5",NA,"R (>= 1.9.0)",NA,"no","4.0.0","CRAN"
+"truncnorm","truncnorm","C:/Users/Ilya/Documents/R/win-library/4.0","1.0-8",NA,"R (>= 3.4.0)",NA,"yes","4.0.0","CRAN"
+"truncreg","truncreg","C:/Users/Ilya/Documents/R/win-library/4.0","0.2-5",NA,"R (>= 1.8.0), maxLik",NA,"no","4.0.0","CRAN"
+"trust","trust","C:/Users/Ilya/Documents/R/win-library/4.0","0.1-8",NA,"R (>= 2.10.0)","stats","no","4.0.0","CRAN"
+"tseries","tseries","C:/Users/Ilya/Documents/R/win-library/4.0","0.10-47",NA,"R (>= 2.10.0)","graphics, stats, utils, quadprog, zoo, quantmod (>= 0.4-9)","yes","4.0.0","CRAN"
+"tsibble","tsibble","C:/Users/Ilya/Documents/R/win-library/4.0","0.9.1",NA,"R (>= 3.2.0)","anytime (>= 0.3.1), dplyr (>= 1.0.0), ellipsis (>= 0.3.0),
+lifecycle, lubridate (>= 1.7.0), purrr (>= 0.2.3), rlang (>=
+0.4.6), tibble (>= 3.0.0), tidyselect (>= 1.0.0), vctrs (>=
+0.3.1)","no","4.0.2","CRAN"
+"tsna","tsna","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.1",NA,"network (>= 1.13), networkDynamic (>= 0.9), R (>= 3.0)","statnet.common","no","4.0.0","CRAN"
+"TSP","TSP","C:/Users/Ilya/Documents/R/win-library/4.0","1.1-10",NA,"R (>= 3.5.0)","graphics, foreach, utils, stats, grDevices","yes","4.0.0","CRAN"
+"tsviz","tsviz","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.0",NA,"R (>= 3.5)","dplyr (>= 0.8), lubridate (>= 1.7), plotly (>= 4.9), shiny (>=
+1.2), miniUI (>= 0.1.1), forecast (>= 8.7), ggplot2 (>= 3.0),
+magrittr (>= 1.5), shinyhelper (>= 0.3.1)","no","4.0.0","CRAN"
+"ttdo","ttdo","C:/Users/Ilya/Documents/R/win-library/4.0","0.0.5",NA,NA,"tinytest, diffobj","no","4.0.0","CRAN"
+"TTR","TTR","C:/Users/Ilya/Documents/R/win-library/4.0","0.23-6",NA,NA,"xts (>= 0.10-0), zoo, curl","yes","4.0.0","CRAN"
+"tufte","tufte","C:/Users/Ilya/Documents/R/win-library/4.0","0.6",NA,NA,"htmltools, xfun (>= 0.6), knitr (>= 1.22), rmarkdown (>= 1.12)","no","4.0.0","CRAN"
+"tweedie","tweedie","C:/Users/Ilya/Documents/R/win-library/4.0","2.3.2",NA,"R (>= 2.8.0)",NA,"yes","4.0.0","CRAN"
+"tweenr","tweenr","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.1",NA,"R (>= 3.2.0)","Rcpp (>= 0.12.3), grDevices, farver, magrittr, rlang","yes","4.0.0","CRAN"
+"ucminf","ucminf","C:/Users/Ilya/Documents/R/win-library/4.0","1.1-4",NA,NA,NA,"yes","4.0.0","CRAN"
+"udpipe","udpipe","C:/Users/Ilya/Documents/R/win-library/4.0","0.8.3",NA,"R (>= 2.10)","Rcpp (>= 0.11.5), data.table (>= 1.9.6), Matrix, methods","yes","4.0.0","CRAN"
+"udunits2","udunits2","C:/Users/Ilya/Documents/R/win-library/4.0","0.13",NA,"R (>= 2.10.0)",NA,"yes","4.0.0","CRAN"
+"Unicode","Unicode","C:/Users/Ilya/Documents/R/win-library/4.0","13.0.0-1",NA,"R (>= 3.5.0)","utils","no","4.0.0","CRAN"
+"units","units","C:/Users/Ilya/Documents/R/win-library/4.0","0.6-7",NA,"R (>= 3.0.2)","Rcpp","yes","4.0.0","CRAN"
+"unpivotr","unpivotr","C:/Users/Ilya/Documents/R/win-library/4.0","0.6.0",NA,"R (>= 3.2.0)","methods, rlang, magrittr, dplyr, forcats, purrr, tidyr,
+pillar, tibble (>= 2.1.1), cellranger, xml2, tidyselect","no","4.0.0","CRAN"
+"UpSetR","UpSetR","C:/Users/Ilya/Documents/R/win-library/4.0","1.4.0",NA,"R (>= 3.0)","ggplot2, gridExtra, plyr, utils, stats, methods, grDevices,
+scales","no","4.0.0","CRAN"
+"urca","urca","C:/Users/Ilya/Documents/R/win-library/4.0","1.3-0",NA,"R (>= 2.0.0), methods","nlme, graphics, stats","yes","4.0.0","CRAN"
+"urltools","urltools","C:/Users/Ilya/Documents/R/win-library/4.0","1.7.3",NA,"R (>= 2.10)","Rcpp, methods, triebeard","yes","4.0.0","CRAN"
+"uroot","uroot","C:/Users/Ilya/Documents/R/win-library/4.0","2.1-0",NA,"R (>= 3.0.0), stats",NA,"no","4.0.0","CRAN"
+"usethis","usethis","C:/Users/Ilya/Documents/R/win-library/4.0","1.6.1",NA,"R (>= 3.2)","clipr (>= 0.3.0), cli, crayon, curl (>= 2.7), desc, fs (>=
+1.3.0), gh (>= 1.1.0), git2r (>= 0.23), glue (>= 1.3.0), purrr,
+rematch2, rlang (>= 0.4.3), rprojroot (>= 1.2), rstudioapi,
+stats, utils, whisker, withr, yaml","no","4.0.0","CRAN"
+"utf8","utf8","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.4",NA,"R (>= 2.10)",NA,"yes","4.0.0","CRAN"
+"uuid","uuid","C:/Users/Ilya/Documents/R/win-library/4.0","0.1-4",NA,"R (>= 2.9.0)",NA,"yes","4.0.0","CRAN"
+"V8","V8","C:/Users/Ilya/Documents/R/win-library/4.0","3.2.0",NA,NA,"Rcpp (>= 0.12.12), jsonlite (>= 1.0), curl (>= 1.0), utils","yes","4.0.2","CRAN"
+"validate","validate","C:/Users/Ilya/Documents/R/win-library/4.0","0.9.3",NA,"R (>= 3.1.3), methods","stats, graphics, settings, yaml","yes","4.0.0","CRAN"
+"vars","vars","C:/Users/Ilya/Documents/R/win-library/4.0","1.5-3",NA,"R (>= 2.0.0), MASS, strucchange, urca (>= 1.1-6), lmtest (>=
+0.9-26), sandwich (>= 2.2-4)",NA,"no","4.0.0","CRAN"
+"vcd","vcd","C:/Users/Ilya/Documents/R/win-library/4.0","1.4-7",NA,"R (>= 2.4.0), grid","stats, utils, MASS, grDevices, colorspace, lmtest","no","4.0.0","CRAN"
+"vcdExtra","vcdExtra","C:/Users/Ilya/Documents/R/win-library/4.0","0.7-1",NA,"R (>= 2.10), vcd, gnm (>= 1.0.3), grid","MASS, grDevices, stats, utils, ca","no","4.0.0","CRAN"
+"vctrs","vctrs","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.1",NA,"R (>= 3.2)","ellipsis (>= 0.2.0), digest, glue, rlang (>= 0.4.5)","yes","4.0.0","CRAN"
+"venneuler","venneuler","C:/Users/Ilya/Documents/R/win-library/4.0","1.1-0",NA,"rJava",NA,NA,"4.0.0","CRAN"
+"verification","verification","C:/Users/Ilya/Documents/R/win-library/4.0","1.42",NA,"R (>= 2.10), methods, fields, boot, CircStats, MASS, dtw","graphics, stats","no","4.0.0","CRAN"
+"VGAM","VGAM","C:/Users/Ilya/Documents/R/win-library/4.0","1.1-3",NA,"R (>= 3.4.0), methods, stats, stats4, splines",NA,"yes","4.0.0","CRAN"
+"VGAMdata","VGAMdata","C:/Users/Ilya/Documents/R/win-library/4.0","1.0-3",NA,"R (>= 3.1.0)",NA,"no","4.0.0","CRAN"
+"VIM","VIM","C:/Users/Ilya/Documents/R/win-library/4.0","6.0.0",NA,"R (>= 3.5.0),colorspace,grid","car, grDevices, magrittr, robustbase, stats, sp,
+vcd,MASS,nnet,e1071,methods,Rcpp,utils,graphics,laeken,ranger,
+data.table(>= 1.9.4)","yes","4.0.0","CRAN"
+"vipor","vipor","C:/Users/Ilya/Documents/R/win-library/4.0","0.4.5",NA,"R (>= 3.0.0)","stats, graphics","no","4.0.0","CRAN"
+"viridis","viridis","C:/Users/Ilya/Documents/R/win-library/4.0","0.5.1",NA,"R (>= 2.10), viridisLite (>= 0.3.0)","stats, ggplot2 (>= 1.0.1), gridExtra","no","4.0.0","CRAN"
+"viridisLite","viridisLite","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.0",NA,"R (>= 2.10)",NA,"no","4.0.0","CRAN"
+"visdat","visdat","C:/Users/Ilya/Documents/R/win-library/4.0","0.5.3",NA,"R (>= 3.2.2)","ggplot2, tidyr, dplyr, purrr, readr, magrittr, stats, tibble,
+glue","no","4.0.0","CRAN"
+"visNetwork","visNetwork","C:/Users/Ilya/Documents/R/win-library/4.0","2.0.9",NA,"R (>= 3.0)","htmlwidgets, htmltools, jsonlite, magrittr, utils, methods,
+grDevices, stats","no","4.0.0","CRAN"
+"vroom","vroom","C:/Users/Ilya/Documents/R/win-library/4.0","1.2.1",NA,"R (>= 3.1)","bit64, crayon, glue, hms, lifecycle, Rcpp (>= 0.12.18.3),
+rlang (>= 0.4.2), stats, tibble (>= 2.0.0), tidyselect, withr","yes","4.0.0","CRAN"
+"vtreat","vtreat","C:/Users/Ilya/Documents/R/win-library/4.0","1.6.0",NA,"R (>= 3.4.0), wrapr (>= 1.9.6)","stats, digest","no","4.0.0","CRAN"
+"vtree","vtree","C:/Users/Ilya/Documents/R/win-library/4.0","4.0.0",NA,"R (>= 2.10)","DiagrammeR, DiagrammeRsvg, rsvg, htmlwidgets, shiny","no","4.0.0","CRAN"
+"wakefield","wakefield","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.3",NA,"R (>= 3.1.2)","chron, ggplot2, dplyr, stringi","no","4.0.0","CRAN"
+"warp","warp","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.0",NA,"R (>= 3.2)",NA,"yes","4.0.0","CRAN"
+"wdman","wdman","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.5",NA,"R (>= 3.2)","binman, assertthat, processx, yaml, semver(>= 0.2.0), utils","no","4.0.0","CRAN"
+"webreadr","webreadr","C:/Users/Ilya/Documents/R/win-library/4.0","0.4.0",NA,NA,"Rcpp, readr","yes","4.0.0","CRAN"
+"webshot","webshot","C:/Users/Ilya/Documents/R/win-library/4.0","0.5.2",NA,"R (>= 3.0)","magrittr, jsonlite, callr","no","4.0.0","CRAN"
+"websocket","websocket","C:/Users/Ilya/Documents/R/win-library/4.0","1.3.0",NA,NA,"Rcpp, R6, later (>= 1.1.0)","yes","4.0.2","CRAN"
+"webutils","webutils","C:/Users/Ilya/Documents/R/win-library/4.0","1.1",NA,NA,"curl (>= 2.5), jsonlite","yes","4.0.0","CRAN"
+"wesanderson","wesanderson","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.6",NA,"R (>= 3.0)",NA,"no","4.0.0","CRAN"
+"whisker","whisker","C:/Users/Ilya/Documents/R/win-library/4.0","0.4",NA,NA,NA,"no","4.0.0","CRAN"
+"whoami","whoami","C:/Users/Ilya/Documents/R/win-library/4.0","1.3.0",NA,NA,"httr, jsonlite, utils","no","4.0.0","CRAN"
+"widgetframe","widgetframe","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.1",NA,"R (>= 3.1.0), htmlwidgets,","htmltools, purrr, magrittr, utils, tools","no","4.0.2","CRAN"
+"withr","withr","C:/Users/Ilya/Documents/R/win-library/4.0","2.2.0",NA,"R (>= 3.2.0)","graphics, grDevices, stats","no","4.0.0","CRAN"
+"wordcloud","wordcloud","C:/Users/Ilya/Documents/R/win-library/4.0","2.6",NA,"methods, RColorBrewer","Rcpp (>= 0.9.4)","yes","4.0.0","CRAN"
+"wrapr","wrapr","C:/Users/Ilya/Documents/R/win-library/4.0","2.0.0",NA,"R (>= 3.3.0)","utils, methods, stats","no","4.0.0","CRAN"
+"wskm","wskm","C:/Users/Ilya/Documents/R/win-library/4.0","1.4.40",NA,"R (>= 2.10), grDevices, stats, lattice, latticeExtra, fpc",NA,"yes","4.0.0","CRAN"
+"x13binary","x13binary","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.39-2",NA,NA,NA,"no","4.0.0","CRAN"
+"xaringan","xaringan","C:/Users/Ilya/Documents/R/win-library/4.0","0.16",NA,NA,"htmltools, knitr (>= 1.21), servr (>= 0.13), xfun (>= 0.6),
+rmarkdown","no","4.0.0","CRAN"
+"xaringanthemer","xaringanthemer","C:/Users/Ilya/Documents/R/win-library/4.0","0.3.0",NA,"R (>= 2.10)","colorspace, glue, methods, purrr, utils, whisker","no","4.0.0","CRAN"
+"xergm.common","xergm.common","C:/Users/Ilya/Documents/R/win-library/4.0","1.7.8",NA,"R (>= 2.14.0), ergm (>= 3.5.1), network (>= 1.13.0)","methods, utils, stats","no","4.0.0","CRAN"
+"xesreadR","xesreadR","C:/Users/Ilya/Documents/R/win-library/4.0","0.2.3",NA,"R(>= 3.0.0)","bupaR, dplyr, XML, xml2, data.table, tidyr, purrr, stringr,
+lubridate","no","4.0.0","CRAN"
+"xfun","xfun","C:/Users/Ilya/Documents/R/win-library/4.0","0.15",NA,NA,"stats, tools","yes","4.0.2","CRAN"
+"xgboost","xgboost","C:/Users/Ilya/Documents/R/win-library/4.0","1.1.1.1",NA,"R (>= 3.3.0)","Matrix (>= 1.1-0), methods, data.table (>= 1.9.6), magrittr
+(>= 1.5), stringi (>= 0.5.2)","yes","4.0.0","CRAN"
+"XLConnect","XLConnect","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.1",NA,"R (>= 2.10.0)","methods, rJava","no","4.0.0","CRAN"
+"xlsx","xlsx","C:/Users/Ilya/Documents/R/win-library/4.0","0.6.3",NA,NA,"rJava, xlsxjars, grDevices, utils","no","4.0.0","CRAN"
+"xlsxjars","xlsxjars","C:/Users/Ilya/Documents/R/win-library/4.0","0.6.1",NA,"rJava",NA,"no","4.0.0","CRAN"
+"XML","XML","C:/Users/Ilya/Documents/R/win-library/4.0","3.99-0.4",NA,"R (>= 4.0.0), methods, utils",NA,"yes","4.0.2","CRAN"
+"xml2","xml2","C:/Users/Ilya/Documents/R/win-library/4.0","1.3.2",NA,"R (>= 3.1.0)","methods","yes","4.0.0","CRAN"
+"XML2R","XML2R","C:/Users/Ilya/Documents/R/win-library/4.0","0.0.6",NA,"R (>= 2.15.1), XML","RCurl, plyr","no","4.0.0","CRAN"
+"xmlparsedata","xmlparsedata","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.3",NA,"R (>= 3.0.0)",NA,"no","4.0.0","CRAN"
+"xopen","xopen","C:/Users/Ilya/Documents/R/win-library/4.0","1.0.0",NA,"R (>= 3.1)","processx","no","4.0.0","CRAN"
+"xray","xray","C:/Users/Ilya/Documents/R/win-library/4.0","0.2",NA,"R (>= 3.4.0)","dplyr (>= 0.7.0), scales, foreach, ggplot2, grid, lubridate","no","4.0.0","CRAN"
+"xtable","xtable","C:/Users/Ilya/Documents/R/win-library/4.0","1.8-4",NA,"R (>= 2.10.0)","stats, utils","no","4.0.0","CRAN"
+"xts","xts","C:/Users/Ilya/Documents/R/win-library/4.0","0.12-0",NA,"zoo (>= 1.7-12)","methods","yes","4.0.0","CRAN"
+"yaml","yaml","C:/Users/Ilya/Documents/R/win-library/4.0","2.2.1",NA,NA,NA,"yes","4.0.0","CRAN"
+"yardstick","yardstick","C:/Users/Ilya/Documents/R/win-library/4.0","0.0.6",NA,"R (>= 2.10)","dplyr, utils, pROC (>= 1.15.0), rlang (>= 0.4.0), tidyselect,
+Rcpp, generics","yes","4.0.0","CRAN"
+"yarrr","yarrr","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.5",NA,"jpeg,BayesFactor,circlize",NA,"no","4.0.0","CRAN"
+"ymlthis","ymlthis","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.2",NA,"R (>= 3.2)","crayon, fs, glue, magrittr, miniUI, purrr (>= 0.3.2), rlang
+(>= 0.4.0), rmarkdown, rstudioapi, shiny, shinyBS, stringr,
+usethis (>= 1.5.0), whoami, withr, yaml","no","4.0.0","CRAN"
+"zeallot","zeallot","C:/Users/Ilya/Documents/R/win-library/4.0","0.1.0",NA,NA,NA,"no","4.0.0","CRAN"
+"zip","zip","C:/Users/Ilya/Documents/R/win-library/4.0","2.0.4",NA,NA,NA,"yes","4.0.0","CRAN"
+"zoo","zoo","C:/Users/Ilya/Documents/R/win-library/4.0","1.8-8",NA,"R (>= 3.1.0), stats","utils, graphics, grDevices, lattice (>= 0.20-27)","yes","4.0.0","CRAN"
+"boot","boot","C:/Program Files/R/R-4.0.2/library","1.3-25","recommended","R (>= 3.0.0), graphics, stats",NA,"no","4.0.2","CRAN"
+"class","class","C:/Program Files/R/R-4.0.2/library","7.3-17","recommended","R (>= 3.0.0), stats, utils","MASS","yes","4.0.2","CRAN"
+"cluster","cluster","C:/Program Files/R/R-4.0.2/library","2.1.0","recommended","R (>= 3.3.0)","graphics, grDevices, stats, utils","yes","4.0.2","CRAN"
+"codetools","codetools","C:/Program Files/R/R-4.0.2/library","0.2-16","recommended","R (>= 2.1)",NA,"no","4.0.2","CRAN"
+"foreign","foreign","C:/Program Files/R/R-4.0.2/library","0.8-80","recommended","R (>= 4.0.0)","methods, utils, stats","yes","4.0.2","CRAN"
+"KernSmooth","KernSmooth","C:/Program Files/R/R-4.0.2/library","2.23-17","recommended","R (>= 2.5.0), stats",NA,"yes","4.0.2","CRAN"
+"lattice","lattice","C:/Program Files/R/R-4.0.2/library","0.20-41","recommended","R (>= 3.0.0)","grid, grDevices, graphics, stats, utils","yes","4.0.2","CRAN"
+"MASS","MASS","C:/Program Files/R/R-4.0.2/library","7.3-51.6","recommended","R (>= 3.1.0), grDevices, graphics, stats, utils","methods","yes","4.0.2","CRAN"
+"Matrix","Matrix","C:/Program Files/R/R-4.0.2/library","1.2-18","recommended","R (>= 3.2.0)","methods, graphics, grid, stats, utils, lattice","yes","4.0.2","CRAN"
+"mgcv","mgcv","C:/Program Files/R/R-4.0.2/library","1.8-31","recommended","R (>= 2.14.0), nlme (>= 3.1-64)","methods, stats, graphics, Matrix, splines, utils","yes","4.0.2","CRAN"
+"nlme","nlme","C:/Program Files/R/R-4.0.2/library","3.1-148","recommended","R (>= 3.4.0)","graphics, stats, utils, lattice","yes","4.0.2","CRAN"
+"nnet","nnet","C:/Program Files/R/R-4.0.2/library","7.3-14","recommended","R (>= 3.0.0), stats, utils",NA,"yes","4.0.2","CRAN"
+"rpart","rpart","C:/Program Files/R/R-4.0.2/library","4.1-15","recommended","R (>= 2.15.0), graphics, stats, grDevices",NA,"yes","4.0.2","CRAN"
+"spatial","spatial","C:/Program Files/R/R-4.0.2/library","7.3-12","recommended","R (>= 3.0.0), graphics, stats, utils",NA,"yes","4.0.2","CRAN"
+"survival","survival","C:/Program Files/R/R-4.0.2/library","3.2-3","recommended","R (>= 3.4.0)","graphics, Matrix, methods, splines, stats, utils","yes","4.0.2","CRAN"
+"translations","translations","C:/Program Files/R/R-4.0.2/library","4.0.2",NA,NA,NA,NA,"4.0.2","Other"

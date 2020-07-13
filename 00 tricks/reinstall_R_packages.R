@@ -1,6 +1,8 @@
+# Оптимальная переустановка R с пересбором пакетов
 # https://ibecav.github.io/update_libraries/
 require(tidyverse)
 
+# Часть 1. Создание списка пакетов 
 # Helpful background
 allmypackages <- as.data.frame(installed.packages())
 
@@ -12,7 +14,6 @@ allmypackages <- allmypackages %>%
 str(allmypackages)
 
 # A function to do the hard work
-
 package_source <- function(pkg){
   x <- as.character(packageDescription(pkg)$Repository)
   if (length(x)==0) {
@@ -31,7 +32,7 @@ package_source <- function(pkg){
 # show the first 60 as an example
 head(sapply(allmypackages$Package, package_source), 60)
 
-# What’s in your libraries?
+# What's in your libraries?
 allmypackages$whereat <- sapply(allmypackages$Package, package_source)
 str(allmypackages)
 
@@ -41,15 +42,16 @@ allmypackages %>%
   filter(whereat == "Other") %>%
   select(Package, Version)
 
-write.csv(allmypackages, "mypackagelistJune2020.csv")
+write.csv(allmypackages, "mypackagelist.csv")
 
 # ======================================
+# Часть 2. Инсталляция пакетов по созданному списку
 # Go ahead and install R 3.6.0
 # post upgrade with output surpessed
 install.packages("tidyverse")
 library(tidyverse)
 
-oldpackages <- read.csv("mypackagelistJune2020.csv")
+oldpackages <- read.csv("mypackagelist.csv")
 allmypackages <- as.data.frame(installed.packages())
 allmypackages <- allmypackages %>%
   filter(Priority != "base" | is.na(Priority)) %>%
