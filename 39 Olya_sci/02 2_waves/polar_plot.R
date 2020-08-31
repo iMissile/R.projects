@@ -7,7 +7,7 @@ library(akima)
 library(hrbrthemes)
 library(extrafont)
 
-hrbrthemes::import_roboto_condensed()
+# hrbrthemes::import_roboto_condensed()
 
 processFile <- function(fname){
 
@@ -67,45 +67,45 @@ gp <- ggplot(interp_df, aes(x, y, z = z)) +
   theme_ipsum_rc()
   
 
-# подвал --------
-# делаем прямоугольную сетку ---------
-# https://tidyr.tidyverse.org/reference/expand.html
-all_df <- df %>% tidyr::expand(area, x, y)
-df %<>% dplyr::right_join(all_df)
-
-
-
-# посмотрим на возможные оставшиеся проблемные точки
-# count(df, area, x, y) %>%
-#   filter(n > 1)
-df %>%
-  mutate_all(as.character) %>%
-  skimr::skim()
-
-df %<>% filter(area == "deprolow")
-
-janitor::get_dupes(df, area, x, y)
-
-gp <- ggplot(df, aes(x, y, z = value)) +
-  # geom_density_2d_filled() + 
-  geom_contour(bins = 40) # +
-  # geom_contour_filled()
-  # facet_wrap(vars(area))
-
-
-  # 
-
-
-# \[Rho]i = 0;
-# \[Rho]f = 15;
-# d\[Rho] = 0.5;
+# # подвал --------
+# # делаем прямоугольную сетку ---------
+# # https://tidyr.tidyverse.org/reference/expand.html
+# all_df <- df %>% tidyr::expand(area, x, y)
+# df %<>% dplyr::right_join(all_df)
 # 
-# phii = 0;
-# phif = Pi;
-# dphi = Pi/20;
-
-# ---------------
-# https://ggplot2.tidyverse.org/reference/geom_contour.html
-faithfuld %>%
-  # mutate_all(as.character) %>%
-  skimr::skim()
+# 
+# 
+# # посмотрим на возможные оставшиеся проблемные точки
+# # count(df, area, x, y) %>%
+# #   filter(n > 1)
+# df %>%
+#   mutate_all(as.character) %>%
+#   skimr::skim()
+# 
+# df %<>% filter(area == "deprolow")
+# 
+# janitor::get_dupes(df, area, x, y)
+# 
+# gp <- ggplot(df, aes(x, y, z = value)) +
+#   # geom_density_2d_filled() + 
+#   geom_contour(bins = 40) # +
+#   # geom_contour_filled()
+#   # facet_wrap(vars(area))
+# 
+# 
+#   # 
+# 
+# 
+# # \[Rho]i = 0;
+# # \[Rho]f = 15;
+# # d\[Rho] = 0.5;
+# # 
+# # phii = 0;
+# # phif = Pi;
+# # dphi = Pi/20;
+# 
+# # ---------------
+# # https://ggplot2.tidyverse.org/reference/geom_contour.html
+# faithfuld %>%
+#   # mutate_all(as.character) %>%
+#   skimr::skim()
