@@ -1,0 +1,352 @@
+---
+title: "Анализ текстов"
+output: html_notebook
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r init}
+library(tidyverse)
+library(tictoc)
+library(stringi)
+library(udpipe)
+library(text2vec)
+```
+
+```{r}
+raw_tbl <- here::here("data", "Тестовое задание (лингвист) - Sheet1.csv") %>% 
+  read_delim("\t", quote = "\"", escape_double = TRUE, col_names = "topic", trim_ws = TRUE)
+```
+Выполняем токенизацию алармов, пробуем несколько вариантов
+
+```{r, include=TRUE}
+# --------------- udpipe
+# один раз загрузили
+# ud_model <- udpipe_download_model(language = "russian")
+# ud_model <- udpipe_download_model(language = "russian-syntagrus")
+# https://github.com/jwijffels/udpipe.models.ud.2.5/blob/master/inst/udpipe-ud-2.5-191206/russian-syntagrus-ud-2.5-191206.udpipe
+# загружаем корпус
+ud_model <- here::here("russian-syntagrus-ud-2.5-191206.udpipe") %>%
+  udpipe_load_model()
+```
+
+```{r udpipe annotate}
+
+cleanTopic <- function(topic_vec){
+  # читаем stringdist-encoding {stringdist}	R Documentation, String metrics in stringdist
+  # глобально, до группировок, корректируем кодировку, необходимо для stringdistmatrix
+  topic_vec %>%
+    # отрезаем пробелы по краям
+    stri_trim_both(pattern="\\P{Wspace}") %>%
+    # не знаю, что там с пустыми строками, выкинем их тоже
+    stri_remove_empty(na_empty = TRUE) %>%
+    # убираем регистр
+    stri_trans_tolower() %>%
+    # попробуем все числовые параметры в текстах обращений превратить в стоп-слова
+    # stri_replace_all_regex("(?<!\\p{ALPHABETIC}|\\d|-)(\\d+)", "<NUM>") %>%
+    # stri_replace_all_regex(., "(?<!\\p{ALPHABETIC}|\\d|-)(\\d+)", "") %>%
+    # исключим синтаксический мусор
+    stri_replace_all_regex("([\"\'«»•<>:,./]+)", " ") %>%
+    stri_replace_all_fixed("ё", "е") %>%
+    # редуцируем множественные пробелы
+    stri_replace_all_regex("\\p{WHITE_SPACE}+", " ") %>%
+    stri_trans_general(id ="Latin-ASCII")
+}
+
+topic_tbl <- raw_tbl %>%
+  mutate(clean_topic = cleanTopic(topic), 
+         id = row_number())
+```
+
+```{r message=FALSE, warning=TRUE, include=FALSE}
+tic("Аннотируем")
+print(lubridate::now())
+ann_topics <- topic_tbl %>%
+  {udpipe_annotate(ud_model, x = .$clean_topic, doc_id = .$id, trace = TRUE)}
+toc()
+```
+
+```{r}
+ann_tbl <- as_tibble(ann_topics) %>%
+  # выкинем весь мнемонический мусор
+  filter(!stri_detect_regex(token, "^[a-z0-9]{1,3}$")) %>%
+  # делаем ручные корректировки косячков
+  # http://gramota.ru/slovari/dic/?word=%D0%BE%D1%82%D1%82%D0%B0%D1%8F%D1%82%D1%8C&all=x
+  # mutate_at("lemma", `Encoding<-`, "UTF-8") %>%
+  mutate(lemma = case_when(
+    lemma == "оттаек" ~ "оттайка",
+    lemma == "оттайться" ~ "оттаиваться",
+    lemma == "отклютить" ~ "отключать",
+    lemma == "центрать" ~ "централь",
+    lemma == "рассоть" ~ "рассол",
+    TRUE ~ lemma)
+  ) %>%
+  # вот это вот обязательно, а то потом ломается text2vec
+  # читаем stringdist-encoding {stringdist}	R Documentation, String metrics in stringdist
+  mutate(lemma = stringi::stri_trans_general(lemma, "Latin-ASCII"))
+```
+
+# Упражнения по Topic modelling
+
+```{r}
+# сделаем токенизацию на основе маркеров updipe
+tokens_tbl <- ann_tbl %>%
+  # eeprom = X
+  filter(upos %in% c("NOUN", "VERB", "ADV", "ADJ", "X")) %>%
+  # select(doc_id, sentence, lemma) %>%
+  # nest(data = c(lemma)) %>%
+  # нам нужен list-vector
+  group_by(doc_id, sentence) %>%
+  summarise(tokens = list(lemma)) %>%
+  ungroup() %>%
+  rename(id = doc_id)
+```
+```{r, eval=FALSE}
+# ИЛИ сделаем токенизацию на основе text2vec
+tokens_tbl <- err_tbl %>%
+  mutate(tokens = text2vec::word_tokenizer(clean_topic)) %>%
+  select(id, tokens)
+```
+
+```{r}
+# text2vec
+# http://text2vec.org/topic_modeling.html
+
+# требуются две колонки: id аларма и вектор токенов для него
+it <- tokens_tbl %>% 
+  {itoken(.$tokens, ids = .$id, progressbar = FALSE)}
+# в словаре рушится utf-8 кодировка!
+v <- create_vocabulary(it)
+v <- prune_vocabulary(v, term_count_min = 15, doc_proportion_max = 0.2)
+  
+vectorizer <- vocab_vectorizer(v)
+dtm <- create_dtm(it, vectorizer, type = "dgTMatrix")
+
+lda_model <- LDA$new(n_topics = 10, doc_topic_prior = 0.1, topic_word_prior = 0.01)
+doc_topic_distr <- 
+  lda_model$fit_transform(x = dtm, n_iter = 1000, 
+                          convergence_tol = 0.001, n_check_convergence = 25, 
+                          progressbar = FALSE)
+```
+
+Интерактивная визуализация
+```{r}
+lda_model$plot()
+# servr::daemon_stop(1)
+```
+
+
+```{r}
+# распределение топиков для 5-го элемента
+barplot(doc_topic_distr[5, ], xlab = "topic", 
+        ylab = "proportion", ylim = c(0, 1), 
+        names.arg = 1:ncol(doc_topic_distr))
+```
+Посмотрим на ТОП-5 слов для каждого топика
+```{r}
+# lda_model$get_top_words(n = 20, topic_number = c(1L, 2L, 5L, 10L), lambda = 1)
+lda_model$get_top_words(n = 5, lambda = 1)
+```
+Посмотрим на документы, входящие в конкретный топик.
+```{r}
+topic_number <- 2
+
+# достаем слова топика
+lda_model$get_top_words(n = 5, topic_number, lambda = 0.3) %>%
+  na.omit() %>%
+  stri_c(collapse = ", ")
+
+# достаем документы, составляющие топик
+m <- tokens_tbl[doc_topic_distr[, topic_number] > 0.2, ] 
+
+
+```
+
+--------------------------------------------
+
+#import
+
+#tolower
+df %>%
+  mutate(X1 = tolower(X1))->
+  df
+
+#normalise data
+df %>%
+  mutate(X1 = gsub('"', " ", X1),
+         X1 = gsub("'", " ", X1),
+         X1 = gsub("«", " ", X1),
+         X1 = gsub("»", " ", X1),
+         X1 = gsub("ё", "е", X1),
+         X1 = gsub("•", " ", X1),
+         X1 = gsub("<", " ", X1),
+         X1 = gsub(">", " ", X1),
+         X1 = trimws(X1, which = c("left")),
+         X1 = gsub("(?<=[\\s])\\s*|^\\s+|\\s+$", "", X1, perl = TRUE)) ->
+  df
+
+#download language model
+udmodel <- udpipe_download_model(language = 'russian-syntagrus')
+udmodel_rus <- udpipe_load_model(udmodel)
+
+#annotate
+annotated <- udpipe_annotate(udmodel_rus, x = df$X1, tagger = "default", parser = "default", trace = TRUE)
+annotated <- as.data.frame(annotated)
+
+## Find 3-word phrases
+#1st pattern amod+conj+nmod
+deprel <- keywords_phrases(annotated$dep_rel, term = annotated$token, pattern = "amod+conj+nmod", 
+                           is_regex = TRUE,
+                           ngram_max = 3, 
+                           detailed = TRUE)
+deprel %>% 
+  distinct(keyword, .keep_all = TRUE)->
+  deprel
+
+#2nd pattern conj + amod + (nmod|obj)
+add_deprel <- keywords_phrases(annotated$dep_rel, term = annotated$token, pattern = "conj+amod+(nmod|obj)", 
+                               is_regex = TRUE,
+                               ngram_max = 3, 
+                               detailed = TRUE)
+deprel %>% 
+  full_join(add_deprel, deprel,
+            by = c("keyword", "ngram", "pattern", "start", "end")) %>% 
+  distinct(keyword, .keep_all = TRUE)->
+  deprel
+rm(add_deprel)
+
+#3rd pattern conj + (case|nmod) + nmod
+add_deprel <- keywords_phrases(annotated$dep_rel, term = annotated$token, pattern = "conj+(case|nmod)+nmod", 
+                               is_regex = TRUE,
+                               ngram_max = 3, 
+                               detailed = TRUE)
+deprel %>% 
+  full_join(add_deprel, deprel,
+            by = c("keyword", "ngram", "pattern", "start", "end")) %>% 
+  distinct(keyword, .keep_all = TRUE)->
+  deprel
+rm(add_deprel)
+
+#4rd pattern nmod + amod + nmod
+add_deprel <- keywords_phrases(annotated$dep_rel, term = annotated$token, pattern = "nmod+amod+nmod", 
+                               is_regex = TRUE,
+                               ngram_max = 3, 
+                               detailed = TRUE)
+deprel %>% 
+  full_join(add_deprel, deprel,
+            by = c("keyword", "ngram", "pattern", "start", "end")) %>% 
+  distinct(keyword, .keep_all = TRUE)->
+  deprel
+rm(add_deprel)
+
+#5th pattern parataxis + (amod|nmod) + nmod
+add_deprel <- keywords_phrases(annotated$dep_rel, term = annotated$token, pattern = "parataxis+(amod|nmod)+nmod", 
+                               is_regex = TRUE,
+                               ngram_max = 3, 
+                               detailed = TRUE)
+deprel %>% 
+  full_join(add_deprel, deprel,
+            by = c("keyword", "ngram", "pattern", "start", "end")) %>% 
+  distinct(keyword, .keep_all = TRUE)->
+  deprel
+rm(add_deprel)
+
+## Find 4-word phrases
+#1st pattern conj + case + amod + nmod
+add_deprel <- keywords_phrases(annotated$dep_rel, term = annotated$token, pattern = "conj+case+amod+nmod", 
+                               is_regex = TRUE,
+                               ngram_max = 4, 
+                               detailed = TRUE)
+deprel %>% 
+  full_join(add_deprel, deprel,
+            by = c("keyword", "ngram", "pattern", "start", "end")) %>% 
+  distinct(keyword, .keep_all = TRUE)->
+  deprel
+rm(add_deprel)
+
+#2nd pattern conj + cc + conj + nmod
+add_deprel <- keywords_phrases(annotated$dep_rel, term = annotated$token, pattern = "conj+cc+conj+nmod", 
+                               is_regex = TRUE,
+                               ngram_max = 4, 
+                               detailed = TRUE)
+deprel %>% 
+  full_join(add_deprel, deprel,
+            by = c("keyword", "ngram", "pattern", "start", "end")) %>% 
+  distinct(keyword, .keep_all = TRUE)->
+  deprel
+rm(add_deprel)
+
+#3rd pattern conj+nmod+amod+nmod
+add_deprel <- keywords_phrases(annotated$dep_rel, term = annotated$token, pattern = "conj+nmod+amod+nmod", 
+                               is_regex = TRUE,
+                               ngram_max = 4, 
+                               detailed = TRUE)
+deprel %>% 
+  full_join(add_deprel, deprel,
+            by = c("keyword", "ngram", "pattern", "start", "end")) %>% 
+  distinct(keyword, .keep_all = TRUE)->
+  deprel
+rm(add_deprel)
+
+#4th pattern parataxis + case + amod + nmod
+add_deprel <- keywords_phrases(annotated$dep_rel, term = annotated$token, pattern = "parataxis+case+amod+nmod", 
+                               is_regex = TRUE,
+                               ngram_max = 4, 
+                               detailed = TRUE)
+deprel %>% 
+  full_join(add_deprel, deprel,
+            by = c("keyword", "ngram", "pattern", "start", "end")) %>% 
+  distinct(keyword, .keep_all = TRUE)->
+  deprel
+rm(add_deprel)
+
+#5th pattern parataxis + cc + conj + nmod
+add_deprel <- keywords_phrases(annotated$dep_rel, term = annotated$token, pattern = "parataxis+cc+conj+nmod", 
+                               is_regex = TRUE,
+                               ngram_max = 4, 
+                               detailed = TRUE)
+deprel %>% 
+  full_join(add_deprel, deprel,
+            by = c("keyword", "ngram", "pattern", "start", "end")) %>% 
+  distinct(keyword, .keep_all = TRUE)->
+  deprel
+rm(add_deprel)
+
+## Find 5-word phrases
+# 1st pattern conj + cc + conj + amod + nmod
+add_deprel <- keywords_phrases(annotated$dep_rel, term = annotated$token, pattern = "conj+cc+conj+amod+nmod", 
+                               is_regex = TRUE,
+                               ngram_max = 5, 
+                               detailed = TRUE)
+deprel %>% 
+  full_join(add_deprel, deprel,
+            by = c("keyword", "ngram", "pattern", "start", "end")) %>% 
+  distinct(keyword, .keep_all = TRUE)->
+  deprel
+rm(add_deprel)
+
+#delete by pattern
+deprel %>% 
+  filter(!str_detect(keyword, pattern = ' в | для | из | их | на | об | по |
+                     | при | тк| требования|альбом|ам |ами |архитектуры |бонус|
+                     |владение|владение|возможность|выезд|выпуска|график|гтс|
+                     |доход|душ|ем |заработ|знан|им |интересных|карьер|качества |
+                     |кодекс|команд|коммерческих условий|компенсац|конкурс|
+                     |культур|кухня|лидер|льгот|методик|млн|мобил|навык|наличия|
+                     |налогового|нии |нию |ния |област|объема|ов |ок |оклад|ом |
+                     |оплат|опыт|основ|основы|ответственность|отдых|отчетность|
+                     |офис|охран|перспектив|плата|поддержкой|подобрать|понимание|
+                     |правила|преми|приемке|приложений|продвинут|пункта|работах|
+                     |работы|рамк|регион|режим|ремонта|рии|рынк|скидк|склад|
+                     |скорость|соглашений|соц|способ|срок|стаж|стремление|строя |
+                     |супруж|сфер|тки |у |уверен|ул. |устройства |федерал|футбол|
+                     |характеристик |ции |цию|язык'))->
+  deprel
+
+deprel %>% 
+  select (keyword, ngram, pattern, -start, -end)->
+  deprel
+
+write_csv(annotated, path = '/Volumes/Transcend/_Linguist/annotated.csv')
+write_csv(deprel, path = '/Volumes/Transcend/_Linguist/deprel.csv')
+
