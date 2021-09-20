@@ -15,30 +15,40 @@ library(tictoc)
 # library(future)
 # library(doFuture)
 
-input_path <- "S:/Camera  Германия-Австрия  raw" %>%
+# input_path <- "S:/Camera  Германия-Австрия  raw" %>%
+input_path <- "D:/tmp/1" %>%
   fs::path_real()
 
 # выходную директорию надо предварительно создать руками
-output_path <- "S:/2019_08  Германия-Австрия" %>%
+# output_path <- "S:/2019_08  Германия-Австрия" %>%
+output_path <- "d:/tmp/2" %>%
   fs::path_real()
 
 
 i_fnames <- input_path %>%
-  fs::dir_ls(recurse = TRUE, regexp = "(JPG|jpg)$") # %>%
+  fs::dir_ls(recurse = TRUE, regexp = "(JPG|jpg|JPEG|jpeg)$") # %>%
   # sample(10)
 
 # df <- read_exif(i_fnames)
-raw_df <- read_exif(i_fnames, tags = c("SourceFile", "Model", "DateTimeOriginal")) %>%
+raw_df <- read_exif(i_fnames, tags = c("SourceFile", "Directory", "FileName", 
+                                       "Model", "DateTimeOriginal")) %>%
   # путь к файлу выводится в base64, исправим, чтобы избежать расхождения на всякий случай
-  mutate(tmp = sub("^base64:(.*)", "\\1", SourceFile)) %>%
-  mutate(i_fname = purrr::map_chr(tmp, ~rawToChar(jsonlite::base64_dec(.)))) %>%
-  mutate(tm = anytime::anytime(DateTimeOriginal)) %>%
-  select(i_fname, DateTimeOriginal, model = Model, tm)
+  # mutate(tmp = sub("^base64:(.*)", "\\1", SourceFile)) %>%
+  # mutate(i_fname = purrr::map_chr(tmp, ~rawToChar(jsonlite::base64_dec(.)))) %>%
+  # имя файла еще есть в FileName
+  mutate(tm = anytime::anytime(DateTimeOriginal), 
+         i_fname = i_fnames, 
+         exif_path = stri_c(Directory, "/", FileName)) %>%
+  select(i_fname, exif_path, DateTimeOriginal, model = Model, tm)
+
+# посмотрим для проверки расхождения в именах
+filter(raw_df, i_fname != exif_path)
   
 # проводим корректировку времени и формируем имена выходных файлов
 clean_df <- raw_df %>%
   mutate(timestamp = case_when(
     model == 'iPhone 6' ~ tm,
+    model == 'iPhone 11' ~ tm,
     model == 'COOLPIX S9900' ~ tm - lubridate::minutes(56),
     TRUE ~ tm)
   ) %>%
@@ -57,11 +67,12 @@ clean_df <- raw_df %>%
   ungroup() %>%
   # для неуникальных имен добавим индекс в конце
   mutate(fname = case_when(
-    n > 1 ~ stri_c(fname, '_', idx),
+    n > 1 ~ stri_c(fname, '#', idx),
     TRUE ~ fname
     )
   ) %>%
-  mutate(o_fname = fs::path(!!output_path, paste0(fname, ".jpg"))) # %>%
+  mutate(ext = fs::path_ext(i_fname)) %>%
+  mutate(o_fname = fs::path(!!output_path, fs::path_ext_set(fname, ext))) # %>%
   # mutate_at(vars(i_fname, o_fname), stri_enc_tonative)
   
 filter(clean_df, is.na(o_fname))
